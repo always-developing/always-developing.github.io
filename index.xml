@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://alwaysdeveloping.net/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Fri, 08 Oct 2021 00:00:00 +0000</lastBuildDate><atom:link href="https://alwaysdeveloping.net/index.xml" rel="self" type="application/rss+xml"/><item><title>C# String vs string</title><link>https://alwaysdeveloping.net/p/string-vs-string/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://alwaysdeveloping.net/p/string-vs-string/</guid><description>&lt;h2 id="whats-the-issue">What&amp;rsquo;s the issue?&lt;/h2>
+&lt;p>When working with strings in C# one can either use &lt;code>String&lt;/code> (uppercase) or &lt;code>string&lt;/code> (lowercase) and in both cases the code will compile and execute.&lt;/p>
+&lt;p>Explicitly typed string variables can be done in either of the following ways:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="kt">string&lt;/span> &lt;span class="n">variable&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="s">&amp;#34;Always Developing&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="n">String&lt;/span> &lt;span class="n">variable&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="s">&amp;#34;Always Developing&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>&lt;/code>&lt;/pre>&lt;/div>
+&lt;p>Or when invoking string related methods, both of the following examples are valid:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="kt">string&lt;/span> &lt;span class="n">variable&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="kt">string&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Format&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;Always Developing using {0}&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s">&amp;#34;C#&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="n">String&lt;/span> &lt;span class="n">variable&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">String&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Format&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;Always Developing using {0}&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s">&amp;#34;Typescript&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>&lt;/code>&lt;/pre>&lt;/div>
+&lt;p>Whats the difference between using &lt;code>String&lt;/code> and using &lt;code>string&lt;/code>? Is there a difference? Does it really matter?&lt;/p>
+&lt;h2 id="is-there-a-difference">Is there a difference?&lt;/h2>
+&lt;ul>
+&lt;li>
+&lt;p>&lt;code>System.String&lt;/code> is a .NET CLR (Common Runtime Library) class. This means it&amp;rsquo;s part of the core .NET environment, which sits one level below the specific language implementation.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;code>string&lt;/code> is a C# specific keyword, which is an alias for the CLR &lt;code>System.String&lt;/code> type.&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;p>What this means is that &lt;code>string&lt;/code> is just another name for &lt;code>System.String&lt;/code> and they are &lt;strong>effectively equivalent&lt;/strong>.&lt;/p>
+&lt;blockquote>
+&lt;div>
+&lt;div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px;">
+&lt;i class="inline-svg" >&lt;svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-info-circle" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#00abfb" fill="none" stroke-linecap="round" stroke-linejoin="round">
+&lt;path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+&lt;circle cx="12" cy="12" r="9" />
+&lt;line x1="12" y1="8" x2="12.01" y2="8" />
+&lt;polyline points="11 12 12 12 12 16 13 16" />
+&lt;/svg>&lt;/i>
+&lt;/div>
+&lt;div>
+&lt;p>The same way &lt;code>int&lt;/code> is an alias and maps to the CLR type &lt;code>System.Int32&lt;/code> and &lt;code>long&lt;/code> is an alias and map to CLR type &lt;code>System.Int64&lt;/code>, &lt;code>string&lt;/code> is an alias and maps to the CLR type &lt;code>System.String&lt;/code>&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;/blockquote>
+&lt;h2 id="deeper-comparisons">Deeper comparisons&lt;/h2>
+&lt;h3 id="variable-declaration">Variable declaration&lt;/h3>
+&lt;p>We can further confirm &lt;code>String&lt;/code> and &lt;code>string&lt;/code> are equivalent by comparing the IL (Intermediate Language) code generated when declaring variables using both of the types.&lt;/p>
+&lt;blockquote>
+&lt;div>
+&lt;div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px;">
+&lt;i class="inline-svg" >&lt;svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-info-circle" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#00abfb" fill="none" stroke-linecap="round" stroke-linejoin="round">
+&lt;path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+&lt;circle cx="12" cy="12" r="9" />
+&lt;line x1="12" y1="8" x2="12.01" y2="8" />
+&lt;polyline points="11 12 12 12 12 16 13 16" />
+&lt;/svg>&lt;/i>
+&lt;/div>
+&lt;div>
+&lt;p>This post is primarily to compare the C# &lt;code>String&lt;/code> and &lt;code>string&lt;/code> types, but VB.NET examples have also been included in the comparison for completeness.&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;/blockquote>
+&lt;p>Take these three methods, all functionally equivalent, but declaring the variable using the different types:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">public&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">GetString&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">String&lt;/span> &lt;span class="n">variable&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="s">&amp;#34;string value&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">return&lt;/span> &lt;span class="n">variable&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/div>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">public&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">GetString&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="kt">string&lt;/span> &lt;span class="n">variable&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="s">&amp;#34;string value&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">return&lt;/span> &lt;span class="n">variable&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/div>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-VB.net" data-lang="VB.net">&lt;span class="k">Public&lt;/span> &lt;span class="k">Function&lt;/span> &lt;span class="nf">GetString&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="ow">As&lt;/span> &lt;span class="kt">String&lt;/span>
+&lt;span class="k">Dim&lt;/span> &lt;span class="n">variable&lt;/span> &lt;span class="ow">As&lt;/span> &lt;span class="kt">String&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="s">&amp;#34;string value&amp;#34;&lt;/span>
+&lt;span class="k">Return&lt;/span> &lt;span class="n">variable&lt;/span>
+&lt;span class="k">End&lt;/span> &lt;span class="k">Function&lt;/span>&lt;/code>&lt;/pre>&lt;/div>
+&lt;p>The IL code generated by all three examples is all effectively identical:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="c1">// Methods
+&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">method&lt;/span> &lt;span class="k">public&lt;/span> &lt;span class="n">hidebysig&lt;/span>
+&lt;span class="n">instance&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">GetString&lt;/span> &lt;span class="p">()&lt;/span> &lt;span class="n">cil&lt;/span> &lt;span class="n">managed&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="c1">// Method begins at RVA 0x2050
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="c1">// Code size 6 (0x6)
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="p">.&lt;/span>&lt;span class="n">maxstack&lt;/span> &lt;span class="m">8&lt;/span>
+&lt;span class="n">IL_0000&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="n">ldstr&lt;/span> &lt;span class="s">&amp;#34;string value&amp;#34;&lt;/span>
+&lt;span class="n">IL_0005&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="n">ret&lt;/span>
+&lt;span class="p">}&lt;/span> &lt;span class="c1">// end of method CClass::GetString
+&lt;/span>&lt;/code>&lt;/pre>&lt;/div>
+&lt;h3 id="string-method-invocation">String method invocation&lt;/h3>
+&lt;p>So it&amp;rsquo;s confirmed that &lt;code>String&lt;/code> and &lt;code>string&lt;/code> are equivalent when declaring variables, but what about with method invocation?&lt;/p>
+&lt;p>Again, three functionally equivalent methods, but invoking the &lt;code>Format&lt;/code> method differently:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">public&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">StringFormat&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">insertString&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="s">&amp;#34;C#&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">variable&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">String&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Format&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;Always Developing using {0}&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">insertString&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="k">return&lt;/span> &lt;span class="n">variable&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/div>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">public&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">StringFormat&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">insertString&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="s">&amp;#34;C#&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">variable&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="kt">string&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Format&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;Always Developing using {0}&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">insertString&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="k">return&lt;/span> &lt;span class="n">variable&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/div>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-VB.net" data-lang="VB.net">&lt;span class="k">Public&lt;/span> &lt;span class="k">Function&lt;/span> &lt;span class="nf">StringFormat&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="ow">As&lt;/span> &lt;span class="kt">String&lt;/span>
+&lt;span class="k">Dim&lt;/span> &lt;span class="n">insertString&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="s">&amp;#34;C#&amp;#34;&lt;/span>
+&lt;span class="k">Dim&lt;/span> &lt;span class="n">variable&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="kt">String&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Format&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;Always Developing using {0}&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">insertString&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="k">Return&lt;/span> &lt;span class="n">variable&lt;/span>
+&lt;span class="k">End&lt;/span> &lt;span class="k">Function&lt;/span>&lt;/code>&lt;/pre>&lt;/div>
+&lt;p>When the generated IL code is compared, in all three cases, it is equivalent:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="c1">// Methods
+&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">method&lt;/span> &lt;span class="k">public&lt;/span> &lt;span class="n">hidebysig&lt;/span>
+&lt;span class="n">instance&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">StringFormat&lt;/span> &lt;span class="p">()&lt;/span> &lt;span class="n">cil&lt;/span> &lt;span class="n">managed&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="c1">// Method begins at RVA 0x2050
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="c1">// Code size 18 (0x12)
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="p">.&lt;/span>&lt;span class="n">maxstack&lt;/span> &lt;span class="m">2&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">locals&lt;/span> &lt;span class="n">init&lt;/span> &lt;span class="p">(&lt;/span>
+&lt;span class="na"> [0]&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">insertString&lt;/span>
+&lt;span class="p">)&lt;/span>
+&lt;span class="n">IL_0000&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="n">ldstr&lt;/span> &lt;span class="s">&amp;#34;C#&amp;#34;&lt;/span>
+&lt;span class="n">IL_0005&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="n">stloc&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="m">0&lt;/span>
+&lt;span class="n">IL_0006&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="n">ldstr&lt;/span> &lt;span class="s">&amp;#34;Always Developing using {0}&amp;#34;&lt;/span>
+&lt;span class="n">IL_000b&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="n">ldloc&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="m">0&lt;/span>
+&lt;span class="n">IL_000c&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="n">call&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">System&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Private&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">CoreLib&lt;/span>&lt;span class="p">]&lt;/span>&lt;span class="n">System&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">String&lt;/span>&lt;span class="p">::&lt;/span>&lt;span class="n">Format&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="kt">string&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="kt">object&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="n">IL_0011&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="n">ret&lt;/span>
+&lt;span class="p">}&lt;/span> &lt;span class="c1">// end of method CClass::StringFormat
+&lt;/span>&lt;/code>&lt;/pre>&lt;/div>
+&lt;h2 id="conclusion">Conclusion&lt;/h2>
+&lt;p>Use either &lt;code>String&lt;/code> or &lt;code>string&lt;/code>, they are effectively equivalent.&lt;/p>
+&lt;p>However, the recommended approach is to use the C# language specific keyword &lt;code>string&lt;/code>, as it works without having to include &lt;code>using System;&lt;/code>&lt;/p>
+&lt;blockquote>
+&lt;div>
+&lt;div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px;">
+&lt;i class="inline-svg" >&lt;svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-info-circle" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#00abfb" fill="none" stroke-linecap="round" stroke-linejoin="round">
+&lt;path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+&lt;circle cx="12" cy="12" r="9" />
+&lt;line x1="12" y1="8" x2="12.01" y2="8" />
+&lt;polyline points="11 12 12 12 12 16 13 16" />
+&lt;/svg>&lt;/i>
+&lt;/div>
+&lt;div>
+&lt;p>The recommendation method of using &lt;code>string&lt;/code> comes from the official &lt;em>&lt;strong>&lt;a href="https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/strings/">Microsoft documentation&lt;/a>&lt;/strong>&lt;/em>, and is included as a default style rule in &lt;em>&lt;strong>&lt;a href="https://docs.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/ide0049">Visual Studio&lt;/a>&lt;/strong>&lt;/em>&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;/blockquote>
+&lt;blockquote>
+&lt;div>
+&lt;div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px;">
+&lt;i class="inline-svg" >&lt;svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-circle-check" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#7bc62d" fill="none" stroke-linecap="round" stroke-linejoin="round">
+&lt;path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+&lt;circle cx="12" cy="12" r="9" />
+&lt;path d="M9 12l2 2l4 -4" />
+&lt;/svg>&lt;/i>
+&lt;/div>
+&lt;div>
+&lt;p>&lt;p>It is recommended to use implicitly type local variables (where appropriate) by using the &lt;code>var&lt;/code> keyword (instead of &lt;code>string&lt;/code>, in the above examples), and having the type inferred by the compiled.&lt;/p>
+&lt;p>The use of &lt;code>var&lt;/code> versus explicate declaration is a &lt;strong>personal preference&lt;/strong>, and will not effect the execution or performance of the code.&lt;/p>
+&lt;p>Personally I use &lt;code>var&lt;/code> in my code: I find the code cleaner and easier to read. One can see the type being inferred by the compiler by hovering the mouse cursor over the &lt;code>var&lt;/code> keyword in Visual Studio.&lt;/p>
+&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;/blockquote>
+&lt;h2 id="references-and-links">References and links&lt;/h2>
+&lt;p>&lt;a class="link" href="https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/strings/" target="_blank" rel="noopener"
+>Microsoft string guidance&lt;/a>&lt;br>
+&lt;a class="link" href="https://docs.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/ide0049" target="_blank" rel="noopener"
+>Microsoft style rule&lt;/a>&lt;br>
+&lt;a class="link" href="https://docs.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions#implicitly-typed-local-variables" target="_blank" rel="noopener"
+>Implicitly typed variables&lt;/a>&lt;br>
+&lt;a class="link" href="https://sharplab.io" target="_blank" rel="noopener"
+>Sharp lab - IL generator&lt;/a>&lt;/p></description></item></channel></rss>

@@ -1,0 +1,275 @@
+<!doctype html><html lang=en-uk>
+<head><meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="Which to use? Does it matter?"><title>C# String vs string</title>
+<link rel=canonical href=https://alwaysdeveloping.net/p/string-vs-string/>
+<link rel=stylesheet href=/scss/style.min.css><meta property="og:title" content="C# String vs string">
+<meta property="og:description" content="Which to use? Does it matter?">
+<meta property="og:url" content="https://alwaysdeveloping.net/p/string-vs-string/">
+<meta property="og:site_name" content="Always Developing">
+<meta property="og:type" content="article"><meta property="article:section" content="Post"><meta property="article:tag" content="c#"><meta property="article:tag" content=".net"><meta property="article:tag" content="vs"><meta property="article:tag" content="syntax">
+<meta name=twitter:title content="C# String vs string">
+<meta name=twitter:description content="Which to use? Does it matter?">
+</head>
+<body class="article-page has-toc">
+<script>(function(){const a='StackColorScheme';localStorage.getItem(a)||localStorage.setItem(a,"dark")})()</script><script>(function(){const b='StackColorScheme',a=localStorage.getItem(b),c=window.matchMedia('(prefers-color-scheme: dark)').matches===!0;a=='dark'||a==='auto'&&c?document.documentElement.dataset.scheme='dark':document.documentElement.dataset.scheme='light'})()</script>
+<div class="container main-container flex
+extended">
+<div id=article-toolbar>
+<a href=https://alwaysdeveloping.net class=back-home><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="15 6 9 12 15 18"/></svg>
+<span>Back</span>
+</a>
+</div>
+<main class="main full-width">
+<article class=main-article>
+<header class=article-header>
+<div class=article-details>
+<header class=article-category>
+<a href=/categories/blog/>
+Blog
+</a>
+</header>
+<h2 class=article-title>
+<a href=/p/string-vs-string/>C# String vs string</a>
+</h2>
+<h3 class=article-subtitle>
+Which to use? Does it matter?
+</h3>
+<footer class=article-time>
+<div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<time class=article-time--reading>
+4 minute read
+</time>
+</div>
+</footer>
+</div>
+</header>
+<section class=article-content>
+<h2 id=whats-the-issue>What&rsquo;s the issue?</h2>
+<p>When working with strings in C# one can either use <code>String</code> (uppercase) or <code>string</code> (lowercase) and in both cases the code will compile and execute.</p>
+<p>Explicitly typed string variables can be done in either of the following ways:</p>
+<div class=highlight><pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=kt>string</span> <span class=n>variable</span> <span class=p>=</span> <span class=s>&#34;Always Developing&#34;</span><span class=p>;</span>
+<span class=n>String</span> <span class=n>variable</span> <span class=p>=</span> <span class=s>&#34;Always Developing&#34;</span><span class=p>;</span></code></pre></div>
+<p>Or when invoking string related methods, both of the following examples are valid:</p>
+<div class=highlight><pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=kt>string</span> <span class=n>variable</span> <span class=p>=</span> <span class=kt>string</span><span class=p>.</span><span class=n>Format</span><span class=p>(</span><span class=s>&#34;Always Developing using {0}&#34;</span><span class=p>,</span> <span class=s>&#34;C#&#34;</span><span class=p>);</span>
+<span class=n>String</span> <span class=n>variable</span> <span class=p>=</span> <span class=n>String</span><span class=p>.</span><span class=n>Format</span><span class=p>(</span><span class=s>&#34;Always Developing using {0}&#34;</span><span class=p>,</span> <span class=s>&#34;Typescript&#34;</span><span class=p>);</span></code></pre></div>
+<p>Whats the difference between using <code>String</code> and using <code>string</code>? Is there a difference? Does it really matter?</p>
+<h2 id=is-there-a-difference>Is there a difference?</h2>
+<ul>
+<li>
+<p><code>System.String</code> is a .NET CLR (Common Runtime Library) class. This means it&rsquo;s part of the core .NET environment, which sits one level below the specific language implementation.</p>
+</li>
+<li>
+<p><code>string</code> is a C# specific keyword, which is an alias for the CLR <code>System.String</code> type.</p>
+</li>
+</ul>
+<p>What this means is that <code>string</code> is just another name for <code>System.String</code> and they are <strong>effectively equivalent</strong>.</p>
+<blockquote>
+<div>
+<div style=width:5%;float:left;vertical-align:middle;padding-right:60px>
+<i class=inline-svg><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-info-circle" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#00abfb" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12.01" y2="8"/><polyline points="11 12 12 12 12 16 13 16"/></svg></i>
+</div>
+<div>
+<p>The same way <code>int</code> is an alias and maps to the CLR type <code>System.Int32</code> and <code>long</code> is an alias and map to CLR type <code>System.Int64</code>, <code>string</code> is an alias and maps to the CLR type <code>System.String</code></p>
+</div>
+</div>
+</blockquote>
+<h2 id=deeper-comparisons>Deeper comparisons</h2>
+<h3 id=variable-declaration>Variable declaration</h3>
+<p>We can further confirm <code>String</code> and <code>string</code> are equivalent by comparing the IL (Intermediate Language) code generated when declaring variables using both of the types.</p>
+<blockquote>
+<div>
+<div style=width:5%;float:left;vertical-align:middle;padding-right:60px>
+<i class=inline-svg><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-info-circle" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#00abfb" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12.01" y2="8"/><polyline points="11 12 12 12 12 16 13 16"/></svg></i>
+</div>
+<div>
+<p>This post is primarily to compare the C# <code>String</code> and <code>string</code> types, but VB.NET examples have also been included in the comparison for completeness.</p>
+</div>
+</div>
+</blockquote>
+<p>Take these three methods, all functionally equivalent, but declaring the variable using the different types:</p>
+<div class=highlight><pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=k>public</span> <span class=kt>string</span> <span class=n>GetString</span><span class=p>()</span>
+<span class=p>{</span>
+    <span class=n>String</span> <span class=n>variable</span> <span class=p>=</span> <span class=s>&#34;string value&#34;</span><span class=p>;</span>
+    <span class=k>return</span> <span class=n>variable</span><span class=p>;</span>
+<span class=p>}</span></code></pre></div>
+<div class=highlight><pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=k>public</span> <span class=kt>string</span> <span class=n>GetString</span><span class=p>()</span>
+<span class=p>{</span>
+    <span class=kt>string</span> <span class=n>variable</span> <span class=p>=</span> <span class=s>&#34;string value&#34;</span><span class=p>;</span>
+    <span class=k>return</span> <span class=n>variable</span><span class=p>;</span>
+<span class=p>}</span></code></pre></div>
+<div class=highlight><pre tabindex=0 class=chroma><code class=language-VB.net data-lang=VB.net><span class=k>Public</span> <span class=k>Function</span> <span class=nf>GetString</span><span class=p>()</span> <span class=ow>As</span> <span class=kt>String</span>
+    <span class=k>Dim</span> <span class=n>variable</span> <span class=ow>As</span> <span class=kt>String</span> <span class=o>=</span> <span class=s>&#34;string value&#34;</span>
+    <span class=k>Return</span> <span class=n>variable</span>
+<span class=k>End</span> <span class=k>Function</span></code></pre></div>
+<p>The IL code generated by all three examples is all effectively identical:</p>
+<div class=highlight><pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=c1>// Methods
+</span><span class=c1></span><span class=p>.</span><span class=n>method</span> <span class=k>public</span> <span class=n>hidebysig</span> 
+    <span class=n>instance</span> <span class=kt>string</span> <span class=n>GetString</span> <span class=p>()</span> <span class=n>cil</span> <span class=n>managed</span> 
+<span class=p>{</span>
+    <span class=c1>// Method begins at RVA 0x2050
+</span><span class=c1></span>    <span class=c1>// Code size 6 (0x6)
+</span><span class=c1></span>    <span class=p>.</span><span class=n>maxstack</span> <span class=m>8</span>
+
+    <span class=n>IL_0000</span><span class=p>:</span> <span class=n>ldstr</span> <span class=s>&#34;string value&#34;</span>
+    <span class=n>IL_0005</span><span class=p>:</span> <span class=n>ret</span>
+<span class=p>}</span> <span class=c1>// end of method CClass::GetString
+</span></code></pre></div>
+<h3 id=string-method-invocation>String method invocation</h3>
+<p>So it&rsquo;s confirmed that <code>String</code> and <code>string</code> are equivalent when declaring variables, but what about with method invocation?</p>
+<p>Again, three functionally equivalent methods, but invoking the <code>Format</code> method differently:</p>
+<div class=highlight><pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=k>public</span> <span class=kt>string</span> <span class=n>StringFormat</span><span class=p>()</span>
+<span class=p>{</span>
+    <span class=kt>var</span> <span class=n>insertString</span> <span class=p>=</span> <span class=s>&#34;C#&#34;</span><span class=p>;</span>
+    <span class=kt>var</span> <span class=n>variable</span> <span class=p>=</span> <span class=n>String</span><span class=p>.</span><span class=n>Format</span><span class=p>(</span><span class=s>&#34;Always Developing using {0}&#34;</span><span class=p>,</span> <span class=n>insertString</span><span class=p>);</span>
+    <span class=k>return</span> <span class=n>variable</span><span class=p>;</span>
+<span class=p>}</span></code></pre></div>
+<div class=highlight><pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=k>public</span> <span class=kt>string</span> <span class=n>StringFormat</span><span class=p>()</span>
+<span class=p>{</span>
+    <span class=kt>var</span> <span class=n>insertString</span> <span class=p>=</span> <span class=s>&#34;C#&#34;</span><span class=p>;</span>
+    <span class=kt>var</span> <span class=n>variable</span> <span class=p>=</span> <span class=kt>string</span><span class=p>.</span><span class=n>Format</span><span class=p>(</span><span class=s>&#34;Always Developing using {0}&#34;</span><span class=p>,</span> <span class=n>insertString</span><span class=p>);</span>
+    <span class=k>return</span> <span class=n>variable</span><span class=p>;</span>
+<span class=p>}</span></code></pre></div>
+<div class=highlight><pre tabindex=0 class=chroma><code class=language-VB.net data-lang=VB.net><span class=k>Public</span> <span class=k>Function</span> <span class=nf>StringFormat</span><span class=p>()</span> <span class=ow>As</span> <span class=kt>String</span>
+        <span class=k>Dim</span> <span class=n>insertString</span> <span class=o>=</span> <span class=s>&#34;C#&#34;</span>
+        <span class=k>Dim</span> <span class=n>variable</span> <span class=o>=</span> <span class=kt>String</span><span class=p>.</span><span class=n>Format</span><span class=p>(</span><span class=s>&#34;Always Developing using {0}&#34;</span><span class=p>,</span> <span class=n>insertString</span><span class=p>)</span>
+        <span class=k>Return</span> <span class=n>variable</span>
+    <span class=k>End</span> <span class=k>Function</span></code></pre></div>
+<p>When the generated IL code is compared, in all three cases, it is equivalent:</p>
+<div class=highlight><pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=c1>// Methods
+</span><span class=c1></span><span class=p>.</span><span class=n>method</span> <span class=k>public</span> <span class=n>hidebysig</span> 
+    <span class=n>instance</span> <span class=kt>string</span> <span class=n>StringFormat</span> <span class=p>()</span> <span class=n>cil</span> <span class=n>managed</span> 
+<span class=p>{</span>
+    <span class=c1>// Method begins at RVA 0x2050
+</span><span class=c1></span>    <span class=c1>// Code size 18 (0x12)
+</span><span class=c1></span>    <span class=p>.</span><span class=n>maxstack</span> <span class=m>2</span>
+    <span class=p>.</span><span class=n>locals</span> <span class=n>init</span> <span class=p>(</span>
+<span class=na>        [0]</span> <span class=kt>string</span> <span class=n>insertString</span>
+    <span class=p>)</span>
+
+    <span class=n>IL_0000</span><span class=p>:</span> <span class=n>ldstr</span> <span class=s>&#34;C#&#34;</span>
+    <span class=n>IL_0005</span><span class=p>:</span> <span class=n>stloc</span><span class=p>.</span><span class=m>0</span>
+    <span class=n>IL_0006</span><span class=p>:</span> <span class=n>ldstr</span> <span class=s>&#34;Always Developing using {0}&#34;</span>
+    <span class=n>IL_000b</span><span class=p>:</span> <span class=n>ldloc</span><span class=p>.</span><span class=m>0</span>
+    <span class=n>IL_000c</span><span class=p>:</span> <span class=n>call</span> <span class=kt>string</span> <span class=p>[</span><span class=n>System</span><span class=p>.</span><span class=n>Private</span><span class=p>.</span><span class=n>CoreLib</span><span class=p>]</span><span class=n>System</span><span class=p>.</span><span class=n>String</span><span class=p>::</span><span class=n>Format</span><span class=p>(</span><span class=kt>string</span><span class=p>,</span> <span class=kt>object</span><span class=p>)</span>
+    <span class=n>IL_0011</span><span class=p>:</span> <span class=n>ret</span>
+<span class=p>}</span> <span class=c1>// end of method CClass::StringFormat
+</span></code></pre></div>
+<h2 id=conclusion>Conclusion</h2>
+<p>Use either <code>String</code> or <code>string</code>, they are effectively equivalent.</p>
+<p>However, the recommended approach is to use the C# language specific keyword <code>string</code>, as it works without having to include <code>using System;</code></p>
+<blockquote>
+<div>
+<div style=width:5%;float:left;vertical-align:middle;padding-right:60px>
+<i class=inline-svg><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-info-circle" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#00abfb" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12.01" y2="8"/><polyline points="11 12 12 12 12 16 13 16"/></svg></i>
+</div>
+<div>
+<p>The recommendation method of using <code>string</code> comes from the official <em><strong><a href=https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/strings/>Microsoft documentation</a></strong></em>, and is included as a default style rule in <em><strong><a href=https://docs.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/ide0049>Visual Studio</a></strong></em></p>
+</div>
+</div>
+</blockquote>
+<blockquote>
+<div>
+<div style=width:5%;float:left;vertical-align:middle;padding-right:60px>
+<i class=inline-svg><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-circle-check" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#7bc62d" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg></i>
+</div>
+<div>
+<p><p>It is recommended to use implicitly type local variables (where appropriate) by using the <code>var</code> keyword (instead of <code>string</code>, in the above examples), and having the type inferred by the compiled.</p>
+<p>The use of <code>var</code> versus explicate declaration is a <strong>personal preference</strong>, and will not effect the execution or performance of the code.</p>
+<p>Personally I use <code>var</code> in my code: I find the code cleaner and easier to read. One can see the type being inferred by the compiler by hovering the mouse cursor over the <code>var</code> keyword in Visual Studio.</p>
+</p>
+</div>
+</div>
+</blockquote>
+<h2 id=references-and-links>References and links</h2>
+<p><a class=link href=https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/strings/ target=_blank rel=noopener>Microsoft string guidance</a><br>
+<a class=link href=https://docs.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/ide0049 target=_blank rel=noopener>Microsoft style rule</a><br>
+<a class=link href=https://docs.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions#implicitly-typed-local-variables target=_blank rel=noopener>Implicitly typed variables</a><br>
+<a class=link href=https://sharplab.io target=_blank rel=noopener>Sharp lab - IL generator</a></p>
+</section>
+<footer class=article-footer>
+<section class=article-tags>
+<a href=/tags/c#/>c#</a>
+<a href=/tags/.net/>.net</a>
+<a href=/tags/vs/>vs</a>
+<a href=/tags/syntax/>syntax</a>
+</section>
+</footer>
+</article>
+<aside class=related-contents--wrapper>
+</aside>
+<footer class=site-footer>
+<section class=copyright>
+&copy;
+2021 Always Developing
+</section>
+<section class=powerby>
+Always Developing | always learning | always growing <br>
+Built with <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a> <br>
+Theme <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.2.0>Stack</a></b> designed by <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a>
+</section>
+</footer>
+<div class=pswp tabindex=-1 role=dialog aria-hidden=true>
+<div class=pswp__bg></div>
+<div class=pswp__scroll-wrap>
+<div class=pswp__container>
+<div class=pswp__item></div>
+<div class=pswp__item></div>
+<div class=pswp__item></div>
+</div>
+<div class="pswp__ui pswp__ui--hidden">
+<div class=pswp__top-bar>
+<div class=pswp__counter></div>
+<button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+<button class="pswp__button pswp__button--share" title=Share></button>
+<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+<div class=pswp__preloader>
+<div class=pswp__preloader__icn>
+<div class=pswp__preloader__cut>
+<div class=pswp__preloader__donut></div>
+</div>
+</div>
+</div>
+</div>
+<div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+<div class=pswp__share-tooltip></div>
+</div>
+<button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+</button>
+<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+</button>
+<div class=pswp__caption>
+<div class=pswp__caption__center></div>
+</div>
+</div>
+</div>
+</div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.css integrity="sha256-c0uckgykQ9v5k+IqViZOZKc47Jn7KQil4/MP3ySA3F8=" crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.css integrity="sha256-SBLU4vv6CA6lHsZ1XyTdhyjJxCjPif/TRkjnsyGAGnE=" crossorigin=anonymous>
+</main>
+<aside class="sidebar right-sidebar sticky">
+<section class="widget archives">
+<div class=widget-icon><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg>
+</div>
+<h2 class="widget-title section-title">Table of contents</h2>
+<div class=widget--toc>
+<nav id=TableOfContents>
+<ol>
+<li><a href=#whats-the-issue>What&rsquo;s the issue?</a></li>
+<li><a href=#is-there-a-difference>Is there a difference?</a></li>
+<li><a href=#deeper-comparisons>Deeper comparisons</a>
+<ol>
+<li><a href=#variable-declaration>Variable declaration</a></li>
+<li><a href=#string-method-invocation>String method invocation</a></li>
+</ol>
+</li>
+<li><a href=#conclusion>Conclusion</a></li>
+<li><a href=#references-and-links>References and links</a></li>
+</ol>
+</nav>
+</div>
+</section>
+</aside>
+</div>
+<script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g=" crossorigin=anonymous defer></script><script type=text/javascript src=/ts/main.js defer></script>
+<script>(function(){const a=document.createElement('link');a.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",a.type="text/css",a.rel="stylesheet",document.head.appendChild(a)})()</script>
+</body>
+</html>
