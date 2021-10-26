@@ -1,4 +1,136 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Thu, 21 Oct 2021 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>C# String vs string</title><link>https://always-developing.github.io/p/string-vs-string/</link><pubDate>Thu, 21 Oct 2021 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/p/string-vs-string/</guid><description>&lt;h2 id="whats-the-issue">What&amp;rsquo;s the issue?&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Mon, 25 Oct 2021 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Useful Visual Studio keyboard shortcuts</title><link>https://always-developing.github.io/p/vs-keyboard-shortcuts/</link><pubDate>Mon, 25 Oct 2021 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/p/vs-keyboard-shortcuts/</guid><description>&lt;h2 id="why-learn-keyboard-shortcuts">Why learn keyboard shortcuts?&lt;/h2>
+&lt;p>So I confess I have no empirical evidence to backup the &lt;code>up to 20% more productive&lt;/code> claim. That number is just made up, but with years of experience on my side, it honestly feels fairly accurate to me!&lt;/p>
+&lt;p>Having often been involved in assisting, troubleshooting and debugging code with fellow developers, it is apparent that the developers which are familiar with their IDE, and make use of the shortcuts, &lt;em>generally&lt;/em> (but not always!) resolve tasks quicker and more efficiently than those that don&amp;rsquo;t.&lt;/p>
+&lt;p>Every hand reach for the mouse, every unnecessary cursor movement, every menu click is &lt;em>potentially&lt;/em> a waste of time. It&amp;rsquo;s time two hands are not on the keyboard writing code. The more shortcuts a person is familiar with, the more the unnecessary time wasting can be minimized. Thus, more programming time and more productivity!&lt;/p>
+&lt;ul>
+&lt;li>Is there anything wrong with not making use of keyboard shortcuts? &lt;strong>Definitely not.&lt;/strong>&lt;/li>
+&lt;li>Does not using keyboard shortcuts make a person any less of a developer? &lt;strong>Definitely not.&lt;/strong>&lt;/li>
+&lt;li>Could using keyboard shortcuts make a person more productive? &lt;strong>Definitely yes.&lt;/strong>&lt;/li>
+&lt;/ul>
+&lt;h2 id="visual-studio-shortcuts-to-learn">Visual Studio shortcuts to learn&lt;/h2>
+&lt;p>Below is a list of useful &lt;code>Visual Studio&lt;/code> shortcuts I use the most often and find the more useful in my day to day development. This is by no means an exhaustive list - however I have no doubt a massive benefit can be gained by learning just a few of these.&lt;/p>
+&lt;p>Some of these shortcuts are not just Visual Studio shortcuts, and also be leveraged in other applications (such as VS Code).&lt;/p>
+&lt;blockquote>
+&lt;div>
+&lt;div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px;">
+&lt;i class="inline-svg" >&lt;svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-info-circle" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#00abfb" fill="none" stroke-linecap="round" stroke-linejoin="round">
+&lt;path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+&lt;circle cx="12" cy="12" r="9" />
+&lt;line x1="12" y1="8" x2="12.01" y2="8" />
+&lt;polyline points="11 12 12 12 12 16 13 16" />
+&lt;/svg>&lt;/i>
+&lt;/div>
+&lt;div>
+&lt;p>&lt;ul>
+&lt;li>
+&lt;p>&lt;code>+&lt;/code> indicates a combination of keys is to be pressed to perform the action.&lt;br>
+In some cases (like the example below), the final key can be tapped to perform the action multiple times (while still holding down the initial two keys)&lt;br>
+E.g. &lt;code>Ctrl + Shift + -&lt;/code>: &lt;em>Ctrl&lt;/em> and &lt;em>Shift&lt;/em> can be held down at the same time while the &lt;em>-&lt;/em> key is pressed multiple times.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;code>,&lt;/code> is used to indicate a sequence of keys is to be pressed.&lt;br>
+E.g. &lt;code>Ctrl + M, O&lt;/code>: &lt;em>Ctrl&lt;/em> is held down, while &lt;em>M&lt;/em> is pressed and then &lt;em>O&lt;/em> is pressed.&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;/blockquote>
+&lt;h3 id="view-shortcuts">View shortcuts&lt;/h3>
+&lt;ul>
+&lt;li>
+&lt;p>&lt;code>Ctrl + -&lt;/code> and &lt;code>Ctrl + Shift + -&lt;/code>: &lt;strong>Navigate backwards and forwards&lt;/strong> 🧭&lt;br>
+Moves the cursor, backwards and forwards through the history of visited cursor locations in file(s). This is incredibly useful especially when used in conjunction with the &lt;em>Go to Definition&lt;/em> / &lt;code>Ctrl + F12&lt;/code> function.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;code>Ctrl + .&lt;/code>: &lt;strong>Quick actions and refactoring&lt;/strong> 💡&lt;br>
+When the cursor is over a block of code, this shortcut will bring up the quick actions and refactoring (Lightbulb or screwdriver icon) menu&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;code>Ctrl + Spacebar&lt;/code>: &lt;strong>Trigger Intellisense&lt;/strong>&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="editor-shortcuts">Editor shortcuts&lt;/h3>
+&lt;ul>
+&lt;li>
+&lt;p>&lt;code>Ctrl + ←&lt;/code> and &lt;code>Ctrl + →&lt;/code>: &lt;strong>Moves cursor one word to the left or right&lt;/strong> ⬅️➡️&lt;br>
+Great when used in combination with the &lt;em>Shift&lt;/em> key (e.g. &lt;code>Ctrl + Shift + →&lt;/code>) to highlight/select entire word(s).&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;code>Ctrl + Del&lt;/code>: &lt;strong>Delete an entire line&lt;/strong> 🚫&lt;br>
+When you dislike your code and you want it gone quickly.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;code>Ctrl + M, O&lt;/code>: &lt;strong>Collapse to definitions&lt;/strong> 📄&lt;br>
+Collapse all methods, regions, comment blocks etc in the current document.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;code>Ctrl + F&lt;/code>: &lt;strong>Find in current file&lt;/strong> 🔍&lt;br>
+Defaults to search in only the current document, but this can be changed to include more documents (e.g. entire solution)&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;code>Ctrl + Shift + F&lt;/code>: &lt;strong>Find in all files&lt;/strong> 🔍🔍&lt;br>
+Opens the &lt;em>Find in files&lt;/em> dialog. Defaults to search the entire solution, but this can be changed to include less documents (e.g. current document)&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;code>Ctrl + H&lt;/code>: &lt;strong>Replace in current file&lt;/strong> 📑&lt;br>
+Defaults to search in only the current document, but this can be changed to include more documents (e.g. entire solution)&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;code>Ctrl + Shift + H&lt;/code>: &lt;strong>Replace in all files&lt;/strong> 📑📑&lt;br>
+Opens the Replace in files_ dialog. Defaults to replace in the entire solution, but this can be changed to include less documents (e.g. current document)&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;code>Ctrl + K, C&lt;/code> and &lt;code>Ctrl + K, U&lt;/code>: &lt;strong>Comments and uncomment code selection&lt;/strong> 📜&lt;br>
+Comment and uncomment code selection. If no selection is made, the line of code the cursor is current on will be commented/un-commented.&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="refactor-shortcuts">Refactor shortcuts&lt;/h3>
+&lt;ul>
+&lt;li>
+&lt;p>&lt;code>'ctor', Tab, Tab&lt;/code>: &lt;strong>Constructor creation&lt;/strong> 🏗️&lt;br>
+This is a prebuilt code snippet and not really a keyboard shortcut. This will create a default parameter-less constructor for the current class&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;code>Ctrl + R, R&lt;/code>: &lt;strong>Rename&lt;/strong> 💬&lt;br>
+Allows for the rename of a class, method, variable etc. as well as all usages of said code. Place the cursor on a method name, for example, press &lt;code>Ctrl + R, R&lt;/code>, type in the new name and hit enter. The method name and all usages of the name have now been renamed.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;code>Ctrl + R, M&lt;/code>: &lt;strong>Extract to method&lt;/strong> 📤&lt;br>
+Create a new method containing the selected code, and invoke the new method from the current code location. Great for code clean up.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;code>Ctrl + R, G&lt;/code>: &lt;strong>Remove and sort &lt;em>usings&lt;/em>&lt;/strong> ⛔
+Performing this shortcut anywhere in a document will remove any unused &lt;em>usings&lt;/em> in the file, as well as sort the remaining ones alphabetically.&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="build-shortcuts">Build shortcuts&lt;/h3>
+&lt;ul>
+&lt;li>
+&lt;p>&lt;code>F5&lt;/code>: &lt;strong>Build and start application with the &lt;em>debugger attached&lt;/em>&lt;/strong>. 🐛&lt;br>
+Breakpoints will pause code execution, code can be stepped through, etc.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;code>Ctrl + F5&lt;/code>: &lt;strong>Build and start application &lt;em>without the debugger attached&lt;/em>&lt;/strong>. 🏃‍♂️&lt;br>
+No debug symbols will be loaded, so breakpoints will not be hit. Most often used when:&lt;/p>
+&lt;ol>
+&lt;li>Running multiple dependent services/applications in the same solution (without the need for debugging all the projects)&lt;/li>
+&lt;li>Running benchmarking (using BenchmarkDotNet)&lt;/li>
+&lt;/ol>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="code-quality-shortcuts">Code quality shortcuts&lt;/h3>
+&lt;ul>
+&lt;li>&lt;code>///&lt;/code>: &lt;strong>Adds comments&lt;/strong> 🧾&lt;br>
+Used above a method or class to create and partially auto populate the comments.&lt;br>
+These comments can be used to generate an XML document file (especially useful for library authors)&lt;/li>
+&lt;/ul>
+&lt;h2 id="conclusion">Conclusion&lt;/h2>
+&lt;p>It does take a conscious effort when starting to actually slow down, lookup the shortcut to be used and force yourself to use it. But adaption happens quickly, and before you know it you&amp;rsquo;ll be using the keyboard shortcuts without even realising it.&lt;/p>
+&lt;p>It is an on-going learning process - if you find yourself performing the same time consuming action over and over in the IDE, consider investigating and learning the shortcut.&lt;/p>
+&lt;p>The list of &lt;a class="link" href="https://docs.microsoft.com/en-us/visualstudio/ide/default-keyboard-shortcuts-in-visual-studio?view=vs-2019" target="_blank" rel="noopener"
+>&lt;code>VS2019 Keyboard shortcuts&lt;/code>&lt;/a>. (this mostly apply to VS2017 and VS2022 as well)&lt;/p>
+&lt;p>Use shortcuts. Be more productive.&lt;/p></description></item><item><title>C# String vs string</title><link>https://always-developing.github.io/p/string-vs-string/</link><pubDate>Thu, 21 Oct 2021 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/p/string-vs-string/</guid><description>&lt;h2 id="whats-the-issue">What&amp;rsquo;s the issue?&lt;/h2>
 &lt;p>When working with strings in C# one can either use &lt;code>String&lt;/code> (uppercase) or &lt;code>string&lt;/code> (lowercase) and in both cases the code will compile and execute.&lt;/p>
 &lt;p>Explicitly typed string variables can be done in either of the following ways:&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="kt">string&lt;/span> &lt;span class="n">variable&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="s">&amp;#34;Always Developing&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
