@@ -1,4 +1,2152 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Mon, 25 Oct 2021 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Useful Visual Studio keyboard shortcuts</title><link>https://always-developing.github.io/p/vs-keyboard-shortcuts/</link><pubDate>Mon, 25 Oct 2021 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/p/vs-keyboard-shortcuts/</guid><description>&lt;h2 id="why-learn-keyboard-shortcuts">Why learn keyboard shortcuts?&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Sat, 06 Nov 2021 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Multiple implementations of same interface - the options</title><link>https://always-developing.github.io/p/multiple-implementations/</link><pubDate>Sat, 06 Nov 2021 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/p/multiple-implementations/</guid><description>&lt;h2 id="the-challenge">The challenge&lt;/h2>
+&lt;p>Consider a scenario where the requirement is to upload a file to an online provider (AWS S3, Azure Blob or a FTP site in the examples below), where the provider can be easily changed (either dynamically at runtime, or easily with minimal code changes), with the possibility additional providers being added in future.&lt;/p>
+&lt;p>To make use of dependency injection, a generic interface is created, &lt;strong>&lt;em>IFileUploader&lt;/em>&lt;/strong>, along with three implementations &lt;strong>&lt;em>AWSUploader&lt;/em>&lt;/strong>, &lt;strong>&lt;em>AzureUploader&lt;/em>&lt;/strong> and &lt;strong>&lt;em>FTPUploader&lt;/em>&lt;/strong>. The interface prescribes that the implementations provide a method to upload a file (&lt;em>UploadFile&lt;/em>) and a method to get the implementation name (&lt;em>GetName&lt;/em>).&lt;/p>
+&lt;p>The built in .NET dependency injection (DI) container is all one will need for almost all situations (including this situation): however this scenario can be a bit more challenging to get right - &lt;strong>&lt;code>with multiple implementations of the same interface, how do you get the right implementation from the DI container?&lt;/code>&lt;/strong>&lt;/p>
+&lt;h2 id="the-problem-with-net-dependency-injection-container">The problem with .NET dependency injection container&lt;/h2>
+&lt;p>One piece of functionality the .NET DI container does not have (which is available in some other 3rd party DI/IoC containers) is the ability to add and retrieve service implementations by name.&lt;/p>
+&lt;p>Short of actually implementing one of these other 3rd party containers, below are a number of different options and techniques one can use to get the correct implementation from the DI container when there are multiple implementations registered.&lt;/p>
+&lt;blockquote>
+&lt;div>
+&lt;div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px;">
+&lt;i class="inline-svg" >&lt;svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-info-circle" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#00abfb" fill="none" stroke-linecap="round" stroke-linejoin="round">
+&lt;path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+&lt;circle cx="12" cy="12" r="9" />
+&lt;line x1="12" y1="8" x2="12.01" y2="8" />
+&lt;polyline points="11 12 12 12 12 16 13 16" />
+&lt;/svg>&lt;/i>
+&lt;/div>
+&lt;div>
+&lt;p>The benchmarks on the below techniques were all executed at the same time under the same conditions using &lt;a href="https://benchmarkdotnet.org/articles/overview.html">&lt;strong>BenchmarkDotNet&lt;/strong>&lt;/a>&lt;br>
+Even though some some techniques performed poorly when compared to others, bear in mind that the time frame in question here is nanoseconds (a nanosecond is &lt;strong>one billionth of a second&lt;/strong>).&lt;br>
+In &lt;em>most&lt;/em> scenarios, the DI technique used (if used correctly) is not going to make a massive material different to the performance of the application/service (of course there are exceptions, depending on how complicated the dependency tree is)&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;/blockquote>
+&lt;h2 id="the-different-techniques">The different techniques&lt;/h2>
+&lt;h3 id="ienumerable">IEnumerable&lt;/h3>
+&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>Configuration:&lt;/strong>&lt;br>
+This is the simplest &amp;lsquo;out of the box&amp;rsquo; technique, with the various implementations just all added to the DI container using the same interface (&lt;a class="link" href="#ienumconfig-7" >lines 7-9&lt;/a>):
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumconfig-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumconfig-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumconfig-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumconfig-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumconfig-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumconfig-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumconfig-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumconfig-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumconfig-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumconfig-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumconfig-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumconfig-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumconfig-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumconfig-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumconfig-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumconfig-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumconfig-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumconfig-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumconfig-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumconfig-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumconfig-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumconfig-11">11&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">private&lt;/span> &lt;span class="k">readonly&lt;/span> &lt;span class="n">IHost&lt;/span> &lt;span class="n">host&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="n">EnumerableBenchmark&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">host&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">Host&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">CreateDefaultBuilder&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">ConfigureServices&lt;/span>&lt;span class="p">((&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">services&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">services&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">EnumerableHandler&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">IFileUploader&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">AWSUploader&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">IFileUploader&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">AzureUploader&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">IFileUploader&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">FTPUploader&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">).&lt;/span>&lt;span class="n">Build&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Usage:&lt;/strong>&lt;br>
+Inject IEnumerable&lt;!-- raw HTML omitted --> into the relevant class (&lt;a class="link" href="#ienumusage-4" >line 4&lt;/a>), and then retrieve the required implementation from the IEnumerable collection (&lt;a class="link" href="#ienumusage-11" >lines 11-13&lt;/a>)
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-16">16&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-17">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-17">17&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-18">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-18">18&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-19">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-19">19&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-20">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-20">20&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-21">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-21">21&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-22">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-22">22&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">EnumerableHandler&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">private&lt;/span> &lt;span class="k">readonly&lt;/span> &lt;span class="n">IEnumerable&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">IFileUploader&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="m">_&lt;/span>&lt;span class="n">uploaders&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="n">EnumerableHandler&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">IEnumerable&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">IFileUploader&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="n">uploaders&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="m">_&lt;/span>&lt;span class="n">uploaders&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">uploaders&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">Execute&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">providerName&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="s">&amp;#34;aws&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">uploader&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="m">_&lt;/span>&lt;span class="n">uploaders&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">FirstOrDefault&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">up&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">up&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">GetName&lt;/span>&lt;span class="p">().&lt;/span>&lt;span class="n">Equals&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">providerName&lt;/span>&lt;span class="p">));&lt;/span>
+&lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">uploader&lt;/span> &lt;span class="p">==&lt;/span> &lt;span class="k">null&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">throw&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">ArgumentException&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$&amp;#34;No uploader with name &amp;#34;&lt;/span> &lt;span class="p">+&lt;/span>
+&lt;span class="s">$&amp;#34;{providerName} could be found&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="n">uploader&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">UploadFile&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Pros:&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>Easy to implement&lt;/li>
+&lt;li>Implementation can be selected/changed at runtime&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Cons:&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>Every implementation is instantiated (as part of IEnumerable) even if not required or used. This could be especially problematic if the implementations themselves have a number of dependencies which then need to be instantiated (this was NOT the case with the benchmarks) which could result in a negative performance impact.&lt;/li>
+&lt;li>The logic to retrieve the implementation from IEnumerable is contained in multiple places (each class which has it injected)&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Performance:&lt;/strong>&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>Type&lt;/th>
+&lt;th>Method&lt;/th>
+&lt;th style="text-align:right">Mean&lt;/th>
+&lt;th style="text-align:right">Error&lt;/th>
+&lt;th style="text-align:right">StdDev&lt;/th>
+&lt;th style="text-align:right">Ratio&lt;/th>
+&lt;th style="text-align:right">RatioSD&lt;/th>
+&lt;th style="text-align:right">Gen 0&lt;/th>
+&lt;th style="text-align:right">Allocated&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>Enumerable&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">86.99 ns&lt;/td>
+&lt;td style="text-align:right">0.987 ns&lt;/td>
+&lt;td style="text-align:right">0.924 ns&lt;/td>
+&lt;td style="text-align:right">1.00&lt;/td>
+&lt;td style="text-align:right">0.00&lt;/td>
+&lt;td style="text-align:right">0.0421&lt;/td>
+&lt;td style="text-align:right">264 B&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h3 id="factory">Factory&lt;/h3>
+&lt;p>One of the negative aspects of the &lt;code>IEnumerable&lt;/code> approach, is that the logic to retrieve the correct implementation could be present in multiple places (if IEnumberable is injected into multiple classes). The &lt;code>Factory&lt;/code> approach moves the logic into a separate actory class, which is then injected and is responsible for retrieving the required implementation.&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>Configuration:&lt;/strong>&lt;br>
+Configuration is the &lt;em>same as &lt;code>IEnumerable&lt;/code>&lt;/em>, the various implementations all added to the DI container using the same interface, with one additional class added, the factory class (&lt;a class="link" href="#factoryconfig-7" >line 7&lt;/a>)
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="factoryconfig-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryconfig-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryconfig-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryconfig-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryconfig-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryconfig-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryconfig-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryconfig-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryconfig-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryconfig-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryconfig-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryconfig-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryconfig-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryconfig-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryconfig-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryconfig-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryconfig-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryconfig-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryconfig-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryconfig-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryconfig-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryconfig-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryconfig-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryconfig-12">12&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">private&lt;/span> &lt;span class="k">readonly&lt;/span> &lt;span class="n">IHost&lt;/span> &lt;span class="n">host&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="n">FactoryBenchmark&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">host&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">Host&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">CreateDefaultBuilder&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">ConfigureServices&lt;/span>&lt;span class="p">((&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">services&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">services&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">FactoryHandler&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">FileUploaderFactory&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">IFileUploader&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">AWSUploader&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">IFileUploader&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">AzureUploader&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">IFileUploader&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">FTPUploader&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">).&lt;/span>&lt;span class="n">Build&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;p>The factory looks very similar to the handler from the &lt;code>IEnumerable&lt;/code> approach:
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="factoryconfig-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryconfig-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryconfig-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryconfig-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryconfig-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryconfig-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryconfig-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryconfig-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryconfig-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryconfig-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryconfig-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryconfig-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryconfig-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryconfig-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryconfig-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryconfig-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryconfig-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryconfig-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryconfig-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryconfig-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryconfig-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryconfig-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryconfig-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryconfig-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryconfig-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryconfig-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryconfig-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryconfig-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryconfig-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryconfig-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryconfig-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryconfig-16">16&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryconfig-17">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryconfig-17">17&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryconfig-18">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryconfig-18">18&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryconfig-19">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryconfig-19">19&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryconfig-20">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryconfig-20">20&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryconfig-21">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryconfig-21">21&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">FileUploaderFactory&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">private&lt;/span> &lt;span class="k">readonly&lt;/span> &lt;span class="n">IEnumerable&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">IFileUploader&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="m">_&lt;/span>&lt;span class="n">uploaders&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="n">FileUploaderFactory&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">IEnumerable&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">IFileUploader&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="n">uploaders&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="m">_&lt;/span>&lt;span class="n">uploaders&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">uploaders&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="n">IFileUploader&lt;/span> &lt;span class="n">Resolve&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="kt">string&lt;/span> &lt;span class="n">providerName&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">uploader&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="m">_&lt;/span>&lt;span class="n">uploaders&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">FirstOrDefault&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">up&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">up&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">GetName&lt;/span>&lt;span class="p">().&lt;/span>&lt;span class="n">Equals&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">providerName&lt;/span>&lt;span class="p">));&lt;/span>
+&lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">uploader&lt;/span> &lt;span class="p">==&lt;/span> &lt;span class="k">null&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">throw&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">ArgumentException&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$&amp;#34;No uploader with name &amp;#34;&lt;/span> &lt;span class="p">+&lt;/span>
+&lt;span class="s">$&amp;#34;{providerName} could be found&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="k">return&lt;/span> &lt;span class="n">uploader&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Usage:&lt;/strong>&lt;br>
+The factory is now injected into the relevant class (&lt;a class="link" href="#factoryusage-4" >line 4&lt;/a>) and is then invoked to get the requested implementation (&lt;a class="link" href="#factoryusage-12" >line 12&lt;/a>)
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="factoryusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="factoryusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#factoryusage-15">15&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">FactoryHandler&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">private&lt;/span> &lt;span class="k">readonly&lt;/span> &lt;span class="n">FileUploaderFactory&lt;/span> &lt;span class="m">_f&lt;/span>&lt;span class="n">actory&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="n">FactoryHandler&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">FileUploaderFactory&lt;/span> &lt;span class="n">factory&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="m">_f&lt;/span>&lt;span class="n">actory&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">factory&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">Execute&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">providerName&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="s">&amp;#34;azure&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">uploader&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="m">_f&lt;/span>&lt;span class="n">actory&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Resolve&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">providerName&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="n">uploader&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">UploadFile&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Pros:&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>Easy to implement&lt;/li>
+&lt;li>Implementation can be selected/changed at runtime&lt;/li>
+&lt;li>Retrieval logic is contained in a single place&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Cons:&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>Every implementation is instantiated (as part of IEnumerable) even if not required or used. This could have an impact on performance and memory usage.&lt;/li>
+&lt;li>Slightly slower, and slightly more memory usage than the &lt;code>IEnumerable&lt;/code> approach (due to the extra layer between the handler and the IEnumerable collection)&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Performance:&lt;/strong>&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>Type&lt;/th>
+&lt;th>Method&lt;/th>
+&lt;th style="text-align:right">Mean&lt;/th>
+&lt;th style="text-align:right">Error&lt;/th>
+&lt;th style="text-align:right">StdDev&lt;/th>
+&lt;th style="text-align:right">Ratio&lt;/th>
+&lt;th style="text-align:right">RatioSD&lt;/th>
+&lt;th style="text-align:right">Gen 0&lt;/th>
+&lt;th style="text-align:right">Allocated&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>Enumerable&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">86.99 ns&lt;/td>
+&lt;td style="text-align:right">0.987 ns&lt;/td>
+&lt;td style="text-align:right">0.924 ns&lt;/td>
+&lt;td style="text-align:right">1.00&lt;/td>
+&lt;td style="text-align:right">0.00&lt;/td>
+&lt;td style="text-align:right">0.0421&lt;/td>
+&lt;td style="text-align:right">264 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Factory&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">103.20 ns&lt;/td>
+&lt;td style="text-align:right">1.324 ns&lt;/td>
+&lt;td style="text-align:right">1.238 ns&lt;/td>
+&lt;td style="text-align:right">1.19&lt;/td>
+&lt;td style="text-align:right">0.02&lt;/td>
+&lt;td style="text-align:right">0.0459&lt;/td>
+&lt;td style="text-align:right">288 B&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h3 id="type-factory">Type Factory&lt;/h3>
+&lt;p>A big negative aspect of the &lt;code>IEnumerable&lt;/code> and &lt;code>Factory&lt;/code> approach, is that all the implementations are instantiated every time, even if not used or required. This could have big impact on performance and memory if the implementations them themselves have many dependencies (and those dependencies have dependencies and so on).&lt;br>
+The next approach is extends on the &lt;code>Factory&lt;/code> technique, but only instantiates the requested implementation &lt;strong>based on naming conventions&lt;/strong>.&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>Configuration:&lt;/strong>&lt;br>
+Setup is the same as with the &lt;code>Factory&lt;/code> method.
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="typefactoryconfig-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryconfig-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryconfig-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryconfig-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryconfig-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryconfig-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryconfig-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryconfig-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryconfig-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryconfig-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryconfig-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryconfig-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryconfig-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryconfig-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryconfig-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryconfig-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryconfig-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryconfig-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryconfig-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryconfig-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryconfig-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryconfig-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryconfig-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryconfig-12">12&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">private&lt;/span> &lt;span class="k">readonly&lt;/span> &lt;span class="n">IHost&lt;/span> &lt;span class="n">host&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="n">FactoryBenchmark&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">host&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">Host&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">CreateDefaultBuilder&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">ConfigureServices&lt;/span>&lt;span class="p">((&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">services&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">services&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">TypeFactoryHandler&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">FileUploaderTypeFactory&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">IFileUploader&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">AWSUploader&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">IFileUploader&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">AzureUploader&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">IFileUploader&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">FTPUploader&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">).&lt;/span>&lt;span class="n">Build&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;p>The factory in this approach, takes the requested name, finds the type based on the name (&lt;a class="link" href="#typefactoryconfig2-11" >lines 11-12&lt;/a>) and gets it from the DI container (&lt;a class="link" href="#typefactoryconfig2-20" >line 20&lt;/a>)
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="typefactoryconfig2-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryconfig2-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryconfig2-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryconfig2-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryconfig2-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryconfig2-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryconfig2-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryconfig2-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryconfig2-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryconfig2-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryconfig2-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryconfig2-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryconfig2-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryconfig2-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryconfig2-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryconfig2-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryconfig2-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryconfig2-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryconfig2-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryconfig2-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryconfig2-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryconfig2-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryconfig2-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryconfig2-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryconfig2-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryconfig2-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryconfig2-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryconfig2-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryconfig2-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryconfig2-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryconfig2-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryconfig2-16">16&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryconfig2-17">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryconfig2-17">17&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryconfig2-18">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryconfig2-18">18&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryconfig2-19">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryconfig2-19">19&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryconfig2-20">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryconfig2-20">20&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryconfig2-21">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryconfig2-21">21&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryconfig2-22">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryconfig2-22">22&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryconfig2-23">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryconfig2-23">23&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">FileUploaderTypeFactory&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">private&lt;/span> &lt;span class="k">readonly&lt;/span> &lt;span class="n">IServiceProvider&lt;/span> &lt;span class="m">_&lt;/span>&lt;span class="n">provider&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="n">FileUploaderTypeFactory&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">IServiceProvider&lt;/span> &lt;span class="n">provider&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="m">_&lt;/span>&lt;span class="n">provider&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">provider&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="n">IFileUploader&lt;/span> &lt;span class="n">Resolve&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="kt">string&lt;/span> &lt;span class="n">providerName&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">type&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">Assembly&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetAssembly&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="k">typeof&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">FileUploaderTypeFactory&lt;/span>&lt;span class="p">)).&lt;/span>&lt;span class="n">GetType&lt;/span>&lt;span class="p">(&lt;/span>
+&lt;span class="s">$&amp;#34;{typeof(FileUploaderTypeFactory).Namespace}.{providerName}Uploader&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">type&lt;/span> &lt;span class="p">==&lt;/span> &lt;span class="k">null&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">throw&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">ArgumentException&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$&amp;#34;No uploader with name &amp;#34;&lt;/span> &lt;span class="p">+&lt;/span>
+&lt;span class="s">$&amp;#34;{providerName} could be found&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">uploader&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="m">_&lt;/span>&lt;span class="n">provider&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetService&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">type&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="k">return&lt;/span> &lt;span class="n">uploader&lt;/span> &lt;span class="k">as&lt;/span> &lt;span class="n">IFileUploader&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Usage:&lt;/strong>&lt;br>
+The factory is now injected into the relevant class (&lt;a class="link" href="#typefactoryusage-4" >line 4&lt;/a>) and is then invoked to get the requested implementation (&lt;a class="link" href="#typefactoryusage-12" >line 12&lt;/a>)
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="typefactoryusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typefactoryusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typefactoryusage-15">15&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">TypeFactoryHandler&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">private&lt;/span> &lt;span class="k">readonly&lt;/span> &lt;span class="n">FileUploaderTypeFactory&lt;/span> &lt;span class="m">_f&lt;/span>&lt;span class="n">actory&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="n">TypeFactoryHandler&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">FileUploaderTypeFactory&lt;/span> &lt;span class="n">factory&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="m">_f&lt;/span>&lt;span class="n">actory&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">factory&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">Execute&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">providerName&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="s">&amp;#34;Azure&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">uploader&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="m">_f&lt;/span>&lt;span class="n">actory&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Resolve&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">providerName&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="n">uploader&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">UploadFile&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Pros:&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>Not all implementations are instantiated&lt;/li>
+&lt;li>Better memory usage compared to other two approaches so far&lt;/li>
+&lt;li>Implementation can be selected/changed at runtime&lt;/li>
+&lt;li>Retrieval logic is contained in a single place&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Cons:&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>Use of reflection to convert the name to a Type does have an big impact on performance&lt;/li>
+&lt;li>Strict naming convention has to be followed in order for the reflection logic to work correctly&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Performance:&lt;/strong>&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>Type&lt;/th>
+&lt;th>Method&lt;/th>
+&lt;th style="text-align:right">Mean&lt;/th>
+&lt;th style="text-align:right">Error&lt;/th>
+&lt;th style="text-align:right">StdDev&lt;/th>
+&lt;th style="text-align:right">Ratio&lt;/th>
+&lt;th style="text-align:right">RatioSD&lt;/th>
+&lt;th style="text-align:right">Gen 0&lt;/th>
+&lt;th style="text-align:right">Allocated&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>Enumerable&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">86.99 ns&lt;/td>
+&lt;td style="text-align:right">0.987 ns&lt;/td>
+&lt;td style="text-align:right">0.924 ns&lt;/td>
+&lt;td style="text-align:right">1.00&lt;/td>
+&lt;td style="text-align:right">0.00&lt;/td>
+&lt;td style="text-align:right">0.0421&lt;/td>
+&lt;td style="text-align:right">264 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Factory&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">103.20 ns&lt;/td>
+&lt;td style="text-align:right">1.324 ns&lt;/td>
+&lt;td style="text-align:right">1.238 ns&lt;/td>
+&lt;td style="text-align:right">1.19&lt;/td>
+&lt;td style="text-align:right">0.02&lt;/td>
+&lt;td style="text-align:right">0.0459&lt;/td>
+&lt;td style="text-align:right">288 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>TypeFactory&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">525.19 ns&lt;/td>
+&lt;td style="text-align:right">2.624 ns&lt;/td>
+&lt;td style="text-align:right">2.455 ns&lt;/td>
+&lt;td style="text-align:right">6.04&lt;/td>
+&lt;td style="text-align:right">0.07&lt;/td>
+&lt;td style="text-align:right">0.0277&lt;/td>
+&lt;td style="text-align:right">176 B&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h3 id="delegate">Delegate&lt;/h3>
+&lt;p>The next approach tries to achieve the same as the &lt;code>Type Factory&lt;/code> approach - not instantiating every implementation, but using a different technique.&lt;br>
+In short, a delegate is called at runtime when an implementation is requested, and using a switch statement the correct one is determined and returned.&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>Configuration:&lt;/strong>&lt;br>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="delegateconfig-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateconfig-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateconfig-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateconfig-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateconfig-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateconfig-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateconfig-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateconfig-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateconfig-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateconfig-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateconfig-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateconfig-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateconfig-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateconfig-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateconfig-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateconfig-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateconfig-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateconfig-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateconfig-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateconfig-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateconfig-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateconfig-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateconfig-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateconfig-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateconfig-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateconfig-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateconfig-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateconfig-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateconfig-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateconfig-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateconfig-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateconfig-16">16&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateconfig-17">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateconfig-17">17&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateconfig-18">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateconfig-18">18&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateconfig-19">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateconfig-19">19&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateconfig-20">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateconfig-20">20&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateconfig-21">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateconfig-21">21&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateconfig-22">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateconfig-22">22&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateconfig-23">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateconfig-23">23&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateconfig-24">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateconfig-24">24&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateconfig-25">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateconfig-25">25&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">private&lt;/span> &lt;span class="k">readonly&lt;/span> &lt;span class="n">IHost&lt;/span> &lt;span class="n">host&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="n">DelegateBenchmark&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">host&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">Host&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">CreateDefaultBuilder&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">ConfigureServices&lt;/span>&lt;span class="p">((&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">services&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">services&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddScoped&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">AWSUploader&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddScoped&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">AzureUploader&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddScoped&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">FTPUploader&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">DelegateHandler&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">DelegateResolver&lt;/span>&lt;span class="p">&amp;gt;(&lt;/span>&lt;span class="n">serviceProvider&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">providerName&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">switch&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">providerName&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">case&lt;/span> &lt;span class="s">&amp;#34;aws&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;span class="k">return&lt;/span> &lt;span class="n">serviceProvider&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetService&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">AWSUploader&lt;/span>&lt;span class="p">&amp;gt;();&lt;/span>
+&lt;span class="k">case&lt;/span> &lt;span class="s">&amp;#34;azure&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;span class="k">return&lt;/span> &lt;span class="n">serviceProvider&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetService&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">AzureUploader&lt;/span>&lt;span class="p">&amp;gt;();&lt;/span>
+&lt;span class="k">case&lt;/span> &lt;span class="s">&amp;#34;ftp&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;span class="k">return&lt;/span> &lt;span class="n">serviceProvider&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetService&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">FTPUploader&lt;/span>&lt;span class="p">&amp;gt;();&lt;/span>
+&lt;span class="k">default&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;span class="k">throw&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">ArgumentException&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$&amp;#34;No uploader with &amp;#34;&lt;/span> &lt;span class="p">+&lt;/span>
+&lt;span class="s">$&amp;#34;name {providerName} could be found&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">})).&lt;/span>&lt;span class="n">Build&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;p>The DelegateResolver is as follows
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="delegateresolver-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateresolver-1">1&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#"> &lt;span class="k">public&lt;/span> &lt;span class="k">delegate&lt;/span> &lt;span class="n">IFileUploader&lt;/span> &lt;span class="n">DelegateResolver&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="kt">string&lt;/span> &lt;span class="n">providerName&lt;/span>&lt;span class="p">);&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Usage:&lt;/strong>&lt;br>
+The delegate is now injected into the relevant class (&lt;a class="link" href="#delegateusage-4" >line 4&lt;/a>) and is then invoked to get the requested implementation (&lt;a class="link" href="#delegateusage-11" >line 11&lt;/a>)
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="delegateusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="delegateusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#delegateusage-15">15&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">DelegateHandler&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">private&lt;/span> &lt;span class="k">readonly&lt;/span> &lt;span class="n">DelegateResolver&lt;/span> &lt;span class="m">_&lt;/span>&lt;span class="n">resolver&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="n">DelegateHandler&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">DelegateResolver&lt;/span> &lt;span class="n">resovler&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="m">_&lt;/span>&lt;span class="n">resolver&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">resovler&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">Execute&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">uploader&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="m">_&lt;/span>&lt;span class="n">resolver&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;ftp&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="n">uploader&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">UploadFile&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Pros:&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>Not all implementations are instantiated&lt;/li>
+&lt;li>Best memory usage compared to other approaches so far&lt;/li>
+&lt;li>Implementation can be selected/changed at runtime&lt;/li>
+&lt;li>Retrieval logic is contained in a single place&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Cons:&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>Slightly more complicated setup with the delegate and switch statement compared to other approaches&lt;/li>
+&lt;li>Switch statement is hardcoded and needs to be manually maintained every time a new provider is added&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Performance:&lt;/strong>&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>Type&lt;/th>
+&lt;th>Method&lt;/th>
+&lt;th style="text-align:right">Mean&lt;/th>
+&lt;th style="text-align:right">Error&lt;/th>
+&lt;th style="text-align:right">StdDev&lt;/th>
+&lt;th style="text-align:right">Ratio&lt;/th>
+&lt;th style="text-align:right">RatioSD&lt;/th>
+&lt;th style="text-align:right">Gen 0&lt;/th>
+&lt;th style="text-align:right">Allocated&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>Enumerable&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">86.99 ns&lt;/td>
+&lt;td style="text-align:right">0.987 ns&lt;/td>
+&lt;td style="text-align:right">0.924 ns&lt;/td>
+&lt;td style="text-align:right">1.00&lt;/td>
+&lt;td style="text-align:right">0.00&lt;/td>
+&lt;td style="text-align:right">0.0421&lt;/td>
+&lt;td style="text-align:right">264 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Factory&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">103.20 ns&lt;/td>
+&lt;td style="text-align:right">1.324 ns&lt;/td>
+&lt;td style="text-align:right">1.238 ns&lt;/td>
+&lt;td style="text-align:right">1.19&lt;/td>
+&lt;td style="text-align:right">0.02&lt;/td>
+&lt;td style="text-align:right">0.0459&lt;/td>
+&lt;td style="text-align:right">288 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>TypeFactory&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">525.19 ns&lt;/td>
+&lt;td style="text-align:right">2.624 ns&lt;/td>
+&lt;td style="text-align:right">2.455 ns&lt;/td>
+&lt;td style="text-align:right">6.04&lt;/td>
+&lt;td style="text-align:right">0.07&lt;/td>
+&lt;td style="text-align:right">0.0277&lt;/td>
+&lt;td style="text-align:right">176 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Delegate&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">111.45 ns&lt;/td>
+&lt;td style="text-align:right">1.456 ns&lt;/td>
+&lt;td style="text-align:right">1.291 ns&lt;/td>
+&lt;td style="text-align:right">1.28&lt;/td>
+&lt;td style="text-align:right">0.02&lt;/td>
+&lt;td style="text-align:right">0.0178&lt;/td>
+&lt;td style="text-align:right">112 B&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h3 id="type-delegate">Type Delegate&lt;/h3>
+&lt;p>The next approach extends the &lt;code>Delegate&lt;/code> technique, and uses reflection and naming conventions to get the Type dynamically.&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>Configuration:&lt;/strong>&lt;br>
+Setup is as follows, very similar to the &lt;code>Delegate&lt;/code> approach, but instead of the switch statement, reflection is used to get the Type based on naming conventions.
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="typedelegateconfig-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateconfig-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateconfig-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateconfig-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateconfig-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateconfig-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateconfig-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateconfig-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateconfig-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateconfig-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateconfig-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateconfig-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateconfig-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateconfig-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateconfig-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateconfig-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateconfig-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateconfig-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateconfig-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateconfig-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateconfig-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateconfig-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateconfig-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateconfig-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateconfig-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateconfig-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateconfig-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateconfig-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateconfig-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateconfig-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateconfig-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateconfig-16">16&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateconfig-17">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateconfig-17">17&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateconfig-18">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateconfig-18">18&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateconfig-19">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateconfig-19">19&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateconfig-20">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateconfig-20">20&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateconfig-21">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateconfig-21">21&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateconfig-22">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateconfig-22">22&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateconfig-23">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateconfig-23">23&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateconfig-24">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateconfig-24">24&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateconfig-25">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateconfig-25">25&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateconfig-26">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateconfig-26">26&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">private&lt;/span> &lt;span class="k">readonly&lt;/span> &lt;span class="n">IHost&lt;/span> &lt;span class="n">host&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="n">TypeDelegateBenchmark&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">host&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">Host&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">CreateDefaultBuilder&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">ConfigureServices&lt;/span>&lt;span class="p">((&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">services&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">services&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddScoped&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">AWSUploader&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddScoped&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">AzureUploader&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddScoped&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">FTPUploader&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">TypeDelegateHandler&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">TypeDelegateResolver&lt;/span>&lt;span class="p">&amp;gt;(&lt;/span>&lt;span class="n">serviceProvider&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">providerName&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">type&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">Assembly&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetAssembly&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="k">typeof&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">FileUploaderTypeFactory&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">GetType&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$&amp;#34;{typeof(FileUploaderTypeFactory).Namespace}
+&lt;/span>&lt;span class="s"> .{providerName}Uploader&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="k">false&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="k">true&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">type&lt;/span> &lt;span class="p">==&lt;/span> &lt;span class="k">null&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">throw&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">ArgumentException&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$&amp;#34;No uploader with &amp;#34;&lt;/span> &lt;span class="p">+&lt;/span>
+&lt;span class="s">$&amp;#34;name {providerName} could be found&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">uploader&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">serviceProvider&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetService&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">type&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="k">return&lt;/span> &lt;span class="n">uploader&lt;/span> &lt;span class="k">as&lt;/span> &lt;span class="n">IFileUploader&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">})).&lt;/span>&lt;span class="n">Build&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;p>The DelegateResolver is the same as before.
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="typedelegateresolver-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateresolver-1">1&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#"> &lt;span class="k">public&lt;/span> &lt;span class="k">delegate&lt;/span> &lt;span class="n">IFileUploader&lt;/span> &lt;span class="n">DelegateResolver&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="kt">string&lt;/span> &lt;span class="n">providerName&lt;/span>&lt;span class="p">);&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Usage:&lt;/strong>&lt;br>
+The delegate is now injected into the relevant class (&lt;a class="link" href="#typedelegateusage-4" >line 4&lt;/a>) and is then invoked to get the requested implementation (&lt;a class="link" href="#typedelegateusage-11" >line 11&lt;/a>)
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="typedelegateusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="typedelegateusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#typedelegateusage-15">15&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">TypeDelegateHandler&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">private&lt;/span> &lt;span class="k">readonly&lt;/span> &lt;span class="n">DelegateResolver&lt;/span> &lt;span class="m">_&lt;/span>&lt;span class="n">resolver&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="n">TypeDelegateHandler&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">DelegateResolver&lt;/span> &lt;span class="n">resovler&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="m">_&lt;/span>&lt;span class="n">resolver&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">resovler&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">Execute&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">uploader&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="m">_&lt;/span>&lt;span class="n">resolver&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;ftp&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="n">uploader&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">UploadFile&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Pros:&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>Not all implementations are instantiated&lt;/li>
+&lt;li>Implementation can be selected/changed at runtime&lt;/li>
+&lt;li>Retrieval logic is contained in a single place&lt;/li>
+&lt;li>No switch statement to maintain when a new provider is added&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Cons:&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>Use of reflection to convert the name to a Type does have a large impact on performance&lt;/li>
+&lt;li>Strict naming convention has to be followed in order for the reflection logic to work correctly&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Performance:&lt;/strong>&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>Type&lt;/th>
+&lt;th>Method&lt;/th>
+&lt;th style="text-align:right">Mean&lt;/th>
+&lt;th style="text-align:right">Error&lt;/th>
+&lt;th style="text-align:right">StdDev&lt;/th>
+&lt;th style="text-align:right">Ratio&lt;/th>
+&lt;th style="text-align:right">RatioSD&lt;/th>
+&lt;th style="text-align:right">Gen 0&lt;/th>
+&lt;th style="text-align:right">Allocated&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>Enumerable&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">86.99 ns&lt;/td>
+&lt;td style="text-align:right">0.987 ns&lt;/td>
+&lt;td style="text-align:right">0.924 ns&lt;/td>
+&lt;td style="text-align:right">1.00&lt;/td>
+&lt;td style="text-align:right">0.00&lt;/td>
+&lt;td style="text-align:right">0.0421&lt;/td>
+&lt;td style="text-align:right">264 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Factory&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">103.20 ns&lt;/td>
+&lt;td style="text-align:right">1.324 ns&lt;/td>
+&lt;td style="text-align:right">1.238 ns&lt;/td>
+&lt;td style="text-align:right">1.19&lt;/td>
+&lt;td style="text-align:right">0.02&lt;/td>
+&lt;td style="text-align:right">0.0459&lt;/td>
+&lt;td style="text-align:right">288 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>TypeFactory&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">525.19 ns&lt;/td>
+&lt;td style="text-align:right">2.624 ns&lt;/td>
+&lt;td style="text-align:right">2.455 ns&lt;/td>
+&lt;td style="text-align:right">6.04&lt;/td>
+&lt;td style="text-align:right">0.07&lt;/td>
+&lt;td style="text-align:right">0.0277&lt;/td>
+&lt;td style="text-align:right">176 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Delegate&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">111.45 ns&lt;/td>
+&lt;td style="text-align:right">1.456 ns&lt;/td>
+&lt;td style="text-align:right">1.291 ns&lt;/td>
+&lt;td style="text-align:right">1.28&lt;/td>
+&lt;td style="text-align:right">0.02&lt;/td>
+&lt;td style="text-align:right">0.0178&lt;/td>
+&lt;td style="text-align:right">112 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>TypeDelegate&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">861.84 ns&lt;/td>
+&lt;td style="text-align:right">6.599 ns&lt;/td>
+&lt;td style="text-align:right">5.850 ns&lt;/td>
+&lt;td style="text-align:right">9.90&lt;/td>
+&lt;td style="text-align:right">0.15&lt;/td>
+&lt;td style="text-align:right">0.0343&lt;/td>
+&lt;td style="text-align:right">216 B&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h3 id="distinct">Distinct&lt;/h3>
+&lt;p>The next technique uses a wrapper to make each implementation added to the DI container unique, and hence can be retrieved uniquely.&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>Configuration:&lt;/strong>&lt;br>
+Additional types are also now required to be defined and added to the DI container, &lt;em>IGenericUploader&lt;/em> and &lt;em>GenericUploader&lt;/em>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="distinctconfig-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctconfig-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctconfig-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctconfig-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctconfig-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctconfig-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctconfig-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctconfig-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctconfig-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctconfig-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctconfig-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctconfig-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctconfig-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctconfig-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctconfig-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctconfig-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctconfig-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctconfig-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctconfig-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctconfig-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctconfig-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctconfig-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctconfig-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctconfig-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctconfig-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctconfig-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctconfig-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctconfig-14">14&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">private&lt;/span> &lt;span class="k">readonly&lt;/span> &lt;span class="n">IHost&lt;/span> &lt;span class="n">host&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="n">DistinctBenchmark&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">host&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">Host&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">CreateDefaultBuilder&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">ConfigureServices&lt;/span>&lt;span class="p">((&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">services&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">services&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddScoped&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">AWSUploader&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddScoped&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">AzureUploader&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddScoped&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">FTPUploader&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">DistinctHandler&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddScoped&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">IGenericUploader&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">AWSUploader&lt;/span>&lt;span class="p">&amp;gt;,&lt;/span> &lt;span class="n">GenericUploader&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">AWSUploader&lt;/span>&lt;span class="p">&amp;gt;&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddScoped&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">IGenericUploader&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">AzureUploader&lt;/span>&lt;span class="p">&amp;gt;,&lt;/span> &lt;span class="n">GenericUploader&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">AzureUploader&lt;/span>&lt;span class="p">&amp;gt;&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddScoped&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">IGenericUploader&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">FTPUploader&lt;/span>&lt;span class="p">&amp;gt;,&lt;/span> &lt;span class="n">GenericUploader&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">FTPUploader&lt;/span>&lt;span class="p">&amp;gt;&amp;gt;()&lt;/span>
+&lt;span class="p">).&lt;/span>&lt;span class="n">Build&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;p>IGenericUploader is defined as below.
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="distinctinterface-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctinterface-1">1&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#"> &lt;span class="k">public&lt;/span> &lt;span class="k">interface&lt;/span> &lt;span class="n">IGenericUploader&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">T&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="p">:&lt;/span> &lt;span class="n">IFileUploader&lt;/span> &lt;span class="k">where&lt;/span> &lt;span class="n">T&lt;/span> &lt;span class="p">:&lt;/span> &lt;span class="n">IFileUploader&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;p>GenericUploader is defined as below.
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="distinctimplementation-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctimplementation-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctimplementation-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctimplementation-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctimplementation-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctimplementation-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctimplementation-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctimplementation-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctimplementation-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctimplementation-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctimplementation-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctimplementation-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctimplementation-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctimplementation-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctimplementation-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctimplementation-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctimplementation-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctimplementation-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctimplementation-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctimplementation-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctimplementation-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctimplementation-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctimplementation-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctimplementation-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctimplementation-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctimplementation-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctimplementation-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctimplementation-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctimplementation-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctimplementation-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctimplementation-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctimplementation-16">16&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctimplementation-17">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctimplementation-17">17&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctimplementation-18">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctimplementation-18">18&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">GenericUploader&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">T&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="p">:&lt;/span> &lt;span class="n">IGenericUploader&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">T&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="k">where&lt;/span> &lt;span class="n">T&lt;/span> &lt;span class="p">:&lt;/span> &lt;span class="n">IFileUploader&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">private&lt;/span> &lt;span class="k">readonly&lt;/span> &lt;span class="n">T&lt;/span> &lt;span class="m">_&lt;/span>&lt;span class="n">implementation&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="n">GenericUploader&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">T&lt;/span> &lt;span class="n">implementation&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="m">_&lt;/span>&lt;span class="n">implementation&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">implementation&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">GetName&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">return&lt;/span> &lt;span class="m">_&lt;/span>&lt;span class="n">implementation&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetName&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">UploadFile&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="m">_&lt;/span>&lt;span class="n">implementation&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">UploadFile&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;p>A new generic provider is defined (implementing the relevant interface) and the generic provider wraps the &amp;ldquo;true provider&amp;rdquo; implementation. As the generic implementation takes a T argument, this can be used to uniquely distinguish them and retrieve the correct implementation.&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>Usage:&lt;/strong>&lt;br>
+The generic interface with the required implementation is now injected into the relevant class (&lt;a class="link" href="#distinctusage-4" >line 4&lt;/a>) and is then invoked (&lt;a class="link" href="#distinctusage-11" >line 11&lt;/a>)
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="distinctusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctusage-13">13&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">DistinctHandler&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">private&lt;/span> &lt;span class="k">readonly&lt;/span> &lt;span class="n">IGenericUploader&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">AWSUploader&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="m">_&lt;/span>&lt;span class="n">uploader&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="n">DistinctHandler&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">IGenericUploader&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">AWSUploader&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="n">uploader&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="m">_&lt;/span>&lt;span class="n">uploader&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">uploader&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">Execute&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="m">_&lt;/span>&lt;span class="n">uploader&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">UploadFile&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Pros:&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>Not all implementations are instantiated&lt;/li>
+&lt;li>The default DI container is doing all the retrieval work (as a unique item is being asked for), so is very efficient&lt;/li>
+&lt;li>By far the best performing (in both time and memory usage) technique so far&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Cons:&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>Implementation can NOT be selected/changed at runtime&lt;/li>
+&lt;li>Bit of a convoluted process having a wrapper interface&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Performance:&lt;/strong>&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>Type&lt;/th>
+&lt;th>Method&lt;/th>
+&lt;th style="text-align:right">Mean&lt;/th>
+&lt;th style="text-align:right">Error&lt;/th>
+&lt;th style="text-align:right">StdDev&lt;/th>
+&lt;th style="text-align:right">Ratio&lt;/th>
+&lt;th style="text-align:right">RatioSD&lt;/th>
+&lt;th style="text-align:right">Gen 0&lt;/th>
+&lt;th style="text-align:right">Allocated&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>Enumerable&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">86.99 ns&lt;/td>
+&lt;td style="text-align:right">0.987 ns&lt;/td>
+&lt;td style="text-align:right">0.924 ns&lt;/td>
+&lt;td style="text-align:right">1.00&lt;/td>
+&lt;td style="text-align:right">0.00&lt;/td>
+&lt;td style="text-align:right">0.0421&lt;/td>
+&lt;td style="text-align:right">264 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Factory&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">103.20 ns&lt;/td>
+&lt;td style="text-align:right">1.324 ns&lt;/td>
+&lt;td style="text-align:right">1.238 ns&lt;/td>
+&lt;td style="text-align:right">1.19&lt;/td>
+&lt;td style="text-align:right">0.02&lt;/td>
+&lt;td style="text-align:right">0.0459&lt;/td>
+&lt;td style="text-align:right">288 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>TypeFactory&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">525.19 ns&lt;/td>
+&lt;td style="text-align:right">2.624 ns&lt;/td>
+&lt;td style="text-align:right">2.455 ns&lt;/td>
+&lt;td style="text-align:right">6.04&lt;/td>
+&lt;td style="text-align:right">0.07&lt;/td>
+&lt;td style="text-align:right">0.0277&lt;/td>
+&lt;td style="text-align:right">176 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Delegate&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">111.45 ns&lt;/td>
+&lt;td style="text-align:right">1.456 ns&lt;/td>
+&lt;td style="text-align:right">1.291 ns&lt;/td>
+&lt;td style="text-align:right">1.28&lt;/td>
+&lt;td style="text-align:right">0.02&lt;/td>
+&lt;td style="text-align:right">0.0178&lt;/td>
+&lt;td style="text-align:right">112 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>TypeDelegate&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">861.84 ns&lt;/td>
+&lt;td style="text-align:right">6.599 ns&lt;/td>
+&lt;td style="text-align:right">5.850 ns&lt;/td>
+&lt;td style="text-align:right">9.90&lt;/td>
+&lt;td style="text-align:right">0.15&lt;/td>
+&lt;td style="text-align:right">0.0343&lt;/td>
+&lt;td style="text-align:right">216 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Distinct&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">50.78 ns&lt;/td>
+&lt;td style="text-align:right">0.441 ns&lt;/td>
+&lt;td style="text-align:right">0.413 ns&lt;/td>
+&lt;td style="text-align:right">0.58&lt;/td>
+&lt;td style="text-align:right">0.01&lt;/td>
+&lt;td style="text-align:right">0.0038&lt;/td>
+&lt;td style="text-align:right">24 B&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h3 id="distinct-factory">Distinct Factory&lt;/h3>
+&lt;p>This technique extends the &lt;code>Distinct&lt;/code> approach, resolving the limitation of not being able to select or change the implementation at runtime.&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>Configuration:&lt;/strong>&lt;br>
+Setup very similar to the &lt;code>Distinct&lt;/code> setup, with the addition of the DistinctFactory (&lt;a class="link" href="#distinctfactoryconfig-9" >line 9&lt;/a>)
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="distinctfactoryconfig-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryconfig-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryconfig-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryconfig-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryconfig-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryconfig-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryconfig-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryconfig-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryconfig-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryconfig-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryconfig-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryconfig-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryconfig-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryconfig-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryconfig-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryconfig-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryconfig-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryconfig-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryconfig-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryconfig-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryconfig-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryconfig-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryconfig-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryconfig-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryconfig-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryconfig-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryconfig-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryconfig-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryconfig-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryconfig-15">15&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">private&lt;/span> &lt;span class="k">readonly&lt;/span> &lt;span class="n">IHost&lt;/span> &lt;span class="n">host&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="n">DistinctFactoryBenchmark&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">host&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">Host&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">CreateDefaultBuilder&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">ConfigureServices&lt;/span>&lt;span class="p">((&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">services&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">services&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddScoped&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">AWSUploader&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddScoped&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">AzureUploader&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddScoped&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">FTPUploader&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">DistinctFactory&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">DistinctFactoryHandler&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddScoped&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">IGenericUploader&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">AWSUploader&lt;/span>&lt;span class="p">&amp;gt;,&lt;/span> &lt;span class="n">GenericUploader&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">AWSUploader&lt;/span>&lt;span class="p">&amp;gt;&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddScoped&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">IGenericUploader&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">AzureUploader&lt;/span>&lt;span class="p">&amp;gt;,&lt;/span> &lt;span class="n">GenericUploader&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">AzureUploader&lt;/span>&lt;span class="p">&amp;gt;&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddScoped&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">IGenericUploader&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">FTPUploader&lt;/span>&lt;span class="p">&amp;gt;,&lt;/span> &lt;span class="n">GenericUploader&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">FTPUploader&lt;/span>&lt;span class="p">&amp;gt;&amp;gt;()&lt;/span>
+&lt;span class="p">).&lt;/span>&lt;span class="n">Build&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;p>IGenericUploader and GenericUploader are exactly as defined in the &lt;code>Distinct&lt;/code> technique.&lt;/p>
+&lt;p>DistinctFactoryHandler is defined as below.
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="distinctfactoryfactory-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryfactory-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryfactory-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryfactory-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryfactory-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryfactory-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryfactory-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryfactory-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryfactory-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryfactory-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryfactory-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryfactory-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryfactory-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryfactory-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryfactory-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryfactory-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryfactory-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryfactory-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryfactory-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryfactory-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryfactory-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryfactory-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryfactory-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryfactory-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryfactory-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryfactory-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryfactory-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryfactory-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryfactory-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryfactory-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryfactory-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryfactory-16">16&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryfactory-17">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryfactory-17">17&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryfactory-18">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryfactory-18">18&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryfactory-19">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryfactory-19">19&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryfactory-20">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryfactory-20">20&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryfactory-21">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryfactory-21">21&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryfactory-22">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryfactory-22">22&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryfactory-23">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryfactory-23">23&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryfactory-24">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryfactory-24">24&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryfactory-25">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryfactory-25">25&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryfactory-26">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryfactory-26">26&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryfactory-27">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryfactory-27">27&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">DistinctFactory&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">private&lt;/span> &lt;span class="k">readonly&lt;/span> &lt;span class="n">IServiceProvider&lt;/span> &lt;span class="m">_&lt;/span>&lt;span class="n">provider&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="n">DistinctFactory&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">IServiceProvider&lt;/span> &lt;span class="n">provider&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="m">_&lt;/span>&lt;span class="n">provider&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">provider&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="n">IFileUploader&lt;/span> &lt;span class="n">Resolve&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="kt">string&lt;/span> &lt;span class="n">providerName&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">switch&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">providerName&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">case&lt;/span> &lt;span class="s">&amp;#34;aws&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;span class="k">return&lt;/span> &lt;span class="m">_&lt;/span>&lt;span class="n">provider&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetService&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="k">typeof&lt;/span>&lt;span class="p">(&lt;/span>
+&lt;span class="n">IGenericUploader&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">AWSUploader&lt;/span>&lt;span class="p">&amp;gt;))&lt;/span> &lt;span class="k">as&lt;/span> &lt;span class="n">IFileUploader&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">case&lt;/span> &lt;span class="s">&amp;#34;azure&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;span class="k">return&lt;/span> &lt;span class="m">_&lt;/span>&lt;span class="n">provider&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetService&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="k">typeof&lt;/span>&lt;span class="p">(&lt;/span>
+&lt;span class="n">IGenericUploader&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">AzureUploader&lt;/span>&lt;span class="p">&amp;gt;))&lt;/span> &lt;span class="k">as&lt;/span> &lt;span class="n">IFileUploader&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">case&lt;/span> &lt;span class="s">&amp;#34;ftp&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;span class="k">return&lt;/span> &lt;span class="m">_&lt;/span>&lt;span class="n">provider&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetService&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="k">typeof&lt;/span>&lt;span class="p">(&lt;/span>
+&lt;span class="n">IGenericUploader&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">FTPUploader&lt;/span>&lt;span class="p">&amp;gt;))&lt;/span> &lt;span class="k">as&lt;/span> &lt;span class="n">IFileUploader&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">default&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;span class="k">throw&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">ArgumentException&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$&amp;#34;No uploader with &amp;#34;&lt;/span> &lt;span class="p">+&lt;/span>
+&lt;span class="s">$&amp;#34;name {providerName} could be found&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Usage:&lt;/strong>&lt;br>
+The factory is now injected into the relevant class (&lt;a class="link" href="#distinctfactoryusage-4" >line 4&lt;/a>) and is then invoked to get the requested implementation by name (&lt;a class="link" href="#distinctfactoryusage-11" >line 11&lt;/a>)
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="distinctfactoryusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="distinctfactoryusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#distinctfactoryusage-14">14&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#"> &lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">DistinctFactoryHandler&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">private&lt;/span> &lt;span class="k">readonly&lt;/span> &lt;span class="n">DistinctFactory&lt;/span> &lt;span class="m">_d&lt;/span>&lt;span class="n">istinctFactory&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="n">DistinctFactoryHandler&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">DistinctFactory&lt;/span> &lt;span class="n">distinctFactory&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="m">_d&lt;/span>&lt;span class="n">istinctFactory&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">distinctFactory&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">Execute&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="m">_d&lt;/span>&lt;span class="n">istinctFactory&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Resolve&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;ftp&amp;#34;&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="n">UploadFile&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Pros:&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>Not all implementations are instantiated&lt;/li>
+&lt;li>Implementation can be selected/changed at runtime&lt;/li>
+&lt;li>Good overall performance&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Cons:&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>Switch statement is hardcoded and needs to be manually maintained every time a new provider is added&lt;/li>
+&lt;li>Bit of a convoluted process&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Performance:&lt;/strong>&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>Type&lt;/th>
+&lt;th>Method&lt;/th>
+&lt;th style="text-align:right">Mean&lt;/th>
+&lt;th style="text-align:right">Error&lt;/th>
+&lt;th style="text-align:right">StdDev&lt;/th>
+&lt;th style="text-align:right">Ratio&lt;/th>
+&lt;th style="text-align:right">RatioSD&lt;/th>
+&lt;th style="text-align:right">Gen 0&lt;/th>
+&lt;th style="text-align:right">Allocated&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>Enumerable&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">86.99 ns&lt;/td>
+&lt;td style="text-align:right">0.987 ns&lt;/td>
+&lt;td style="text-align:right">0.924 ns&lt;/td>
+&lt;td style="text-align:right">1.00&lt;/td>
+&lt;td style="text-align:right">0.00&lt;/td>
+&lt;td style="text-align:right">0.0421&lt;/td>
+&lt;td style="text-align:right">264 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Factory&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">103.20 ns&lt;/td>
+&lt;td style="text-align:right">1.324 ns&lt;/td>
+&lt;td style="text-align:right">1.238 ns&lt;/td>
+&lt;td style="text-align:right">1.19&lt;/td>
+&lt;td style="text-align:right">0.02&lt;/td>
+&lt;td style="text-align:right">0.0459&lt;/td>
+&lt;td style="text-align:right">288 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>TypeFactory&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">525.19 ns&lt;/td>
+&lt;td style="text-align:right">2.624 ns&lt;/td>
+&lt;td style="text-align:right">2.455 ns&lt;/td>
+&lt;td style="text-align:right">6.04&lt;/td>
+&lt;td style="text-align:right">0.07&lt;/td>
+&lt;td style="text-align:right">0.0277&lt;/td>
+&lt;td style="text-align:right">176 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Delegate&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">111.45 ns&lt;/td>
+&lt;td style="text-align:right">1.456 ns&lt;/td>
+&lt;td style="text-align:right">1.291 ns&lt;/td>
+&lt;td style="text-align:right">1.28&lt;/td>
+&lt;td style="text-align:right">0.02&lt;/td>
+&lt;td style="text-align:right">0.0178&lt;/td>
+&lt;td style="text-align:right">112 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>TypeDelegate&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">861.84 ns&lt;/td>
+&lt;td style="text-align:right">6.599 ns&lt;/td>
+&lt;td style="text-align:right">5.850 ns&lt;/td>
+&lt;td style="text-align:right">9.90&lt;/td>
+&lt;td style="text-align:right">0.15&lt;/td>
+&lt;td style="text-align:right">0.0343&lt;/td>
+&lt;td style="text-align:right">216 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Distinct&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">50.78 ns&lt;/td>
+&lt;td style="text-align:right">0.441 ns&lt;/td>
+&lt;td style="text-align:right">0.413 ns&lt;/td>
+&lt;td style="text-align:right">0.58&lt;/td>
+&lt;td style="text-align:right">0.01&lt;/td>
+&lt;td style="text-align:right">0.0038&lt;/td>
+&lt;td style="text-align:right">24 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>DistinctFactory&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">96.22 ns&lt;/td>
+&lt;td style="text-align:right">1.378 ns&lt;/td>
+&lt;td style="text-align:right">1.289 ns&lt;/td>
+&lt;td style="text-align:right">1.11&lt;/td>
+&lt;td style="text-align:right">0.02&lt;/td>
+&lt;td style="text-align:right">0.0076&lt;/td>
+&lt;td style="text-align:right">48 B&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h3 id="distinct-lookup-factory">Distinct Lookup Factory&lt;/h3>
+&lt;p>This approach gives implementations names as they are added to the DI container, keeps track of the name-implementation link, and facilitates lookup and retrieval of the correct implementation.&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>Configuration:&lt;/strong>&lt;br>
+This setup is different, in that implementations of the same interface are grouped together by the AddNamedUploader extension method (&lt;a class="link" href="#lookupdistinctconfig-6" >line 6&lt;/a>), and as implementations are added, they are given a name.
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="lookupdistinctconfig-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctconfig-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctconfig-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctconfig-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctconfig-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctconfig-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctconfig-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctconfig-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctconfig-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctconfig-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctconfig-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctconfig-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctconfig-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctconfig-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctconfig-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctconfig-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctconfig-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctconfig-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctconfig-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctconfig-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctconfig-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctconfig-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctconfig-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctconfig-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctconfig-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctconfig-13">13&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">private&lt;/span> &lt;span class="k">readonly&lt;/span> &lt;span class="n">IHost&lt;/span> &lt;span class="n">host&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="n">DistinctLookupFactoryBenchmark&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">host&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">Host&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">CreateDefaultBuilder&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">ConfigureServices&lt;/span>&lt;span class="p">((&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">services&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">services&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddNamedUploader&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">IFileUploader&lt;/span>&lt;span class="p">&amp;gt;(&lt;/span>&lt;span class="n">builder&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">builder&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;aws&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="k">typeof&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">AWSUploader&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;azure&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="k">typeof&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">AzureUploader&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;ftp&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="k">typeof&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">FTPUploader&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;span class="p">)&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">DistinctLookupFactoryHandler&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">).&lt;/span>&lt;span class="n">Build&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;p>There are a number of new components here:&lt;/p>
+&lt;ol>
+&lt;li>AddNamedUploader extension method (&lt;a class="link" href="#lookupdistinctconfig-6" >line 6&lt;/a>): this will setup base functionality required as expose the UploaderBuilder as a parameter&lt;/li>
+&lt;li>builder, of type UploaderBuilder (&lt;a class="link" href="#lookupdistinctconfig-6" >line 6&lt;/a>): this is an Action which handles keeping track of the name-implementation link.&lt;/li>
+&lt;li>AddTransient extension method (&lt;a class="link" href="#lookupdistinctconfig-7" >lines 7-9&lt;/a>): this is &lt;strong>not&lt;/strong> the same as the normal AddTransient method on IServiceCollection, but an extension method on the builder (UploaderBuilder) which wraps the usual .NET AddTransient method.&lt;/li>
+&lt;/ol>
+&lt;p>The full definition of the classes (along with all other code) can be found on &lt;a class="link" href="https://github.com/always-developing/Rollcall.Extensions.Microsoft.DependencyInjection/tree/main/benchmark/MultiImplementationBenchark/8.DistinctLookupFactory" target="_blank" rel="noopener"
+>Github, here&lt;/a>&lt;/p>
+&lt;p>In summary though, it works as follows:&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>&lt;em>AddNamedUploader&lt;/em> creates an instance of &lt;em>UploaderTypes&lt;/em>, which keeps track of the name and the implementation Type. &lt;em>UploaderTypes&lt;/em> is added to the DI container as a singleton.
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="lookupdistinctconfig2-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctconfig2-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctconfig2-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctconfig2-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctconfig2-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctconfig2-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctconfig2-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctconfig2-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctconfig2-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctconfig2-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctconfig2-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctconfig2-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctconfig2-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctconfig2-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctconfig2-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctconfig2-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctconfig2-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctconfig2-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctconfig2-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctconfig2-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctconfig2-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctconfig2-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctconfig2-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctconfig2-12">12&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">public&lt;/span> &lt;span class="k">static&lt;/span> &lt;span class="n">IServiceCollection&lt;/span> &lt;span class="n">AddNamedUploader&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">T&lt;/span>&lt;span class="p">&amp;gt;(&lt;/span>
+&lt;span class="k">this&lt;/span> &lt;span class="n">IServiceCollection&lt;/span> &lt;span class="n">services&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="n">Action&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">UploaderBuilder&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">T&lt;/span>&lt;span class="p">&amp;gt;&amp;gt;&lt;/span> &lt;span class="n">builder&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="k">where&lt;/span> &lt;span class="n">T&lt;/span> &lt;span class="p">:&lt;/span> &lt;span class="k">class&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">uploaderType&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">UploaderTypes&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">T&lt;/span>&lt;span class="p">&amp;gt;();&lt;/span>
+&lt;span class="n">services&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">AddSingleton&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">uploaderType&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="n">services&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="k">typeof&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">DistinctLookupFactory&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">T&lt;/span>&lt;span class="p">&amp;gt;));&lt;/span>
+&lt;span class="n">builder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Invoke&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="k">new&lt;/span> &lt;span class="n">UploaderBuilder&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">T&lt;/span>&lt;span class="p">&amp;gt;(&lt;/span>&lt;span class="n">services&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">uploaderType&lt;/span>&lt;span class="p">));&lt;/span>
+&lt;span class="k">return&lt;/span> &lt;span class="n">services&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>The &lt;em>AddTransient&lt;/em> method will add records to the &lt;em>UploaderTypes&lt;/em> class, as well as add the implementation to the DI container.
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="lookupdistinctconfig3-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctconfig3-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctconfig3-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctconfig3-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctconfig3-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctconfig3-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctconfig3-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctconfig3-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctconfig3-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctconfig3-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctconfig3-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctconfig3-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctconfig3-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctconfig3-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctconfig3-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctconfig3-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctconfig3-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctconfig3-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctconfig3-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctconfig3-10">10&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">public&lt;/span> &lt;span class="k">static&lt;/span> &lt;span class="n">UploaderBuilder&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">T&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="n">AddTransient&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">T&lt;/span>&lt;span class="p">&amp;gt;(&lt;/span>
+&lt;span class="k">this&lt;/span> &lt;span class="n">UploaderBuilder&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">T&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="n">builder&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="kt">string&lt;/span> &lt;span class="n">name&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="n">Type&lt;/span> &lt;span class="n">implementation&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="k">where&lt;/span> &lt;span class="n">T&lt;/span> &lt;span class="p">:&lt;/span> &lt;span class="k">class&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">builder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Types&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Add&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">name&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">implementation&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="n">builder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Services&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">implementation&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="k">return&lt;/span> &lt;span class="n">builder&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;/li>
+&lt;/ol>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Usage:&lt;/strong>&lt;br>
+The factory is now injected into the relevant class (&lt;a class="link" href="#lookupdistinctusage-4" >line 4&lt;/a>) for a specific interface, and is then invoked to get the requested implementation by name (&lt;a class="link" href="#lookupdistinctusage-12" >line 12&lt;/a>)
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="lookupdistinctusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="lookupdistinctusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#lookupdistinctusage-14">14&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">DistinctLookupFactoryHandler&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">private&lt;/span> &lt;span class="k">readonly&lt;/span> &lt;span class="n">DistinctLookupFactory&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">IFileUploader&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="m">_d&lt;/span>&lt;span class="n">istinctFactory&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="n">DistinctLookupFactoryHandler&lt;/span>&lt;span class="p">(&lt;/span>
+&lt;span class="n">DistinctLookupFactory&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">IFileUploader&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="n">distinctFactory&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="m">_d&lt;/span>&lt;span class="n">istinctFactory&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">distinctFactory&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">Execute&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="m">_d&lt;/span>&lt;span class="n">istinctFactory&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Resolve&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;ftp&amp;#34;&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="n">UploadFile&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Pros:&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>Not all implementations are instantiated&lt;/li>
+&lt;li>Implementation can be selected/changed at runtime&lt;/li>
+&lt;li>Good overall performance&lt;/li>
+&lt;li>No hard coded switch statement which needs to be maintained&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Cons:&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>The most complicated to setup, with the most moving parts&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Performance:&lt;/strong>&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>Type&lt;/th>
+&lt;th>Method&lt;/th>
+&lt;th style="text-align:right">Mean&lt;/th>
+&lt;th style="text-align:right">Error&lt;/th>
+&lt;th style="text-align:right">StdDev&lt;/th>
+&lt;th style="text-align:right">Ratio&lt;/th>
+&lt;th style="text-align:right">RatioSD&lt;/th>
+&lt;th style="text-align:right">Gen 0&lt;/th>
+&lt;th style="text-align:right">Allocated&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>Enumerable&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">86.99 ns&lt;/td>
+&lt;td style="text-align:right">0.987 ns&lt;/td>
+&lt;td style="text-align:right">0.924 ns&lt;/td>
+&lt;td style="text-align:right">1.00&lt;/td>
+&lt;td style="text-align:right">0.00&lt;/td>
+&lt;td style="text-align:right">0.0421&lt;/td>
+&lt;td style="text-align:right">264 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Factory&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">103.20 ns&lt;/td>
+&lt;td style="text-align:right">1.324 ns&lt;/td>
+&lt;td style="text-align:right">1.238 ns&lt;/td>
+&lt;td style="text-align:right">1.19&lt;/td>
+&lt;td style="text-align:right">0.02&lt;/td>
+&lt;td style="text-align:right">0.0459&lt;/td>
+&lt;td style="text-align:right">288 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>TypeFactory&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">525.19 ns&lt;/td>
+&lt;td style="text-align:right">2.624 ns&lt;/td>
+&lt;td style="text-align:right">2.455 ns&lt;/td>
+&lt;td style="text-align:right">6.04&lt;/td>
+&lt;td style="text-align:right">0.07&lt;/td>
+&lt;td style="text-align:right">0.0277&lt;/td>
+&lt;td style="text-align:right">176 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Delegate&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">111.45 ns&lt;/td>
+&lt;td style="text-align:right">1.456 ns&lt;/td>
+&lt;td style="text-align:right">1.291 ns&lt;/td>
+&lt;td style="text-align:right">1.28&lt;/td>
+&lt;td style="text-align:right">0.02&lt;/td>
+&lt;td style="text-align:right">0.0178&lt;/td>
+&lt;td style="text-align:right">112 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>TypeDelegate&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">861.84 ns&lt;/td>
+&lt;td style="text-align:right">6.599 ns&lt;/td>
+&lt;td style="text-align:right">5.850 ns&lt;/td>
+&lt;td style="text-align:right">9.90&lt;/td>
+&lt;td style="text-align:right">0.15&lt;/td>
+&lt;td style="text-align:right">0.0343&lt;/td>
+&lt;td style="text-align:right">216 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Distinct&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">50.78 ns&lt;/td>
+&lt;td style="text-align:right">0.441 ns&lt;/td>
+&lt;td style="text-align:right">0.413 ns&lt;/td>
+&lt;td style="text-align:right">0.58&lt;/td>
+&lt;td style="text-align:right">0.01&lt;/td>
+&lt;td style="text-align:right">0.0038&lt;/td>
+&lt;td style="text-align:right">24 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>DistinctFactory&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">96.22 ns&lt;/td>
+&lt;td style="text-align:right">1.378 ns&lt;/td>
+&lt;td style="text-align:right">1.289 ns&lt;/td>
+&lt;td style="text-align:right">1.11&lt;/td>
+&lt;td style="text-align:right">0.02&lt;/td>
+&lt;td style="text-align:right">0.0076&lt;/td>
+&lt;td style="text-align:right">48 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>DistinctLookupFactory&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">92.96 ns&lt;/td>
+&lt;td style="text-align:right">0.764 ns&lt;/td>
+&lt;td style="text-align:right">0.714 ns&lt;/td>
+&lt;td style="text-align:right">1.07&lt;/td>
+&lt;td style="text-align:right">0.01&lt;/td>
+&lt;td style="text-align:right">0.0126&lt;/td>
+&lt;td style="text-align:right">80 B&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;hr>
+&lt;h3 id="rollcall">Rollcall&lt;/h3>
+&lt;p>&lt;code>Rollcall&lt;/code> is a library (written by me) which extends the &lt;code>DistinctLookupFactory&lt;/code> approach and makes it generic so that it will function with any interface and implementation. &lt;a class="link" href="https://www.nuget.org/packages/Rollcall.Extensions.Microsoft.DependencyInjection/" target="_blank" rel="noopener"
+>Rollcall is available on Nuget&lt;/a>&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>Configuration:&lt;/strong>&lt;br>
+The setup is almost identical to the &lt;code>DistinctLookupFactory&lt;/code>, but without the need for the factory, as this is built into the &lt;code>Rollcall&lt;/code> library.
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="rollcallconfig-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallconfig-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallconfig-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallconfig-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallconfig-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallconfig-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallconfig-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallconfig-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallconfig-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallconfig-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallconfig-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallconfig-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallconfig-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallconfig-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallconfig-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallconfig-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallconfig-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallconfig-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallconfig-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallconfig-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallconfig-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallconfig-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallconfig-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallconfig-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallconfig-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallconfig-13">13&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">private&lt;/span> &lt;span class="k">readonly&lt;/span> &lt;span class="n">IHost&lt;/span> &lt;span class="n">host&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="n">RollcallBenchmark&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">host&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">Host&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">CreateDefaultBuilder&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">ConfigureServices&lt;/span>&lt;span class="p">((&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">services&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">services&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">RollcallHandler&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddNamedService&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">IFileUploader&lt;/span>&lt;span class="p">&amp;gt;(&lt;/span>&lt;span class="n">builder&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">builder&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;aws&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="k">typeof&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">AWSUploader&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;azure&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="k">typeof&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">AzureUploader&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;ftp&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="k">typeof&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">FTPUploader&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;span class="p">)&lt;/span>
+&lt;span class="p">).&lt;/span>&lt;span class="n">Build&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Usage:&lt;/strong>&lt;br>
+The Rollcall provider/factory is now injected into the relevant class (&lt;a class="link" href="#rollcallusage-4" >line 4&lt;/a>) for a specific interface, and is then invoked to get the requested implementation by name (&lt;a class="link" href="#rollcallusage-12" >line 12&lt;/a>)
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="rollcallusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallusage-15">15&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">RollcallHandler&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">private&lt;/span> &lt;span class="k">readonly&lt;/span> &lt;span class="n">IRollcallProvider&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">IFileUploader&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="m">_&lt;/span>&lt;span class="n">provider&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="n">RollcallHandler&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">IRollcallProvider&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">IFileUploader&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="n">provider&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="m">_&lt;/span>&lt;span class="n">provider&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">provider&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">Execute&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">providerName&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="s">&amp;#34;aws&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">uploader&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="m">_&lt;/span>&lt;span class="n">provider&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetService&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">providerName&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="n">uploader&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">UploadFile&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+Not shown above, but one could also inject IServiceProvider and used the provided GetService extension method to get the service by name.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Pros:&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>Not all implementations are instantiated&lt;/li>
+&lt;li>Implementation can be selected/changed at runtime&lt;/li>
+&lt;li>Good overall performance&lt;/li>
+&lt;li>No hard coded switch statement which needs to be maintained&lt;/li>
+&lt;li>Works with any interface + implementation, and provides all functionality out the box&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Cons:&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>Slight performance overhead when compared to the non-generic method&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Performance:&lt;/strong>&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>Type&lt;/th>
+&lt;th>Method&lt;/th>
+&lt;th style="text-align:right">Mean&lt;/th>
+&lt;th style="text-align:right">Error&lt;/th>
+&lt;th style="text-align:right">StdDev&lt;/th>
+&lt;th style="text-align:right">Ratio&lt;/th>
+&lt;th style="text-align:right">RatioSD&lt;/th>
+&lt;th style="text-align:right">Gen 0&lt;/th>
+&lt;th style="text-align:right">Allocated&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>Enumerable&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">86.99 ns&lt;/td>
+&lt;td style="text-align:right">0.987 ns&lt;/td>
+&lt;td style="text-align:right">0.924 ns&lt;/td>
+&lt;td style="text-align:right">1.00&lt;/td>
+&lt;td style="text-align:right">0.00&lt;/td>
+&lt;td style="text-align:right">0.0421&lt;/td>
+&lt;td style="text-align:right">264 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Factory&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">103.20 ns&lt;/td>
+&lt;td style="text-align:right">1.324 ns&lt;/td>
+&lt;td style="text-align:right">1.238 ns&lt;/td>
+&lt;td style="text-align:right">1.19&lt;/td>
+&lt;td style="text-align:right">0.02&lt;/td>
+&lt;td style="text-align:right">0.0459&lt;/td>
+&lt;td style="text-align:right">288 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>TypeFactory&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">525.19 ns&lt;/td>
+&lt;td style="text-align:right">2.624 ns&lt;/td>
+&lt;td style="text-align:right">2.455 ns&lt;/td>
+&lt;td style="text-align:right">6.04&lt;/td>
+&lt;td style="text-align:right">0.07&lt;/td>
+&lt;td style="text-align:right">0.0277&lt;/td>
+&lt;td style="text-align:right">176 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Delegate&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">111.45 ns&lt;/td>
+&lt;td style="text-align:right">1.456 ns&lt;/td>
+&lt;td style="text-align:right">1.291 ns&lt;/td>
+&lt;td style="text-align:right">1.28&lt;/td>
+&lt;td style="text-align:right">0.02&lt;/td>
+&lt;td style="text-align:right">0.0178&lt;/td>
+&lt;td style="text-align:right">112 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>TypeDelegate&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">861.84 ns&lt;/td>
+&lt;td style="text-align:right">6.599 ns&lt;/td>
+&lt;td style="text-align:right">5.850 ns&lt;/td>
+&lt;td style="text-align:right">9.90&lt;/td>
+&lt;td style="text-align:right">0.15&lt;/td>
+&lt;td style="text-align:right">0.0343&lt;/td>
+&lt;td style="text-align:right">216 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Distinct&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">50.78 ns&lt;/td>
+&lt;td style="text-align:right">0.441 ns&lt;/td>
+&lt;td style="text-align:right">0.413 ns&lt;/td>
+&lt;td style="text-align:right">0.58&lt;/td>
+&lt;td style="text-align:right">0.01&lt;/td>
+&lt;td style="text-align:right">0.0038&lt;/td>
+&lt;td style="text-align:right">24 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>DistinctFactory&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">96.22 ns&lt;/td>
+&lt;td style="text-align:right">1.378 ns&lt;/td>
+&lt;td style="text-align:right">1.289 ns&lt;/td>
+&lt;td style="text-align:right">1.11&lt;/td>
+&lt;td style="text-align:right">0.02&lt;/td>
+&lt;td style="text-align:right">0.0076&lt;/td>
+&lt;td style="text-align:right">48 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>DistinctLookupFactory&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">92.96 ns&lt;/td>
+&lt;td style="text-align:right">0.764 ns&lt;/td>
+&lt;td style="text-align:right">0.714 ns&lt;/td>
+&lt;td style="text-align:right">1.07&lt;/td>
+&lt;td style="text-align:right">0.01&lt;/td>
+&lt;td style="text-align:right">0.0126&lt;/td>
+&lt;td style="text-align:right">80 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Rollcall&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">124.52 ns&lt;/td>
+&lt;td style="text-align:right">1.485 ns&lt;/td>
+&lt;td style="text-align:right">1.389 ns&lt;/td>
+&lt;td style="text-align:right">1.43&lt;/td>
+&lt;td style="text-align:right">0.02&lt;/td>
+&lt;td style="text-align:right">0.0076&lt;/td>
+&lt;td style="text-align:right">48 B&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;hr>
+&lt;h3 id="rollcall-with-func">Rollcall with Func&lt;/h3>
+&lt;p>&lt;code>Rollcall&lt;/code> can also be used with a implementation factory, a Func&amp;lt;IServiceProvider,object&amp;gt; method. This method is called when requesting the implementation by name from the DI container. &lt;a class="link" href="https://www.nuget.org/packages/Rollcall.Extensions.Microsoft.DependencyInjection/" target="_blank" rel="noopener"
+>Available on NuGet.&lt;/a>&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>Configuration:&lt;/strong>&lt;br>
+The setup is a little more complicated than before, as some of the configuration needs to be done manually (instead of by the &lt;code>Rollcall&lt;/code> package)
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="rollcallfuncconfig-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallfuncconfig-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallfuncconfig-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallfuncconfig-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallfuncconfig-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallfuncconfig-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallfuncconfig-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallfuncconfig-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallfuncconfig-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallfuncconfig-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallfuncconfig-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallfuncconfig-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallfuncconfig-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallfuncconfig-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallfuncconfig-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallfuncconfig-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallfuncconfig-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallfuncconfig-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallfuncconfig-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallfuncconfig-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallfuncconfig-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallfuncconfig-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallfuncconfig-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallfuncconfig-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallfuncconfig-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallfuncconfig-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallfuncconfig-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallfuncconfig-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallfuncconfig-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallfuncconfig-15">15&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">private&lt;/span> &lt;span class="k">readonly&lt;/span> &lt;span class="n">IHost&lt;/span> &lt;span class="n">host&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="n">RollcallFuncBenchmark&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">host&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">Host&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">CreateDefaultBuilder&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">ConfigureServices&lt;/span>&lt;span class="p">((&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">services&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">services&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">RollcallFuncHandler&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">AWSUploader&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">AzureUploader&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">FTPUploader&lt;/span>&lt;span class="p">&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddNamedService&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">IFileUploader&lt;/span>&lt;span class="p">&amp;gt;(&lt;/span>&lt;span class="n">builder&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">builder&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;aws&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">sp&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">sp&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetService&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="k">typeof&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">AWSUploader&lt;/span>&lt;span class="p">)))&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;azure&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">sp&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">sp&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetService&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="k">typeof&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">AzureUploader&lt;/span>&lt;span class="p">)))&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;ftp&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">sp&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">sp&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetService&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="k">typeof&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">FTPUploader&lt;/span>&lt;span class="p">)))&lt;/span>
+&lt;span class="p">)).&lt;/span>&lt;span class="n">Build&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Usage:&lt;/strong>&lt;br>
+The usage is exactly the same with the Func&amp;lt;&amp;gt; as with the normal interface + implementation (as shown above)
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="rollcallusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="rollcallusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#rollcallusage-15">15&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">RollcallFuncHandler&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">private&lt;/span> &lt;span class="k">readonly&lt;/span> &lt;span class="n">IRollcallProvider&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">IFileUploader&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="m">_&lt;/span>&lt;span class="n">provider&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="n">RollcallFuncHandler&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">IRollcallProvider&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">IFileUploader&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="n">provider&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="m">_&lt;/span>&lt;span class="n">provider&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">provider&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">Execute&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">providerName&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="s">&amp;#34;aws&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">uploader&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="m">_&lt;/span>&lt;span class="n">provider&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetService&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">providerName&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="n">uploader&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">UploadFile&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+Not shown above, but one could also inject IServiceProvider and used the provided GetService extension method to get the service by name.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Pros:&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>Not all implementations are instantiated&lt;/li>
+&lt;li>Implementation can be selected/changed at runtime&lt;/li>
+&lt;li>Good overall performance&lt;/li>
+&lt;li>No hard coded switch statement which needs to be maintained&lt;/li>
+&lt;li>Works with any interface + func&amp;lt;&amp;gt;, and provides all functionality out the box&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Cons:&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>Slight performance overhead when compared to the non-generic method, and when compared
+to the interface + implementation method.&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Performance:&lt;/strong>&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>Type&lt;/th>
+&lt;th>Method&lt;/th>
+&lt;th style="text-align:right">Mean&lt;/th>
+&lt;th style="text-align:right">Error&lt;/th>
+&lt;th style="text-align:right">StdDev&lt;/th>
+&lt;th style="text-align:right">Ratio&lt;/th>
+&lt;th style="text-align:right">RatioSD&lt;/th>
+&lt;th style="text-align:right">Gen 0&lt;/th>
+&lt;th style="text-align:right">Allocated&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>Enumerable&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">86.99 ns&lt;/td>
+&lt;td style="text-align:right">0.987 ns&lt;/td>
+&lt;td style="text-align:right">0.924 ns&lt;/td>
+&lt;td style="text-align:right">1.00&lt;/td>
+&lt;td style="text-align:right">0.00&lt;/td>
+&lt;td style="text-align:right">0.0421&lt;/td>
+&lt;td style="text-align:right">264 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Factory&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">103.20 ns&lt;/td>
+&lt;td style="text-align:right">1.324 ns&lt;/td>
+&lt;td style="text-align:right">1.238 ns&lt;/td>
+&lt;td style="text-align:right">1.19&lt;/td>
+&lt;td style="text-align:right">0.02&lt;/td>
+&lt;td style="text-align:right">0.0459&lt;/td>
+&lt;td style="text-align:right">288 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>TypeFactory&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">525.19 ns&lt;/td>
+&lt;td style="text-align:right">2.624 ns&lt;/td>
+&lt;td style="text-align:right">2.455 ns&lt;/td>
+&lt;td style="text-align:right">6.04&lt;/td>
+&lt;td style="text-align:right">0.07&lt;/td>
+&lt;td style="text-align:right">0.0277&lt;/td>
+&lt;td style="text-align:right">176 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Delegate&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">111.45 ns&lt;/td>
+&lt;td style="text-align:right">1.456 ns&lt;/td>
+&lt;td style="text-align:right">1.291 ns&lt;/td>
+&lt;td style="text-align:right">1.28&lt;/td>
+&lt;td style="text-align:right">0.02&lt;/td>
+&lt;td style="text-align:right">0.0178&lt;/td>
+&lt;td style="text-align:right">112 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>TypeDelegate&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">861.84 ns&lt;/td>
+&lt;td style="text-align:right">6.599 ns&lt;/td>
+&lt;td style="text-align:right">5.850 ns&lt;/td>
+&lt;td style="text-align:right">9.90&lt;/td>
+&lt;td style="text-align:right">0.15&lt;/td>
+&lt;td style="text-align:right">0.0343&lt;/td>
+&lt;td style="text-align:right">216 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Distinct&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">50.78 ns&lt;/td>
+&lt;td style="text-align:right">0.441 ns&lt;/td>
+&lt;td style="text-align:right">0.413 ns&lt;/td>
+&lt;td style="text-align:right">0.58&lt;/td>
+&lt;td style="text-align:right">0.01&lt;/td>
+&lt;td style="text-align:right">0.0038&lt;/td>
+&lt;td style="text-align:right">24 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>DistinctFactory&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">96.22 ns&lt;/td>
+&lt;td style="text-align:right">1.378 ns&lt;/td>
+&lt;td style="text-align:right">1.289 ns&lt;/td>
+&lt;td style="text-align:right">1.11&lt;/td>
+&lt;td style="text-align:right">0.02&lt;/td>
+&lt;td style="text-align:right">0.0076&lt;/td>
+&lt;td style="text-align:right">48 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>DistinctLookupFactory&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">92.96 ns&lt;/td>
+&lt;td style="text-align:right">0.764 ns&lt;/td>
+&lt;td style="text-align:right">0.714 ns&lt;/td>
+&lt;td style="text-align:right">1.07&lt;/td>
+&lt;td style="text-align:right">0.01&lt;/td>
+&lt;td style="text-align:right">0.0126&lt;/td>
+&lt;td style="text-align:right">80 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Rollcall&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">124.52 ns&lt;/td>
+&lt;td style="text-align:right">1.485 ns&lt;/td>
+&lt;td style="text-align:right">1.389 ns&lt;/td>
+&lt;td style="text-align:right">1.43&lt;/td>
+&lt;td style="text-align:right">0.02&lt;/td>
+&lt;td style="text-align:right">0.0076&lt;/td>
+&lt;td style="text-align:right">48 B&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>RollcallFunc&lt;/td>
+&lt;td>Execute&lt;/td>
+&lt;td style="text-align:right">134.68 ns&lt;/td>
+&lt;td style="text-align:right">1.224 ns&lt;/td>
+&lt;td style="text-align:right">1.085 ns&lt;/td>
+&lt;td style="text-align:right">1.55&lt;/td>
+&lt;td style="text-align:right">0.02&lt;/td>
+&lt;td style="text-align:right">0.0076&lt;/td>
+&lt;td style="text-align:right">48 B&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;hr>
+&lt;h2 id="conclusion">Conclusion&lt;/h2>
+&lt;p>There are a variety of ways to handle multiple implementations of the same interface, none of which are wrong. However, not all are suitable for every situation and using the incorrect one for the situation could result in a performance impact.&lt;br>
+There are trade-offs and pros and cons to using each technique - the most performant might be the most difficult to maintain for your situation.&lt;br>
+&lt;strong>Test the various methods and find which works best and is most optimal for your particular situation.&lt;/strong>&lt;/p>
+&lt;h2 id="references-and-links">References and links&lt;/h2>
+&lt;p>&lt;a class="link" href="https://github.com/always-developing/Rollcall.Extensions.Microsoft.DependencyInjection" target="_blank" rel="noopener"
+>Rollcall Github repo&lt;/a>&lt;br>
+&lt;a class="link" href="https://www.nuget.org/packages/Rollcall.Extensions.Microsoft.DependencyInjection/" target="_blank" rel="noopener"
+>Rollcall Nuget package&lt;/a>&lt;/p>
+&lt;hr></description></item><item><title>Useful Visual Studio keyboard shortcuts</title><link>https://always-developing.github.io/p/vs-keyboard-shortcuts/</link><pubDate>Mon, 25 Oct 2021 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/p/vs-keyboard-shortcuts/</guid><description>&lt;h2 id="why-learn-keyboard-shortcuts">Why learn keyboard shortcuts?&lt;/h2>
 &lt;p>So I confess I have no empirical evidence to backup the &lt;code>up to 20% more productive&lt;/code> claim. That number is just made up, but with years of experience on my side, it honestly feels fairly accurate to me!&lt;/p>
 &lt;p>Having often been involved in assisting, troubleshooting and debugging code with fellow developers, it is apparent that the developers which are familiar with their IDE, and make use of the shortcuts, &lt;em>generally&lt;/em> (but not always!) resolve tasks quicker and more efficiently than those that don&amp;rsquo;t.&lt;/p>
 &lt;p>Every hand reach for the mouse, every unnecessary cursor movement, every menu click is &lt;em>potentially&lt;/em> a waste of time. It&amp;rsquo;s time two hands are not on the keyboard writing code. The more shortcuts a person is familiar with, the more the unnecessary time wasting can be minimized. Thus, more programming time and more productivity!&lt;/p>
