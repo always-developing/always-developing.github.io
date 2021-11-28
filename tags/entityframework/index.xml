@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>entityframework on Always Developing</title><link>https://always-developing.github.io/tags/entityframework/</link><description>Recent content in entityframework on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Sun, 28 Nov 2021 05:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/tags/entityframework/index.xml" rel="self" type="application/rss+xml"/><item><title>Roslyn Analyzer - tips and tricks (Part 5)</title><link>https://always-developing.github.io/p/analyzer-extra/</link><pubDate>Sun, 28 Nov 2021 05:00:00 +0200</pubDate><guid>https://always-developing.github.io/p/analyzer-extra/</guid><description>All posts in the series:
+Part 1: Roslyn Analyzer - explained Part 2: Roslyn Analyzer - writing an analyzer
+Part 3: Roslyn Analyzer - writing a code fix
+Part 4: Roslyn Analyzer - testing an analyzer and code fix
+Part 5: Roslyn Analyzer - tips and tricks (this post)
+All code in the posts, including the sample project and working analyzer and code fix are available on Github.
+Tips and tricks This post contains a list of tips and tricks, work-around&amp;rsquo;s and other bits of (what I find) useful information to aid in developing analyzers.</description></item><item><title>Roslyn Analyzer - testing an analyzer and code fix (Part 4)</title><link>https://always-developing.github.io/p/analyzer-test/</link><pubDate>Sat, 27 Nov 2021 04:00:00 +0200</pubDate><guid>https://always-developing.github.io/p/analyzer-test/</guid><description>All posts in the series:
+Part 1: Roslyn Analyzer - explained Part 2: Roslyn Analyzer - writing an analyzer
+Part 3: Roslyn Analyzer - writing a code fix
+Part 4: Roslyn Analyzer - testing an analyzer and code fix (this post)
+Part 5: Roslyn Analyzer - tips and tricks
+All code in the posts, including the sample project and working analyzer and code fix are available on Github.
+Analyzer unit test introduction The previous posts in the series detail how to write an analyzer and code fix.</description></item><item><title>Roslyn Analyzer - writing the code fix (Part 3)</title><link>https://always-developing.github.io/p/analyzer-code-fix/</link><pubDate>Fri, 26 Nov 2021 03:00:00 +0200</pubDate><guid>https://always-developing.github.io/p/analyzer-code-fix/</guid><description>All posts in the series:
+Part 1: Roslyn Analyzer - explained Part 2: Roslyn Analyzer - writing an analyzer
+Part 3: Roslyn Analyzer - writing a code fix (this post)
+Part 4: Roslyn Analyzer - testing an analyzer and code fix
+Part 5: Roslyn Analyzer - tips and tricks
+All code in the posts, including the sample project and working analyzer and code fix are available on Github.
+Code fix introduction As detailed in the previous post in the series, now that there is a working analyzer which accurately reports diagnostic information to Roslyn, the next step is to write the code fix to resolve the diagnostic.</description></item><item><title>Roslyn Analyzer - writing the analyzer (Part 2)</title><link>https://always-developing.github.io/p/analyzer-write/</link><pubDate>Thu, 25 Nov 2021 02:00:00 +0200</pubDate><guid>https://always-developing.github.io/p/analyzer-write/</guid><description>All posts in the series:
+Part 1: Roslyn Analyzer - explained Part 2: Roslyn Analyzer - writing an analyzer (this post)
+Part 3: Roslyn Analyzer - writing a code fix
+Part 4: Roslyn Analyzer - testing an analyzer and code fix
+Part 5: Roslyn Analyzer - tips and tricks
+All code in the posts, including the sample project and working analyzer and code fix are available on Github.
+Analyzer introduction To recap from the previous post in the series, an analyzer is a piece of code which inspects code (C# or Visual Basic) during design and compile time, and based on the results of the inspection, can trigger a diagnostic as an Error, Warning or as Information.</description></item><item><title>Roslyn Analyzer - explained (Part 1)</title><link>https://always-developing.github.io/p/analyzer-explained/</link><pubDate>Wed, 24 Nov 2021 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/p/analyzer-explained/</guid><description>Series introduction This is a a five part series exploring the Roslyn analyzer and code fix functionality, how to successfully write and test a custom analyzer, as well as some useful tips and tricks for writing analyzers.
+All posts in the series:
+Part 1: Roslyn Analyzer - explained (this post)
+Part 2: Roslyn Analyzer - writing an analyzer
+Part 3: Roslyn Analyzer - writing a code fix
+Part 4: Roslyn Analyzer - testing an analyzer and code fix</description></item></channel></rss>

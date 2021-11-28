@@ -1,4 +1,1424 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Sat, 06 Nov 2021 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Multiple implementations of same interface - the options</title><link>https://always-developing.github.io/p/multiple-implementations/</link><pubDate>Sat, 06 Nov 2021 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/p/multiple-implementations/</guid><description>&lt;h2 id="the-challenge">The challenge&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Sun, 28 Nov 2021 05:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Roslyn Analyzer - tips and tricks (Part 5)</title><link>https://always-developing.github.io/p/analyzer-extra/</link><pubDate>Sun, 28 Nov 2021 05:00:00 +0200</pubDate><guid>https://always-developing.github.io/p/analyzer-extra/</guid><description>&lt;p>All posts in the series:&lt;br>
+&lt;strong>Part 1:&lt;/strong> &lt;a class="link" href="../analyzer-explained" >Roslyn Analyzer - explained&lt;/a> &lt;br>
+&lt;strong>Part 2:&lt;/strong> &lt;a class="link" href="../analyzer-write/" >Roslyn Analyzer - writing an analyzer&lt;/a>&lt;br>
+&lt;strong>Part 3:&lt;/strong> &lt;a class="link" href="../analyzer-code-fix/" >Roslyn Analyzer - writing a code fix&lt;/a>&lt;br>
+&lt;strong>Part 4:&lt;/strong> &lt;a class="link" href="../analyzer-test/" >Roslyn Analyzer - testing an analyzer and code fix&lt;/a>&lt;br>
+&lt;strong>Part 5:&lt;/strong> Roslyn Analyzer - tips and tricks (this post)&lt;/p>
+&lt;p>All code in the posts, including the sample project and working &lt;code>analyzer&lt;/code> and &lt;code>code fix&lt;/code> are &lt;a class="link" href="https://github.com/always-developing/CodeAnalysis.EntityFrameworkCore.Sample" target="_blank" rel="noopener"
+>available on Github&lt;/a>.&lt;/p>
+&lt;h2 id="tips-and-tricks">Tips and tricks&lt;/h2>
+&lt;p>This post contains a list of tips and tricks, work-around&amp;rsquo;s and other bits of (what I find) useful information to aid in developing &lt;code>analyzers&lt;/code>.&lt;/p>
+&lt;hr>
+&lt;h3 id="analyzer-tips-and-tricks">Analyzer tips and tricks&lt;/h3>
+&lt;h4 id="compatibility">Compatibility&lt;/h4>
+&lt;p>If an analyzer is created in Visual Studio 2019 using the &lt;code>Analyzer with Code Fix&lt;/code> project - it will not be initially compatible with Visual Stdio 2022 (or visa versa).&lt;br>
+The actual &lt;code>analyzer&lt;/code> and &lt;code>code fix&lt;/code> code itself is compatible (as its .NET Standard 2.0), however the VSIX project is not compatible&lt;/p>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 202;
+flex-basis: 485px"
+>
+&lt;a href="https://always-developing.github.io/p/analyzer-extra/VS2019.png" data-size="326x161">
+&lt;img src="https://always-developing.github.io/p/analyzer-extra/VS2019.png"
+width="326"
+height="161"
+srcset="https://always-developing.github.io/p/analyzer-extra/VS2019_hu5c43c60b615a0ba159d8e1629ea1e3e6_8131_480x0_resize_box_3.png 480w, https://always-developing.github.io/p/analyzer-extra/VS2019_hu5c43c60b615a0ba159d8e1629ea1e3e6_8131_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Default Microsoft.VSSDK.BuildTools reference">
+&lt;/a>
+&lt;figcaption>Default Microsoft.VSSDK.BuildTools reference&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;p>To have the VSIX project work in Visual Studio 2022, the &lt;code>Microsoft.VSSDK.BuildTools&lt;/code> reference needs to be updated to version 17. However doing so will mean it will no longer be supported in Visual Studio 2019.&lt;/p>
+&lt;p>To have the analyzer work in both Visual Studio 2019 and Visual Studio 2022, two VSIX projects need to be created in the solution. One will be for Visual Studio 2019 and have a &lt;code>Microsoft.VSSDK.BuildTools&lt;/code> reference of version &lt;code>15 or 16&lt;/code>, and the other for Visual Studio 2022 with a &lt;code>Microsoft.VSSDK.BuildTools&lt;/code> reference of &lt;code>17&lt;/code>.&lt;/p>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 104;
+flex-basis: 250px"
+>
+&lt;a href="https://always-developing.github.io/p/analyzer-extra/MultiVsix.png" data-size="334x320">
+&lt;img src="https://always-developing.github.io/p/analyzer-extra/MultiVsix.png"
+width="334"
+height="320"
+srcset="https://always-developing.github.io/p/analyzer-extra/MultiVsix_hue1e907f4b5b1c78fe1d57c945723e628_16210_480x0_resize_box_3.png 480w, https://always-developing.github.io/p/analyzer-extra/MultiVsix_hue1e907f4b5b1c78fe1d57c945723e628_16210_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Visual Studio support">
+&lt;/a>
+&lt;figcaption>Visual Studio support&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;hr>
+&lt;h4 id="syntax-tree">Syntax tree&lt;/h4>
+&lt;p>Sometimes when using the &lt;code>Syntax Visualizer&lt;/code>, detailed in the section &lt;a class="link" href="../analyzer-explained" >Writing an analyzer - interrogate the syntax tree&lt;/a>, the tree in the &lt;code>Syntax Visualizer&lt;/code> windows stops refreshing when selecting items in the code, and will appear blank.&lt;/p>
+&lt;p>To force a refresh of the window, make a small code change - for example, add a remove a semi-colon in code. This will force the window to refresh and the syntax tree will appear and refresh correctly (until the next time it stops working).&lt;/p>
+&lt;hr>
+&lt;h4 id="additional-files">Additional files&lt;/h4>
+&lt;p>While an &lt;code>analyzer&lt;/code> can inspect non-code files (such as the appsettings.json in the sample), these &amp;ldquo;additional files&amp;rdquo; are not included as part of the Roslyn checks by default. A file has to specifically be marked as an additional file for Roslyn to be able to work with it.&lt;br>
+This is done by specifying the files &lt;code>Build Action&lt;/code> to be &lt;code>C# analyzer additional file&lt;/code> on the file&amp;rsquo;s &lt;code>Properties&lt;/code> window in Visual Studio.&lt;/p>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 183;
+flex-basis: 439px"
+>
+&lt;a href="https://always-developing.github.io/p/analyzer-extra/AnalyzerFile.png" data-size="454x248">
+&lt;img src="https://always-developing.github.io/p/analyzer-extra/AnalyzerFile.png"
+width="454"
+height="248"
+srcset="https://always-developing.github.io/p/analyzer-extra/AnalyzerFile_hua0bb48158b6a826be2fcf2c1944be4ca_11029_480x0_resize_box_3.png 480w, https://always-developing.github.io/p/analyzer-extra/AnalyzerFile_hua0bb48158b6a826be2fcf2c1944be4ca_11029_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Appsettings.json build action">
+&lt;/a>
+&lt;figcaption>Appsettings.json build action&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;p>When an &lt;code>analyzer&lt;/code> is dependent on the additional file being present, as is the case in the sample analyzer, then a diagnostic can be raised if the additional file cannot be found.&lt;/p>
+&lt;p>In the below example, the &lt;code>ADEF002&lt;/code> diagnostic is raised if the &lt;code>appsettings.json&lt;/code> hasn&amp;rsquo;t been included as an additional file - if it doesn&amp;rsquo;t have a build action of &lt;code>C# analyzer additional file&lt;/code>.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="c1">// if there is no file to query, then report a diagnostic
+&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Options&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">AdditionalFiles&lt;/span> &lt;span class="p">==&lt;/span> &lt;span class="k">null&lt;/span> &lt;span class="p">||&lt;/span>
+&lt;span class="p">!&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Options&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">AdditionalFiles&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Any&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">x&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">x&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Path&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">EndsWith&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;appsettings.json&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">StringComparison&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">OrdinalIgnoreCase&lt;/span>&lt;span class="p">)))&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">diagnostic002&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">Diagnostic&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Create&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">rule002&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">Location&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">None&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">ReportDiagnostic&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">diagnostic002&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="k">return&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;hr>
+&lt;h3 id="code-fix-tips-and-tricks">Code fix tips and tricks&lt;/h3>
+&lt;h4 id="modify-non-code">Modify non-code&lt;/h4>
+&lt;p>While it is possible to have an &lt;code>analyzer&lt;/code> inspect non-code files (such as the appsettings.json in the sample), it is not possible to have the &lt;code>code fix&lt;/code> modify these files. The &lt;code>code fix&lt;/code> is only able to modify the syntax tree, which a non-code file will obviously not have.&lt;/p>
+&lt;p>A solution to this is the demonstrated in the sample &lt;code>analyzer&lt;/code>. Diagnostic &lt;code>ADEF003&lt;/code> ensures that the connection string name specified in code exists in the appsettings.json file. As an &lt;code>analyzer&lt;/code> can inspect the json file, it is successfully able to trigger the diagnostic, however the associated &lt;code>code fix&lt;/code> is unable to modify the json.&lt;/p>
+&lt;p>Instead, a comment snippet is inserted above the offending code block, with the correct json, and a message informing the developer what to do with it.&lt;/p>
+&lt;p>In the below example, no connection string called &lt;em>SampleDatabase&lt;/em> was present in the appsettings.json, so a diagnostic was triggered.&lt;/p>
+&lt;p>Before &lt;code>code fix&lt;/code> has been applied:
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="p">.&lt;/span>&lt;span class="n">ConfigureServices&lt;/span>&lt;span class="p">((&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">services&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">services&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddDbContext&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">SampleContext&lt;/span>&lt;span class="p">&amp;gt;(&lt;/span>&lt;span class="n">x&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">x&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">UseSqlite&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Configuration&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetConnectionString&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;SampleDatabase&amp;#34;&lt;/span>&lt;span class="p">)))&lt;/span>
+&lt;span class="p">).&lt;/span>&lt;span class="n">Build&lt;/span>&lt;span class="p">();&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;p>After &lt;code>code fix&lt;/code> has been applied:
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="p">.&lt;/span>&lt;span class="n">ConfigureServices&lt;/span>&lt;span class="p">((&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">services&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">services&lt;/span>
+&lt;span class="cm">/* Ensure the below JSON snippet exists in appsettings.json.
+&lt;/span>&lt;span class="cm"> {
+&lt;/span>&lt;span class="cm"> &amp;#34;ConnectionStrings&amp;#34;: {
+&lt;/span>&lt;span class="cm"> &amp;#34;SampleDatabase&amp;#34;: &amp;#34;Data Source=LocalDatabase.db&amp;#34;
+&lt;/span>&lt;span class="cm"> }
+&lt;/span>&lt;span class="cm"> }
+&lt;/span>&lt;span class="cm"> */&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddDbContext&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">SampleContext&lt;/span>&lt;span class="p">&amp;gt;(&lt;/span>&lt;span class="n">x&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">x&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">UseSqlite&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Configuration&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetConnectionString&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;SampleDatabase&amp;#34;&lt;/span>&lt;span class="p">)))&lt;/span>
+&lt;span class="p">).&lt;/span>&lt;span class="n">Build&lt;/span>&lt;span class="p">();&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;p>This &lt;code>code fix&lt;/code> however does not fully resolve the diagnostic. Only once the json snippet has been manually copied in the appsettings.json file by the developer will the &lt;code>analyzer&lt;/code> stop reporting the diagnostic.&lt;/p>
+&lt;hr>
+&lt;h3 id="unit-test-tips-and-tricks">Unit test tips and tricks&lt;/h3>
+&lt;h4 id="vsix-debugging">VSIX debugging&lt;/h4>
+&lt;p>Using the VSIX project, which is part of the &lt;code>analyzer&lt;/code> template, is a critical tool to test and debug an &lt;code>analyzer&lt;/code>, and see how it performs in an Visual Studio instance (vs running units tests to ensure the functionality is correct). However occasionally when running the VSIX project, the updated version of the &lt;code>analyzer&lt;/code> does get installed/loaded into the debugging Visual Studio instance.&lt;/p>
+&lt;p>Performing one of these two options usually resolves the issue:&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>Explicitly build/rebuild each project in the &lt;code>analyzer&lt;/code> solution before running the &lt;code>analyzer&lt;/code> VSIX project.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Delete the cache for the debug Visual Studio instance. The cache is stored in the user folder: &lt;code>C:\Users\username\AppData\Local\Microsoft\VisualStudio\xxxxRoslyn&lt;/code>.&lt;/p>
+&lt;p>Deleting this cache will removing any settings, cache for the debug Visual Studio instance, and the next time its opened it will be as if it was the first time, and the updated version of the extension will be installed for the &amp;ldquo;first time&amp;rdquo;.&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h3 id="series-finale">Series Finale&lt;/h3>
+&lt;p>The series of posts have hopefully given enough base information to give a basic understand of what an &lt;code>analyzer&lt;/code> and &lt;code>code fix&lt;/code> are, what the various components are and how they fit together, and how they can successfully be tested using a number of methods.&lt;/p>
+&lt;p>The source code for full working &lt;code>analyzer&lt;/code> and &lt;code>code fix&lt;/code>, as well as the sample application is all &lt;a class="link" href="https://github.com/always-developing/CodeAnalysis.EntityFrameworkCore.Sample" target="_blank" rel="noopener"
+>available on Github&lt;/a>.&lt;/p></description></item><item><title>Roslyn Analyzer - testing an analyzer and code fix (Part 4)</title><link>https://always-developing.github.io/p/analyzer-test/</link><pubDate>Sat, 27 Nov 2021 04:00:00 +0200</pubDate><guid>https://always-developing.github.io/p/analyzer-test/</guid><description>&lt;p>All posts in the series:&lt;br>
+&lt;strong>Part 1:&lt;/strong> &lt;a class="link" href="../analyzer-explained" >Roslyn Analyzer - explained&lt;/a> &lt;br>
+&lt;strong>Part 2:&lt;/strong> &lt;a class="link" href="../analyzer-write/" >Roslyn Analyzer - writing an analyzer&lt;/a>&lt;br>
+&lt;strong>Part 3:&lt;/strong> &lt;a class="link" href="../analyzer-code-fix/" >Roslyn Analyzer - writing a code fix&lt;/a>&lt;br>
+&lt;strong>Part 4:&lt;/strong> Roslyn Analyzer - testing an analyzer and code fix (this post)&lt;br>
+&lt;strong>Part 5:&lt;/strong> &lt;a class="link" href="../analyzer-extra/" >Roslyn Analyzer - tips and tricks&lt;/a>&lt;/p>
+&lt;p>All code in the posts, including the sample project and working &lt;code>analyzer&lt;/code> and &lt;code>code fix&lt;/code> are &lt;a class="link" href="https://github.com/always-developing/CodeAnalysis.EntityFrameworkCore.Sample" target="_blank" rel="noopener"
+>available on Github&lt;/a>.&lt;/p>
+&lt;h2 id="analyzer-unit-test-introduction">Analyzer unit test introduction&lt;/h2>
+&lt;p>The previous posts in the series detail how to &lt;a class="link" href="../analyzer-write" >write an analyzer&lt;/a> and &lt;a class="link" href="../analyzer-code-fix" >code fix&lt;/a>.&lt;/p>
+&lt;p>This post details writing unit tests to help ensure the stability of the code, but also aid in the development process by providing a quick and easy way to debug and test the &lt;code>analyzer&lt;/code> and &lt;code>code fix&lt;/code>.&lt;/p>
+&lt;hr>
+&lt;h2 id="why-write-unit-tests">Why write unit tests?&lt;/h2>
+&lt;p>&lt;code>Analyzers&lt;/code> are not simple to test - to &amp;ldquo;run&amp;rdquo; an analyzer, a new instance of Visual Studio starts up with the &lt;code>analyzer&lt;/code> installed as an extension. An application (which has the code needed to test the &lt;code>analyzer&lt;/code>) then needs to be opened to cause the &lt;code>analyzer&lt;/code> trigger.&lt;br>
+While this definitely has a place when testing (hence the suggestion of &lt;a class="link" href="../analyzer-write/#a-sample-application" >creating a sample application for the analyzer&lt;/a>), this process to often be inconsistent, with the updated &lt;code>analyzer&lt;/code> not always being installed in the new instance of Visual Studio, or the breakpoints in the &lt;code>analyzer&lt;/code> not being hit.&lt;/p>
+&lt;p>Unit tests provide a convenient and comparatively quick way to debug and iterate while coding the &lt;code>analyzer&lt;/code> and &lt;code>code fix&lt;/code>.&lt;/p>
+&lt;p>Luckily, writing unit tests are fairly straight forward. In addition a test framework is available for the testing of &lt;code>analyzers&lt;/code> and &lt;code>code fixes&lt;/code>.&lt;/p>
+&lt;hr>
+&lt;h2 id="default-unit-tests">Default unit tests&lt;/h2>
+&lt;h3 id="wrapper-classes">Wrapper classes&lt;/h3>
+&lt;p>As part of the &lt;code>analyzer&lt;/code> template, a unit test project is automatically created.&lt;br>
+This template has:&lt;/p>
+&lt;ul>
+&lt;li>A sample &lt;code>analyzer&lt;/code> test, using the a VerifyCS.&lt;em>VerifyAnalyzerAsync&lt;/em> method&lt;/li>
+&lt;li>A sample verify &lt;code>code fix&lt;/code> test, using a VerifyCS.&lt;em>VerifyCodeFixAsync&lt;/em> method&lt;/li>
+&lt;/ul>
+&lt;p>The &lt;em>VerifyCS&lt;/em> class is an auto-generated class, which wraps a lot of the complexity of the underlying testing framework classes - while this is great when first working with &lt;code>analyzers&lt;/code> and is easy to use for simple use cases, more complex use cases require more configuration and its generally easier to just use the underlying wrapped classes directly.&lt;/p>
+&lt;p>Using the &lt;em>VerifyCS&lt;/em> class to test an &lt;code>analyzer&lt;/code> is straightforward though:&lt;/p>
+&lt;ol>
+&lt;li>Define a block of code as a string&lt;/li>
+&lt;li>Define the list of diagnostic result the code should produce (and the location in the code)&lt;/li>
+&lt;li>Call &lt;em>VerifyCS.VerifyAnalyzerAsync()&lt;/em>&lt;/li>
+&lt;/ol>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5">5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6">6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7">7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8">8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9">9&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="c1">//No diagnostics expected to show up
+&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="na">[TestMethod]&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="k">async&lt;/span> &lt;span class="n">Task&lt;/span> &lt;span class="n">TestMethod1&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">test&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="s">@&amp;#34;&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="c1">// No code, so no diagnostic will be triggered
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="k">await&lt;/span> &lt;span class="n">VerifyCS&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">VerifyAnalyzerAsync&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">test&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>Using the &lt;em>VerifyCS&lt;/em> class to test a &lt;code>code fix&lt;/code>:&lt;/p>
+&lt;ol>
+&lt;li>Define a initial state block of code as a string&lt;/li>
+&lt;li>Define the list of diagnostic result the code should produce (and the location in the code)&lt;/li>
+&lt;li>Define a final state block of code as a string (what the code would look like after the code fix has been applied)&lt;/li>
+&lt;li>Call &lt;em>VerifyCS.VerifyCodeFixAsync()&lt;/em>&lt;/li>
+&lt;/ol>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-16">16&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-17">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-17">17&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-18">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-18">18&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-19">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-19">19&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-20">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-20">20&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-21">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-21">21&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-22">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-22">22&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-23">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-23">23&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-24">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-24">24&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-25">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-25">25&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-26">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-26">26&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-27">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-27">27&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-28">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-28">28&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-29">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-29">29&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-30">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-30">30&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-31">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-31">31&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-32">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-32">32&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-33">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-33">33&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-34">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-34">34&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-35">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-35">35&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-36">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-36">36&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-37">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-37">37&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-38">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-38">38&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-39">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-39">39&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-40">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-40">40&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-41">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-41">41&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-42">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-42">42&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-43">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-43">43&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="c1">//Diagnostic and CodeFix both triggered and checked for
+&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="na"> [TestMethod]&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="k">async&lt;/span> &lt;span class="n">Task&lt;/span> &lt;span class="n">TestMethod2&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="c1">// define the initial code block
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="kt">var&lt;/span> &lt;span class="n">test&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="s">@&amp;#34;
+&lt;/span>&lt;span class="s">using System;
+&lt;/span>&lt;span class="s">using System.Collections.Generic;
+&lt;/span>&lt;span class="s">using System.Linq;
+&lt;/span>&lt;span class="s">using System.Text;
+&lt;/span>&lt;span class="s">using System.Threading.Tasks;
+&lt;/span>&lt;span class="s">using System.Diagnostics;
+&lt;/span>&lt;span class="s">
+&lt;/span>&lt;span class="s">namespace ConsoleApplication1
+&lt;/span>&lt;span class="s">{
+&lt;/span>&lt;span class="s"> class {|#0:TypeName|}
+&lt;/span>&lt;span class="s"> {
+&lt;/span>&lt;span class="s"> }
+&lt;/span>&lt;span class="s">}&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="c1">// define the final state code block
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="kt">var&lt;/span> &lt;span class="n">fixtest&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="s">@&amp;#34;
+&lt;/span>&lt;span class="s">using System;
+&lt;/span>&lt;span class="s">using System.Collections.Generic;
+&lt;/span>&lt;span class="s">using System.Linq;
+&lt;/span>&lt;span class="s">using System.Text;
+&lt;/span>&lt;span class="s">using System.Threading.Tasks;
+&lt;/span>&lt;span class="s">using System.Diagnostics;
+&lt;/span>&lt;span class="s">
+&lt;/span>&lt;span class="s">namespace ConsoleApplication1
+&lt;/span>&lt;span class="s">{
+&lt;/span>&lt;span class="s"> class TYPENAME
+&lt;/span>&lt;span class="s"> {
+&lt;/span>&lt;span class="s"> }
+&lt;/span>&lt;span class="s">}&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="c1">// Expected diagnostics to be triggered
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="kt">var&lt;/span> &lt;span class="n">expected&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">VerifyCS&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Diagnostic&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;Analyzer1&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">WithLocation&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="m">0&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="n">WithArguments&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;TypeName&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="c1">// Verify the diagnostic will be triggered,
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="c1">// and that the code fix applies successfully
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="k">await&lt;/span> &lt;span class="n">VerifyCS&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">VerifyCodeFixAsync&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">test&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">expected&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">fixtest&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;hr>
+&lt;h3 id="complex-use-cases">Complex use cases&lt;/h3>
+&lt;p>There are a few use cases where I&amp;rsquo;ve found &lt;strong>NOT&lt;/strong> using &lt;em>VerifyCS&lt;/em> easier (although it is still possible to use it):&lt;/p>
+&lt;ul>
+&lt;li>If the code block requires external dependencies to compile (such as a NuGet package)&lt;/li>
+&lt;li>If the code block is using some of the .NET 6 features (such as the minimal startup with the implicit main method)&lt;/li>
+&lt;li>If the &lt;code>analyzer&lt;/code> requires additional files, such as an appsettings.json file.&lt;/li>
+&lt;li>If the build config (or any preprocessor symbol) makes a different to the analyzer&lt;/li>
+&lt;/ul>
+&lt;p>For these reasons, I generally &lt;code>do not use VerifyCS&lt;/code>, but use the underlying framework classes directly instead.&lt;/p>
+&lt;hr>
+&lt;h2 id="enhanced-unit-tests">Enhanced unit tests&lt;/h2>
+&lt;p>The steps for using the framework classes directly (&lt;em>CSharpAnalyzerTest&lt;/em>) are similar to using the wrapper class:&lt;/p>
+&lt;p>Using the &lt;em>CSharpAnalyzerTest&lt;/em> class to test an analyzer:&lt;/p>
+&lt;ol>
+&lt;li>Define a block of code as a string&lt;/li>
+&lt;li>Define the list of diagnostic result the code should produce (and the location in the code)&lt;/li>
+&lt;li>Define any additional configuration&lt;/li>
+&lt;li>Call &lt;em>RunAsync()&lt;/em>&lt;/li>
+&lt;/ol>
+&lt;p>To test a code fix using &lt;em>CSharpCodeFixTest&lt;/em>:&lt;/p>
+&lt;ol>
+&lt;li>Define a initial state block of code as a string&lt;/li>
+&lt;li>Define the list of diagnostic result the code should produce (and the location in the code)&lt;/li>
+&lt;li>Define a final state block of code as a string (what the code would look like after the code fix has been applied)&lt;/li>
+&lt;li>Define any additional configuration for both the initial and final state&lt;/li>
+&lt;li>Call &lt;em>RunAsync()&lt;/em>&lt;/li>
+&lt;/ol>
+&lt;p>Lets go through these steps in details in the next sections.&lt;/p>
+&lt;hr>
+&lt;h3 id="defining-the-code">Defining the code&lt;/h3>
+&lt;h4 id="analyzer-test-code">Analyzer test code&lt;/h4>
+&lt;p>Although the analyzer and code fix test use different test classes, the setup is very similar.&lt;/p>
+&lt;p>With the configuration for an &lt;code>analyzer&lt;/code>, the &lt;em>TestState&lt;/em> is set - the &lt;strong>sourceCode&lt;/strong> variable is a string with C# code as text.
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5">5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6">6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7">7&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="kt">var&lt;/span> &lt;span class="n">analyzerTest&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">CSharpAnalyzerTest&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">DevOnlyMigrateAnalyzer&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">MSTestVerifier&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">TestState&lt;/span> &lt;span class="p">=&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">Sources&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="n">sourceCode&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">};&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;h4 id="code-fix-test-code">Code fix test code&lt;/h4>
+&lt;p>With the configuration for a &lt;code>code fix&lt;/code>, the &lt;em>TestState&lt;/em> is set, as well as the source code for the expected &lt;em>FinalState&lt;/em>. The final state is the expected code after the code fix has been applied. Again, both &lt;strong>sourceCode&lt;/strong> and &lt;strong>fixedCode&lt;/strong> are C# code as text.
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="kt">var&lt;/span> &lt;span class="n">analyzerFix&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">CSharpCodeFixTest&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">DevOnlyMigrateAnalyzer&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="n">DevOnlyMigrateCodeFixProvider&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">MSTestVerifier&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">TestState&lt;/span> &lt;span class="p">=&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">Sources&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="n">sourceCode&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;span class="p">},&lt;/span>
+&lt;span class="n">FixedState&lt;/span> &lt;span class="p">=&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">Sources&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="n">fixCode&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">};&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;hr>
+&lt;h3 id="defining-the-diagnostics">Defining the diagnostics&lt;/h3>
+&lt;p>Next up is to define the diagnostics we expect the code to trigger.&lt;/p>
+&lt;h4 id="analyzer-diagnostics">Analyzer diagnostics&lt;/h4>
+&lt;p>With an &lt;code>analyzer&lt;/code> test, the diagnostic id, severity and location of the expected diagnostics is specified:
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5">5&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="n">analyzerTest&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">ExpectedDiagnostics&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Add&lt;/span>&lt;span class="p">(&lt;/span>
+&lt;span class="k">new&lt;/span> &lt;span class="n">DiagnosticResult&lt;/span>&lt;span class="p">(&lt;/span>
+&lt;span class="s">&amp;#34;ADEF001&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="n">Microsoft&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">CodeAnalysis&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">DiagnosticSeverity&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Warning&lt;/span>
+&lt;span class="p">).&lt;/span>&lt;span class="n">WithLocation&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="m">18&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="m">27&lt;/span>&lt;span class="p">));&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;h4 id="code-fix-diagnostics">Code fix diagnostics&lt;/h4>
+&lt;p>With a &lt;code>code fix&lt;/code>, if the expectation is that there will still be diagnostics after the code fix has been applied, the ExpectedDiagnostics is set on the &lt;strong>FixedState&lt;/strong>:
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5">5&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="n">analyzerFix&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">FixedState&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">ExpectedDiagnostics&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Add&lt;/span>&lt;span class="p">(&lt;/span>
+&lt;span class="k">new&lt;/span> &lt;span class="n">DiagnosticResult&lt;/span>&lt;span class="p">(&lt;/span>
+&lt;span class="s">&amp;#34;ADEF001&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="n">Microsoft&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">CodeAnalysis&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">DiagnosticSeverity&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Warning&lt;/span>
+&lt;span class="p">).&lt;/span>&lt;span class="n">WithLocation&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="m">18&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="m">27&lt;/span>&lt;span class="p">));&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;p>No or multiple expected diagnostics can be specified.&lt;/p>
+&lt;hr>
+&lt;h3 id="additional-configuration">Additional configuration&lt;/h3>
+&lt;h4 id="net60-support">.NET6.0 support&lt;/h4>
+&lt;p>If the &lt;strong>sourceCode&lt;/strong> (a string representation of C# code) contains any features specific to .NET6.0 (such as the no longer required Main method), the setup below needs to be done.&lt;/p>
+&lt;p>This specifies to the testing framework to include the additional package as part of the code when executing the analyzer:
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="kt">var&lt;/span> &lt;span class="n">analyzerTest&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">CSharpAnalyzerTest&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">ConfigConnectionStringAnalyzer&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="n">MSTestVerifier&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">TestState&lt;/span> &lt;span class="p">=&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">Sources&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="n">sourceCode&lt;/span> &lt;span class="p">},&lt;/span>
+&lt;span class="n">ReferenceAssemblies&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">ReferenceAssemblies&lt;/span>&lt;span class="p">(&lt;/span>
+&lt;span class="s">&amp;#34;net6.0&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="k">new&lt;/span> &lt;span class="n">PackageIdentity&lt;/span>&lt;span class="p">(&lt;/span>
+&lt;span class="s">&amp;#34;Microsoft.NETCore.App.Ref&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s">&amp;#34;6.0.0&amp;#34;&lt;/span>&lt;span class="p">),&lt;/span>
+&lt;span class="n">Path&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Combine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;ref&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s">&amp;#34;net6.0&amp;#34;&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">};&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;p>For a &lt;code>code fix&lt;/code> test, the same needs to be applied to the &lt;strong>FinalState&lt;/strong> if it makes use of the same .NET6.0 specific functionality.&lt;/p>
+&lt;h4 id="nuget-packages">Nuget Packages&lt;/h4>
+&lt;p>Sometimes additional packages are required for the &lt;em>sourceCode&lt;/em> to successfully compile. In the sample code, for example, the EntityFramework Core references.&lt;/p>
+&lt;p>The required package names and version are specified and then added to the &lt;em>TestState&lt;/em>.
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-16">16&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-17">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-17">17&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-18">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-18">18&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-19">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-19">19&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-20">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-20">20&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-21">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-21">21&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-22">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-22">22&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="c1">// include any nuget packages to reduce the number of errors
+&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="kt">var&lt;/span> &lt;span class="n">packages&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="k">new&lt;/span>&lt;span class="p">[]&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;span class="k">new&lt;/span> &lt;span class="n">PackageIdentity&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;Microsoft.Extensions.Hosting&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s">&amp;#34;6.0.0&amp;#34;&lt;/span>&lt;span class="p">),&lt;/span>
+&lt;span class="k">new&lt;/span> &lt;span class="n">PackageIdentity&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;Microsoft.Extensions.Configuration&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s">&amp;#34;6.0.0&amp;#34;&lt;/span>&lt;span class="p">),&lt;/span>
+&lt;span class="k">new&lt;/span> &lt;span class="n">PackageIdentity&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;Microsoft.EntityFrameworkCore&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s">&amp;#34;6.0.0&amp;#34;&lt;/span>&lt;span class="p">),&lt;/span>
+&lt;span class="k">new&lt;/span> &lt;span class="n">PackageIdentity&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;Microsoft.EntityFrameworkCore.Sqlite&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s">&amp;#34;6.0.0&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">ToImmutableArray&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">analyzerTest&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">CSharpAnalyzerTest&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">DevOnlyMigrateAnalyzer&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">MSTestVerifier&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">TestState&lt;/span> &lt;span class="p">=&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">Sources&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="n">sourceCode&lt;/span> &lt;span class="p">},&lt;/span>
+&lt;span class="n">ReferenceAssemblies&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">ReferenceAssemblies&lt;/span>&lt;span class="p">(&lt;/span>
+&lt;span class="s">&amp;#34;net6.0&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="k">new&lt;/span> &lt;span class="n">PackageIdentity&lt;/span>&lt;span class="p">(&lt;/span>
+&lt;span class="s">&amp;#34;Microsoft.NETCore.App.Ref&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s">&amp;#34;6.0.0&amp;#34;&lt;/span>&lt;span class="p">),&lt;/span>
+&lt;span class="n">Path&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Combine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;ref&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s">&amp;#34;net6.0&amp;#34;&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AddPackages&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">packages&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">};&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;blockquote>
+&lt;div>
+&lt;div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px;">
+&lt;i class="inline-svg" >&lt;svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-info-circle" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#00abfb" fill="none" stroke-linecap="round" stroke-linejoin="round">
+&lt;path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+&lt;circle cx="12" cy="12" r="9" />
+&lt;line x1="12" y1="8" x2="12.01" y2="8" />
+&lt;polyline points="11 12 12 12 12 16 13 16" />
+&lt;/svg>&lt;/i>
+&lt;/div>
+&lt;div>
+&lt;p>&lt;p>Adding the packages to the tests is NOT required - if not added, the code simply wont compile, with the error: &lt;strong>&lt;em>The type or namespace name &amp;lsquo;XXX&amp;rsquo; does not exist in the namespace&lt;/em>&lt;/strong> &amp;hellip;&lt;br>
+These errors could be added to the &lt;em>ExpectedDiagnostics&lt;/em> collection and as the test now expects these to occur, the test will pass.&lt;/p>
+&lt;p>However the easier and more complete solution, is to rather just add the required packages instead of trying to cater for diagnostics not related to the &lt;code>analyzer&lt;/code> or &lt;code>code fix&lt;/code> being tested.&lt;/p>
+&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;/blockquote>
+&lt;h4 id="additional-files">Additional files&lt;/h4>
+&lt;p>Sometimes an analyzer will require additional files to successfully perform its function - such as checking the contents of the appsettings.json. To successfully be able to test this, additional files (names, and content) can be configured as part of the test.&lt;/p>
+&lt;p>This is done on the &lt;em>TestState&lt;/em> or &lt;em>FixedState&lt;/em>:&lt;/p>
+&lt;p>In the below sample, an additional file called &lt;code>appsettings.json&lt;/code>, with &lt;code>empty json&lt;/code> contents, is added to the test state.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="n">analyzerTest&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">TestState&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">AdditionalFiles&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Add&lt;/span>&lt;span class="p">((&lt;/span>&lt;span class="s">&amp;#34;appsettings.json&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s">&amp;#34;{}&amp;#34;&lt;/span>&lt;span class="p">));&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;h4 id="build-configuration">Build configuration&lt;/h4>
+&lt;p>In some use cases, such as one in the sample, the build configuration of the project makes a difference to how the analyzer performs.&lt;/p>
+&lt;p>To specify the build configuration, or any preprocessor symbols, the following is used:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5">5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6">6&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="n">analyzerTest&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">SolutionTransforms&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Add&lt;/span>&lt;span class="p">((&lt;/span>&lt;span class="n">s&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">p&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">return&lt;/span> &lt;span class="n">s&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WithProjectParseOptions&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">p&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="k">new&lt;/span> &lt;span class="n">CSharpParseOptions&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">WithPreprocessorSymbols&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;DEBUG&amp;#34;&lt;/span>&lt;span class="p">));&lt;/span>
+&lt;span class="p">});&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;hr>
+&lt;h2 id="next-steps-tips-and-tricks">Next steps: Tips and tricks&lt;/h2>
+&lt;p>The next and final &lt;a class="link" href="../analyzer-extra/" >part in the series&lt;/a> will provider some collection of tips and tricks collected while working with &lt;code>analyzers&lt;/code>.&lt;/p>
+&lt;h2 id="useful-links">Useful links&lt;/h2>
+&lt;p>&lt;a class="link" href="https://github.com/dotnet/roslyn" target="_blank" rel="noopener"
+>Roslyn repository&lt;/a>&lt;br>
+&lt;a class="link" href="https://github.com/always-developing/CodeAnalysis.EntityFrameworkCore.Sample" target="_blank" rel="noopener"
+>Sample analyzer and code fix repository&lt;/a>&lt;/p></description></item><item><title>Roslyn Analyzer - writing the code fix (Part 3)</title><link>https://always-developing.github.io/p/analyzer-code-fix/</link><pubDate>Fri, 26 Nov 2021 03:00:00 +0200</pubDate><guid>https://always-developing.github.io/p/analyzer-code-fix/</guid><description>&lt;p>All posts in the series:&lt;br>
+&lt;strong>Part 1:&lt;/strong> &lt;a class="link" href="../analyzer-explained" >Roslyn Analyzer - explained&lt;/a> &lt;br>
+&lt;strong>Part 2:&lt;/strong> &lt;a class="link" href="../analyzer-write/" >Roslyn Analyzer - writing an analyzer&lt;/a>&lt;br>
+&lt;strong>Part 3:&lt;/strong> Roslyn Analyzer - writing a code fix (this post)&lt;br>
+&lt;strong>Part 4:&lt;/strong> &lt;a class="link" href="../analyzer-test/" >Roslyn Analyzer - testing an analyzer and code fix&lt;/a>&lt;br>
+&lt;strong>Part 5:&lt;/strong> &lt;a class="link" href="../analyzer-extra/" >Roslyn Analyzer - tips and tricks&lt;/a>&lt;/p>
+&lt;p>All code in the posts, including the sample project and working &lt;code>analyzer&lt;/code> and &lt;code>code fix&lt;/code> are &lt;a class="link" href="https://github.com/always-developing/CodeAnalysis.EntityFrameworkCore.Sample" target="_blank" rel="noopener"
+>available on Github&lt;/a>.&lt;/p>
+&lt;h2 id="code-fix-introduction">Code fix introduction&lt;/h2>
+&lt;p>As detailed in the &lt;a class="link" href="../analyzer-write" >previous post in the series&lt;/a>, now that there is a working &lt;code>analyzer&lt;/code> which accurately reports diagnostic information to Roslyn, the next step is to write the &lt;code>code fix&lt;/code> to resolve the diagnostic.&lt;/p>
+&lt;p>Not all &lt;code>analyzers&lt;/code> will have a &lt;code>code fix&lt;/code> - the resolution might be out of the scope of Roslyn to resolve, in which case the diagnostic should info the developer how to resolve the report.&lt;/p>
+&lt;hr>
+&lt;h2 id="coding-the-code-fix">Coding the code fix&lt;/h2>
+&lt;h3 id="code-fix-setup">Code fix setup&lt;/h3>
+&lt;p>First step is to configure the &lt;code>code fix&lt;/code> so it applies to a specific diagnostic (or multiple diagnostics)&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-16">16&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-17">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-17">17&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="na">[ExportCodeFixProvider(LanguageNames.CSharp,
+&lt;/span>&lt;span class="na"> Name = nameof(DevOnlyMigrateCodeFixProvider)), Shared]&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">DevOnlyMigrateCodeFixProvider&lt;/span> &lt;span class="p">:&lt;/span> &lt;span class="n">CodeFixProvider&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="k">sealed&lt;/span> &lt;span class="k">override&lt;/span> &lt;span class="n">ImmutableArray&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="kt">string&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="n">FixableDiagnosticIds&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">get&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">return&lt;/span> &lt;span class="n">ImmutableArray&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Create&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">DevOnlyMigrateAnalyzer&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">DiagnosticId&lt;/span>&lt;span class="p">);&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="k">sealed&lt;/span> &lt;span class="k">override&lt;/span> &lt;span class="n">FixAllProvider&lt;/span> &lt;span class="n">GetFixAllProvider&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">return&lt;/span> &lt;span class="n">WellKnownFixAllProviders&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">BatchFixer&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">.&lt;/span>
+&lt;span class="p">.&lt;/span>
+&lt;span class="p">.&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;ul>
+&lt;li>&lt;strong>Line 3&lt;/strong>: The class must inherit from &lt;em>CodeFixProvider&lt;/em>&lt;/li>
+&lt;li>&lt;strong>Line 5-8&lt;/strong>: The overridden &lt;em>FixableDiagnosticIds&lt;/em> returns a list of the diagnostic ids this &lt;code>code fix&lt;/code> will resolve&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h3 id="register-the-code-fix">Register the code fix&lt;/h3>
+&lt;p>The next step is to register the code fix with Roslyn - this is done by overriding the &lt;em>RegisterCodeFixesAsync&lt;/em> method.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-16">16&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-17">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-17">17&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-18">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-18">18&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-19">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-19">19&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-20">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-20">20&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">public&lt;/span> &lt;span class="k">sealed&lt;/span> &lt;span class="k">override&lt;/span> &lt;span class="k">async&lt;/span> &lt;span class="n">Task&lt;/span> &lt;span class="n">RegisterCodeFixesAsync&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">CodeFixContext&lt;/span> &lt;span class="n">context&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">root&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="k">await&lt;/span> &lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Document&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetSyntaxRootAsync&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">CancellationToken&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">ConfigureAwait&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="k">false&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">diagnostic&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Diagnostics&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">First&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">diagnosticSpan&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">diagnostic&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Location&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">SourceSpan&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">declaration&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">root&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">FindToken&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">diagnosticSpan&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Start&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="n">Parent&lt;/span>&lt;span class="p">.&lt;/span>
+&lt;span class="n">AncestorsAndSelf&lt;/span>&lt;span class="p">().&lt;/span>&lt;span class="n">OfType&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">InvocationExpressionSyntax&lt;/span>&lt;span class="p">&amp;gt;().&lt;/span>&lt;span class="n">First&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="c1">// Register a code action that will invoke the fix.
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">RegisterCodeFix&lt;/span>&lt;span class="p">(&lt;/span>
+&lt;span class="n">CodeAction&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Create&lt;/span>&lt;span class="p">(&lt;/span>
+&lt;span class="n">equivalenceKey&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="n">DevOnlyMigrateAnalyzer&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">DiagnosticId&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="n">title&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s">&amp;#34;Surround with correct #if directive&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="n">createChangedDocument&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="n">c&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span>
+&lt;span class="n">InsertIfDirectiveAsync&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Document&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">declaration&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">c&lt;/span>&lt;span class="p">)),&lt;/span>
+&lt;span class="n">diagnostic&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;ul>
+&lt;li>&lt;strong>Lines 3-4&lt;/strong>: Gets the entire syntax tree from the context&lt;/li>
+&lt;li>&lt;strong>Lines 6-7&lt;/strong>: Get the first diagnostic reported, and get its Span (the location within the root syntax tree)&lt;/li>
+&lt;li>&lt;strong>Lines 9-10&lt;/strong>: Find the syntax node at the location of the diagnostic&lt;/li>
+&lt;li>&lt;strong>Lines 13-19&lt;/strong>: Register the code fix:
+&lt;ul>
+&lt;li>&lt;strong>Line 15&lt;/strong>: Register the specific diagnostic id&lt;/li>
+&lt;li>&lt;strong>Line 16&lt;/strong>: The text which appears in the quick action menu&lt;/li>
+&lt;li>&lt;strong>Lines 17-19&lt;/strong>: The method to call which will handle altering the document&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h3 id="alter-the-syntax-tree">Alter the syntax tree&lt;/h3>
+&lt;p>A &lt;code>code fix&lt;/code> consists of taking the original document (which contains the full context tree), modifying various nodes in the tree to reflect how the fixed code should look, and then returning the updated document.&lt;/p>
+&lt;p>For the sample &lt;code>analyzer&lt;/code>, this is done in &lt;em>InsertIfDirectiveAsync&lt;/em>, the method registered in the previous step:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-16">16&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-17">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-17">17&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-18">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-18">18&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-19">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-19">19&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-20">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-20">20&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-21">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-21">21&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-22">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-22">22&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-23">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-23">23&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-24">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-24">24&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-25">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-25">25&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-26">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-26">26&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-27">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-27">27&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-28">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-28">28&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-29">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-29">29&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-30">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-30">30&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-31">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-31">31&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-32">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-32">32&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-33">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-33">33&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-34">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-34">34&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-35">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-35">35&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-36">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-36">36&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-37">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-37">37&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-38">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-38">38&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-39">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-39">39&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-40">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-40">40&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-41">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-41">41&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-42">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-42">42&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-43">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-43">43&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-44">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-44">44&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-45">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-45">45&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-46">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-46">46&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-47">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-47">47&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-48">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-48">48&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">private&lt;/span> &lt;span class="k">async&lt;/span> &lt;span class="n">Task&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">Document&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="n">InsertIfDirectiveAsync&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">Document&lt;/span> &lt;span class="n">document&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="n">InvocationExpressionSyntax&lt;/span> &lt;span class="n">invocationExpr&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">CancellationToken&lt;/span> &lt;span class="n">cancellationToken&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">memberAccessExpr&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">invocationExpr&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Expression&lt;/span> &lt;span class="k">as&lt;/span> &lt;span class="n">MemberAccessExpressionSyntax&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">originalRoot&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="k">await&lt;/span> &lt;span class="n">document&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetSyntaxRootAsync&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">cancellationToken&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">statement&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">GetStatement&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">invocationExpr&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="c1">// get the closest If directive
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="kt">var&lt;/span> &lt;span class="n">closestIfDirective&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">CodeAnalysisHelper&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetClosestIfDirective&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">memberAccessExpr&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="n">originalRoot&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="c1">// if there was one
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">closestIfDirective&lt;/span> &lt;span class="p">!=&lt;/span> &lt;span class="k">null&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="c1">// work out the replacement directive and replace
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="kt">var&lt;/span> &lt;span class="n">replacementIfDirective&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">SyntaxFactory&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">IfDirectiveTrivia&lt;/span>&lt;span class="p">(&lt;/span>
+&lt;span class="n">SyntaxFactory&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">ParseExpression&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$&amp;#34; DEBUG{Environment.NewLine}&amp;#34;&lt;/span>&lt;span class="p">),&lt;/span>
+&lt;span class="k">true&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="k">true&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="k">true&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">replacementIfDirectiveList&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">SyntaxFactory&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">TriviaList&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="k">new&lt;/span> &lt;span class="n">SyntaxTrivia&lt;/span>&lt;span class="p">[]&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">SyntaxFactory&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Trivia&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">replacementIfDirective&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">});&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">ifDirectiveNode&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">statement&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">FindNode&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">closestIfDirective&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Value&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Span&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="k">if&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">ifDirectiveNode&lt;/span> &lt;span class="p">!=&lt;/span> &lt;span class="k">null&lt;/span> &lt;span class="p">&amp;amp;&amp;amp;&lt;/span> &lt;span class="n">ifDirectiveNode&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">HasLeadingTrivia&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">newIfDirectiveNode&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">ifDirectiveNode&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">WithLeadingTrivia&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">replacementIfDirectiveList&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">newReplacementStatement&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">statement&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">ReplaceNode&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">ifDirectiveNode&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">newIfDirectiveNode&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">newReplacementRoot&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">originalRoot&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">ReplaceNode&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">statement&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">newReplacementStatement&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="k">return&lt;/span> &lt;span class="n">document&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WithSyntaxRoot&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">newReplacementRoot&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="k">return&lt;/span> &lt;span class="n">document&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="c1">// this branch is if there is no directive
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="kt">var&lt;/span> &lt;span class="n">statementWithDirective&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">InsertNewIfDirective&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">statement&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">newRootWithEndDirective&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">originalRoot&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">ReplaceNode&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">statement&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">statementWithDirective&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="k">return&lt;/span> &lt;span class="n">document&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WithSyntaxRoot&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">newRootWithEndDirective&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;ul>
+&lt;li>&lt;strong>Lines 1-2&lt;/strong>: The parameters to the method are the full Document, as well as the specific syntax which triggered the diagnostic&lt;/li>
+&lt;li>&lt;strong>Line 6&lt;/strong>: A helper method is called to get the code statement which &lt;em>invocationExpr&lt;/em> (Migrate method call) is part of.&lt;br>
+The statement is the larger code block containing the &lt;em>invocationExpr&lt;/em> : _context?.Database.Migrate()&lt;/li>
+&lt;li>&lt;strong>Lines 9-10&lt;/strong>: A helper method is called to get the closest #if directive which occurs before the &lt;em>invocationExpr&lt;/em> location&lt;/li>
+&lt;li>&lt;strong>Lines 13-39&lt;/strong>: This handles replacing the existing #if directive with a version which has the correct condition
+&lt;ul>
+&lt;li>&lt;strong>Lines 16-23&lt;/strong>: Builds the replacement trivia: &lt;code>#if DEBUG&lt;/code>&lt;/li>
+&lt;li>&lt;strong>Line 25&lt;/strong>: Find the existing trivia in the statement node&lt;/li>
+&lt;li>&lt;strong>Lines 29-34&lt;/strong>: Replaces the text in the #if directive, then replaced the directive in the statement with the new directive, then replaced the statement in the root with the new statement&lt;/li>
+&lt;li>&lt;strong>Lines 36&lt;/strong>: Return the document with the new syntax root&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>&lt;strong>Lines 43-47&lt;/strong>: This handles inserting a new #if directive into the statement (InsertNewIfDirective method), and then returns the document with the newly inserted directive.&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h3 id="applying-the-code-fix">Applying the code fix&lt;/h3>
+&lt;p>Nothing more is required - Visual Studio and Roslyn will automatically call the &lt;code>code fix&lt;/code> method to:&lt;/p>
+&lt;ol>
+&lt;li>Give a preview of the fix being applied when the cursor is held over the quick action menu item.&lt;/li>
+&lt;li>Apply the fix when the quick action menu item is clicked.&lt;/li>
+&lt;/ol>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 278;
+flex-basis: 667px"
+>
+&lt;a href="https://always-developing.github.io/p/analyzer-code-fix/FixPreview.png" data-size="690x248">
+&lt;img src="https://always-developing.github.io/p/analyzer-code-fix/FixPreview.png"
+width="690"
+height="248"
+srcset="https://always-developing.github.io/p/analyzer-code-fix/FixPreview_hu4cab6ce6ea1db54dbb70da6bc5a61d25_37377_480x0_resize_box_3.png 480w, https://always-developing.github.io/p/analyzer-code-fix/FixPreview_hu4cab6ce6ea1db54dbb70da6bc5a61d25_37377_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="The code fix preview">
+&lt;/a>
+&lt;figcaption>The code fix preview&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;hr>
+&lt;h2 id="next-steps-testing-the-analyzer-and-code-fix">Next steps: Testing the analyzer and code fix&lt;/h2>
+&lt;p>Next up, &lt;a class="link" href="../analyzer-test/" >part 4 in the series&lt;/a> will detail how to test the custom &lt;code>analyzer&lt;/code> and associated &lt;code>code fix&lt;/code>. This includes information on using the analyzer &lt;code>unit tests infrastructure&lt;/code> to assist with development, as well as using the &lt;code>VSIX&lt;/code> project.&lt;/p>
+&lt;h2 id="useful-links">Useful links&lt;/h2>
+&lt;p>&lt;a class="link" href="https://github.com/dotnet/roslyn" target="_blank" rel="noopener"
+>Roslyn repository&lt;/a>&lt;br>
+&lt;a class="link" href="https://github.com/always-developing/CodeAnalysis.EntityFrameworkCore.Sample" target="_blank" rel="noopener"
+>Sample analyzer and code fix repository&lt;/a>&lt;/p></description></item><item><title>Roslyn Analyzer - writing the analyzer (Part 2)</title><link>https://always-developing.github.io/p/analyzer-write/</link><pubDate>Thu, 25 Nov 2021 02:00:00 +0200</pubDate><guid>https://always-developing.github.io/p/analyzer-write/</guid><description>&lt;p>All posts in the series:&lt;br>
+&lt;strong>Part 1:&lt;/strong> &lt;a class="link" href="../analyzer-explained" >Roslyn Analyzer - explained&lt;/a> &lt;br>
+&lt;strong>Part 2:&lt;/strong> Roslyn Analyzer - writing an analyzer (this post)&lt;br>
+&lt;strong>Part 3:&lt;/strong> &lt;a class="link" href="../analyzer-code-fix/" >Roslyn Analyzer - writing a code fix&lt;/a>&lt;br>
+&lt;strong>Part 4:&lt;/strong> &lt;a class="link" href="../analyzer-test/" >Roslyn Analyzer - testing an analyzer and code fix&lt;/a>&lt;br>
+&lt;strong>Part 5:&lt;/strong> &lt;a class="link" href="../analyzer-extra/" >Roslyn Analyzer - tips and tricks&lt;/a>&lt;/p>
+&lt;p>All code in the posts, including the sample project and working &lt;code>analyzer&lt;/code> and &lt;code>code fix&lt;/code> are &lt;a class="link" href="https://github.com/always-developing/CodeAnalysis.EntityFrameworkCore.Sample" target="_blank" rel="noopener"
+>available on Github&lt;/a>.&lt;/p>
+&lt;h2 id="analyzer-introduction">Analyzer introduction&lt;/h2>
+&lt;p>To recap from the &lt;a class="link" href="../analyzer-explained" >previous post in the series&lt;/a>, an &lt;code>analyzer&lt;/code> is a piece of code which inspects code (C# or Visual Basic) during design and compile time, and based on the results of the inspection, can trigger a &lt;strong>diagnostic&lt;/strong> as an &lt;strong>Error, Warning&lt;/strong> or as &lt;strong>Information&lt;/strong>.&lt;/p>
+&lt;p>This post will detail the various parts of the &lt;code>analyzer&lt;/code>, how they fit together, and then explore creating a custom &lt;code>analyzer&lt;/code>.&lt;/p>
+&lt;blockquote>
+&lt;div>
+&lt;div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px;">
+&lt;i class="inline-svg" >&lt;svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-info-circle" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#00abfb" fill="none" stroke-linecap="round" stroke-linejoin="round">
+&lt;path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+&lt;circle cx="12" cy="12" r="9" />
+&lt;line x1="12" y1="8" x2="12.01" y2="8" />
+&lt;polyline points="11 12 12 12 12 16 13 16" />
+&lt;/svg>&lt;/i>
+&lt;/div>
+&lt;div>
+&lt;p>While the samples used in these posts and in the associated &lt;a href="https://github.com/always-developing/CodeAnalysis.EntityFrameworkCore.Sample">Github repository&lt;/a> are working and practical, the code is NOT optimized, and also does not cater for all use cases scenarios and edge cases.&lt;br>
+The code should be used as a guide for writing a custom &lt;code>analyzer&lt;/code> and &lt;code>code fix&lt;/code> and not as-is for production use.&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;/blockquote>
+&lt;hr>
+&lt;h2 id="analyzer-solution">Analyzer solution&lt;/h2>
+&lt;h3 id="creating-an-analyzer-project">Creating an analyzer project&lt;/h3>
+&lt;p>Creating the initial analyzer project is very simple - Visual Studio has a template for it!&lt;br>
+When creating a new project in Visual Studio, search for &lt;em>analyzer&lt;/em> and select the C# &lt;em>Analyzer with Code Fix (.NET Standard)&lt;/em> template.&lt;/p>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 264;
+flex-basis: 633px"
+>
+&lt;a href="https://always-developing.github.io/p/analyzer-write/1.ProjectSelection.png" data-size="700x265">
+&lt;img src="https://always-developing.github.io/p/analyzer-write/1.ProjectSelection.png"
+width="700"
+height="265"
+srcset="https://always-developing.github.io/p/analyzer-write/1.ProjectSelection_hu7c07f03fb5105e408f1eb18f69829091_59864_480x0_resize_box_3.png 480w, https://always-developing.github.io/p/analyzer-write/1.ProjectSelection_hu7c07f03fb5105e408f1eb18f69829091_59864_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="C# Analyzer with Code Fix (.NET Standard) project">
+&lt;/a>
+&lt;figcaption>C# Analyzer with Code Fix (.NET Standard) project&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;p>If the project doesn&amp;rsquo;t appear in the list, the .NET Compiler Platform SDK workload is most likely not installed. Modify the Visual Studio installation to confirm and install if required.&lt;/p>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 192;
+flex-basis: 461px"
+>
+&lt;a href="https://always-developing.github.io/p/analyzer-write/2.ExtensionDevelopment2.png" data-size="700x364">
+&lt;img src="https://always-developing.github.io/p/analyzer-write/2.ExtensionDevelopment2.png"
+width="700"
+height="364"
+srcset="https://always-developing.github.io/p/analyzer-write/2.ExtensionDevelopment2_huf899301865720470f1585aada73b5225_93069_480x0_resize_box_3.png 480w, https://always-developing.github.io/p/analyzer-write/2.ExtensionDevelopment2_huf899301865720470f1585aada73b5225_93069_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt=".NET Compiler Platform SDK selection">
+&lt;/a>
+&lt;figcaption>.NET Compiler Platform SDK selection&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;blockquote>
+&lt;div>
+&lt;div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px;">
+&lt;i class="inline-svg" >&lt;svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-info-circle" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#00abfb" fill="none" stroke-linecap="round" stroke-linejoin="round">
+&lt;path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+&lt;circle cx="12" cy="12" r="9" />
+&lt;line x1="12" y1="8" x2="12.01" y2="8" />
+&lt;polyline points="11 12 12 12 12 16 13 16" />
+&lt;/svg>&lt;/i>
+&lt;/div>
+&lt;div>
+&lt;p>The various analyzer projects will be created with the target framework of .NET Standard 2.0 for the analyzer specific projects, and .NET Framework 4.7.2 for the VSIX project.&lt;br>
+These should remain as is - as Visual Studio was written using .NET Framework, extensions are required to target .NET Standard 2.0 and currently cannot target any later framework.&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;/blockquote>
+&lt;hr>
+&lt;h3 id="structure-of-the-solution">Structure of the solution&lt;/h3>
+&lt;p>The default analyzer template will create 5 projects as part of the solution (in the order as they appear in the screenshot below):&lt;/p>
+&lt;ol>
+&lt;li>A project which contains the &lt;code>analyzer&lt;/code> code&lt;/li>
+&lt;li>A project which contains the &lt;code>code fix&lt;/code> code&lt;/li>
+&lt;li>A project used to create a NuGet package for the analyzer&lt;/li>
+&lt;li>A test project containing unit test (which is also invaluable for debugging while developing)&lt;/li>
+&lt;li>A VSIX project which creates the Visual Studio extension (also invaluable for testing while developing)&lt;/li>
+&lt;/ol>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 343;
+flex-basis: 824px"
+>
+&lt;a href="https://always-developing.github.io/p/analyzer-write/3.SolutionStructure.png" data-size="512x149">
+&lt;img src="https://always-developing.github.io/p/analyzer-write/3.SolutionStructure.png"
+width="512"
+height="149"
+srcset="https://always-developing.github.io/p/analyzer-write/3.SolutionStructure_hu9a5cdf6e66cf642e035007ebb17f06f8_14459_480x0_resize_box_3.png 480w, https://always-developing.github.io/p/analyzer-write/3.SolutionStructure_hu9a5cdf6e66cf642e035007ebb17f06f8_14459_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Structure of an analyzer solution (sample folder added manually)">
+&lt;/a>
+&lt;figcaption>Structure of an analyzer solution (sample folder added manually)&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;hr>
+&lt;h2 id="the-analyzer">The analyzer&lt;/h2>
+&lt;h3 id="a-sample-application">A sample application&lt;/h3>
+&lt;p>Before starting to code the analyzer, a &lt;strong>&lt;em>very strong&lt;/em>&lt;/strong> suggestion is to create a small sample application which contains the scenario to trigger the &lt;code>analyzer&lt;/code>.
+This will be very useful when testing, as well as crucial when working out the syntax tree of the code (more on this below).&lt;/p>
+&lt;p>This sample project does not have to be at all complicated - the sample project (&lt;a class="link" href="https://github.com/always-developing/CodeAnalysis.EntityFrameworkCore.Sample" target="_blank" rel="noopener"
+>available on Github&lt;/a>) just creates a connection to a Sqlite database, and applies a database migration. No other logic.&lt;/p>
+&lt;p>Personally I prefer to add the sample to my analyzer solution (useful when using the Syntax Visualizer), but then also create a separate solution which just contains just the sample project (useful when testing the analyzer as an extension).&lt;/p>
+&lt;p>See &lt;a class="link" href="../analyzer-explained" >part 1 for a more in depth breakdown&lt;/a> of the the scenarios the custom &lt;code>analyzers&lt;/code> are reporting on.&lt;/p>
+&lt;hr>
+&lt;h3 id="coding-the-analyzer">Coding the analyzer&lt;/h3>
+&lt;h4 id="analyzer-structure">Analyzer structure&lt;/h4>
+&lt;p>An analyzer class inherits from the &lt;code>DiagnosticAnalyzer&lt;/code> class, and can be broken down into four parts:&lt;/p>
+&lt;ol>
+&lt;li>&lt;strong>The diagnostic setup&lt;/strong>: Configure the diagnostic information which appear when the analyzer reports feedback back to the developer&lt;/li>
+&lt;li>&lt;strong>Register the action&lt;/strong>: An Action (a method) is registered, along with a specific syntax kind (e.g. MethodInvocations or NamedTypes). The action/method will then be invoked whenever Roslyn encounters a syntax of that kind while running analysis.&lt;/li>
+&lt;li>&lt;strong>Interrogate the syntax tree&lt;/strong>: Once Roslyn calls the action/method setup in step 2, the syntax tree/code structure is interrogated to determine if the code is relevant for the &lt;code>analyzer&lt;/code> and does a diagnostic need to be trigger&lt;/li>
+&lt;li>&lt;strong>Trigger the diagnostic result&lt;/strong>: The final step is to trigger a diagnostic with Roslyn so the results can be reported back&lt;/li>
+&lt;/ol>
+&lt;hr>
+&lt;h4 id="diagnostic-setup">Diagnostic setup&lt;/h4>
+&lt;p>The first step is to setup the diagnostic information, the information which is reported back.&lt;/p>
+&lt;p>The template makes use of a resx file to allow for localization, however in the sample code &lt;a class="link" href="https://github.com/always-developing/CodeAnalysis.EntityFrameworkCore.Sample" target="_blank" rel="noopener"
+>on Github&lt;/a> as well as in the example below, the resx has been removed and the messages put directly in code.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-16">16&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-17">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-17">17&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-18">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-18">18&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-19">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-19">19&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">public&lt;/span> &lt;span class="k">const&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">DiagnosticId&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="s">&amp;#34;ADEF001&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">private&lt;/span> &lt;span class="k">static&lt;/span> &lt;span class="k">readonly&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">Title&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="s">&amp;#34;Release build auto-migration&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">private&lt;/span> &lt;span class="k">static&lt;/span> &lt;span class="k">readonly&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">MessageFormat&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="s">&amp;#34;It is recommended to only &amp;#34;&lt;/span> &lt;span class="p">+&lt;/span>
+&lt;span class="s">&amp;#34;run auto-migrations in development environments&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">private&lt;/span> &lt;span class="k">static&lt;/span> &lt;span class="k">readonly&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">Description&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="s">&amp;#34;Best practice is to only run &amp;#34;&lt;/span>&lt;span class="p">+&lt;/span>
+&lt;span class="s">&amp;#34;auto-migrations in development environments and not &amp;#34;&lt;/span> &lt;span class="p">+&lt;/span>
+&lt;span class="s">&amp;#34;in test or production environments - this should be done by a CI/CD pipeline.&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">private&lt;/span> &lt;span class="k">const&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">Category&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="s">&amp;#34;Usage&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">private&lt;/span> &lt;span class="k">static&lt;/span> &lt;span class="k">readonly&lt;/span> &lt;span class="n">DiagnosticDescriptor&lt;/span> &lt;span class="n">rule001&lt;/span> &lt;span class="p">=&lt;/span>
+&lt;span class="k">new&lt;/span> &lt;span class="n">DiagnosticDescriptor&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">DiagnosticId&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">Title&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="n">MessageFormat&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">Category&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">DiagnosticSeverity&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Warning&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="n">isEnabledByDefault&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="k">true&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">description&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="n">Description&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="k">override&lt;/span> &lt;span class="n">ImmutableArray&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">DiagnosticDescriptor&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="n">SupportedDiagnostics&lt;/span>
+&lt;span class="p">{&lt;/span> &lt;span class="k">get&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">return&lt;/span> &lt;span class="n">ImmutableArray&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Create&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">rule001&lt;/span>&lt;span class="p">);&lt;/span> &lt;span class="p">}&lt;/span> &lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;ul>
+&lt;li>&lt;strong>Line 1:&lt;/strong> The unique identifier for the diagnostic being triggered&lt;/li>
+&lt;li>&lt;strong>Line 3:&lt;/strong> The title for the diagnostic&lt;/li>
+&lt;li>&lt;strong>Line 4:&lt;/strong> The message for the diagnostic&lt;/li>
+&lt;li>&lt;strong>Line 11:&lt;/strong> The category for the diagnostic (the type of &lt;code>analyzer&lt;/code> - for example the default template analyzer has a category of &lt;em>Naming&lt;/em>, while the above uses &lt;em>Usage&lt;/em>)&lt;/li>
+&lt;li>&lt;strong>Line 13:&lt;/strong> Creates the actual rule using the information defined above&lt;/li>
+&lt;li>&lt;strong>Line 14:&lt;/strong> Exposes the rules the &lt;code>analyzer&lt;/code> could potentially report (a single analyzer could trigger multiple types of diagnostic)&lt;/li>
+&lt;/ul>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 646;
+flex-basis: 1552px"
+>
+&lt;a href="https://always-developing.github.io/p/analyzer-write/DiagnosticReport.png" data-size="886x137">
+&lt;img src="https://always-developing.github.io/p/analyzer-write/DiagnosticReport.png"
+width="886"
+height="137"
+srcset="https://always-developing.github.io/p/analyzer-write/DiagnosticReport_hu058c5f7cdeb080dd72c798839b740e86_11380_480x0_resize_box_3.png 480w, https://always-developing.github.io/p/analyzer-write/DiagnosticReport_hu058c5f7cdeb080dd72c798839b740e86_11380_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="The diagnostic result information displayed in Visual Studio">
+&lt;/a>
+&lt;figcaption>The diagnostic result information displayed in Visual Studio&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;hr>
+&lt;h4 id="register-the-action">Register the action&lt;/h4>
+&lt;p>The next step is to register an action to be called when Roslyn finds a the type of code (syntax kind) the analyzer is interested in.&lt;/p>
+&lt;p>This is done in the overridden &lt;em>Initialize&lt;/em> method.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5">5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6">6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7">7&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">public&lt;/span> &lt;span class="k">override&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">Initialize&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">AnalysisContext&lt;/span> &lt;span class="n">context&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">ConfigureGeneratedCodeAnalysis&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">GeneratedCodeAnalysisFlags&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">None&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">EnableConcurrentExecution&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">RegisterSyntaxNodeAction&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">AnalyzeExpression&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">SyntaxKind&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">InvocationExpression&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;ul>
+&lt;li>&lt;strong>Line 3-4:&lt;/strong> Default configuration. For most &lt;code>analyzers&lt;/code> this does not need to be changed&lt;/li>
+&lt;li>&lt;strong>Line 6:&lt;/strong>. This is the important line, which registers the &lt;code>AnalyzeExpression&lt;/code> method to be called when Roslyn finds a piece of code which is of type &lt;code>InvocationExpression&lt;/code> (a method call).&lt;/li>
+&lt;/ul>
+&lt;p>There are a large number of &lt;code>SyntaxKinds&lt;/code> which can be used to trigger a call to the action method.&lt;/p>
+&lt;p>The &lt;code>analyzer&lt;/code> is starting to take form, with the details of the rule defined, as well as an action registered, to be called when the &lt;code>syntax kind&lt;/code> in question is found by Roslyn.&lt;/p>
+&lt;hr>
+&lt;h4 id="interrogate-the-syntax-tree">Interrogate the syntax tree&lt;/h4>
+&lt;p>See the &lt;a class="link" href="../analyzer-explained/#a-working-sample-analyzer" >&amp;ldquo;Working Sample Analyzer&amp;rdquo;&lt;/a> section in the previous post for more information regarding what this customer &lt;code>analyzer&lt;/code> is doing. In short though, the &lt;code>analyser&lt;/code> is looking for a very specific method called &lt;em>Migrate&lt;/em> on a parent called &lt;em>Database&lt;/em> (so &lt;em>Database.Migrate()&lt;/em>), which should only be called in debug configuration.&lt;/p>
+&lt;p>This is where most of the &lt;code>analyzer&lt;/code> work happens - the syntax node and syntax tree are interrogated to determine if the diagnostic should be triggered or not.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-16">16&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-17">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-17">17&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-18">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-18">18&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-19">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-19">19&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-20">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-20">20&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-21">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-21">21&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-22">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-22">22&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-23">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-23">23&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-24">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-24">24&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-25">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-25">25&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-26">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-26">26&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-27">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-27">27&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-28">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-28">28&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-29">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-29">29&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-30">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-30">30&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-31">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-31">31&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-32">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-32">32&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-33">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-33">33&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-34">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-34">34&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-35">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-35">35&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-36">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-36">36&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-37">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-37">37&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-38">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-38">38&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-39">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-39">39&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-40">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-40">40&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-41">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-41">41&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-42">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-42">42&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-43">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-43">43&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-44">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-44">44&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-45">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-45">45&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-46">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-46">46&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-47">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-47">47&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-48">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-48">48&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-49">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-49">49&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-50">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-50">50&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-51">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-51">51&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-52">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-52">52&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">private&lt;/span> &lt;span class="k">static&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">AnalyzeExpression&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">SyntaxNodeAnalysisContext&lt;/span> &lt;span class="n">context&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="c1">// We know the node is of type InvocationExpressionSyntax as the callback
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="c1">// registration was only for SyntaxKind.InvocationExpression
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="kt">var&lt;/span> &lt;span class="n">invocationExpr&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">InvocationExpressionSyntax&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Node&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="c1">// InvocationExpr.Expression is the method name, the expression before &amp;#34;(&amp;#34;.
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="c1">// In our case Database.Migrate
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="kt">var&lt;/span> &lt;span class="n">memberAccessExpr&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">invocationExpr&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Expression&lt;/span> &lt;span class="k">as&lt;/span> &lt;span class="n">MemberAccessExpressionSyntax&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">memberAccessExpr&lt;/span> &lt;span class="p">==&lt;/span> &lt;span class="k">null&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="k">return&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="c1">// Get the expression. In our case, Database
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="kt">var&lt;/span> &lt;span class="n">bindingExpression&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">memberAccessExpr&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Expression&lt;/span> &lt;span class="k">as&lt;/span> &lt;span class="n">MemberBindingExpressionSyntax&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">bindingExpression&lt;/span> &lt;span class="p">==&lt;/span> &lt;span class="k">null&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="k">return&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="c1">// Get the memberAccessExpr name of the expression.
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="c1">// In our case, Migrate
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="kt">var&lt;/span> &lt;span class="n">expressionName&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">bindingExpression&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Name&lt;/span> &lt;span class="k">as&lt;/span> &lt;span class="n">IdentifierNameSyntax&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">expressionName&lt;/span> &lt;span class="p">==&lt;/span> &lt;span class="k">null&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="k">return&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="c1">// If we reach this far, make sure its the Database property
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">expressionName&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Identifier&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">ToString&lt;/span>&lt;span class="p">().&lt;/span>&lt;span class="n">ToLower&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="p">!=&lt;/span> &lt;span class="s">&amp;#34;Database&amp;#34;&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">ToLower&lt;/span>&lt;span class="p">())&lt;/span>
+&lt;span class="k">return&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="c1">// Get the memberAccessExpr name of the expression.
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="c1">// In our case, Migrate
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="kt">var&lt;/span> &lt;span class="n">identifierName&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">memberAccessExpr&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Name&lt;/span> &lt;span class="k">as&lt;/span> &lt;span class="n">IdentifierNameSyntax&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">identifierName&lt;/span> &lt;span class="p">==&lt;/span> &lt;span class="k">null&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="k">return&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="c1">// check if its the specific method we want to analyze
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">identifierName&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Identifier&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">ToString&lt;/span>&lt;span class="p">().&lt;/span>&lt;span class="n">ToLower&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="p">==&lt;/span> &lt;span class="s">&amp;#34;Migrate&amp;#34;&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">ToLower&lt;/span>&lt;span class="p">())&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">closestIfDirective&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">CodeAnalysisHelper&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetClosestIfDirective&lt;/span>&lt;span class="p">(&lt;/span>
+&lt;span class="n">memberAccessExpr&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">SemanticModel&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">SyntaxTree&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetRoot&lt;/span>&lt;span class="p">());&lt;/span>
+&lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">closestIfDirective&lt;/span> &lt;span class="p">!=&lt;/span> &lt;span class="k">null&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">if&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">CodeAnalysisHelper&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">IsValidIfDirective&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">closestIfDirective&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">return&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="c1">// report the error if we found the method and it didn&amp;#39;t have the
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="c1">// directives expected
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="kt">var&lt;/span> &lt;span class="n">diagnostic001&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">Diagnostic&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Create&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">rule001&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">identifierName&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetLocation&lt;/span>&lt;span class="p">());&lt;/span>
+&lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">ReportDiagnostic&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">diagnostic001&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>As the &lt;code>AnalyzeExpression&lt;/code> method is called every time the syntax kind registered (&lt;em>InvocationExpression&lt;/em> in this case) is found in code, the analyzer needs to ignore any &lt;em>InvocationExpression&lt;/em>&amp;rsquo;s which are not relevant to it.&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>Lines 5-35&lt;/strong>: These lines interrogate the syntax tree to make sure the &lt;em>InvocationExpression&lt;/em> is the one relevant to it - &lt;strong>Database.Migrate()&lt;/strong>&lt;/li>
+&lt;li>&lt;strong>Line 37-38&lt;/strong>: A helper method is called to find the closest &lt;code>#if directive&lt;/code> which occurs before the &lt;strong>Database.Migrate()&lt;/strong> call&lt;/li>
+&lt;li>&lt;strong>Line 41&lt;/strong>: A helper method is called to check if the &lt;code>#if directive&lt;/code> contains a valid condition&lt;/li>
+&lt;li>&lt;strong>Line 49-50&lt;/strong>: All necessary checks are complete and the diagnostic is triggered with Roslyn&lt;/li>
+&lt;/ul>
+&lt;p>These step can be very tricky to get right, and sometimes requires a lot of trial and error and debugging to get right. Working with the syntax tree can be complex depending on what the &lt;code>analyzer&lt;/code> is looking for.&lt;/p>
+&lt;p>However the &lt;code>Syntax Visualizer&lt;/code> does make it easier.&lt;/p>
+&lt;p>This is an iterative process, using the below three methods to debug, inspect the code and syntax tree, and making tweaks to the various &lt;code>analyzer&lt;/code> checks:&lt;/p>
+&lt;ul>
+&lt;li>Use of the &lt;code>Syntax Visualizer&lt;/code>&lt;/li>
+&lt;li>Use of the &lt;code>unit test infrastructure&lt;/code> for analyzers&lt;/li>
+&lt;li>Executing the &lt;code>VSIX project&lt;/code> (which starts up a new instance of Visual Studio with the analyzer installed as an extension)&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h5 id="the-syntax-visualizer">The Syntax Visualizer&lt;/h5>
+&lt;p>Visual Studio comes with a built in tool window called the &lt;code>Syntax Visualizer&lt;/code>, which can be found under the &lt;code>View -&amp;gt; Other Windows -&amp;gt; Syntax Visualizer&lt;/code>.&lt;/p>
+&lt;p>This window will track the current active code window, and display the syntax tree of the active code, in a hierarchical structure.&lt;br>
+Selecting various pieces of the code will cause the highlighted item in the &lt;code>Syntax Visualizer&lt;/code> to change and track the active item in code.&lt;/p>
+&lt;p>This is invaluable in determining which &lt;code>SyntaxKind&lt;/code> to register (as described in the &lt;a class="link" href="#register-the-action" >&amp;ldquo;register the action&amp;rdquo;&lt;/a> section ), as well as how to traverse the tree to find the relevant syntax nodes to trigger the diagnostic being registered.&lt;/p>
+&lt;p>The &lt;code>Syntax Visualizer&lt;/code> + the sample project created in the &lt;a class="link" href="#creating-an-analyzer-project" >&amp;ldquo;creating an analyzer project&amp;rdquo;&lt;/a> section, are key in correctly determining the logic of the analyzer. The below screen shot show the &lt;code>Syntax Visualizer&lt;/code> reflecting the part of the &lt;code>syntax tree&lt;/code> for the &lt;strong>Migrate()&lt;/strong> method.&lt;/p>
+&lt;p>Notice how the tree matches the checks done in the code in the &lt;a class="link" href="#interrogate-the-syntax-tree" >above section:&lt;/a>:&lt;br>
+&lt;code>InvocationExpression -&amp;gt; MemberAccessExpression -&amp;gt; MemberBindingExpression -&amp;gt; IdentifierName&lt;/code>&lt;/p>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 222;
+flex-basis: 533px"
+>
+&lt;a href="https://always-developing.github.io/p/analyzer-write/SyntaxVisualizer.png" data-size="930x418">
+&lt;img src="https://always-developing.github.io/p/analyzer-write/SyntaxVisualizer.png"
+width="930"
+height="418"
+srcset="https://always-developing.github.io/p/analyzer-write/SyntaxVisualizer_hu2c69549fc581dd2251a0c3d99615d337_93142_480x0_resize_box_3.png 480w, https://always-developing.github.io/p/analyzer-write/SyntaxVisualizer_hu2c69549fc581dd2251a0c3d99615d337_93142_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="The Syntax Visualizer used in the sample project">
+&lt;/a>
+&lt;figcaption>The Syntax Visualizer used in the sample project&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;hr>
+&lt;h4 id="trigger-the-diagnostics">Trigger the diagnostics&lt;/h4>
+&lt;p>Once the code has been interrogated and it has been determined feedback needs to be given, the final step is to trigger and register the diagnostic with Roslyn.&lt;/p>
+&lt;p>The diagnostic information and rule created in &lt;a class="link" href="#diagnostic-setup" >&amp;ldquo;diagnostic setup&amp;rdquo;&lt;/a>, is reported at a specific location.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="c1">// report the error if we found the method and it didn&amp;#39;t have the
+&lt;/span>&lt;span class="c1">// directives expected
+&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="kt">var&lt;/span> &lt;span class="n">diagnostic001&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">Diagnostic&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Create&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">rule001&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">identifierName&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetLocation&lt;/span>&lt;span class="p">());&lt;/span>
+&lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">ReportDiagnostic&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">diagnostic001&lt;/span>&lt;span class="p">);&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;ul>
+&lt;li>&lt;strong>Line 3&lt;/strong>: The diagnostic is created, with a specific rule and a specific location. This location will be where the squiggle appears in code when the diagnostic is triggered.&lt;/li>
+&lt;li>&lt;strong>Line 4&lt;/strong>: The diagnostic is finally triggered with Roslyn.&lt;/li>
+&lt;/ul>
+&lt;h2 id="next-steps-coding-the-code-fix">Next steps: Coding the code fix&lt;/h2>
+&lt;p>Next up, &lt;a class="link" href="../analyzer-code-fix/" >part 3 in the series&lt;/a> will go into detail and expand on coding the &lt;code>code fix&lt;/code> for our analyzer, which will fix the code the &lt;code>analyzer&lt;/code> has determined to be incorrect.&lt;/p>
+&lt;hr>
+&lt;h2 id="useful-links">Useful links&lt;/h2>
+&lt;p>&lt;a class="link" href="https://github.com/dotnet/roslyn" target="_blank" rel="noopener"
+>Roslyn repository&lt;/a>&lt;br>
+&lt;a class="link" href="https://github.com/always-developing/CodeAnalysis.EntityFrameworkCore.Sample" target="_blank" rel="noopener"
+>Sample analyzer and code fix repository&lt;/a>&lt;/p></description></item><item><title>Roslyn Analyzer - explained (Part 1)</title><link>https://always-developing.github.io/p/analyzer-explained/</link><pubDate>Wed, 24 Nov 2021 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/p/analyzer-explained/</guid><description>&lt;h2 id="series-introduction">Series introduction&lt;/h2>
+&lt;p>This is a a five part series exploring the Roslyn analyzer and code fix functionality, how to successfully write and test a custom analyzer, as well as some useful tips and tricks for writing analyzers.&lt;/p>
+&lt;p>All posts in the series:&lt;br>
+&lt;strong>Part 1:&lt;/strong> Roslyn Analyzer - explained (this post)&lt;br>
+&lt;strong>Part 2:&lt;/strong> &lt;a class="link" href="../analyzer-write/" >Roslyn Analyzer - writing an analyzer&lt;/a>&lt;br>
+&lt;strong>Part 3:&lt;/strong> &lt;a class="link" href="../analyzer-code-fix/" >Roslyn Analyzer - writing a code fix&lt;/a>&lt;br>
+&lt;strong>Part 4:&lt;/strong> &lt;a class="link" href="../analyzer-test/" >Roslyn Analyzer - testing an analyzer and code fix&lt;/a>&lt;br>
+&lt;strong>Part 5:&lt;/strong> &lt;a class="link" href="../analyzer-extra/" >Roslyn Analyzer - tips and tricks&lt;/a>&lt;/p>
+&lt;p>All code in the posts, including the sample project and working &lt;code>analyzer&lt;/code> and &lt;code>code fix&lt;/code> are &lt;a class="link" href="https://github.com/always-developing/CodeAnalysis.EntityFrameworkCore.Sample" target="_blank" rel="noopener"
+>available on Github&lt;/a>.&lt;/p>
+&lt;h2 id="what-is-roslyn">What is Roslyn?&lt;/h2>
+&lt;p>In short, &lt;code>Roslyn&lt;/code> is the .NET compiler - it consists of the compilers for C# and Visual Basic, as well as an api layer which can be leveraged to gather information about the code (&lt;code>analyse&lt;/code>), and then perform actions based on this information (&lt;code>code fix&lt;/code>).&lt;/p>
+&lt;hr>
+&lt;h2 id="what-is-a-roslyn-analyzer">What is a Roslyn analyzer?&lt;/h2>
+&lt;p>An &lt;code>analyzer&lt;/code> is a piece of code which inspects code (C# or Visual Basic) during design and compile time, and based on the results of the inspection, can raise a &lt;strong>diagnostic result&lt;/strong> as an &lt;strong>Error, Warning&lt;/strong> or as &lt;strong>Information&lt;/strong>.&lt;/p>
+&lt;p>All installed and built-in &lt;code>analyzer(s)&lt;/code> are run at design time (and compile time) automatically, with the diagnostic results reflecting:&lt;/p>
+&lt;ul>
+&lt;li>As coloured &amp;ldquo;squiggles&amp;rdquo; in code&lt;/li>
+&lt;li>In the &lt;strong>Error List&lt;/strong> (Ctrl+W, E) in Visual Studio&lt;/li>
+&lt;li>In the build output&lt;/li>
+&lt;/ul>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 233;
+flex-basis: 560px"
+>
+&lt;a href="https://always-developing.github.io/p/analyzer-explained/1.Warning.png" data-size="600x257">
+&lt;img src="https://always-developing.github.io/p/analyzer-explained/1.Warning.png"
+width="600"
+height="257"
+srcset="https://always-developing.github.io/p/analyzer-explained/1.Warning_hu7871c8551ea18709ef3aaad650dd5b7a_35295_480x0_resize_box_3.png 480w, https://always-developing.github.io/p/analyzer-explained/1.Warning_hu7871c8551ea18709ef3aaad650dd5b7a_35295_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Warning highlighted in code by the green squiggle, and also appearing in the Error List">
+&lt;/a>
+&lt;figcaption>Warning highlighted in code by the green squiggle, and also appearing in the Error List&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 661;
+flex-basis: 1586px"
+>
+&lt;a href="https://always-developing.github.io/p/analyzer-explained/2.BuildWarning2.png" data-size="800x121">
+&lt;img src="https://always-developing.github.io/p/analyzer-explained/2.BuildWarning2.png"
+width="800"
+height="121"
+srcset="https://always-developing.github.io/p/analyzer-explained/2.BuildWarning2_huec49f5e12b963a656f418920c493d7bc_48189_480x0_resize_box_3.png 480w, https://always-developing.github.io/p/analyzer-explained/2.BuildWarning2_huec49f5e12b963a656f418920c493d7bc_48189_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Warning also reflecting during a build">
+&lt;/a>
+&lt;figcaption>Warning also reflecting during a build&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;p>An &lt;code>analyzer&lt;/code> can be leveraged to inspect code for a number of issues related to (but not limited to):&lt;/p>
+&lt;ul>
+&lt;li>Style&lt;/li>
+&lt;li>Quality&lt;/li>
+&lt;li>Design&lt;/li>
+&lt;li>Maintainability&lt;/li>
+&lt;/ul>
+&lt;p>As &lt;code>Roslyn&lt;/code> exposes an API layer on top of the compiler, this layer can be used to write a custom &lt;code>analyzer&lt;/code>.&lt;/p>
+&lt;p>&lt;a class="link" href="../analyzer-write/" >See part 2 for more in depth details regarding writing a custom analyzer.&lt;/a>&lt;/p>
+&lt;hr>
+&lt;h2 id="what-is-a-roslyn-analyzer-code-fix">What is a Roslyn analyzer code fix?&lt;/h2>
+&lt;p>Once an &lt;code>analyzer&lt;/code> has inspected the code and returned an diagnostic result, the next step is apply a code change to resolve the source of the alert - &lt;code>a code fix&lt;/code>.&lt;/p>
+&lt;p>An &lt;code>analyzer&lt;/code> does not require a &lt;code>code fix&lt;/code>, but if no &lt;code>code fix&lt;/code> is provided then it is up to the developer to resolve the issue manually based on the &lt;strong>error, warning or information&lt;/strong> message.&lt;/p>
+&lt;p>If the &lt;code>analyzer&lt;/code> does have an associated &lt;code>code fix&lt;/code>, it can be accessed using these steps:&lt;/p>
+&lt;ol>
+&lt;li>Hover or place the cursor over the squiggle, a &lt;em>light bulb&lt;/em> will appear&lt;/li>
+&lt;li>Select the small arrow next to the &lt;em>light bulb&lt;/em>, or (Ctrl+.) to see available fix suggestions&lt;/li>
+&lt;li>Hover the cursor over one of the suggestions in the list&lt;/li>
+&lt;li>A preview of how the code will be changed when the &lt;code>code fix&lt;/code> is applied is displayed&lt;/li>
+&lt;li>Select one of the suggestions to apply the &lt;code>code fix&lt;/code>&lt;/li>
+&lt;/ol>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 239;
+flex-basis: 573px"
+>
+&lt;a href="https://always-developing.github.io/p/analyzer-explained/3.CodeFix.png" data-size="600x251">
+&lt;img src="https://always-developing.github.io/p/analyzer-explained/3.CodeFix.png"
+width="600"
+height="251"
+srcset="https://always-developing.github.io/p/analyzer-explained/3.CodeFix_huca494a90debe19a0d730a75e9a1d96c0_34055_480x0_resize_box_3.png 480w, https://always-developing.github.io/p/analyzer-explained/3.CodeFix_huca494a90debe19a0d730a75e9a1d96c0_34055_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Code fix for the analyzer">
+&lt;/a>
+&lt;figcaption>Code fix for the analyzer&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;p>&lt;a class="link" href="../analyzer-code-fix/" >See part 3 for more in depth details regarding writing a code fix for a custom analyzer.&lt;/a>&lt;/p>
+&lt;hr>
+&lt;h2 id="why-write-an-analyzer">Why write an analyzer?&lt;/h2>
+&lt;p>A few reasons or use cases for writing a &lt;code>custom analyzer&lt;/code>:&lt;/p>
+&lt;ol>
+&lt;li>To monitor and diagnose more niche coding patterns you, as a developer, constantly gets wrong or have to look up (&lt;code>analyzers&lt;/code> already exist for most common best practices)&lt;/li>
+&lt;li>As a library author (publishing a library to NuGet, for example) an &lt;code>analyzer&lt;/code> can be packaged with the library (see the section below) to ensure that it is used correctly by the developer.&lt;/li>
+&lt;li>To ensure common coding practices and styles are shared across all development teams in an organization.&lt;/li>
+&lt;/ol>
+&lt;hr>
+&lt;h2 id="sharing-a-custom-analyzer">Sharing a custom analyzer&lt;/h2>
+&lt;p>There are two ways to share a &lt;code>custom analyzer&lt;/code> once it has been written:&lt;/p>
+&lt;ol>
+&lt;li>&lt;strong>VSIX&lt;/strong>: The &lt;code>analyzer&lt;/code> can be packaged as a vsix, a Visual Studio Extension. This is an executable file which can be either be shared and manually installed by the developer, or can be downloaded &lt;a class="link" href="https://marketplace.visualstudio.com/vs" target="_blank" rel="noopener"
+>Visual Studio Marketplace.&lt;/a>.&lt;/li>
+&lt;li>&lt;strong>NuGet package&lt;/strong>: An &lt;code>analyzer&lt;/code> can be package into a NuGet package and installed into a project via a NuGet store (such as &lt;a class="link" href="https://www.nuget.org/" target="_blank" rel="noopener"
+>nuget.org&lt;/a> or an internal NuGet store in the case of a company specific &lt;code>analyzer&lt;/code>)&lt;/li>
+&lt;/ol>
+&lt;hr>
+&lt;h2 id="analyzers-are-tricky">Analyzers are tricky!&lt;/h2>
+&lt;p>It can be very tricky getting the &lt;code>analyzer&lt;/code> to accurately detect the relevant scenarios in code, and just as hard to fix it accurately with a &lt;code>code fix&lt;/code> - syntax trees are complex. (more on this later in the series: &lt;a class="link" href="../analyzer-write/" >part 2&lt;/a>, &lt;a class="link" href="../analyzer-code-fix/" >part 3&lt;/a> and &lt;a class="link" href="../analyzer-test/" >part 4&lt;/a>)&lt;/p>
+&lt;p>On top of that, the developer experience for &lt;code>analyzers&lt;/code> are not as slick and friendly as with other tooling. The debugging experience for &lt;code>analyzers&lt;/code> are inconsistent and not always responsive, while the apis exposed to assist with testing an analyzer can be complicated and difficult to configure.&lt;/p>
+&lt;p>But all is not lost - it is possible to work with and around the above constraints (with tips from this series of posts) and still successfully create your own custom &lt;code>analyzer&lt;/code>.&lt;/p>
+&lt;hr>
+&lt;h2 id="a-working-sample-analyzer">A working sample analyzer&lt;/h2>
+&lt;p>The guides in &lt;a class="link" href="../analyzer-write/" >part 2&lt;/a> and &lt;a class="link" href="../analyzer-write/" >part 3&lt;/a> will detail how to write an &lt;code>analyzer&lt;/code> package which inspects the code, and applies a &lt;code>code fix&lt;/code> for the following two scenarios related to Entity Framework Core (an understanding of Entity Framework Core is not required to understand the analyzers):&lt;/p>
+&lt;ol>
+&lt;li>Ensure code migrations are not automatically applied in the Test or Production environment&lt;/li>
+&lt;li>Ensure the correct appsettings.json section has been added an Entity Framework Core database connection is configured in code&lt;/li>
+&lt;/ol>
+&lt;h3 id="scenario-1-auto-migrations">Scenario 1: auto-migrations&lt;/h3>
+&lt;p>Entity Framework Core (EF) is an ORM which provides build in data-access functionality to perform operations on a database. What is important for these posts, is to know that EF provides functionality to scaffold and update the schema of the database (the tables etc) at runtime, usually at startup.&lt;/p>
+&lt;p>However it is recommended to only run this migration on development environments, and not in test or production environments. Usually CI/CD pipeline executes the database migration in these environments (which also allows for review of the migration script before it being applied to the database)&lt;/p>
+&lt;p>The custom &lt;code>analyzer&lt;/code> will look for the presence of the migration code (a &lt;em>.Database.Migrate&lt;/em> method call), and ensure it is only executed when the code is run in DEBUG configuration.&lt;/p>
+&lt;h3 id="scenario-2-connection-string">Scenario 2: connection string&lt;/h3>
+&lt;p>When configuring EF, a database connection name is specified, with the actual connection string stored in the appsettings.json settings file.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="p">.&lt;/span>&lt;span class="n">AddDbContext&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">SampleContext&lt;/span>&lt;span class="p">&amp;gt;(&lt;/span>&lt;span class="n">x&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">x&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">UseSqlite&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Configuration&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetConnectionString&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;SampleDatabase&amp;#34;&lt;/span>&lt;span class="p">)))&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>This code relies on the connection string being present in the appsettings.json file:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5">5&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-json" data-lang="json">&lt;span class="p">{&lt;/span>
+&lt;span class="nt">&amp;#34;ConnectionStrings&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;span class="nt">&amp;#34;SamplesDatabase&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;Data Source=LocalDatabase.db&amp;#34;&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>The custom &lt;code>analyzer&lt;/code> will inspect the appsettings.json file and ensure the connection string is present and correct.&lt;/p>
+&lt;hr>
+&lt;h2 id="next-steps-writing-the-analyzer">Next steps: Writing the analyzer&lt;/h2>
+&lt;p>Next up, &lt;a class="link" href="../analyzer-write/" >part 2 in the series&lt;/a> will go into detail and expand on coding a custom &lt;code>analyzer&lt;/code>.&lt;/p>
+&lt;hr>
+&lt;h2 id="useful-links">Useful links&lt;/h2>
+&lt;p>&lt;a class="link" href="https://docs.microsoft.com/en-us/ef/core/" target="_blank" rel="noopener"
+>Entity Framework Core&lt;/a>&lt;br>
+&lt;a class="link" href="https://github.com/dotnet/roslyn" target="_blank" rel="noopener"
+>Roslyn repository&lt;/a>&lt;br>
+&lt;a class="link" href="https://github.com/always-developing/CodeAnalysis.EntityFrameworkCore.Sample" target="_blank" rel="noopener"
+>Sample analyzer and code fix repository&lt;/a>&lt;/p></description></item><item><title>Multiple implementations of same interface - the options</title><link>https://always-developing.github.io/p/multiple-implementations/</link><pubDate>Sat, 06 Nov 2021 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/p/multiple-implementations/</guid><description>&lt;h2 id="the-challenge">The challenge&lt;/h2>
 &lt;p>Consider a scenario where the requirement is to upload a file to an online provider (AWS S3, Azure Blob or a FTP site in the examples below), where the provider can be easily changed (either dynamically at runtime, or easily with minimal code changes), with the possibility additional providers being added in future.&lt;/p>
 &lt;p>To make use of dependency injection, a generic interface is created, &lt;strong>&lt;em>IFileUploader&lt;/em>&lt;/strong>, along with three implementations &lt;strong>&lt;em>AWSUploader&lt;/em>&lt;/strong>, &lt;strong>&lt;em>AzureUploader&lt;/em>&lt;/strong> and &lt;strong>&lt;em>FTPUploader&lt;/em>&lt;/strong>. The interface prescribes that the implementations provide a method to upload a file (&lt;em>UploadFile&lt;/em>) and a method to get the implementation name (&lt;em>GetName&lt;/em>).&lt;/p>
 &lt;p>The built in .NET dependency injection (DI) container is all one will need for almost all situations (including this situation): however this scenario can be a bit more challenging to get right - &lt;strong>&lt;code>with multiple implementations of the same interface, how do you get the right implementation from the DI container?&lt;/code>&lt;/strong>&lt;/p>
