@@ -1,0 +1,1725 @@
+<!doctype html><html lang=en-uk>
+<head><meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="A guide to returning projected, anonymous and simple type values dynamically"><title>Dynamic Context (for Entity Framework Core)</title>
+<link rel=canonical href=https://always-developing.github.io/p/11-2020-dynamic-context/>
+<link rel=stylesheet href=/scss/style.min.css><meta property="og:title" content="Dynamic Context (for Entity Framework Core)">
+<meta property="og:description" content="A guide to returning projected, anonymous and simple type values dynamically">
+<meta property="og:url" content="https://always-developing.github.io/p/11-2020-dynamic-context/">
+<meta property="og:site_name" content="Always Developing">
+<meta property="og:type" content="article"><meta property="article:section" content="Post"><meta property="article:tag" content="c#"><meta property="article:tag" content=".net"><meta property="article:tag" content="entity framework"><meta property="article:tag" content="entityframework"><meta property="article:tag" content="ef"><meta property="article:tag" content="context"><meta property="article:tag" content="dynamic"><meta property="article:tag" content="dbset"><meta property="article:published_time" content="2021-12-11T03:00:00+02:00"><meta property="article:modified_time" content="2021-12-11T03:00:00+02:00">
+<meta name=twitter:title content="Dynamic Context (for Entity Framework Core)">
+<meta name=twitter:description content="A guide to returning projected, anonymous and simple type values dynamically">
+<link rel="shortcut icon" href=favicon.ico>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CXPLFS7K38"></script>
+<script>var doNotTrack=!1;if(!doNotTrack){window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date),gtag('config','G-CXPLFS7K38',{anonymize_ip:!1})}</script>
+</head>
+<body class="article-page has-toc">
+<script>(function(){const a='StackColorScheme';localStorage.getItem(a)||localStorage.setItem(a,"dark")})()</script><script>(function(){const b='StackColorScheme',a=localStorage.getItem(b),c=window.matchMedia('(prefers-color-scheme: dark)').matches===!0;a=='dark'||a==='auto'&&c?document.documentElement.dataset.scheme='dark':document.documentElement.dataset.scheme='light'})()</script>
+<div class="container main-container flex
+extended">
+<div id=article-toolbar>
+<a href=https://always-developing.github.io/ class=back-home><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="15 6 9 12 15 18"/></svg>
+<span>Back</span>
+</a>
+</div>
+<main class="main full-width">
+<article class=main-article>
+<header class=article-header>
+<div class=article-details>
+<header class=article-category>
+<a href=/categories/blog/>
+Blog
+</a>
+</header>
+<h2 class=article-title>
+<a href=/p/11-2020-dynamic-context/>Dynamic Context (for Entity Framework Core)</a>
+</h2>
+<h3 class=article-subtitle>
+A guide to returning projected, anonymous and simple type values dynamically
+</h3>
+<footer class=article-time>
+<div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
+<time class=article-time--published>Dec 11, 2021</time>
+</div>
+<div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<time class=article-time--reading>
+21 minute read
+</time>
+</div>
+</footer>
+</div>
+</header>
+<section class=article-content>
+<h2 id=the-problem>The problem</h2>
+<p>Entity Framework Core is a great go-to ORM for .NET, for any type of application provides almost all the functionality required to do successful database access out the box.<br>
+However, there are two use cases, specifically with regards to retrieval of data, it doesn&rsquo;t cater for - this post and the accompanying code sample/NuGet package attempts to provides solutions for these use cases.</p>
+<p>First, the setup - an EF DbContext which has one DbSet, for storing <code>Blogs</code> (the below is a standard DbContext configuration):</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5> 5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6> 6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7> 7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
+</span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
+</span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
+</span><span class=lnt id=ienumusage-12><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-12>12</a>
+</span><span class=lnt id=ienumusage-13><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-13>13</a>
+</span><span class=lnt id=ienumusage-14><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-14>14</a>
+</span><span class=lnt id=ienumusage-15><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-15>15</a>
+</span><span class=lnt id=ienumusage-16><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-16>16</a>
+</span><span class=lnt id=ienumusage-17><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-17>17</a>
+</span><span class=lnt id=ienumusage-18><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-18>18</a>
+</span><span class=lnt id=ienumusage-19><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-19>19</a>
+</span><span class=lnt id=ienumusage-20><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-20>20</a>
+</span><span class=lnt id=ienumusage-21><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-21>21</a>
+</span><span class=lnt id=ienumusage-22><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-22>22</a>
+</span><span class=lnt id=ienumusage-23><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-23>23</a>
+</span><span class=lnt id=ienumusage-24><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-24>24</a>
+</span><span class=lnt id=ienumusage-25><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-25>25</a>
+</span><span class=lnt id=ienumusage-26><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-26>26</a>
+</span><span class=lnt id=ienumusage-27><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-27>27</a>
+</span><span class=lnt id=ienumusage-28><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-28>28</a>
+</span><span class=lnt id=ienumusage-29><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-29>29</a>
+</span><span class=lnt id=ienumusage-30><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-30>30</a>
+</span><span class=lnt id=ienumusage-31><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-31>31</a>
+</span><span class=lnt id=ienumusage-32><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-32>32</a>
+</span><span class=lnt id=ienumusage-33><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-33>33</a>
+</span><span class=lnt id=ienumusage-34><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-34>34</a>
+</span><span class=lnt id=ienumusage-35><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-35>35</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=k>public</span> <span class=k>class</span> <span class=nc>BlogContext</span> <span class=p>:</span> <span class=n>DbContext</span>
+<span class=p>{</span>
+    <span class=k>public</span> <span class=n>BlogContext</span><span class=p>(</span><span class=n>DbContextOptions</span><span class=p>&lt;</span><span class=n>BlogContext</span><span class=p>&gt;</span> <span class=n>options</span><span class=p>)</span> <span class=p>:</span> <span class=k>base</span><span class=p>(</span><span class=n>options</span><span class=p>)</span>
+    <span class=p>{</span>
+    <span class=p>}</span>
+
+    <span class=k>public</span> <span class=n>Action</span><span class=p>&lt;</span><span class=n>DbContextOptionsBuilder</span><span class=p>&gt;?</span> <span class=n>BlogContextOptionsBuilder</span> <span class=p>{</span> <span class=k>get</span><span class=p>;</span> <span class=k>set</span><span class=p>;</span> <span class=p>}</span>
+
+    <span class=k>protected</span> <span class=k>override</span> <span class=k>void</span> <span class=n>OnConfiguring</span><span class=p>(</span><span class=n>DbContextOptionsBuilder</span> <span class=n>optionsBuilder</span><span class=p>)</span>
+    <span class=p>{</span>
+        <span class=k>base</span><span class=p>.</span><span class=n>OnConfiguring</span><span class=p>(</span><span class=n>optionsBuilder</span><span class=p>);</span>
+    <span class=p>}</span>
+
+    <span class=c1>// The DBSet for the Blog entity
+</span><span class=c1></span>    <span class=k>public</span> <span class=n>DbSet</span><span class=p>&lt;</span><span class=n>Blog</span><span class=p>&gt;</span> <span class=n>Blog</span> <span class=p>{</span> <span class=k>get</span><span class=p>;</span> <span class=k>set</span><span class=p>;</span> <span class=p>}</span>
+<span class=p>}</span>
+
+<span class=k>public</span> <span class=k>class</span> <span class=nc>Blog</span>
+<span class=p>{</span>
+    <span class=k>public</span> <span class=n>Guid</span> <span class=n>Id</span> <span class=p>{</span> <span class=k>get</span><span class=p>;</span> <span class=k>set</span><span class=p>;</span> <span class=p>}</span>
+    <span class=k>public</span> <span class=kt>string</span> <span class=n>Title</span> <span class=p>{</span> <span class=k>get</span><span class=p>;</span> <span class=k>set</span><span class=p>;</span> <span class=p>}</span>
+    <span class=k>public</span> <span class=kt>string</span> <span class=n>Owner</span> <span class=p>{</span> <span class=k>get</span><span class=p>;</span> <span class=k>set</span><span class=p>;</span> <span class=p>}</span>
+    <span class=k>public</span> <span class=kt>string</span> <span class=n>Url</span> <span class=p>{</span> <span class=k>get</span><span class=p>;</span> <span class=k>set</span><span class=p>;</span> <span class=p>}</span>
+    <span class=k>public</span> <span class=n>List</span><span class=p>&lt;</span><span class=n>Post</span><span class=p>&gt;</span> <span class=n>Posts</span> <span class=p>{</span> <span class=k>get</span><span class=p>;</span> <span class=k>set</span><span class=p>;</span> <span class=p>}</span>
+<span class=p>}</span>
+
+<span class=k>public</span> <span class=k>class</span> <span class=nc>Post</span>
+<span class=p>{</span>
+    <span class=k>public</span> <span class=n>Guid</span> <span class=n>Id</span> <span class=p>{</span> <span class=k>get</span><span class=p>;</span> <span class=k>set</span><span class=p>;</span> <span class=p>}</span>
+    <span class=k>public</span> <span class=kt>string</span> <span class=n>Title</span> <span class=p>{</span> <span class=k>get</span><span class=p>;</span> <span class=k>set</span><span class=p>;</span> <span class=p>}</span>
+    <span class=k>public</span> <span class=kt>string</span> <span class=n>Content</span> <span class=p>{</span> <span class=k>get</span><span class=p>;</span> <span class=k>set</span><span class=p>;</span> <span class=p>}</span>
+    <span class=k>public</span> <span class=kt>int</span> <span class=n>WordCount</span> <span class=p>{</span> <span class=k>get</span><span class=p>;</span> <span class=k>set</span><span class=p>;</span> <span class=p>}</span>
+    <span class=k>public</span> <span class=n>Guid</span> <span class=n>BlogId</span> <span class=p>{</span> <span class=k>get</span><span class=p>;</span> <span class=k>set</span><span class=p>;</span> <span class=p>}</span>
+    <span class=k>public</span> <span class=n>Blog</span> <span class=n>Blog</span> <span class=p>{</span> <span class=k>get</span><span class=p>;</span> <span class=k>set</span><span class=p>;</span> <span class=p>}</span>
+<span class=p>}</span></code></pre></td></tr></table>
+</div>
+</div>
+<blockquote>
+<div>
+<div style=width:5%;float:left;vertical-align:middle;padding-right:60px>
+<i class=inline-svg><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-info-circle" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#00abfb" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12.01" y2="8"/><polyline points="11 12 12 12 12 16 13 16"/></svg></i>
+</div>
+<div>
+<p><p>The below use cases are <code>fairly niche</code> - in most day-to-day use cases, <code>EF Core will do what is required out the box</code>. The below solutions are intended to be used to <code>enhance and work in conjunction</code> with the normal DbContext.<br>
+If you find you are ONLY using the DbContext for the below use cases, it might make sense to investigate using another more suited ORM (such as <strong><a href=https://github.com/DapperLib/Dapper>Dapper</a></strong>).</p>
+<p>However if you are using EF Core and adding another ORM into your application doesn&rsquo;t make sense, hopefully this post along with the <strong><a href=https://github.com/always-developing/AlwaysDeveloping.EntityFrameworkCore.DynamicContext>source code + samples</a></strong> and <strong><a href=https://www.nuget.org/packages/AlwaysDeveloping.EntityFrameworkCore.DynamicContext/>NuGet package</a></strong> can assist you in resolving any issues.</p>
+</p>
+</div>
+</div>
+</blockquote>
+<hr>
+<h3 id=dbset-is-required>DbSet is required</h3>
+<p>To get a list of all Blogs, one of the following two lines of code can be used:
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2>2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3>3</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=kt>var</span> <span class=n>blogs1</span> <span class=p>=</span> <span class=n>context</span><span class=p>.</span><span class=n>Blog</span><span class=p>.</span><span class=n>AsNoTracking</span><span class=p>().</span><span class=n>ToList</span><span class=p>();</span>
+<span class=c1>// OR
+</span><span class=c1></span><span class=kt>var</span> <span class=n>blogs2</span> <span class=p>=</span> <span class=n>context</span><span class=p>.</span><span class=n>Set</span><span class=p>&lt;</span><span class=n>Blog</span><span class=p>&gt;().</span><span class=n>AsNoTracking</span><span class=p>().</span><span class=n>ToList</span><span class=p>();</span></code></pre></td></tr></table>
+</div>
+</div></p>
+<p>Suppose only the Blog id and the url was required - any one of the below methods would achieve this:</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5> 5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6> 6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7> 7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
+</span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
+</span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
+</span><span class=lnt id=ienumusage-12><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-12>12</a>
+</span><span class=lnt id=ienumusage-13><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-13>13</a>
+</span><span class=lnt id=ienumusage-14><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-14>14</a>
+</span><span class=lnt id=ienumusage-15><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-15>15</a>
+</span><span class=lnt id=ienumusage-16><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-16>16</a>
+</span><span class=lnt id=ienumusage-17><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-17>17</a>
+</span><span class=lnt id=ienumusage-18><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-18>18</a>
+</span><span class=lnt id=ienumusage-19><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-19>19</a>
+</span><span class=lnt id=ienumusage-20><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-20>20</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=c1>// Define a new type, called BlogUrl, which contains just BlogId and Url properties
+</span><span class=c1>// Project into the new type
+</span><span class=c1></span><span class=kt>var</span> <span class=n>blogs1</span> <span class=p>=</span> <span class=n>context</span><span class=p>.</span><span class=n>Set</span><span class=p>&lt;</span><span class=n>Blog</span><span class=p>&gt;()</span>
+    <span class=p>.</span><span class=n>Select</span><span class=p>(</span><span class=n>x</span> <span class=p>=&gt;</span> <span class=k>new</span> <span class=n>BlogUrl</span> <span class=p>{</span> <span class=n>BlogId</span> <span class=p>=</span> <span class=n>x</span><span class=p>.</span><span class=n>Id</span><span class=p>,</span> <span class=n>Url</span> <span class=p>=</span> <span class=n>x</span><span class=p>.</span><span class=n>Url</span> <span class=p>})</span>
+    <span class=p>.</span><span class=n>AsNoTracking</span><span class=p>().</span><span class=n>ToList</span><span class=p>();</span>
+
+<span class=c1>// Project into the new type using raw SQL
+</span><span class=c1></span><span class=kt>var</span> <span class=n>blogs2</span> <span class=p>=</span> <span class=n>context</span><span class=p>.</span><span class=n>Set</span><span class=p>&lt;</span><span class=n>Blog</span><span class=p>&gt;().</span><span class=n>FromSqlRaw</span><span class=p>(</span><span class=s>&#34;SELECT Id, Url FROM Blog&#34;</span><span class=p>)</span>
+    <span class=p>.</span><span class=n>Select</span><span class=p>(</span><span class=n>x</span> <span class=p>=&gt;</span> <span class=k>new</span> <span class=n>BlogUrl</span> <span class=p>{</span> <span class=n>BlogId</span> <span class=p>=</span> <span class=n>x</span><span class=p>.</span><span class=n>Id</span><span class=p>,</span> <span class=n>Url</span> <span class=p>=</span> <span class=n>x</span><span class=p>.</span><span class=n>Url</span> <span class=p>})</span>
+    <span class=p>.</span><span class=n>AsNoTracking</span><span class=p>().</span><span class=n>ToList</span><span class=p>();</span>
+
+<span class=c1>// Project into an anonymous type
+</span><span class=c1></span><span class=kt>var</span> <span class=n>blogs3</span> <span class=p>=</span> <span class=n>context</span><span class=p>.</span><span class=n>Set</span><span class=p>&lt;</span><span class=n>Blog</span><span class=p>&gt;()</span>
+    <span class=p>.</span><span class=n>Select</span><span class=p>(</span><span class=n>x</span> <span class=p>=&gt;</span> <span class=k>new</span> <span class=p>{</span> <span class=n>BlogId</span> <span class=p>=</span> <span class=n>x</span><span class=p>.</span><span class=n>Id</span><span class=p>,</span> <span class=n>Url</span> <span class=p>=</span> <span class=n>x</span><span class=p>.</span><span class=n>Url</span> <span class=p>})</span>
+    <span class=p>.</span><span class=n>AsNoTracking</span><span class=p>().</span><span class=n>ToList</span><span class=p>();</span>
+
+<span class=c1>// Project into an anonymous type using raw SQL 
+</span><span class=c1></span><span class=kt>var</span> <span class=n>blogs4</span> <span class=p>=</span> <span class=n>context</span><span class=p>.</span><span class=n>Set</span><span class=p>&lt;</span><span class=n>Blog</span><span class=p>&gt;().</span><span class=n>FromSqlRaw</span><span class=p>(</span><span class=s>&#34;SELECT Id, Url FROM Blog&#34;</span><span class=p>)</span>
+    <span class=p>.</span><span class=n>Select</span><span class=p>(</span><span class=n>x</span> <span class=p>=&gt;</span> <span class=k>new</span> <span class=p>{</span> <span class=n>BlogId</span> <span class=p>=</span> <span class=n>x</span><span class=p>.</span><span class=n>Id</span><span class=p>,</span> <span class=n>Url</span> <span class=p>=</span> <span class=n>x</span><span class=p>.</span><span class=n>Url</span> <span class=p>})</span>
+    <span class=p>.</span><span class=n>AsNoTracking</span><span class=p>().</span><span class=n>ToList</span><span class=p>();</span>    </code></pre></td></tr></table>
+</div>
+</div>
+<p>The issue here is that <code>EF Core requires the retrieval to be executed off a DbSet</code>. This means an entity and matching SQL statement cannot dynamically be thrown at EF Core at runtime, and have data successfully returned.</p>
+<p>For example, the following code would <code>not work unless the BlogUrl type has been added as a DbSet to the DbContext</code>.
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2>2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3>3</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=c1>// Does not work unless a DbSet of type BlogUrl has been added
+</span><span class=c1></span><span class=kt>var</span> <span class=n>blogs</span> <span class=p>=</span> <span class=n>context</span><span class=p>.</span><span class=n>Set</span><span class=p>&lt;</span><span class=n>BlogUrl</span><span class=p>&gt;().</span><span class=n>FromSqlRaw</span><span class=p>(</span><span class=s>&#34;SELECT Id as BlogId, Url FROM Blog&#34;</span><span class=p>)</span>
+    <span class=p>.</span><span class=n>AsNoTracking</span><span class=p>().</span><span class=n>ToList</span><span class=p>();</span></code></pre></td></tr></table>
+</div>
+</div></p>
+<p>This problem also extends to anonymous types - as their definition is only known at runtime, a <code>DbSet</code> cannot be created for them before runtime.</p>
+<hr>
+<h3 id=support-for-simple-types>Support for simple types</h3>
+<p>Suppose now only a list of Blog ids is required to be returned - either one of the following would work:</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5> 5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6> 6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7> 7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
+</span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
+</span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
+</span><span class=lnt id=ienumusage-12><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-12>12</a>
+</span><span class=lnt id=ienumusage-13><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-13>13</a>
+</span><span class=lnt id=ienumusage-14><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-14>14</a>
+</span><span class=lnt id=ienumusage-15><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-15>15</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=c1>// Define a new type, called BlogId, which contains just Id
+</span><span class=c1>// Project into the new type
+</span><span class=c1></span><span class=kt>var</span> <span class=n>ids1</span> <span class=p>=</span> <span class=n>context</span><span class=p>.</span><span class=n>Set</span><span class=p>&lt;</span><span class=n>Blog</span><span class=p>&gt;()</span>
+    <span class=p>.</span><span class=n>Select</span><span class=p>(</span><span class=n>x</span> <span class=p>=&gt;</span> <span class=k>new</span> <span class=n>BlogId</span> <span class=p>{</span> <span class=n>Id</span> <span class=p>=</span> <span class=n>x</span><span class=p>.</span><span class=n>Id</span> <span class=p>})</span>
+    <span class=p>.</span><span class=n>AsNoTracking</span><span class=p>().</span><span class=n>ToList</span><span class=p>();</span>
+
+<span class=c1>// Project into a list of Ids
+</span><span class=c1></span><span class=kt>var</span> <span class=n>ids2</span> <span class=p>=</span> <span class=n>context</span><span class=p>.</span><span class=n>Set</span><span class=p>&lt;</span><span class=n>Blog</span><span class=p>&gt;()</span>
+    <span class=p>.</span><span class=n>AsNoTracking</span><span class=p>()</span>
+    <span class=p>.</span><span class=n>Select</span><span class=p>(</span><span class=n>x</span> <span class=p>=&gt;</span> <span class=n>x</span><span class=p>.</span><span class=n>Id</span><span class=p>).</span><span class=n>ToList</span><span class=p>();</span>
+
+<span class=c1>// Project into a list of Ids using raw sql
+</span><span class=c1></span><span class=kt>var</span> <span class=n>ids3</span> <span class=p>=</span> <span class=n>context</span><span class=p>.</span><span class=n>Set</span><span class=p>&lt;</span><span class=n>Blog</span><span class=p>&gt;().</span><span class=n>FromSqlRaw</span><span class=p>(</span><span class=s>&#34;SELECT Id FROM Blog&#34;</span><span class=p>)</span>
+    <span class=p>.</span><span class=n>AsNoTracking</span><span class=p>()</span>
+    <span class=p>.</span><span class=n>Select</span><span class=p>(</span><span class=n>x</span> <span class=p>=&gt;</span> <span class=n>x</span><span class=p>.</span><span class=n>Id</span><span class=p>).</span><span class=n>ToList</span><span class=p>();</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>The issue here is that the <code>DbSet type is required to be a reference type</code>: This means a list of simple/value types (and other identifier types such as Guid) cannot be returned directly.<br>
+This is related to the first issue mentioned above - a simple/value type and matching SQL statement cannot dynamically be thrown at EF Core at runtime and have data returned.</p>
+<p>For example, the following code would <code>not work</code>.
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2>2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3>3</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=c1>// This DOES NOT WORK (yet)
+</span><span class=c1></span><span class=kt>var</span> <span class=n>ids</span> <span class=p>=</span> <span class=n>context</span><span class=p>.</span><span class=n>Set</span><span class=p>&lt;</span><span class=n>Guid</span><span class=p>&gt;().</span><span class=n>FromSqlRaw</span><span class=p>(</span><span class=s>&#34;SELECT Id FROM Blog&#34;</span><span class=p>)</span>
+    <span class=p>.</span><span class=n>AsNoTracking</span><span class=p>().</span><span class=n>ToList</span><span class=p>();</span></code></pre></td></tr></table>
+</div>
+</div></p>
+<blockquote>
+<div>
+<div style=width:5%;float:left;vertical-align:middle;padding-right:60px>
+<i class=inline-svg><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-info-circle" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#00abfb" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12.01" y2="8"/><polyline points="11 12 12 12 12 16 13 16"/></svg></i>
+</div>
+<div>
+<p>Both issues this post addresses involves the retrieval data - <code>EF Core change tracking functionality will not work, and is not intended to work</code> with the proposed solutions.<br>
+If change tracking is required, then the dynamic route outlines in this post should not be used. This is the reason why all example use <strong>AsNoTracking()</strong> when retrieving the data.</p>
+</div>
+</div>
+</blockquote>
+<hr>
+<h2 id=dynamic-entity-results>Dynamic entity results</h2>
+<h3 id=projected-entity>Projected entity</h3>
+<p>The first issue to resolve, is the ability to populate an entity <code>without having a Dbset added to the DbContext</code> for the entity.<br>
+We cannot <em>really</em> get around this requirement - EF Core always need the entity be added as a DbSet, however what if it was <code>added dynamically at runtime?</code></p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5> 5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6> 6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7> 7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
+</span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
+</span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
+</span><span class=lnt id=ienumusage-12><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-12>12</a>
+</span><span class=lnt id=ienumusage-13><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-13>13</a>
+</span><span class=lnt id=ienumusage-14><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-14>14</a>
+</span><span class=lnt id=ienumusage-15><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-15>15</a>
+</span><span class=lnt id=ienumusage-16><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-16>16</a>
+</span><span class=lnt id=ienumusage-17><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-17>17</a>
+</span><span class=lnt id=ienumusage-18><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-18>18</a>
+</span><span class=lnt id=ienumusage-19><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-19>19</a>
+</span><span class=lnt id=ienumusage-20><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-20>20</a>
+</span><span class=lnt id=ienumusage-21><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-21>21</a>
+</span><span class=lnt id=ienumusage-22><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-22>22</a>
+</span><span class=lnt id=ienumusage-23><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-23>23</a>
+</span><span class=lnt id=ienumusage-24><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-24>24</a>
+</span><span class=lnt id=ienumusage-25><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-25>25</a>
+</span><span class=lnt id=ienumusage-26><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-26>26</a>
+</span><span class=lnt id=ienumusage-27><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-27>27</a>
+</span><span class=lnt id=ienumusage-28><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-28>28</a>
+</span><span class=lnt id=ienumusage-29><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-29>29</a>
+</span><span class=lnt id=ienumusage-30><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-30>30</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=k>public</span> <span class=k>class</span> <span class=nc>RuntimeContext</span><span class=p>&lt;</span><span class=n>T</span><span class=p>&gt;</span> <span class=p>:</span> <span class=n>DbContext</span> <span class=k>where</span> <span class=n>T</span> <span class=p>:</span> <span class=k>class</span>
+<span class=p>{</span>
+    <span class=k>public</span> <span class=n>RuntimeContext</span><span class=p>()</span>
+    <span class=p>{</span>
+    <span class=p>}</span>
+
+    <span class=k>protected</span> <span class=k>override</span> <span class=k>void</span> <span class=n>OnConfiguring</span><span class=p>(</span><span class=n>DbContextOptionsBuilder</span> <span class=n>optionsBuilder</span><span class=p>)</span>
+    <span class=p>{</span>
+        <span class=n>optionsBuilder</span><span class=p>.</span><span class=n>UseSqlite</span><span class=p>(</span><span class=s>$&#34;Data Source={Environment
+</span><span class=s>            .GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\BlogDatabase.db&#34;</span><span class=p>);</span>
+
+        <span class=k>base</span><span class=p>.</span><span class=n>OnConfiguring</span><span class=p>(</span><span class=n>optionsBuilder</span><span class=p>);</span>
+    <span class=p>}</span>
+    
+    <span class=k>protected</span> <span class=k>override</span> <span class=k>void</span> <span class=n>OnModelCreating</span><span class=p>(</span><span class=n>ModelBuilder</span> <span class=n>modelBuilder</span><span class=p>)</span>
+    <span class=p>{</span>
+        <span class=kt>var</span> <span class=n>t</span> <span class=p>=</span> <span class=n>modelBuilder</span><span class=p>.</span><span class=n>Entity</span><span class=p>&lt;</span><span class=n>T</span><span class=p>&gt;().</span><span class=n>HasNoKey</span><span class=p>();</span>
+        <span class=k>foreach</span> <span class=p>(</span><span class=kt>var</span> <span class=n>prop</span> <span class=k>in</span> <span class=k>typeof</span><span class=p>(</span><span class=n>T</span><span class=p>)</span>
+            <span class=p>.</span><span class=n>GetProperties</span><span class=p>(</span><span class=n>BindingFlags</span><span class=p>.</span><span class=n>Instance</span> <span class=p>|</span> <span class=n>BindingFlags</span><span class=p>.</span><span class=n>Public</span><span class=p>))</span>
+        <span class=p>{</span>
+            <span class=k>if</span> <span class=p>(!</span><span class=n>prop</span><span class=p>.</span><span class=n>CustomAttributes</span>
+                <span class=p>.</span><span class=n>Any</span><span class=p>(</span><span class=n>a</span> <span class=p>=&gt;</span> <span class=n>a</span><span class=p>.</span><span class=n>AttributeType</span> <span class=p>==</span> <span class=k>typeof</span><span class=p>(</span><span class=n>NotMappedAttribute</span><span class=p>)))</span>
+            <span class=p>{</span>
+                <span class=n>t</span><span class=p>.</span><span class=n>Property</span><span class=p>(</span><span class=n>prop</span><span class=p>.</span><span class=n>Name</span><span class=p>);</span>
+            <span class=p>}</span>
+        <span class=p>}</span>
+
+        <span class=k>base</span><span class=p>.</span><span class=n>OnModelCreating</span><span class=p>(</span><span class=n>modelBuilder</span><span class=p>);</span>
+    <span class=p>}</span>
+<span class=p>}</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>Here a context has been created (inherits from DbContext):</p>
+<ul>
+<li><strong>Line 1:</strong> It takes in a generic type T</li>
+<li><strong>Line 15-29</strong>: The model for the context is created (when the context is initialized)
+<ul>
+<li><strong>Line 17</strong>: Type T is added as a DbSet to the context, but without a Key. A key is not required as this will be used only for data retrieval and with <em>AsNoTracking</em>.</li>
+<li><strong>Line 18-26</strong>: Using reflection, the relevant properties of type T are added to the DbSet entity.</li>
+</ul>
+</li>
+</ul>
+<p><code>The following code will now work, without BlogUrl being added</code> as a DbSet beforehand:
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2>2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3>3</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=k>using</span> <span class=nn>var</span> <span class=n>dynContext</span> <span class=p>=</span> <span class=k>new</span> <span class=n>RuntimeContext</span><span class=p>&lt;</span><span class=n>BlogUrl</span><span class=p>&gt;();</span>
+<span class=kt>var</span> <span class=n>blogs</span> <span class=p>=</span> <span class=n>dynContext</span><span class=p>.</span><span class=n>Set</span><span class=p>&lt;</span><span class=n>BlogUrl</span><span class=p>&gt;().</span><span class=n>FromSqlRaw</span><span class=p>(</span><span class=s>&#34;SELECT Id as BlogId, Url FROM Blog&#34;</span><span class=p>)</span>
+    <span class=p>.</span><span class=n>AsNoTracking</span><span class=p>().</span><span class=n>ToList</span><span class=p>()</span></code></pre></td></tr></table>
+</div>
+</div></p>
+<p>As this is all being setup dynamically, EF will not know how to generate the SQL for the dynamic entity - this is why raw SQL will always need to be supplied for this solution. The solution could be expanded to include this functionality in future, but this is outside the scope of this post.</p>
+<p>This is now a <code>working dynamic runtime context</code> - however there are still a few broader issues which need to be resolved, which we&rsquo;ll get to later in the post:</p>
+<ul>
+<li><code>Dependency Injection</code> - There needs to be a way to configure the DI container with the dynamic runtime context when the underlying original context is configured.</li>
+<li><code>Dynamic Configuration</code>: In the above, the configuration of the dynamic runtime context is hardcoded. Ideally this context would be initialized with the same configuration as the original context.</li>
+</ul>
+<hr>
+<h3 id=anonymous-entity>Anonymous entity</h3>
+<p>As it stands, the core of the above code will work with anonymous types - just one small issue to resolve, and thats how to <code>convert the anonymous type to T</code>.</p>
+<p>To convert the anonymous object to T, we have to <code>inter T by example</code>:</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2>2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3>3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4>4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5>5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6>6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7>7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8>8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9>9</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=kt>var</span> <span class=n>anon</span> <span class=p>=</span> <span class=k>new</span> <span class=p>{</span> <span class=n>BlogId</span> <span class=p>=</span> <span class=m>0</span><span class=p>,</span> <span class=n>Url</span> <span class=p>=</span> <span class=s>&#34;&#34;</span> <span class=p>};</span>
+<span class=kt>var</span> <span class=n>blog</span> <span class=p>=</span> <span class=n>CallWithAnon</span><span class=p>(</span><span class=n>anon</span><span class=p>);</span>
+
+<span class=k>static</span> <span class=n>T</span> <span class=n>CallWithAnon</span><span class=p>&lt;</span><span class=n>T</span><span class=p>&gt;(</span><span class=n>T</span> <span class=n>example</span><span class=p>)</span> <span class=k>where</span> <span class=n>T</span><span class=p>:</span> <span class=k>class</span>
+<span class=p>{</span>
+    <span class=k>using</span> <span class=nn>var</span> <span class=n>dynContext</span> <span class=p>=</span> <span class=k>new</span> <span class=n>RuntimeContext</span><span class=p>&lt;</span><span class=n>T</span><span class=p>&gt;();</span>
+    <span class=k>return</span> <span class=n>dynContext</span><span class=p>.</span><span class=n>Set</span><span class=p>&lt;</span><span class=n>T</span><span class=p>&gt;().</span><span class=n>FromSqlRaw</span><span class=p>(</span><span class=s>&#34;SELECT Id as BlogId, Url FROM Blog&#34;</span><span class=p>)</span>
+        <span class=p>.</span><span class=n>AsNoTracking</span><span class=p>().</span><span class=n>First</span><span class=p>();</span>
+<span class=p>}</span></code></pre></td></tr></table>
+</div>
+</div>
+<ul>
+<li><strong>Line 1:</strong> Declare an example anonymous object with the relevant properties, using default values</li>
+<li><strong>Line 2:</strong> Invoke the method just using the example object, and not specifying T</li>
+<li><strong>Line 4-9:</strong> T is inferred from the example parameter (which is not used in the method - it is only used for the inference) and can successfully call into the dynamic runtime context</li>
+</ul>
+<hr>
+<h2 id=dynamic-value-type-results>Dynamic value type results</h2>
+<p>The next issue to resolve, is the ability to get a simple type or list of simple types from EF Core dynamically. The term <code>simple type</code> is used very loosely to refer to following types:</p>
+<ul>
+<li>Value types: <code>int</code>, <code>bool</code>, <code>float</code>, <code>char</code> etc</li>
+<li>Common Unique Identifier: <code>Guid</code></li>
+<li>Simple value classes: <code>string</code></li>
+</ul>
+<p>As mentioned previously, EF Core requires a query be executed off a DbSet - another requirement is that the <code>DbSet type be a reference type</code> (a class).</p>
+<p>Even with the dynamic runtime context, the following code <code>would not work</code> as a DbSet of type <code>Guid</code> cannot be dynamically created (as its not a reference type):
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2>2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3>3</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=c1>// This DOES NOT WORK (yet)
+</span><span class=c1></span><span class=kt>var</span> <span class=n>blogs</span> <span class=p>=</span> <span class=n>dynContext</span><span class=p>.</span><span class=n>Set</span><span class=p>&lt;</span><span class=n>Guid</span><span class=p>&gt;().</span><span class=n>FromSqlRaw</span><span class=p>(</span><span class=s>&#34;SELECT Id FROM Blog&#34;</span><span class=p>)</span>
+    <span class=p>.</span><span class=n>AsNoTracking</span><span class=p>().</span><span class=n>ToList</span><span class=p>();</span></code></pre></td></tr></table>
+</div>
+</div></p>
+<p>We cannot <em>really</em> get around the requirement that the DbSet be a reference type - however, what can be done is to <code>dynamically converted the simple type to a reference type, run the query and converted the results back to a simple type</code></p>
+<p>First lets create a reference type class, which will act as a wrapper:
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2>2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3>3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4>4</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=k>public</span> <span class=k>class</span> <span class=nc>SimpleType</span><span class=p>&lt;</span><span class=n>TValue</span><span class=p>&gt;</span>
+<span class=p>{</span>
+    <span class=k>public</span> <span class=n>TValue</span> <span class=n>Value</span> <span class=p>{</span> <span class=k>get</span><span class=p>;</span> <span class=k>set</span><span class=p>;</span> <span class=p>}</span>
+<span class=p>}</span></code></pre></td></tr></table>
+</div>
+</div></p>
+<p>There are no constraints on TValue, as there are no generic constraints which will work for all the types we require (value types, Guid and string).</p>
+<p>Now we can use this reference wrapper class, and call the dynamic runtime context:
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2>2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3>3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4>4</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=k>using</span> <span class=nn>var</span> <span class=n>dynContext</span> <span class=p>=</span> <span class=k>new</span> <span class=n>RuntimeContext</span><span class=p>&lt;</span><span class=n>SimpleType</span><span class=p>&lt;</span><span class=n>Guid</span><span class=p>&gt;&gt;();</span>
+<span class=kt>var</span> <span class=n>id</span> <span class=p>=</span> <span class=n>dynContext</span><span class=p>.</span><span class=n>Set</span><span class=p>&lt;</span><span class=n>SimpleType</span><span class=p>&lt;</span><span class=n>Guid</span><span class=p>&gt;&gt;()</span>
+    <span class=p>.</span><span class=n>FromSqlRaw</span><span class=p>(</span><span class=s>&#34;SELECT Id as Value FROM Blog&#34;</span><span class=p>)</span>
+    <span class=p>.</span><span class=n>AsNoTracking</span><span class=p>().</span><span class=n>First</span><span class=p>().</span><span class=n>Value</span><span class=p>;</span></code></pre></td></tr></table>
+</div>
+</div></p>
+<p>The above will work, but we no have two more broader issues which need to be resolved:</p>
+<ul>
+<li><code>Still using reference type</code>: We are still using a reference type for the DbSet and have to manually wrap the simple type and then unwrap it</li>
+<li><code>Column called 'Value'</code>: The column in the SQL has to be called &lsquo;Value&rsquo; for it to match the field on the wrapper class and successfully retrieve the data</li>
+</ul>
+<hr>
+<h2 id=resolving-outstanding-issues>Resolving outstanding issues</h2>
+<h3 id=code-restructure>Code restructure</h3>
+<p>Even though we have a working dynamic runtime context, there are 4 outstanding issues to be resolved, before we have a more complete solution. First lets restructure the code a bit to make these easier to resolve.</p>
+<ol>
+<li>
+<p>Create a new class <code>DynamicContext</code> which accepts a generic DbContext.
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5> 5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6> 6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7> 7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
+</span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
+</span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=k>public</span> <span class=k>class</span> <span class=nc>DynamicContext</span><span class=p>&lt;</span><span class=n>TContext</span><span class=p>&gt;</span> <span class=k>where</span> <span class=n>TContext</span> <span class=p>:</span> <span class=n>DbContext</span>
+<span class=p>{</span>
+    <span class=k>private</span> <span class=k>readonly</span> <span class=n>DbContext</span> <span class=m>_</span><span class=n>originalContext</span><span class=p>;</span>
+
+    <span class=k>public</span> <span class=n>DbContext</span> <span class=n>Context</span> <span class=p>{</span> <span class=k>get</span> <span class=p>{</span> <span class=k>return</span> <span class=m>_</span><span class=n>originalContext</span><span class=p>;</span> <span class=p>}</span> <span class=p>}</span>
+
+    <span class=k>public</span> <span class=n>DynamicContext</span><span class=p>(</span><span class=n>TContext</span> <span class=n>context</span><span class=p>)</span>
+    <span class=p>{</span>
+        <span class=m>_</span><span class=n>originalContext</span> <span class=p>=</span> <span class=n>context</span><span class=p>;</span>
+    <span class=p>}</span>
+<span class=p>}</span></code></pre></td></tr></table>
+</div>
+</div></p>
+</li>
+<li>
+<p>Change <code>RuntimeContext</code> to accept a generic TContext of type DbContext, and make it internal instead of public. The reason for this will become more apparent as we start adding more functionality to <code>DynamicContext</code>.
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2>2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3>3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4>4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5>5</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=k>internal</span> <span class=k>class</span> <span class=nc>RuntimeContext</span><span class=p>&lt;</span><span class=n>T</span><span class=p>,</span> <span class=n>TContext</span><span class=p>&gt;</span> <span class=p>:</span> 
+    <span class=n>DbContext</span> <span class=k>where</span> <span class=n>T</span> <span class=p>:</span> <span class=k>class</span> <span class=nc>where</span> <span class=n>TContext</span> <span class=p>:</span> <span class=n>DbContext</span>
+<span class=p>{</span>
+    <span class=c1>// Rest of class implementation
+</span><span class=c1></span><span class=p>}</span></code></pre></td></tr></table>
+</div>
+</div></p>
+</li>
+</ol>
+<p><code>DynamicContext</code> will now become a <code>wrapper</code> and the public face of <code>RuntimeContext</code> and of the original <code>DbContext</code> - as we work through the outstanding issues below, more functionality will be added to <code>DynamicContext</code> to make use of <code>RuntimeContext</code>.</p>
+<p>The four outstanding issues:</p>
+<ul>
+<li><code>Dependency Injection</code>: There needs to be a way to configure the DI container with the runtime context as well as the original context</li>
+<li><code>Dynamic Configuration</code>: The dynamic runtime context should use the same configuration as the original underlying DbContext</li>
+<li><code>Reference type wrapper</code>: A reference type wrapper is still used for simple types, which has to manually be wrapped and unwrapped</li>
+<li><code>Column called 'Value'</code>: The column in the raw SQL has to be called &lsquo;Value&rsquo; as it has to match the field on the wrapper class</li>
+</ul>
+<hr>
+<h3 id=dependency-injection>Dependency Injection</h3>
+<p>As <code>DynamicContext</code> now takes a DbContext as a generic parameter, if a DbContext is added to the DI container <code>DynamicContext</code> should be added as well.</p>
+<p>To do this, we&rsquo;ll use extension methods which correspond to the existing .NET <code>AddDbContext</code> methods. For each overloaded <code>AddDbContext</code> method, an <code>AddDynamicContext</code> method will be added (an example of one of these methods):
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5> 5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6> 6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7> 7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
+</span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
+</span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
+</span><span class=lnt id=ienumusage-12><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-12>12</a>
+</span><span class=lnt id=ienumusage-13><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-13>13</a>
+</span><span class=lnt id=ienumusage-14><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-14>14</a>
+</span><span class=lnt id=ienumusage-15><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-15>15</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=k>public</span> <span class=k>static</span> <span class=n>IServiceCollection</span> <span class=n>AddDynamicContext</span><span class=p>&lt;</span><span class=n>TContext</span><span class=p>&gt;(</span>
+    <span class=k>this</span> <span class=n>IServiceCollection</span> <span class=n>serviceCollection</span><span class=p>,</span> 
+    <span class=n>Action</span><span class=p>&lt;</span><span class=n>DbContextOptionsBuilder</span><span class=p>&gt;</span> <span class=n>optionsAction</span> <span class=p>=</span> <span class=k>null</span><span class=p>,</span> 
+    <span class=n>ServiceLifetime</span> <span class=n>contextLifetime</span> <span class=p>=</span> <span class=n>ServiceLifetime</span><span class=p>.</span><span class=n>Scoped</span><span class=p>,</span> 
+    <span class=n>ServiceLifetime</span> <span class=n>optionsLifetime</span> <span class=p>=</span> <span class=n>ServiceLifetime</span><span class=p>.</span><span class=n>Scoped</span><span class=p>)</span> <span class=k>where</span> <span class=n>TContext</span> <span class=p>:</span> <span class=n>DbContext</span>
+<span class=p>{</span>
+    <span class=c1>// Add the dynamic context for the original dbcontext
+</span><span class=c1></span>    <span class=n>serviceCollection</span><span class=p>.</span><span class=n>AddScoped</span><span class=p>&lt;</span><span class=n>DynamicContext</span><span class=p>&lt;</span><span class=n>TContext</span><span class=p>&gt;&gt;();</span>
+    <span class=c1>// add the dbcontext using the normal AddDbContext call
+</span><span class=c1></span>    <span class=k>return</span> <span class=n>serviceCollection</span><span class=p>.</span><span class=n>AddDbContext</span><span class=p>&lt;</span><span class=n>TContext</span><span class=p>,</span> <span class=n>TContext</span><span class=p>&gt;(</span>
+        <span class=n>optionsAction</span><span class=p>,</span> 
+        <span class=n>contextLifetime</span><span class=p>,</span> 
+        <span class=n>optionsLifetime</span>
+    <span class=p>);</span>
+<span class=p>}</span></code></pre></td></tr></table>
+</div>
+</div></p>
+<p>The method has the same parameters as the invoked <code>AddDbContext</code> method, and acts as a passthrough - on the way adding a record to the DI container for <code>DynamicContext&lt;T></code>.<br>
+An extension method is added for each variation of the <code>AddDbContext</code> method.</p>
+<p>When setting up the DI container, instead of calling <code>AddDbContext</code>, <code>AddDynamicContext</code> is now called.
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2>2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3>3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4>4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5>5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6>6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7>7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8>8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9>9</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=c1>// OLD
+</span><span class=c1></span><span class=p>.</span><span class=n>AddDbContext</span><span class=p>&lt;</span><span class=n>BlogContext</span><span class=p>&gt;(</span><span class=n>x</span> <span class=p>=&gt;</span> <span class=n>x</span>
+    <span class=p>.</span><span class=n>UseSqlite</span><span class=p>(</span><span class=s>$&#34;Data Source={Environment
+</span><span class=s>        .GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\BlogDatabase.db&#34;</span><span class=p>))</span>
+
+<span class=c1>// NEW
+</span><span class=c1></span><span class=p>.</span><span class=n>AddDynamicContext</span><span class=p>&lt;</span><span class=n>BlogContext</span><span class=p>&gt;(</span><span class=n>x</span> <span class=p>=&gt;</span> <span class=n>x</span>
+    <span class=p>.</span><span class=n>UseSqlite</span><span class=p>(</span><span class=s>$&#34;Data Source={Environment
+</span><span class=s>        .GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\BlogDatabase.db&#34;</span><span class=p>))</span>        </code></pre></td></tr></table>
+</div>
+</div></p>
+<p>We can now inject DynamicContext&lt;T> (where T is the DbContext) into the relevant constructor, and have access to the dynamic functionality provided by <code>DynamicContext</code> as well as access to the underlying DbContext, via the <code>Context</code> property.</p>
+<p><strong>Dependency injection taken care of!</strong></p>
+<hr>
+<h3 id=dynamic-configuration>Dynamic Configuration</h3>
+<p>Currently, the configuration of the RuntimeContext is hardcoded in the <em>OnConfiguring</em> method. Next let&rsquo;s make it dynamic and have the same configuration as the underlying original DbContext.</p>
+<p>First, lets define a new type to <code>store the DbContext initialization Action</code>:</p>
+<p><div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2>2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3>3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4>4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5>5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6>6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7>7</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=k>public</span> <span class=k>class</span> <span class=nc>DynamicContextInitOptions</span><span class=p>&lt;</span><span class=n>TContext</span><span class=p>&gt;</span> <span class=k>where</span> <span class=n>TContext</span> <span class=p>:</span> <span class=n>DbContext</span>
+<span class=p>{</span>
+    <span class=n>Action</span><span class=p>&lt;</span><span class=n>DbContextOptionsBuilder</span><span class=p>&gt;</span> <span class=n>optionsAction</span> <span class=p>{</span> <span class=k>get</span><span class=p>;</span> <span class=k>set</span><span class=p>;</span> <span class=p>}</span>
+
+    <span class=n>Action</span><span class=p>&lt;</span><span class=n>IServiceProvider</span><span class=p>,</span> <span class=n>DbContextOptionsBuilder</span><span class=p>&gt;</span> 
+        <span class=n>optionsActionDependencyInjection</span> <span class=p>{</span> <span class=k>get</span><span class=p>;</span> <span class=k>set</span><span class=p>;</span> <span class=p>}</span>
+<span class=p>}</span></code></pre></td></tr></table>
+</div>
+</div>
+When initializing a DbContext, one of the two <code>Actions</code> could be used. The class can cater for both, but only one of the two will be used at any one time.</p>
+<p>Next, when a DbContext is added to the container (via the <code>AddDynamicContext</code> extension method) we&rsquo;ll record how the original DbContext was initialized, and add the initialization Action to the DI container as well. A private helper method <code>AddDynamicContent</code> is used to configure the DI container based on the Action passed in:
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5> 5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6> 6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7> 7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
+</span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
+</span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
+</span><span class=lnt id=ienumusage-12><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-12>12</a>
+</span><span class=lnt id=ienumusage-13><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-13>13</a>
+</span><span class=lnt id=ienumusage-14><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-14>14</a>
+</span><span class=lnt id=ienumusage-15><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-15>15</a>
+</span><span class=lnt id=ienumusage-16><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-16>16</a>
+</span><span class=lnt id=ienumusage-17><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-17>17</a>
+</span><span class=lnt id=ienumusage-18><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-18>18</a>
+</span><span class=lnt id=ienumusage-19><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-19>19</a>
+</span><span class=lnt id=ienumusage-20><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-20>20</a>
+</span><span class=lnt id=ienumusage-21><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-21>21</a>
+</span><span class=lnt id=ienumusage-22><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-22>22</a>
+</span><span class=lnt id=ienumusage-23><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-23>23</a>
+</span><span class=lnt id=ienumusage-24><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-24>24</a>
+</span><span class=lnt id=ienumusage-25><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-25>25</a>
+</span><span class=lnt id=ienumusage-26><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-26>26</a>
+</span><span class=lnt id=ienumusage-27><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-27>27</a>
+</span><span class=lnt id=ienumusage-28><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-28>28</a>
+</span><span class=lnt id=ienumusage-29><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-29>29</a>
+</span><span class=lnt id=ienumusage-30><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-30>30</a>
+</span><span class=lnt id=ienumusage-31><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-31>31</a>
+</span><span class=lnt id=ienumusage-32><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-32>32</a>
+</span><span class=lnt id=ienumusage-33><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-33>33</a>
+</span><span class=lnt id=ienumusage-34><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-34>34</a>
+</span><span class=lnt id=ienumusage-35><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-35>35</a>
+</span><span class=lnt id=ienumusage-36><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-36>36</a>
+</span><span class=lnt id=ienumusage-37><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-37>37</a>
+</span><span class=lnt id=ienumusage-38><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-38>38</a>
+</span><span class=lnt id=ienumusage-39><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-39>39</a>
+</span><span class=lnt id=ienumusage-40><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-40>40</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=k>public</span> <span class=k>static</span> <span class=n>IServiceCollection</span> <span class=n>AddDynamicContext</span><span class=p>&lt;</span><span class=n>TContext</span><span class=p>&gt;(</span>
+    <span class=k>this</span> <span class=n>IServiceCollection</span> <span class=n>serviceCollection</span><span class=p>,</span> 
+    <span class=n>Action</span><span class=p>&lt;</span><span class=n>DbContextOptionsBuilder</span><span class=p>&gt;</span> <span class=n>optionsAction</span> <span class=p>=</span> <span class=k>null</span><span class=p>,</span> 
+    <span class=n>ServiceLifetime</span> <span class=n>contextLifetime</span> <span class=p>=</span> <span class=n>ServiceLifetime</span><span class=p>.</span><span class=n>Scoped</span><span class=p>,</span> 
+    <span class=n>ServiceLifetime</span> <span class=n>optionsLifetime</span> <span class=p>=</span> <span class=n>ServiceLifetime</span><span class=p>.</span><span class=n>Scoped</span><span class=p>)</span> <span class=k>where</span> <span class=n>TContext</span> <span class=p>:</span> <span class=n>DbContext</span>
+<span class=p>{</span>
+    <span class=n>AddDynamicContent</span><span class=p>&lt;</span><span class=n>TContext</span><span class=p>&gt;(</span><span class=n>serviceCollection</span><span class=p>,</span> <span class=n>optionsAction</span><span class=p>);</span>
+
+    <span class=k>return</span> <span class=n>serviceCollection</span><span class=p>.</span><span class=n>AddDbContext</span><span class=p>&lt;</span><span class=n>TContext</span><span class=p>,</span> <span class=n>TContext</span><span class=p>&gt;(</span>
+        <span class=n>optionsAction</span><span class=p>,</span> 
+        <span class=n>contextLifetime</span><span class=p>,</span> 
+        <span class=n>optionsLifetime</span>
+    <span class=p>);</span>
+<span class=p>}</span>
+
+<span class=k>private</span> <span class=k>static</span> <span class=k>void</span> <span class=n>AddDynamicContent</span><span class=p>&lt;</span><span class=n>TContext</span><span class=p>&gt;(</span>
+    <span class=n>IServiceCollection</span> <span class=n>serviceCollection</span><span class=p>,</span> 
+    <span class=n>Action</span><span class=p>&lt;</span><span class=n>DbContextOptionsBuilder</span><span class=p>&gt;</span> <span class=n>optionsAction</span> <span class=p>=</span> <span class=k>null</span><span class=p>,</span> 
+    <span class=n>Action</span><span class=p>&lt;</span><span class=n>IServiceProvider</span><span class=p>,</span> <span class=n>DbContextOptionsBuilder</span><span class=p>&gt;</span> 
+        <span class=n>optionsActionDependencyInjection</span> <span class=p>=</span> <span class=k>null</span><span class=p>)</span> <span class=k>where</span> <span class=n>TContext</span> <span class=p>:</span> <span class=n>DbContext</span>
+<span class=p>{</span>
+    <span class=n>serviceCollection</span><span class=p>.</span><span class=n>AddScoped</span><span class=p>&lt;</span><span class=n>DynamicContext</span><span class=p>&lt;</span><span class=n>TContext</span><span class=p>&gt;&gt;();</span>
+
+    <span class=c1>// If no action, then it would need to be added manually
+</span><span class=c1></span>    <span class=k>if</span><span class=p>(</span><span class=n>optionsAction</span> <span class=p>==</span> <span class=k>null</span> <span class=p>&amp;&amp;</span> <span class=n>optionsActionDependencyInjection</span> <span class=p>==</span> <span class=k>null</span><span class=p>)</span>
+    <span class=p>{</span>
+        <span class=k>return</span><span class=p>;</span>
+    <span class=p>}</span>
+
+    <span class=c1>// Create an options instance with the Action populated. 
+</span><span class=c1></span>    <span class=c1>// One of the two will always be null
+</span><span class=c1></span>    <span class=kt>var</span> <span class=n>options</span> <span class=p>=</span> <span class=k>new</span> <span class=n>DynamicContextInitOptions</span><span class=p>&lt;</span><span class=n>TContext</span><span class=p>&gt;</span>
+    <span class=p>{</span>
+        <span class=n>optionsAction</span> <span class=p>=</span> <span class=n>optionsAction</span><span class=p>,</span>
+        <span class=n>optionsActionDependencyInjection</span> <span class=p>=</span> <span class=n>optionsActionDependencyInjection</span>
+    <span class=p>};</span>
+
+    <span class=c1>// add the type to the DI container
+</span><span class=c1></span>    <span class=n>serviceCollection</span><span class=p>.</span><span class=n>AddSingleton</span><span class=p>(</span><span class=k>typeof</span><span class=p>(</span><span class=n>options</span><span class=p>);</span>
+<span class=p>}</span></code></pre></td></tr></table>
+</div>
+</div></p>
+<p>For a specific DbContext, we now know how it was initialized. So if we inject <code>DynamicContextInitOptions&lt;TContext></code> into <code>DynamicContext</code> and then into <code>RuntimeContext</code>, it can be used to initialized dynamically.</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5> 5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6> 6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7> 7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
+</span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
+</span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
+</span><span class=lnt id=ienumusage-12><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-12>12</a>
+</span><span class=lnt id=ienumusage-13><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-13>13</a>
+</span><span class=lnt id=ienumusage-14><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-14>14</a>
+</span><span class=lnt id=ienumusage-15><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-15>15</a>
+</span><span class=lnt id=ienumusage-16><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-16>16</a>
+</span><span class=lnt id=ienumusage-17><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-17>17</a>
+</span><span class=lnt id=ienumusage-18><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-18>18</a>
+</span><span class=lnt id=ienumusage-19><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-19>19</a>
+</span><span class=lnt id=ienumusage-20><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-20>20</a>
+</span><span class=lnt id=ienumusage-21><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-21>21</a>
+</span><span class=lnt id=ienumusage-22><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-22>22</a>
+</span><span class=lnt id=ienumusage-23><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-23>23</a>
+</span><span class=lnt id=ienumusage-24><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-24>24</a>
+</span><span class=lnt id=ienumusage-25><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-25>25</a>
+</span><span class=lnt id=ienumusage-26><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-26>26</a>
+</span><span class=lnt id=ienumusage-27><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-27>27</a>
+</span><span class=lnt id=ienumusage-28><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-28>28</a>
+</span><span class=lnt id=ienumusage-29><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-29>29</a>
+</span><span class=lnt id=ienumusage-30><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-30>30</a>
+</span><span class=lnt id=ienumusage-31><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-31>31</a>
+</span><span class=lnt id=ienumusage-32><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-32>32</a>
+</span><span class=lnt id=ienumusage-33><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-33>33</a>
+</span><span class=lnt id=ienumusage-34><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-34>34</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=k>internal</span> <span class=k>class</span> <span class=nc>RuntimeContext</span><span class=p>&lt;</span><span class=n>T</span><span class=p>&gt;</span> 
+    <span class=p>:</span> <span class=n>DbContext</span> <span class=k>where</span> <span class=n>T</span> <span class=p>:</span> <span class=k>class</span> 
+<span class=p>{</span>
+    <span class=k>private</span> <span class=k>readonly</span> <span class=n>DynamicContextInitOptions</span><span class=p>&lt;</span><span class=n>DbContext</span><span class=p>&gt;</span> <span class=m>_</span><span class=n>contextInitAction</span><span class=p>;</span>
+
+    <span class=k>private</span> <span class=k>readonly</span> <span class=n>IServiceProvider</span> <span class=m>_</span><span class=n>serviceProvider</span><span class=p>;</span>
+
+    <span class=k>public</span> <span class=n>RuntimeContext</span><span class=p>(</span>
+        <span class=n>DynamicContextInitOptions</span><span class=p>&lt;</span><span class=n>DbContext</span><span class=p>&gt;</span> <span class=n>contextInitAction</span><span class=p>,</span> 
+        <span class=n>IServiceProvider</span> <span class=n>serviceProvider</span><span class=p>)</span>
+    <span class=p>{</span>
+        <span class=m>_</span><span class=n>contextInitAction</span> <span class=p>=</span> <span class=n>contextInitAction</span><span class=p>;</span>
+        <span class=m>_</span><span class=n>serviceProvider</span> <span class=p>=</span> <span class=n>serviceProvider</span><span class=p>;</span>
+    <span class=p>}</span>
+
+    <span class=k>protected</span> <span class=k>override</span> <span class=k>void</span> <span class=n>OnConfiguring</span><span class=p>(</span><span class=n>DbContextOptionsBuilder</span> <span class=n>optionsBuilder</span><span class=p>)</span>
+    <span class=p>{</span>
+        <span class=c1>// init the context based on how the initial TContext was initially initialized
+</span><span class=c1></span>        <span class=k>if</span> <span class=p>(</span><span class=m>_</span><span class=n>contextInitAction</span><span class=p>.</span><span class=n>optionsAction</span> <span class=p>!=</span> <span class=k>null</span><span class=p>)</span>
+        <span class=p>{</span>
+            <span class=m>_</span><span class=n>contextInitAction</span><span class=p>.</span><span class=n>optionsAction</span><span class=p>.</span><span class=n>Invoke</span><span class=p>(</span><span class=n>optionsBuilder</span><span class=p>);</span>
+        <span class=p>}</span>
+        <span class=k>else</span>
+        <span class=p>{</span>
+            <span class=m>_</span><span class=n>contextInitAction</span>
+                <span class=p>.</span><span class=n>optionsActionDependencyInjection</span>
+                <span class=p>.</span><span class=n>Invoke</span><span class=p>(</span><span class=m>_</span><span class=n>serviceProvider</span><span class=p>,</span> <span class=n>optionsBuilder</span><span class=p>);</span>
+        <span class=p>}</span>
+
+        <span class=k>base</span><span class=p>.</span><span class=n>OnConfiguring</span><span class=p>(</span><span class=n>optionsBuilder</span><span class=p>);</span>
+    <span class=p>}</span>
+
+    <span class=c1>// Class continues...
+</span><span class=c1></span><span class=p>}</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>We can now inject a DynamicContext into a relevant constructor, have access to dynamic functionality as well as the underlying original DbContext, and we can dynamically initialized the dynamic context based on how the underlying original context was initialized.</p>
+<p><strong>Dynamic configuration taken care of!</strong></p>
+<hr>
+<h3 id=dynamiccontext-wrapper>DynamicContext wrapper</h3>
+<p>Next we&rsquo;ll add a few methods to the wrapper <code>DynamicContext</code> to provide access to the internal <code>RuntimeContext</code>, as well as making using the <code>reference type wrapper, SimpleType&lt;T></code> easier.</p>
+<ul>
+<li>
+<p>First a method to add a DbSet dynamically based on the <code>generic entity</code> <em>TEntity</em>:
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5> 5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6> 6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7> 7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
+</span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
+</span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
+</span><span class=lnt id=ienumusage-12><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-12>12</a>
+</span><span class=lnt id=ienumusage-13><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-13>13</a>
+</span><span class=lnt id=ienumusage-14><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-14>14</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=k>public</span> <span class=n>DbSet</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>&gt;</span> <span class=n>Set</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>&gt;()</span> <span class=k>where</span> <span class=n>TEntity</span> <span class=p>:</span> <span class=k>class</span>
+<span class=p>{</span>
+    <span class=c1>// if the type is on the original context, 
+</span><span class=c1></span>    <span class=c1>// then don&#39;t initialize the dynamic context
+</span><span class=c1></span>    <span class=k>if</span> <span class=p>(</span><span class=m>_</span><span class=n>originalContext</span><span class=p>.</span><span class=n>Model</span><span class=p>.</span><span class=n>FindEntityType</span><span class=p>(</span><span class=k>typeof</span><span class=p>(</span><span class=n>TEntity</span><span class=p>))</span> <span class=p>!=</span> <span class=k>null</span><span class=p>)</span>
+    <span class=p>{</span>
+        <span class=k>return</span> <span class=m>_</span><span class=n>originalContext</span><span class=p>.</span><span class=n>Set</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>&gt;();</span>
+    <span class=p>}</span>
+
+    <span class=kt>var</span> <span class=n>runtimeContext</span> <span class=p>=</span> <span class=k>new</span> <span class=n>RuntimeContext</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>&gt;(</span>
+        <span class=m>_</span><span class=n>runtimeInitAction</span><span class=p>,</span> 
+        <span class=m>_</span><span class=n>serviceProvider</span><span class=p>);</span>
+    <span class=k>return</span> <span class=n>runtimeContext</span><span class=p>.</span><span class=n>Set</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>&gt;();</span>
+<span class=p>}</span></code></pre></td></tr></table>
+</div>
+</div></p>
+<p>To invoke this method:
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2>2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3>3</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=kt>var</span> <span class=n>blogs</span> <span class=p>=</span> <span class=n>dynamicContext</span><span class=p>.</span><span class=n>Set</span><span class=p>&lt;</span><span class=n>BlogUrl</span><span class=p>&gt;()</span>
+    <span class=p>.</span><span class=n>FromSqlRaw</span><span class=p>(</span><span class=s>&#34;SELECT Id as BlogId, Url FROM Blog&#34;</span><span class=p>)</span>
+    <span class=p>.</span><span class=n>AsNoTracking</span><span class=p>().</span><span class=n>ToList</span><span class=p>()</span></code></pre></td></tr></table>
+</div>
+</div></p>
+</li>
+<li>
+<p>Next, a method to add DbSet dynamically based on an <code>anonymous object</code>:
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5> 5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6> 6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7> 7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
+</span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
+</span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
+</span><span class=lnt id=ienumusage-12><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-12>12</a>
+</span><span class=lnt id=ienumusage-13><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-13>13</a>
+</span><span class=lnt id=ienumusage-14><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-14>14</a>
+</span><span class=lnt id=ienumusage-15><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-15>15</a>
+</span><span class=lnt id=ienumusage-16><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-16>16</a>
+</span><span class=lnt id=ienumusage-17><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-17>17</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=k>public</span> <span class=n>DbSet</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>&gt;</span> <span class=n>Set</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>&gt;(</span><span class=n>TEntity</span> <span class=n>example</span><span class=p>)</span> 
+    <span class=k>where</span> <span class=n>TEntity</span> <span class=p>:</span> <span class=k>class</span>
+<span class=p>{</span>
+    <span class=m>_</span> <span class=p>=</span> <span class=n>example</span><span class=p>;</span>
+
+    <span class=c1>// if the type is on the original context, 
+</span><span class=c1></span>    <span class=c1>// then don&#39;t initialize the dynamic context
+</span><span class=c1></span>    <span class=k>if</span> <span class=p>(</span><span class=m>_</span><span class=n>originalContext</span><span class=p>.</span><span class=n>Model</span><span class=p>.</span><span class=n>FindEntityType</span><span class=p>(</span><span class=k>typeof</span><span class=p>(</span><span class=n>TEntity</span><span class=p>))</span> <span class=p>!=</span> <span class=k>null</span><span class=p>)</span>
+    <span class=p>{</span>
+        <span class=k>return</span> <span class=m>_</span><span class=n>originalContext</span><span class=p>.</span><span class=n>Set</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>&gt;();</span>
+    <span class=p>}</span>
+
+    <span class=kt>var</span> <span class=n>runtimeContext</span> <span class=p>=</span> <span class=k>new</span> <span class=n>RuntimeContext</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>&gt;(</span>
+        <span class=m>_</span><span class=n>runtimeInitAction</span><span class=p>,</span> 
+        <span class=m>_</span><span class=n>serviceProvider</span><span class=p>);</span>
+    <span class=k>return</span> <span class=n>runtimeContext</span><span class=p>.</span><span class=n>Set</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>&gt;();</span>
+<span class=p>}</span></code></pre></td></tr></table>
+</div>
+</div></p>
+<p>To invoke this method:
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2>2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3>3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4>4</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=kt>var</span> <span class=n>anonBlogUrl</span> <span class=p>=</span> <span class=k>new</span> <span class=p>{</span> <span class=n>BlogId</span> <span class=p>=</span> <span class=m>0</span><span class=p>,</span> <span class=n>Url</span> <span class=p>=</span> <span class=s>&#34;&#34;</span> <span class=p>};</span>
+<span class=kt>var</span> <span class=n>blogs</span> <span class=p>=</span> <span class=n>dynamicContext</span><span class=p>.</span><span class=n>Set</span><span class=p>(</span><span class=n>anonBlogUrl</span><span class=p>)</span>
+    <span class=p>.</span><span class=n>FromSqlRaw</span><span class=p>(</span><span class=s>&#34;SELECT Id as BlogId, Url FROM Blog&#34;</span><span class=p>)</span>
+    <span class=p>.</span><span class=n>AsNoTracking</span><span class=p>().</span><span class=n>ToList</span><span class=p>();</span></code></pre></td></tr></table>
+</div>
+</div></p>
+</li>
+<li>
+<p>Next, a method to <code>wrap the explicit SimpleType&lt;T> usage</code>. With this method SimpleType&lt;T> does not need to be used explicitly:
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5> 5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6> 6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7> 7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
+</span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
+</span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
+</span><span class=lnt id=ienumusage-12><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-12>12</a>
+</span><span class=lnt id=ienumusage-13><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-13>13</a>
+</span><span class=lnt id=ienumusage-14><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-14>14</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=k>public</span> <span class=n>DbSet</span><span class=p>&lt;</span><span class=n>SimpleType</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>&gt;&gt;</span> <span class=n>ValueSet</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>&gt;()</span> <span class=k>where</span> <span class=n>TEntity</span> <span class=p>:</span> <span class=k>struct</span> 
+<span class=p>{</span>
+    <span class=c1>// as the constraint is on struct, we have this additional check 
+</span><span class=c1></span>    <span class=c1>// just to make sure its a struct of a relevant type 
+</span><span class=c1></span>    <span class=c1>// (int, long, float, bool etc)
+</span><span class=c1></span>    <span class=k>if</span><span class=p>(!</span><span class=n>IsValidType</span><span class=p>(</span><span class=k>typeof</span><span class=p>(</span><span class=n>TEntity</span><span class=p>)))</span>
+    <span class=p>{</span>
+        <span class=k>throw</span> <span class=k>new</span> <span class=n>InvalidOperationException</span><span class=p>(</span>
+            <span class=s>$&#34;Type &#39;{typeof(TEntity).Name}&#39; is not supported&#34;</span><span class=p>);</span>
+    <span class=p>}</span>
+
+    <span class=kt>var</span> <span class=n>runtimeContext</span> <span class=p>=</span> <span class=n>GetInternalRuntimeContext</span><span class=p>(</span><span class=k>new</span> <span class=n>SimpleType</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>&gt;());</span>
+    <span class=k>return</span> <span class=n>runtimeContext</span><span class=p>.</span><span class=n>Set</span><span class=p>&lt;</span><span class=n>SimpleType</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>&gt;&gt;();</span>
+<span class=p>}</span></code></pre></td></tr></table>
+</div>
+</div></p>
+<p>To invoke this method:
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2>2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3>3</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=kt>var</span> <span class=n>blogIds</span> <span class=p>=</span> <span class=n>dynamicContext</span><span class=p>.</span><span class=n>ValueSet</span><span class=p>&lt;</span><span class=n>Guid</span><span class=p>&gt;()</span>
+    <span class=p>.</span><span class=n>FromSqlRaw</span><span class=p>(</span><span class=s>&#34;SELECT Id as Value FROM Blog&#34;</span><span class=p>)</span>
+    <span class=p>.</span><span class=n>AsNoTracking</span><span class=p>().</span><span class=n>Select</span><span class=p>(</span><span class=n>x</span> <span class=p>=&gt;</span> <span class=n>x</span><span class=p>.</span><span class=n>Value</span><span class=p>).</span><span class=n>ToList</span><span class=p>();</span></code></pre></td></tr></table>
+</div>
+</div></p>
+</li>
+<li>
+<p>Lastly, as <code>string is not a struct, it has to be handled separately</code>:
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2>2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3>3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4>4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5>5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6>6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7>7</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=k>public</span> <span class=n>DbSet</span><span class=p>&lt;</span><span class=n>SimpleType</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>&gt;&gt;</span> <span class=n>StringSet</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>&gt;()</span> 
+    <span class=k>where</span> <span class=n>TEntity</span> <span class=p>:</span> <span class=n>IEnumerable</span><span class=p>&lt;</span><span class=kt>char</span><span class=p>&gt;,</span> <span class=n>IEnumerable</span><span class=p>,</span> <span class=n>ICloneable</span><span class=p>,</span> 
+        <span class=n>IComparable</span><span class=p>,</span> <span class=n>IComparable</span><span class=p>&lt;</span><span class=kt>string</span><span class=p>&gt;,</span> <span class=n>IConvertible</span><span class=p>,</span> <span class=n>IEquatable</span><span class=p>&lt;</span><span class=kt>string</span><span class=p>&gt;</span>
+<span class=p>{</span>
+    <span class=kt>var</span> <span class=n>runtimeContext</span> <span class=p>=</span> <span class=n>GetInternalRuntimeContext</span><span class=p>(</span><span class=k>new</span> <span class=n>SimpleType</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>&gt;());</span>
+    <span class=k>return</span> <span class=n>runtimeContext</span><span class=p>.</span><span class=n>Set</span><span class=p>&lt;</span><span class=n>SimpleType</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>&gt;&gt;();</span>
+<span class=p>}</span></code></pre></td></tr></table>
+</div>
+</div></p>
+<p>To invoke this method:
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2>2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3>3</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=kt>var</span> <span class=n>urls</span> <span class=p>=</span> <span class=n>context</span><span class=p>.</span><span class=n>StringSet</span><span class=p>&lt;</span><span class=kt>string</span><span class=p>&gt;()</span>
+    <span class=p>.</span><span class=n>FromSqlRaw</span><span class=p>(</span><span class=s>&#34;SELECT Url as Value FROM Blog&#34;</span><span class=p>)</span>
+    <span class=p>.</span><span class=n>AsNoTracking</span><span class=p>().</span><span class=n>Select</span><span class=p>(</span><span class=n>x</span> <span class=p>=&gt;</span> <span class=n>x</span><span class=p>.</span><span class=n>Value</span><span class=p>).</span><span class=n>ToList</span><span class=p>();</span></code></pre></td></tr></table>
+</div>
+</div></p>
+</li>
+</ul>
+<p>We can have user friendly methods which are similar to the DbContext <em>Set</em> methods, and which wrap some of the annoyance of having to use <em>SimpleType&lt;T></em> explicitly.</p>
+<p><strong>Simple value usage taken care of!</strong></p>
+<hr>
+<h3 id=value-column>Value column</h3>
+<p>The last issue to resolve is the fact that the <code>Set&lt;></code> methods for simple types (struct and string) return a <code>DbSet of SimpleType object and not the simple type value itself</code>.</p>
+<p>One option, is to explicitly select the value out the IQueryable, as seen in <code>line 4 below</code>:
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2>2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3>3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4>4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5>5</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=kt>var</span> <span class=n>urls</span> <span class=p>=</span> <span class=n>context</span><span class=p>.</span><span class=n>StringSet</span><span class=p>&lt;</span><span class=kt>string</span><span class=p>&gt;()</span>
+    <span class=p>.</span><span class=n>FromSqlRaw</span><span class=p>(</span><span class=s>&#34;SELECT Url as Value FROM Blog&#34;</span><span class=p>)</span>
+    <span class=p>.</span><span class=n>AsNoTracking</span><span class=p>()</span>
+    <span class=p>.</span><span class=n>Select</span><span class=p>(</span><span class=n>x</span> <span class=p>=&gt;</span> <span class=n>x</span><span class=p>.</span><span class=n>Value</span><span class=p>)</span>
+    <span class=p>.</span><span class=n>ToList</span><span class=p>();</span></code></pre></td></tr></table>
+</div>
+</div></p>
+<p>The other option is to add some extension methods to easily unpack the <code>SimpleType&lt;T></code> into the <code>T</code>:
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5> 5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6> 6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7> 7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
+</span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
+</span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
+</span><span class=lnt id=ienumusage-12><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-12>12</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=k>public</span> <span class=k>static</span> <span class=n>IQueryable</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>&gt;</span> <span class=n>ToSimple</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>&gt;(</span>
+        <span class=k>this</span> <span class=n>IQueryable</span><span class=p>&lt;</span><span class=n>SimpleType</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>&gt;&gt;</span> <span class=n>query</span><span class=p>)</span> 
+    <span class=k>where</span> <span class=n>TEntity</span> <span class=p>:</span> <span class=n>struct</span><span class=p>,</span> <span class=n>IComparable</span><span class=p>,</span> <span class=n>IFormattable</span><span class=p>,</span> 
+    <span class=n>IComparable</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>&gt;,</span> <span class=n>IEquatable</span><span class=p>&lt;</span><span class=n>TEntity</span><span class=p>&gt;</span>
+<span class=p>{</span>
+    <span class=k>return</span> <span class=n>query</span><span class=p>.</span><span class=n>Select</span><span class=p>(</span><span class=n>entity</span> <span class=p>=&gt;</span> <span class=n>entity</span><span class=p>.</span><span class=n>Value</span><span class=p>).</span><span class=n>AsQueryable</span><span class=p>();</span>
+<span class=p>}</span>
+
+<span class=k>public</span> <span class=k>static</span> <span class=n>IQueryable</span><span class=p>&lt;</span><span class=kt>string</span><span class=p>&gt;</span> <span class=n>ToSimple</span><span class=p>(</span><span class=k>this</span> <span class=n>IQueryable</span><span class=p>&lt;</span><span class=n>SimpleType</span><span class=p>&lt;</span><span class=kt>string</span><span class=p>&gt;&gt;</span> <span class=n>query</span><span class=p>)</span> 
+<span class=p>{</span>
+    <span class=k>return</span> <span class=n>query</span><span class=p>.</span><span class=n>Select</span><span class=p>(</span><span class=n>entity</span> <span class=p>=&gt;</span> <span class=n>entity</span><span class=p>.</span><span class=n>Value</span><span class=p>).</span><span class=n>AsQueryable</span><span class=p>();</span>
+<span class=p>}</span></code></pre></td></tr></table>
+</div>
+</div></p>
+<p>To invoke this method:
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2>2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3>3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4>4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5>5</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=kt>var</span> <span class=n>blogIds</span> <span class=p>=</span> <span class=n>context</span><span class=p>.</span><span class=n>ValueSet</span><span class=p>&lt;</span><span class=n>Guid</span><span class=p>&gt;()</span>
+    <span class=p>.</span><span class=n>FromSqlRaw</span><span class=p>(</span><span class=s>&#34;SELECT Id as Value FROM Blog&#34;</span><span class=p>)</span>
+    <span class=p>.</span><span class=n>AsNoTracking</span><span class=p>()</span>
+    <span class=p>.</span><span class=n>ToSimple</span><span class=p>()</span>
+    <span class=p>.</span><span class=n>ToList</span><span class=p>();</span></code></pre></td></tr></table>
+</div>
+</div></p>
+<blockquote>
+<div>
+<div style=width:5%;float:left;vertical-align:middle;padding-right:60px>
+<i class=inline-svg><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-info-circle" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#00abfb" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12.01" y2="8"/><polyline points="11 12 12 12 12 16 13 16"/></svg></i>
+</div>
+<div>
+<p>The solution still requires that the SQL command have a column returned with the name of &lsquo;Value&rsquo;. With some additional effort, this constraint could be resolved , but this is outside the scope of this post.</p>
+</div>
+</div>
+</blockquote>
+<p><strong>Value column partially taken care of!</strong></p>
+<hr>
+<h2 id=nuget-package>Nuget Package</h2>
+<p>All the above functionality has been packed into a <strong><a class=link href=https://www.nuget.org/packages/AlwaysDeveloping.EntityFrameworkCore.DynamicContext/ target=_blank rel=noopener>NuGet package which is ready to use, and is available here</a></strong>.</p>
+<p><strong><a class=link href=https://github.com/always-developing/AlwaysDeveloping.EntityFrameworkCore.DynamicContext target=_blank rel=noopener>Full source code is also available on GitHub here</a></strong></p>
+<hr>
+<h2 id=performance-benchmarks>Performance benchmarks</h2>
+<p>Some performance benchmarks of using the DynamicContext vs DbContext directly and projecting the values out (using .NET 6, EF Core 6 and Sqlite)</p>
+<p>The first set of results benchmark <code>retrieving a list of ids and urls from a database of 500 records, then 100 000 records</code>.
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5> 5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6> 6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7> 7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
+</span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
+</span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
+</span><span class=lnt id=ienumusage-12><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-12>12</a>
+</span><span class=lnt id=ienumusage-13><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-13>13</a>
+</span><span class=lnt id=ienumusage-14><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-14>14</a>
+</span><span class=lnt id=ienumusage-15><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-15>15</a>
+</span><span class=lnt id=ienumusage-16><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-16>16</a>
+</span><span class=lnt id=ienumusage-17><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-17>17</a>
+</span><span class=lnt id=ienumusage-18><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-18>18</a>
+</span><span class=lnt id=ienumusage-19><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-19>19</a>
+</span><span class=lnt id=ienumusage-20><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-20>20</a>
+</span><span class=lnt id=ienumusage-21><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-21>21</a>
+</span><span class=lnt id=ienumusage-22><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-22>22</a>
+</span><span class=lnt id=ienumusage-23><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-23>23</a>
+</span><span class=lnt id=ienumusage-24><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-24>24</a>
+</span><span class=lnt id=ienumusage-25><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-25>25</a>
+</span><span class=lnt id=ienumusage-26><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-26>26</a>
+</span><span class=lnt id=ienumusage-27><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-27>27</a>
+</span><span class=lnt id=ienumusage-28><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-28>28</a>
+</span><span class=lnt id=ienumusage-29><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-29>29</a>
+</span><span class=lnt id=ienumusage-30><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-30>30</a>
+</span><span class=lnt id=ienumusage-31><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-31>31</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=c1>// DirectDbSet
+</span><span class=c1></span><span class=kt>var</span> <span class=n>blogs</span> <span class=p>=</span> <span class=n>context</span><span class=p>.</span><span class=n>Blog</span><span class=p>.</span><span class=n>AsNoTracking</span><span class=p>().</span><span class=n>ToList</span><span class=p>();</span>
+
+<span class=c1>// GenericDbSet
+</span><span class=c1></span><span class=kt>var</span> <span class=n>blogs1</span> <span class=p>=</span> <span class=n>context</span><span class=p>.</span><span class=n>Set</span><span class=p>&lt;</span><span class=n>Blog</span><span class=p>&gt;().</span><span class=n>AsNoTracking</span><span class=p>().</span><span class=n>ToList</span><span class=p>();</span>
+
+<span class=c1>// GenericDbSetRaw
+</span><span class=c1></span><span class=kt>var</span> <span class=n>blogs2</span> <span class=p>=</span> <span class=n>context</span><span class=p>.</span><span class=n>Set</span><span class=p>&lt;</span><span class=n>Blog</span><span class=p>&gt;()</span>
+    <span class=p>.</span><span class=n>FromSqlRaw</span><span class=p>(</span><span class=s>&#34;SELECT * FROM Blog&#34;</span><span class=p>).</span><span class=n>AsNoTracking</span><span class=p>().</span><span class=n>ToList</span><span class=p>();</span>
+
+<span class=c1>// GenericDbSetProj
+</span><span class=c1></span><span class=kt>var</span> <span class=n>blogs3</span> <span class=p>=</span> <span class=n>context</span><span class=p>.</span><span class=n>Set</span><span class=p>&lt;</span><span class=n>Blog</span><span class=p>&gt;()</span>
+    <span class=p>.</span><span class=n>Select</span><span class=p>(</span><span class=n>x</span> <span class=p>=&gt;</span> <span class=k>new</span> <span class=n>BlogUrl</span> <span class=p>{</span> <span class=n>BlogId</span> <span class=p>=</span> <span class=n>x</span><span class=p>.</span><span class=n>Id</span><span class=p>,</span> <span class=n>Url</span> <span class=p>=</span> <span class=n>x</span><span class=p>.</span><span class=n>Url</span> <span class=p>})</span>
+    <span class=p>.</span><span class=n>AsNoTracking</span><span class=p>().</span><span class=n>ToList</span><span class=p>();</span>
+
+<span class=c1>// GenericDbSetRawProj
+</span><span class=c1></span><span class=kt>var</span> <span class=n>blogs4</span> <span class=p>=</span> <span class=n>context</span><span class=p>.</span><span class=n>Set</span><span class=p>&lt;</span><span class=n>Blog</span><span class=p>&gt;()</span>
+    <span class=p>.</span><span class=n>FromSqlRaw</span><span class=p>(</span><span class=s>&#34;SELECT Id, Url FROM Blog&#34;</span><span class=p>)</span>
+    <span class=p>.</span><span class=n>Select</span><span class=p>(</span><span class=n>x</span> <span class=p>=&gt;</span> <span class=k>new</span> <span class=n>BlogUrl</span> <span class=p>{</span> <span class=n>BlogId</span> <span class=p>=</span> <span class=n>x</span><span class=p>.</span><span class=n>Id</span><span class=p>,</span> <span class=n>Url</span> <span class=p>=</span> <span class=n>x</span><span class=p>.</span><span class=n>Url</span> <span class=p>})</span>
+    <span class=p>.</span><span class=n>AsNoTracking</span><span class=p>().</span><span class=n>ToList</span><span class=p>();</span>
+
+<span class=c1>// DynamicDbSet
+</span><span class=c1></span><span class=kt>var</span> <span class=n>blogs5</span> <span class=p>=</span> <span class=n>dynamicContext</span><span class=p>.</span><span class=n>Set</span><span class=p>&lt;</span><span class=n>BlogUrl</span><span class=p>&gt;()</span>
+    <span class=p>.</span><span class=n>FromSqlRaw</span><span class=p>(</span><span class=s>&#34;SELECT Id as BlogId, Url FROM Blog&#34;</span><span class=p>)</span>
+    <span class=p>.</span><span class=n>AsNoTracking</span><span class=p>().</span><span class=n>ToList</span><span class=p>();</span>
+
+<span class=c1>// DynamicDbSetAnon
+</span><span class=c1></span><span class=kt>var</span> <span class=n>anonBlogUrl</span> <span class=p>=</span> <span class=k>new</span> <span class=p>{</span> <span class=n>BlogId</span> <span class=p>=</span> <span class=m>0</span><span class=p>,</span> <span class=n>Url</span> <span class=p>=</span> <span class=s>&#34;&#34;</span> <span class=p>};</span>
+<span class=kt>var</span> <span class=n>blogs6</span> <span class=p>=</span> <span class=n>dynamicContext</span><span class=p>.</span><span class=n>Set</span><span class=p>(</span><span class=n>anonBlogUrl</span><span class=p>)</span>
+    <span class=p>.</span><span class=n>FromSqlRaw</span><span class=p>(</span><span class=s>&#34;SELECT Id as BlogId, Url FROM Blog&#34;</span><span class=p>)</span>
+    <span class=p>.</span><span class=n>AsNoTracking</span><span class=p>().</span><span class=n>ToList</span><span class=p>();</span></code></pre></td></tr></table>
+</div>
+</div></p>
+<p><code>500 records</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th style=text-align:right>Mean</th>
+<th style=text-align:right>Error</th>
+<th style=text-align:right>StdDev</th>
+<th style=text-align:right>Ratio</th>
+<th style=text-align:right>Gen 0</th>
+<th style=text-align:right>Gen 1</th>
+<th style=text-align:right>Allocated</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DirectDbSet</td>
+<td style=text-align:right>1,049.3 us</td>
+<td style=text-align:right>10.66 us</td>
+<td style=text-align:right>9.97 us</td>
+<td style=text-align:right>1.00</td>
+<td style=text-align:right>76.1719</td>
+<td style=text-align:right>25.3906</td>
+<td style=text-align:right>477 KB</td>
+</tr>
+<tr>
+<td>GenericDbSet</td>
+<td style=text-align:right>1,054.4 us</td>
+<td style=text-align:right>12.71 us</td>
+<td style=text-align:right>11.89 us</td>
+<td style=text-align:right>1.00</td>
+<td style=text-align:right>76.1719</td>
+<td style=text-align:right>25.3906</td>
+<td style=text-align:right>477 KB</td>
+</tr>
+<tr>
+<td>GenericDbSetRaw</td>
+<td style=text-align:right>1,070.9 us</td>
+<td style=text-align:right>18.19 us</td>
+<td style=text-align:right>16.12 us</td>
+<td style=text-align:right>1.02</td>
+<td style=text-align:right>78.1250</td>
+<td style=text-align:right>25.3906</td>
+<td style=text-align:right>481 KB</td>
+</tr>
+<tr>
+<td>GenericDbSetProj</td>
+<td style=text-align:right>638.2 us</td>
+<td style=text-align:right>9.48 us</td>
+<td style=text-align:right>8.87 us</td>
+<td style=text-align:right>0.61</td>
+<td style=text-align:right>47.8516</td>
+<td style=text-align:right>12.6953</td>
+<td style=text-align:right>296 KB</td>
+</tr>
+<tr>
+<td>GenericDbSetRawProj</td>
+<td style=text-align:right>661.1 us</td>
+<td style=text-align:right>3.98 us</td>
+<td style=text-align:right>3.53 us</td>
+<td style=text-align:right>0.63</td>
+<td style=text-align:right>48.8281</td>
+<td style=text-align:right>14.6484</td>
+<td style=text-align:right>302 KB</td>
+</tr>
+<tr>
+<td>DynamicDbSet</td>
+<td style=text-align:right>696.8 us</td>
+<td style=text-align:right>3.22 us</td>
+<td style=text-align:right>2.69 us</td>
+<td style=text-align:right>0.66</td>
+<td style=text-align:right>54.6875</td>
+<td style=text-align:right>14.6484</td>
+<td style=text-align:right>338 KB</td>
+</tr>
+<tr>
+<td>DynamicDbSetAnon</td>
+<td style=text-align:right>605.2 us</td>
+<td style=text-align:right>5.51 us</td>
+<td style=text-align:right>5.15 us</td>
+<td style=text-align:right>0.58</td>
+<td style=text-align:right>45.8984</td>
+<td style=text-align:right>13.6719</td>
+<td style=text-align:right>287 KB</td>
+</tr>
+</tbody>
+</table>
+<p><code>100 000 records</code> (Gen 0, 1 and 2 decimals truncated for space reasons):</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th style=text-align:right>Mean</th>
+<th style=text-align:right>Error</th>
+<th style=text-align:right>StdDev</th>
+<th style=text-align:right>Ratio</th>
+<th style=text-align:right>Gen 0</th>
+<th style=text-align:right>Gen 1</th>
+<th style=text-align:right>Gen 2</th>
+<th style=text-align:right>Allocated</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DirectDbSet</td>
+<td style=text-align:right>268.5 ms</td>
+<td style=text-align:right>2.02 ms</td>
+<td style=text-align:right>1.89 ms</td>
+<td style=text-align:right>1.00</td>
+<td style=text-align:right>15000.00</td>
+<td style=text-align:right>5000.00</td>
+<td style=text-align:right>2000.00</td>
+<td style=text-align:right>81 MB</td>
+</tr>
+<tr>
+<td>GenericDbSet</td>
+<td style=text-align:right>268.6 ms</td>
+<td style=text-align:right>2.47 ms</td>
+<td style=text-align:right>2.19 ms</td>
+<td style=text-align:right>1.00</td>
+<td style=text-align:right>15000.00</td>
+<td style=text-align:right>5000.00</td>
+<td style=text-align:right>2000.00</td>
+<td style=text-align:right>81 MB</td>
+</tr>
+<tr>
+<td>GenericDbSetRaw</td>
+<td style=text-align:right>267.9 ms</td>
+<td style=text-align:right>3.11 ms</td>
+<td style=text-align:right>2.91 ms</td>
+<td style=text-align:right>1.00</td>
+<td style=text-align:right>15000.00</td>
+<td style=text-align:right>5000.00</td>
+<td style=text-align:right>2000.00</td>
+<td style=text-align:right>81 MB</td>
+</tr>
+<tr>
+<td>GenericDbSetProj</td>
+<td style=text-align:right>143.8 ms</td>
+<td style=text-align:right>2.60 ms</td>
+<td style=text-align:right>3.09 ms</td>
+<td style=text-align:right>0.54</td>
+<td style=text-align:right>8250.00</td>
+<td style=text-align:right>3000.00</td>
+<td style=text-align:right>1000.00</td>
+<td style=text-align:right>46 MB</td>
+</tr>
+<tr>
+<td>GenericDbSetRawProj</td>
+<td style=text-align:right>140.8 ms</td>
+<td style=text-align:right>2.76 ms</td>
+<td style=text-align:right>3.06 ms</td>
+<td style=text-align:right>0.52</td>
+<td style=text-align:right>8250.00</td>
+<td style=text-align:right>3000.00</td>
+<td style=text-align:right>1000.00</td>
+<td style=text-align:right>46 MB</td>
+</tr>
+<tr>
+<td>DynamicDbSet</td>
+<td style=text-align:right>143.9 ms</td>
+<td style=text-align:right>2.11 ms</td>
+<td style=text-align:right>1.97 ms</td>
+<td style=text-align:right>0.54</td>
+<td style=text-align:right>8250.00</td>
+<td style=text-align:right>3000.00</td>
+<td style=text-align:right>1000.00</td>
+<td style=text-align:right>46 MB</td>
+</tr>
+<tr>
+<td>DynamicDbSetAnon</td>
+<td style=text-align:right>118.1 ms</td>
+<td style=text-align:right>2.28 ms</td>
+<td style=text-align:right>2.02 ms</td>
+<td style=text-align:right>0.44</td>
+<td style=text-align:right>6400.00</td>
+<td style=text-align:right>2400.00</td>
+<td style=text-align:right>1000.00</td>
+<td style=text-align:right>36 MB</td>
+</tr>
+</tbody>
+</table>
+<p>As expected, projecting the required fields out, is faster and requires less memory than retrieving all the data. Using the <code>DynamicContext</code> is comparable to projecting the specific values out - <code>the overhead of dynamically creating the DynamicContext is negligible</code>.</p>
+<hr>
+<p>The next set of results benchmark <code>retrieving a list of simple types (Guid) from a database of 500 records, then 100 000 records</code>.
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5> 5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6> 6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7> 7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
+</span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
+</span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
+</span><span class=lnt id=ienumusage-12><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-12>12</a>
+</span><span class=lnt id=ienumusage-13><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-13>13</a>
+</span><span class=lnt id=ienumusage-14><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-14>14</a>
+</span><span class=lnt id=ienumusage-15><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-15>15</a>
+</span><span class=lnt id=ienumusage-16><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-16>16</a>
+</span><span class=lnt id=ienumusage-17><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-17>17</a>
+</span><span class=lnt id=ienumusage-18><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-18>18</a>
+</span><span class=lnt id=ienumusage-19><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-19>19</a>
+</span><span class=lnt id=ienumusage-20><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-20>20</a>
+</span><span class=lnt id=ienumusage-21><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-21>21</a>
+</span><span class=lnt id=ienumusage-22><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-22>22</a>
+</span><span class=lnt id=ienumusage-23><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-23>23</a>
+</span><span class=lnt id=ienumusage-24><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-24>24</a>
+</span><span class=lnt id=ienumusage-25><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-25>25</a>
+</span><span class=lnt id=ienumusage-26><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-26>26</a>
+</span><span class=lnt id=ienumusage-27><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-27>27</a>
+</span><span class=lnt id=ienumusage-28><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-28>28</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=c1>// DirectDbSet
+</span><span class=c1></span><span class=kt>var</span> <span class=n>blogIds</span> <span class=p>=</span> <span class=n>context</span><span class=p>.</span><span class=n>Set</span><span class=p>&lt;</span><span class=n>Blog</span><span class=p>&gt;()</span>
+    <span class=p>.</span><span class=n>AsNoTracking</span><span class=p>().</span><span class=n>Select</span><span class=p>(</span><span class=n>x</span> <span class=p>=&gt;</span> <span class=n>x</span><span class=p>.</span><span class=n>Id</span><span class=p>).</span><span class=n>ToList</span><span class=p>();</span>
+
+<span class=c1>// ValueSetSelect
+</span><span class=c1></span><span class=kt>var</span> <span class=n>blogIds1</span> <span class=p>=</span> <span class=n>dynamicContext</span><span class=p>.</span><span class=n>ValueSet</span><span class=p>&lt;</span><span class=n>Guid</span><span class=p>&gt;()</span>
+    <span class=p>.</span><span class=n>FromSqlRaw</span><span class=p>(</span><span class=s>&#34;SELECT Id as Value FROM Blog&#34;</span><span class=p>)</span>
+    <span class=p>.</span><span class=n>AsNoTracking</span><span class=p>().</span><span class=n>Select</span><span class=p>(</span><span class=n>x</span> <span class=p>=&gt;</span> <span class=n>x</span><span class=p>.</span><span class=n>Value</span><span class=p>).</span><span class=n>ToList</span><span class=p>();</span>
+
+<span class=c1>// ValueSetToSimple
+</span><span class=c1></span><span class=kt>var</span> <span class=n>blogIds2</span> <span class=p>=</span> <span class=n>dynamicContext</span><span class=p>.</span><span class=n>ValueSet</span><span class=p>&lt;</span><span class=n>Guid</span><span class=p>&gt;()</span>
+    <span class=p>.</span><span class=n>FromSqlRaw</span><span class=p>(</span><span class=s>&#34;SELECT Id as Value FROM Blog&#34;</span><span class=p>)</span>
+    <span class=p>.</span><span class=n>AsNoTracking</span><span class=p>().</span><span class=n>ToSimple</span><span class=p>().</span><span class=n>ToList</span><span class=p>();</span>
+
+<span class=c1>// DirectDbSetString
+</span><span class=c1></span><span class=kt>var</span> <span class=n>urls</span> <span class=p>=</span> <span class=n>context</span><span class=p>.</span><span class=n>Set</span><span class=p>&lt;</span><span class=n>Blog</span><span class=p>&gt;()</span>
+    <span class=p>.</span><span class=n>FromSqlRaw</span><span class=p>(</span><span class=s>&#34;SELECT Url FROM Blog&#34;</span><span class=p>)</span>
+    <span class=p>.</span><span class=n>AsNoTracking</span><span class=p>().</span><span class=n>Select</span><span class=p>(</span><span class=n>x</span> <span class=p>=&gt;</span> <span class=n>x</span><span class=p>.</span><span class=n>Url</span><span class=p>).</span><span class=n>ToList</span><span class=p>();</span>
+
+<span class=c1>// StringSetSelect
+</span><span class=c1></span><span class=kt>var</span> <span class=n>urls1</span> <span class=p>=</span> <span class=n>dynamicContext</span><span class=p>.</span><span class=n>StringSet</span><span class=p>&lt;</span><span class=kt>string</span><span class=p>&gt;()</span>
+    <span class=p>.</span><span class=n>FromSqlRaw</span><span class=p>(</span><span class=s>&#34;SELECT Url as Value FROM Blog&#34;</span><span class=p>)</span>
+    <span class=p>.</span><span class=n>AsNoTracking</span><span class=p>().</span><span class=n>Select</span><span class=p>(</span><span class=n>x</span> <span class=p>=&gt;</span> <span class=n>x</span><span class=p>.</span><span class=n>Value</span><span class=p>).</span><span class=n>ToList</span><span class=p>();</span>
+
+<span class=c1>// StringSetToSimple
+</span><span class=c1></span><span class=kt>var</span> <span class=n>urls2</span> <span class=p>=</span> <span class=n>dynamicContext</span><span class=p>.</span><span class=n>StringSet</span><span class=p>&lt;</span><span class=kt>string</span><span class=p>&gt;()</span>
+    <span class=p>.</span><span class=n>FromSqlRaw</span><span class=p>(</span><span class=s>&#34;SELECT Url as Value FROM Blog&#34;</span><span class=p>)</span>
+    <span class=p>.</span><span class=n>AsNoTracking</span><span class=p>().</span><span class=n>ToSimple</span><span class=p>().</span><span class=n>ToList</span><span class=p>();</span></code></pre></td></tr></table>
+</div>
+</div></p>
+<p><code>500 records</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th style=text-align:right>Mean</th>
+<th style=text-align:right>Error</th>
+<th style=text-align:right>StdDev</th>
+<th style=text-align:right>Ratio</th>
+<th style=text-align:right>Gen 0</th>
+<th style=text-align:right>Gen 1</th>
+<th style=text-align:right>Allocated</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DirectDbSet</td>
+<td style=text-align:right>864.1 us</td>
+<td style=text-align:right>38.04 us</td>
+<td style=text-align:right>111.55 us</td>
+<td style=text-align:right>1.00</td>
+<td style=text-align:right>-</td>
+<td style=text-align:right>-</td>
+<td style=text-align:right>226 KB</td>
+</tr>
+<tr>
+<td>ValueSetSelect</td>
+<td style=text-align:right>439.1 us</td>
+<td style=text-align:right>8.32 us</td>
+<td style=text-align:right>14.12 us</td>
+<td style=text-align:right>0.52</td>
+<td style=text-align:right>37.1094</td>
+<td style=text-align:right>8.7891</td>
+<td style=text-align:right>233 KB</td>
+</tr>
+<tr>
+<td>ValueSetToSimple</td>
+<td style=text-align:right>435.7 us</td>
+<td style=text-align:right>7.98 us</td>
+<td style=text-align:right>8.20 us</td>
+<td style=text-align:right>0.51</td>
+<td style=text-align:right>37.1094</td>
+<td style=text-align:right>6.8359</td>
+<td style=text-align:right>232 KB</td>
+</tr>
+<tr>
+<td>DirectDbSetString</td>
+<td style=text-align:right>610.5 us</td>
+<td style=text-align:right>12.65 us</td>
+<td style=text-align:right>14.06 us</td>
+<td style=text-align:right>0.71</td>
+<td style=text-align:right>38.0859</td>
+<td style=text-align:right>1.9531</td>
+<td style=text-align:right>233 KB</td>
+</tr>
+<tr>
+<td>StringSetSelect</td>
+<td style=text-align:right>437.9 us</td>
+<td style=text-align:right>8.53 us</td>
+<td style=text-align:right>11.67 us</td>
+<td style=text-align:right>0.50</td>
+<td style=text-align:right>39.0625</td>
+<td style=text-align:right>10.7422</td>
+<td style=text-align:right>240 KB</td>
+</tr>
+<tr>
+<td>StringSetToSimple</td>
+<td style=text-align:right>439.3 us</td>
+<td style=text-align:right>8.56 us</td>
+<td style=text-align:right>12.28 us</td>
+<td style=text-align:right>0.51</td>
+<td style=text-align:right>39.0625</td>
+<td style=text-align:right>9.7656</td>
+<td style=text-align:right>240 KB</td>
+</tr>
+</tbody>
+</table>
+<p><code>100 000 records</code> (Gen 0, 1 and 2 decimals truncated for space reasons):</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th style=text-align:right>Mean</th>
+<th style=text-align:right>Error</th>
+<th style=text-align:right>StdDev</th>
+<th style=text-align:right>Ratio</th>
+<th style=text-align:right>Gen 0</th>
+<th style=text-align:right>Gen 1</th>
+<th style=text-align:right>Gen 2</th>
+<th style=text-align:right>Allocated</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DirectDbSet</td>
+<td style=text-align:right>58.67 ms</td>
+<td style=text-align:right>1.167 ms</td>
+<td style=text-align:right>2.276 ms</td>
+<td style=text-align:right>1.00</td>
+<td style=text-align:right>4000.00</td>
+<td style=text-align:right>1000.00</td>
+<td style=text-align:right>1000.00</td>
+<td style=text-align:right>32 MB</td>
+</tr>
+<tr>
+<td>ValueSetSelect</td>
+<td style=text-align:right>54.48 ms</td>
+<td style=text-align:right>1.058 ms</td>
+<td style=text-align:right>1.132 ms</td>
+<td style=text-align:right>0.91</td>
+<td style=text-align:right>5500.00</td>
+<td style=text-align:right>1100.00</td>
+<td style=text-align:right>1000.00</td>
+<td style=text-align:right>32 MB</td>
+</tr>
+<tr>
+<td>ValueSetToSimple</td>
+<td style=text-align:right>51.66 ms</td>
+<td style=text-align:right>0.399 ms</td>
+<td style=text-align:right>0.354 ms</td>
+<td style=text-align:right>0.86</td>
+<td style=text-align:right>5444.44</td>
+<td style=text-align:right>1111.11</td>
+<td style=text-align:right>1000.00</td>
+<td style=text-align:right>32 MB</td>
+</tr>
+<tr>
+<td>DirectDbSetString</td>
+<td style=text-align:right>81.04 ms</td>
+<td style=text-align:right>1.153 ms</td>
+<td style=text-align:right>0.963 ms</td>
+<td style=text-align:right>1.00</td>
+<td style=text-align:right>6000.00</td>
+<td style=text-align:right>2000.00</td>
+<td style=text-align:right>1000.00</td>
+<td style=text-align:right>33 MB</td>
+</tr>
+<tr>
+<td>StringSetSelect</td>
+<td style=text-align:right>92.20 ms</td>
+<td style=text-align:right>1.359 ms</td>
+<td style=text-align:right>1.271 ms</td>
+<td style=text-align:right>1.14</td>
+<td style=text-align:right>5666.67</td>
+<td style=text-align:right>2000.00</td>
+<td style=text-align:right>833.33</td>
+<td style=text-align:right>33 MB</td>
+</tr>
+<tr>
+<td>StringSetToSimple</td>
+<td style=text-align:right>92.26 ms</td>
+<td style=text-align:right>1.789 ms</td>
+<td style=text-align:right>1.915 ms</td>
+<td style=text-align:right>1.14</td>
+<td style=text-align:right>5666.67</td>
+<td style=text-align:right>2000.00</td>
+<td style=text-align:right>833.33</td>
+<td style=text-align:right>33 MB</td>
+</tr>
+</tbody>
+</table>
+<p>For the <code>non-string values, using DynamicContext is faster</code>, while using roughly the same memory, especially with more records. For <code>string values DynamicContext is slower</code> - but with the tradeoff of it being more dynamic.</p>
+<hr>
+<h2 id=closing>Closing</h2>
+<p>The post outlines solutions to be able to:</p>
+<ul>
+<li>Retrieve data into an entity (or collection of entities) without a DbSet, using raw SQL</li>
+<li>Retrieve data into an entity or collection of entities) based on an anonymous object, using raw SQL</li>
+<li>Retrieve data into a simple type without having to define a reference type to use as a DbSet</li>
+</ul>
+<p>The performance of the library is either faster or comparable to using a DbContext, but as always, test and benchmark and make an informed decision in your specific use case.</p>
+<p>Full source code available on <a class=link href=https://github.com/always-developing/AlwaysDeveloping.EntityFrameworkCore.DynamicContex target=_blank rel=noopener>Github</a> and fully functionality package available on <a class=link href=https://www.nuget.org/packages/AlwaysDeveloping.EntityFrameworkCore.DynamicContext/ target=_blank rel=noopener>NuGet</a>.</p>
+</section>
+<footer class=article-footer>
+<section class=article-tags>
+<a href=/tags/c#/>c#</a>
+<a href=/tags/.net/>.net</a>
+<a href=/tags/entity-framework/>entity framework</a>
+<a href=/tags/entityframework/>entityframework</a>
+<a href=/tags/ef/>ef</a>
+<a href=/tags/context/>context</a>
+<a href=/tags/dynamic/>dynamic</a>
+<a href=/tags/dbset/>dbset</a>
+</section>
+</footer>
+</article>
+<aside class=related-contents--wrapper>
+<h2 class=section-title>Related contents</h2>
+<div class=related-contents>
+<div class="flex article-list--tile">
+<article>
+<a href=/p/analyzer-extra/>
+<div class=article-details>
+<h2 class=article-title>Roslyn Analyzer - tips and tricks (Part 5)</h2>
+</div>
+</a>
+</article>
+<article>
+<a href=/p/analyzer-test/>
+<div class=article-details>
+<h2 class=article-title>Roslyn Analyzer - testing an analyzer and code fix (Part 4)</h2>
+</div>
+</a>
+</article>
+<article>
+<a href=/p/analyzer-code-fix/>
+<div class=article-details>
+<h2 class=article-title>Roslyn Analyzer - writing the code fix (Part 3)</h2>
+</div>
+</a>
+</article>
+<article>
+<a href=/p/analyzer-write/>
+<div class=article-details>
+<h2 class=article-title>Roslyn Analyzer - writing the analyzer (Part 2)</h2>
+</div>
+</a>
+</article>
+<article>
+<a href=/p/analyzer-explained/>
+<div class=article-details>
+<h2 class=article-title>Roslyn Analyzer - explained (Part 1)</h2>
+</div>
+</a>
+</article>
+</div>
+</div>
+</aside>
+<script src=https://giscus.app/client.js data-repo=always-developing/always-developing.github.io data-repo-id=R_kgDOGQJLBQ data-category=Comments data-category-id=DIC_kwDOGQJLBc4B_pUA data-mapping=pathname data-reactions-enabled=1 data-emit-metadata=0 data-theme=light crossorigin=anonymous async></script>
+<script>function setGiscusTheme(b){let a=document.querySelector('iframe.giscus-frame');a&&a.contentWindow.postMessage({giscus:{setConfig:{theme:b}}},"https://giscus.app")}(function(){addEventListener('message',b=>{if(event.origin!=='https://giscus.app')return;a()}),window.addEventListener('onColorSchemeChange',a);function a(){document.documentElement.dataset.scheme==="light"?setGiscusTheme('light'):setGiscusTheme('dark')}})()</script>
+<footer class=site-footer>
+<section class=copyright>
+&copy;
+2021 Always Developing
+</section>
+<section class=powerby>
+Always Developing | always learning | always growing <br>
+Built with <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a> <br>
+Theme <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.2.0>Stack</a></b> designed by <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a>
+</section>
+</footer>
+<div class=pswp tabindex=-1 role=dialog aria-hidden=true>
+<div class=pswp__bg></div>
+<div class=pswp__scroll-wrap>
+<div class=pswp__container>
+<div class=pswp__item></div>
+<div class=pswp__item></div>
+<div class=pswp__item></div>
+</div>
+<div class="pswp__ui pswp__ui--hidden">
+<div class=pswp__top-bar>
+<div class=pswp__counter></div>
+<button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+<button class="pswp__button pswp__button--share" title=Share></button>
+<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+<div class=pswp__preloader>
+<div class=pswp__preloader__icn>
+<div class=pswp__preloader__cut>
+<div class=pswp__preloader__donut></div>
+</div>
+</div>
+</div>
+</div>
+<div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+<div class=pswp__share-tooltip></div>
+</div>
+<button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+</button>
+<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+</button>
+<div class=pswp__caption>
+<div class=pswp__caption__center></div>
+</div>
+</div>
+</div>
+</div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.css integrity="sha256-c0uckgykQ9v5k+IqViZOZKc47Jn7KQil4/MP3ySA3F8=" crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.css integrity="sha256-SBLU4vv6CA6lHsZ1XyTdhyjJxCjPif/TRkjnsyGAGnE=" crossorigin=anonymous>
+</main>
+<aside class="sidebar right-sidebar sticky">
+<section class="widget archives">
+<div class=widget-icon><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg>
+</div>
+<h2 class="widget-title section-title">Table of contents</h2>
+<div class=widget--toc>
+<nav id=TableOfContents>
+<ol>
+<li><a href=#the-problem>The problem</a>
+<ol>
+<li><a href=#dbset-is-required>DbSet is required</a></li>
+<li><a href=#support-for-simple-types>Support for simple types</a></li>
+</ol>
+</li>
+<li><a href=#dynamic-entity-results>Dynamic entity results</a>
+<ol>
+<li><a href=#projected-entity>Projected entity</a></li>
+<li><a href=#anonymous-entity>Anonymous entity</a></li>
+</ol>
+</li>
+<li><a href=#dynamic-value-type-results>Dynamic value type results</a></li>
+<li><a href=#resolving-outstanding-issues>Resolving outstanding issues</a>
+<ol>
+<li><a href=#code-restructure>Code restructure</a></li>
+<li><a href=#dependency-injection>Dependency Injection</a></li>
+<li><a href=#dynamic-configuration>Dynamic Configuration</a></li>
+<li><a href=#dynamiccontext-wrapper>DynamicContext wrapper</a></li>
+<li><a href=#value-column>Value column</a></li>
+</ol>
+</li>
+<li><a href=#nuget-package>Nuget Package</a></li>
+<li><a href=#performance-benchmarks>Performance benchmarks</a></li>
+<li><a href=#closing>Closing</a></li>
+</ol>
+</nav>
+</div>
+</section>
+</aside>
+</div>
+<script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g=" crossorigin=anonymous defer></script><script type=text/javascript src=/ts/main.js defer></script>
+<script>(function(){const a=document.createElement('link');a.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",a.type="text/css",a.rel="stylesheet",document.head.appendChild(a)})()</script>
+</body>
+</html>
