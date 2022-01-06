@@ -1,4 +1,289 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Sat, 11 Dec 2021 03:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Dynamic Context (for Entity Framework Core)</title><link>https://always-developing.github.io/p/11-2020-dynamic-context/</link><pubDate>Sat, 11 Dec 2021 03:00:00 +0200</pubDate><guid>https://always-developing.github.io/p/11-2020-dynamic-context/</guid><description>&lt;h2 id="the-problem">The problem&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Tue, 04 Jan 2022 03:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Azure Devops Symbol Server - a how to guide</title><link>https://always-developing.github.io/p/12-2021-devops-symbol-server/</link><pubDate>Tue, 04 Jan 2022 03:00:00 +0200</pubDate><guid>https://always-developing.github.io/p/12-2021-devops-symbol-server/</guid><description>&lt;h2 id="symbol-server-explained">Symbol server explained&lt;/h2>
+&lt;h3 id="what-are-symbols">What are symbols?&lt;/h3>
+&lt;p>When building a .NET project, symbol files (generally files with the extension of .pdb) are automatically created by the compiler. These symbol files contain metadata information about the source code (indexes, function names, line numbers, etc) and are used when debugging and stepping through code, by linking the debugger (e.g. Visual Studio) to the source code.&lt;/p>
+&lt;p>Generally, these symbol files are only available when developing locally, and building a project in debug configuration - that is, unless they are uploaded to a &lt;code>symbol server&lt;/code>.&lt;/p>
+&lt;h3 id="what-is-a-symbol-server">What is a symbol server?&lt;/h3>
+&lt;p>&lt;strong>A symbol server is a central location to store symbols&lt;/strong> - having the symbols available allow for the &lt;code>stepping into a referenced NuGet package code&lt;/code> without having the source code available locally.&lt;br>
+The source code doesn&amp;rsquo;t need to be part of the solution being built, or even on the local machine - the symbol file, made available by the symbol server will allow for full &lt;em>&amp;lsquo;step into&amp;rsquo;&lt;/em> debugging experience.&lt;/p>
+&lt;hr>
+&lt;h2 id="why-use-a-symbol-server">Why use a symbol server&lt;/h2>
+&lt;p>As mentioned above, having the symbols available via the server, allows for stepping into a referenced package&amp;rsquo;s source code without having the source directly available locally. Why would one need or want this to be possible?&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>Help the package author debug and assist when issues are experienced using the package&lt;/code>. This is especially useful in the corporate environment where the author of a package is potentially closer to the developers and applications using the package, and is required to assist with the usage and functioning of the package.&lt;/li>
+&lt;li>&lt;code>Help users of the package understand in more depth what the package does and how&lt;/code>. Especially useful in an Open Source environment where the author of the package is most likely further removed from the user of the package. With the user of the package having the option of stepping into the package source code, it facilitates more easily understanding the package and allows for the user more easily &lt;em>help themselves&lt;/em> if any issues arise.&lt;/li>
+&lt;/ul>
+&lt;p>Even though each point above highlights the use case in a specific environment (corporate vs Open Source), both points can apply to either environment.&lt;/p>
+&lt;blockquote>
+&lt;div>
+&lt;div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px;">
+&lt;i class="inline-svg" >&lt;svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-info-circle" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#00abfb" fill="none" stroke-linecap="round" stroke-linejoin="round">
+&lt;path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+&lt;circle cx="12" cy="12" r="9" />
+&lt;line x1="12" y1="8" x2="12.01" y2="8" />
+&lt;polyline points="11 12 12 12 12 16 13 16" />
+&lt;/svg>&lt;/i>
+&lt;/div>
+&lt;div>
+&lt;p>This post will focus on using &lt;strong>Azure Devops&lt;/strong> as a build and symbol server, but other build and symbol servers can also be used and will &lt;em>mostly&lt;/em> follow a similar processes to the one described in this post.&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;/blockquote>
+&lt;hr>
+&lt;h2 id="producing-symbols">Producing symbols&lt;/h2>
+&lt;h3 id="configuring-code">Configuring code&lt;/h3>
+&lt;p>The first step in the process, is to configure the project to produce symbols with the required metadata to allow for the debugging experience.&lt;br>
+To do this, the required &lt;code>Source Link&lt;/code> NuGet package must be added to the project. There are &lt;a class="link" href="https://www.nuget.org/packages?q=Microsoft.SourceLink." target="_blank" rel="noopener"
+>a number of different options available&lt;/a>, based on where the &lt;code>repository is hosted&lt;/code>.&lt;/p>
+&lt;p>For a repository hosted in a Git repository in Azure Devops, a reference to &lt;code>Microsoft.SourceLink.AzureRepos.Git&lt;/code> is added.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-xml" data-lang="xml">&lt;span class="nt">&amp;lt;PackageReference&lt;/span> &lt;span class="na">Include=&lt;/span>&lt;span class="s">&amp;#34;Microsoft.SourceLink.AzureRepos.Git&amp;#34;&lt;/span> &lt;span class="na">Version=&lt;/span>&lt;span class="s">&amp;#34;1.1.1&amp;#34;&lt;/span>&lt;span class="nt">&amp;gt;&lt;/span>
+&lt;span class="nt">&amp;lt;PrivateAssets&amp;gt;&lt;/span>all&lt;span class="nt">&amp;lt;/PrivateAssets&amp;gt;&lt;/span>
+&lt;span class="nt">&amp;lt;IncludeAssets&amp;gt;&lt;/span>runtime; build; native; contentfiles; analyzers; buildtransitive&lt;span class="nt">&amp;lt;/IncludeAssets&amp;gt;&lt;/span>
+&lt;span class="nt">&amp;lt;/PackageReference&amp;gt;&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;blockquote>
+&lt;div>
+&lt;div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px;">
+&lt;i class="inline-svg" >&lt;svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-info-circle" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#00abfb" fill="none" stroke-linecap="round" stroke-linejoin="round">
+&lt;path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+&lt;circle cx="12" cy="12" r="9" />
+&lt;line x1="12" y1="8" x2="12.01" y2="8" />
+&lt;polyline points="11 12 12 12 12 16 13 16" />
+&lt;/svg>&lt;/i>
+&lt;/div>
+&lt;div>
+&lt;p>The Source Link reference added is &lt;strong>required only as a development dependency&lt;/strong> and is only used during the build process. This is the reason the &lt;code>PrivateAssets&lt;/code> property is set to &lt;code>All&lt;/code> - this prevents the package consuming applications from also needing to install Source Link as a dependency.&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;/blockquote>
+&lt;hr>
+&lt;h3 id="configuring-cicd-pipeline">Configuring CI/CD pipeline&lt;/h3>
+&lt;p>The next step is to have the CI/CD process produce the symbols, and then upload them to the symbol server.&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>&lt;code>Producing the symbols&lt;/code>&lt;br>
+Usually when developing locally, .pdb files are only generated when running in &lt;em>debug configuration&lt;/em>, when the code is un-optimized. However, When releasing a package, it should be built in &lt;em>release configuration&lt;/em> with optimized code.&lt;br>
+With the relevant Source Link package reference added (Microsoft.SourceLink.AzureRepos.Git), the code can be built in &lt;em>release configuration&lt;/em> and have the symbols produced. The build can either be done using:&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>dotnet build&lt;/code>:&lt;br>
+Execute the &lt;strong>dotnet build&lt;/strong> command with a build configuration of Release
+&lt;figure
+class="gallery-image"
+style="
+flex-grow: 622;
+flex-basis: 1493px"
+>
+&lt;a href="https://always-developing.github.io/p/12-2021-devops-symbol-server/1.dotnettask.png" data-size="554x89">
+&lt;img src="https://always-developing.github.io/p/12-2021-devops-symbol-server/1.dotnettask.png"
+width="554"
+height="89"
+srcset="https://always-developing.github.io/p/12-2021-devops-symbol-server/1.dotnettask_hucc6dd8f38d52629259dc1ab8d5698186_4406_480x0_resize_box_3.png 480w, https://always-developing.github.io/p/12-2021-devops-symbol-server/1.dotnettask_hucc6dd8f38d52629259dc1ab8d5698186_4406_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Azure Devops dotnet task">
+&lt;/a>
+&lt;figcaption>Azure Devops dotnet task&lt;/figcaption>
+&lt;/figure>&lt;br>
+&lt;figure
+class="gallery-image"
+style="
+flex-grow: 121;
+flex-basis: 292px"
+>
+&lt;a href="https://always-developing.github.io/p/12-2021-devops-symbol-server/2.dotnetdetail.png" data-size="675x554">
+&lt;img src="https://always-developing.github.io/p/12-2021-devops-symbol-server/2.dotnetdetail.png"
+width="675"
+height="554"
+srcset="https://always-developing.github.io/p/12-2021-devops-symbol-server/2.dotnetdetail_hu585440b7c55adc9cfac1a15aaf208514_8325_480x0_resize_box_3.png 480w, https://always-developing.github.io/p/12-2021-devops-symbol-server/2.dotnetdetail_hu585440b7c55adc9cfac1a15aaf208514_8325_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Azure Devops dotnet task detail">
+&lt;/a>
+&lt;figcaption>Azure Devops dotnet task detail&lt;/figcaption>
+&lt;/figure>&lt;/li>
+&lt;li>&lt;code>Visual Studio build&lt;/code>:&lt;br>
+Execute the &lt;strong>Visual Studio build&lt;/strong> task with build configuration of Release, and with the &lt;em>MSBuild Argument&lt;/em> of &lt;code>/p:SourceLinkCreate=true&lt;/code>
+&lt;figure
+class="gallery-image"
+style="
+flex-grow: 538;
+flex-basis: 1292px"
+>
+&lt;a href="https://always-developing.github.io/p/12-2021-devops-symbol-server/3.vsbuildtask.png" data-size="501x93">
+&lt;img src="https://always-developing.github.io/p/12-2021-devops-symbol-server/3.vsbuildtask.png"
+width="501"
+height="93"
+srcset="https://always-developing.github.io/p/12-2021-devops-symbol-server/3.vsbuildtask_hu058477031c9dc5d2fea60cfeb7d29354_5813_480x0_resize_box_3.png 480w, https://always-developing.github.io/p/12-2021-devops-symbol-server/3.vsbuildtask_hu058477031c9dc5d2fea60cfeb7d29354_5813_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Azure Devops VS build task">
+&lt;/a>
+&lt;figcaption>Azure Devops VS build task&lt;/figcaption>
+&lt;/figure>&lt;br>
+&lt;figure
+class="gallery-image"
+style="
+flex-grow: 122;
+flex-basis: 294px"
+>
+&lt;a href="https://always-developing.github.io/p/12-2021-devops-symbol-server/4.vsbuilddetail.png" data-size="691x564">
+&lt;img src="https://always-developing.github.io/p/12-2021-devops-symbol-server/4.vsbuilddetail.png"
+width="691"
+height="564"
+srcset="https://always-developing.github.io/p/12-2021-devops-symbol-server/4.vsbuilddetail_hua2b078adb96f23a80cfe4c9c744499d3_16144_480x0_resize_box_3.png 480w, https://always-developing.github.io/p/12-2021-devops-symbol-server/4.vsbuilddetail_hua2b078adb96f23a80cfe4c9c744499d3_16144_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Azure Devops VS build task detail">
+&lt;/a>
+&lt;figcaption>Azure Devops VS build task detail&lt;/figcaption>
+&lt;/figure>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;code>Publishing the symbols&lt;/code>:&lt;br>
+The &lt;strong>Index sources and publish symbols&lt;/strong> task is then used to publish the symbols to either a &lt;em>file share&lt;/em>, or the &lt;em>Azure Devops symbol server&lt;/em>
+&lt;figure
+class="gallery-image"
+style="
+flex-grow: 563;
+flex-basis: 1353px"
+>
+&lt;a href="https://always-developing.github.io/p/12-2021-devops-symbol-server/5.symboltask.png" data-size="592x105">
+&lt;img src="https://always-developing.github.io/p/12-2021-devops-symbol-server/5.symboltask.png"
+width="592"
+height="105"
+srcset="https://always-developing.github.io/p/12-2021-devops-symbol-server/5.symboltask_hu02ef02bf90de5907483a55a8344bd225_7048_480x0_resize_box_3.png 480w, https://always-developing.github.io/p/12-2021-devops-symbol-server/5.symboltask_hu02ef02bf90de5907483a55a8344bd225_7048_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Azure Devops publish symbol task">
+&lt;/a>
+&lt;figcaption>Azure Devops publish symbol task&lt;/figcaption>
+&lt;/figure>&lt;br>
+&lt;figure
+class="gallery-image"
+style="
+flex-grow: 138;
+flex-basis: 333px"
+>
+&lt;a href="https://always-developing.github.io/p/12-2021-devops-symbol-server/6.symboldetail.png" data-size="877x631">
+&lt;img src="https://always-developing.github.io/p/12-2021-devops-symbol-server/6.symboldetail.png"
+width="877"
+height="631"
+srcset="https://always-developing.github.io/p/12-2021-devops-symbol-server/6.symboldetail_hu2b8d246311a0dfdbd9fd49e0e67e5d6b_23606_480x0_resize_box_3.png 480w, https://always-developing.github.io/p/12-2021-devops-symbol-server/6.symboldetail_hu2b8d246311a0dfdbd9fd49e0e67e5d6b_23606_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Azure Devops publish symbol detail">
+&lt;/a>
+&lt;figcaption>Azure Devops publish symbol detail&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;p>Generally the publishing of artifacts would be part of the release pipeline, and not the build. However the &lt;strong>Index sources and publish symbols&lt;/strong> task is &lt;code>only available in the build pipeline&lt;/code>.&lt;/p>
+&lt;/li>
+&lt;/ol>
+&lt;hr>
+&lt;h2 id="consuming-symbols">Consuming symbols&lt;/h2>
+&lt;h3 id="configuring-visual-studio">Configuring Visual Studio&lt;/h3>
+&lt;p>The final step is to configure Visual Studio with the details on how and when to download and use the symbols. Perform the following steps in Visual Studio.&lt;/p>
+&lt;ol>
+&lt;li>Configure the symbol server location:
+&lt;ol>
+&lt;li>Navigate to &lt;code>Tools -&amp;gt; Options -&amp;gt; Debugging -&amp;gt; Symbols&lt;/code>&lt;/li>
+&lt;li>Click &lt;code>New Azure Devops Symbol Server Location&lt;/code>&lt;/li>
+&lt;li>Select the account, and a list of symbol servers available to the account will be displayed. Chose the server. (in the screen shot below, none are shown as the &lt;em>always-developing&lt;/em> Github account is not linked to Azure Devops)&lt;/li>
+&lt;li>Click &lt;code>Connect&lt;/code>&lt;/li>
+&lt;/ol>
+&lt;/li>
+&lt;/ol>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 193;
+flex-basis: 464px"
+>
+&lt;a href="https://always-developing.github.io/p/12-2021-devops-symbol-server/7.SymbolServerAdd.png" data-size="1139x589">
+&lt;img src="https://always-developing.github.io/p/12-2021-devops-symbol-server/7.SymbolServerAdd.png"
+width="1139"
+height="589"
+srcset="https://always-developing.github.io/p/12-2021-devops-symbol-server/7.SymbolServerAdd_huf68925288899a63b0d5cac6ad8085773_75988_480x0_resize_box_3.png 480w, https://always-developing.github.io/p/12-2021-devops-symbol-server/7.SymbolServerAdd_huf68925288899a63b0d5cac6ad8085773_75988_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Azure Devops symbol server">
+&lt;/a>
+&lt;figcaption>Azure Devops symbol server&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;ol start="2">
+&lt;li>
+&lt;p>Configure the debugger settings:&lt;/p>
+&lt;ol>
+&lt;li>Navigate to &lt;code>Tools -&amp;gt; Options -&amp;gt; Debugging&lt;/code>&lt;/li>
+&lt;li>Ensure that &lt;code>Enable Just My Code&lt;/code> is &lt;strong>unchecked&lt;/strong>&lt;/li>
+&lt;li>Ensure that &lt;code>Enable source server support&lt;/code> is &lt;strong>checked&lt;/strong>&lt;/li>
+&lt;/ol>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 182;
+flex-basis: 439px"
+>
+&lt;a href="https://always-developing.github.io/p/12-2021-devops-symbol-server/8.DebuggerOptions.png" data-size="807x441">
+&lt;img src="https://always-developing.github.io/p/12-2021-devops-symbol-server/8.DebuggerOptions.png"
+width="807"
+height="441"
+srcset="https://always-developing.github.io/p/12-2021-devops-symbol-server/8.DebuggerOptions_hu5e175379850f254acc0a05e471eb5313_57403_480x0_resize_box_3.png 480w, https://always-developing.github.io/p/12-2021-devops-symbol-server/8.DebuggerOptions_hu5e175379850f254acc0a05e471eb5313_57403_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Azure Devops symbol server">
+&lt;/a>
+&lt;figcaption>Azure Devops symbol server&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Configure which symbols to load automatically &lt;strong>(optional but recommended)&lt;/strong>:&lt;/p>
+&lt;p>By default symbols will automatically be loaded (after being downloaded) if they are available in any of the symbol servers. If an application references a number of packages where symbols are available, start-up time when running and debugging can be dramatically negatively impacted.&lt;br>
+Visual Studio can be configured to only load the packages specified - or only load packages based on a wildcard (this is incredibly useful if all NuGet packages share a common namespace structure, as might be the case especially in a corporate environment)&lt;/p>
+&lt;ol>
+&lt;li>Navigate to &lt;code>Tools -&amp;gt; Options -&amp;gt; Debugging -&amp;gt; Symbols&lt;/code>&lt;/li>
+&lt;li>Select &lt;code>Load only specific modules&lt;/code>&lt;/li>
+&lt;li>Click &lt;code>Specify included modules&lt;/code>&lt;/li>
+&lt;li>Click &lt;code>New Module&lt;/code>&lt;/li>
+&lt;li>Add the module name, or wildcard format&lt;/li>
+&lt;/ol>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 120;
+flex-basis: 288px"
+>
+&lt;a href="https://always-developing.github.io/p/12-2021-devops-symbol-server/9.SpecificModules.png" data-size="627x521">
+&lt;img src="https://always-developing.github.io/p/12-2021-devops-symbol-server/9.SpecificModules.png"
+width="627"
+height="521"
+srcset="https://always-developing.github.io/p/12-2021-devops-symbol-server/9.SpecificModules_hu103063780aaa7a859e78dfefb4ba7db2_44556_480x0_resize_box_3.png 480w, https://always-developing.github.io/p/12-2021-devops-symbol-server/9.SpecificModules_hu103063780aaa7a859e78dfefb4ba7db2_44556_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Specify which modules to load">
+&lt;/a>
+&lt;figcaption>Specify which modules to load&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;/li>
+&lt;/ol>
+&lt;hr>
+&lt;h2 id="nuget-symbol-package">NuGet symbol package&lt;/h2>
+&lt;p>This post focuses on building and hosting the symbols using Azure Devops - but just a small note publishing to NuGet.org if the package is publicly available.&lt;br>
+The &lt;a class="link" href="http://nuget.org" target="_blank" rel="noopener"
+>nuget.org&lt;/a> symbol server uses the &lt;code>.snupkg&lt;/code> file format for symbols, which are optionally generated when the nupkg file is generated. See this this &lt;a class="link" href="https://docs.microsoft.com/en-us/nuget/create-packages/symbol-packages-snupkg" target="_blank" rel="noopener"
+>document on the various ways of generating a .snupkg file&lt;/a>.&lt;/p>
+&lt;hr>
+&lt;h2 id="final-thoughts">Final thoughts&lt;/h2>
+&lt;p>That&amp;rsquo;s all there is to it!
+Whether a package author or package consumer, having the option to step into the code will prove invaluable - with practically no additional development effort.&lt;/p>
+&lt;p>If possible (if the source code can be made public), I highly recommend making the symbols available, to everyone&amp;rsquo;s benefit!&lt;/p>
+&lt;hr>
+&lt;h2 id="references">References&lt;/h2>
+&lt;p>&lt;a class="link" href="https://docs.microsoft.com/en-us/azure/devops/pipelines/artifacts/symbols?view=azure-devops" target="_blank" rel="noopener"
+>Symbol files&lt;/a>&lt;br>
+&lt;a class="link" href="https://docs.microsoft.com/en-us/azure/devops/artifacts/concepts/symbols?view=azure-devops" target="_blank" rel="noopener"
+>Publishing symbols&lt;/a>&lt;br>
+&lt;a class="link" href="https://devblogs.microsoft.com/nuget/improved-package-debugging-experience-with-the-nuget-org-symbol-server/" target="_blank" rel="noopener"
+>NuGet symbols (slightly outdated, but still useful)&lt;/a>&lt;/p></description></item><item><title>Dynamic Context (for Entity Framework Core)</title><link>https://always-developing.github.io/p/11-2020-dynamic-context/</link><pubDate>Sat, 11 Dec 2021 03:00:00 +0200</pubDate><guid>https://always-developing.github.io/p/11-2020-dynamic-context/</guid><description>&lt;h2 id="the-problem">The problem&lt;/h2>
 &lt;p>Entity Framework Core is a great go-to ORM for .NET, for any type of application provides almost all the functionality required to do successful database access out the box.&lt;br>
 However, there are two use cases, specifically with regards to retrieval of data, it doesn&amp;rsquo;t cater for - this post and the accompanying code sample/NuGet package attempts to provides solutions for these use cases.&lt;/p>
 &lt;p>First, the setup - an EF DbContext which has one DbSet, for storing &lt;code>Blogs&lt;/code> (the below is a standard DbContext configuration):&lt;/p>
