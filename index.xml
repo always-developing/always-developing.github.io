@@ -1,4 +1,538 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Sat, 15 Jan 2022 03:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Git workflows - explained</title><link>https://always-developing.github.io/p/01-2022-git-workflow/</link><pubDate>Sat, 15 Jan 2022 03:00:00 +0200</pubDate><guid>https://always-developing.github.io/p/01-2022-git-workflow/</guid><description>&lt;h2 id="introduction">Introduction&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Mon, 31 Jan 2022 03:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Structured logging - an introduction</title><link>https://always-developing.github.io/p/01-2022-structured-logging/</link><pubDate>Mon, 31 Jan 2022 03:00:00 +0200</pubDate><guid>https://always-developing.github.io/p/01-2022-structured-logging/</guid><description>&lt;h2 id="introduction">Introduction&lt;/h2>
+&lt;p>This post will give an introduction to &lt;code>structured logging&lt;/code>, why its needed and should be used. It will also go into detail how to implement and customize the output using Serilog.&lt;/p>
+&lt;hr>
+&lt;h2 id="default-net-logging">Default .NET Logging&lt;/h2>
+&lt;p>Before looking at structured logging, we&amp;rsquo;ll take a look at the default .NET logging implementation.&lt;/p>
+&lt;p>The default logger can be utilized by injecting &lt;code>ILogger&amp;lt;CategoryName&amp;gt;&lt;/code> into the relevant constructor. The &lt;em>ILogger&amp;lt;&amp;gt;&lt;/em> interface and its implementation are registered automatically with the .NET dependency injection container on startup.&lt;/p>
+&lt;p>Let&amp;rsquo;s look at an example using the default minimal API project template (using .NET6). This is not representative of a real production scenario, and is used only for demo purposes (e.g. an exception generally should not be caught, logged and ignored)&lt;/p>
+&lt;p>Below is a &lt;strong>modified&lt;/strong> version of the default &lt;em>GET&lt;/em> endpoint which is included as part of the template.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-16">16&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-17">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-17">17&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-18">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-18">18&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-19">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-19">19&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-20">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-20">20&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-21">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-21">21&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-22">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-22">22&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-23">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-23">23&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-24">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-24">24&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-25">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-25">25&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-26">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-26">26&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-27">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-27">27&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-28">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-28">28&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-29">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-29">29&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-30">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-30">30&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-31">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-31">31&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-32">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-32">32&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-33">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-33">33&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-34">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-34">34&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-35">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-35">35&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="n">app&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">MapGet&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;/weatherforecast&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">ILogger&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">Program&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="n">logger&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">logger&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">LogDebug&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;weatherforecast: Entered&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">forecast&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">Enumerable&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Range&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="m">1&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="m">5&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="n">Select&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">index&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span>
+&lt;span class="k">new&lt;/span> &lt;span class="n">WeatherForecast&lt;/span>
+&lt;span class="p">(&lt;/span>
+&lt;span class="n">DateTime&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Now&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">AddDays&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">index&lt;/span>&lt;span class="p">),&lt;/span>
+&lt;span class="n">Random&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Shared&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Next&lt;/span>&lt;span class="p">(-&lt;/span>&lt;span class="m">20&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="m">55&lt;/span>&lt;span class="p">),&lt;/span>
+&lt;span class="n">summaries&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="n">Random&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Shared&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Next&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">summaries&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Length&lt;/span>&lt;span class="p">)]&lt;/span>
+&lt;span class="p">))&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">ToArray&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="n">logger&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">LogInformation&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$&amp;#34;Number of forecasts: &amp;#39;{forecast.Count()}&amp;#39;.&amp;#34;&lt;/span> &lt;span class="p">+&lt;/span>
+&lt;span class="s">$&amp;#34; Max temperature of: &amp;#39;{forecast.Max(x =&amp;gt; x.TemperatureC)}&amp;#39;&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="k">try&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">if&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">forecast&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Any&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">x&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">x&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">TemperatureC&lt;/span> &lt;span class="p">&amp;gt;&lt;/span> &lt;span class="m">50&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">throw&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">Exception&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;Temperature is too high&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="k">catch&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">Exception&lt;/span> &lt;span class="n">ex&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">logger&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">LogError&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">ex&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Message&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="k">finally&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">logger&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">LogDebug&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;weatherforecast: Exit&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="k">return&lt;/span> &lt;span class="n">forecast&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">})&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">WithName&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;GetWeatherForecast&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;ul>
+&lt;li>&lt;strong>Line 1&lt;/strong>: ILogger&amp;lt;&amp;gt; is injected. The same can be done using the constructor of any class.&lt;/li>
+&lt;li>&lt;strong>Line 3 &amp;amp; 30&lt;/strong>: A debug message is logged when the method is entered and exited.&lt;/li>
+&lt;li>&lt;strong>Line 14 &amp;amp; 15&lt;/strong>: An informational message is logged to give some context as to what the method output.&lt;/li>
+&lt;li>&lt;strong>Line 19-22&lt;/strong>: If any of the temperature values about to be returned are greater than 50C, throw a exception.&lt;/li>
+&lt;li>&lt;strong>Line 24-27&lt;/strong>: Catch any exceptions, and log the error message.&lt;/li>
+&lt;/ul>
+&lt;p>The output when the application is run, and the above method is invoked, is as follows:&lt;/p>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 210;
+flex-basis: 505px"
+>
+&lt;a href="https://always-developing.github.io/p/01-2022-structured-logging/1.DefaultOutput.png" data-size="750x356">
+&lt;img src="https://always-developing.github.io/p/01-2022-structured-logging/1.DefaultOutput.png"
+width="750"
+height="356"
+srcset="https://always-developing.github.io/p/01-2022-structured-logging/1.DefaultOutput_hu4256ada5982373518066d16c5c5d4363_32369_480x0_resize_box_3.png 480w, https://always-developing.github.io/p/01-2022-structured-logging/1.DefaultOutput_hu4256ada5982373518066d16c5c5d4363_32369_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Default logger output">
+&lt;/a>
+&lt;figcaption>Default logger output&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;ul>
+&lt;li>The &lt;strong>log level&lt;/strong> (e.g. debug, information, error) is reflected on the left hand side, in the various colours.&lt;/li>
+&lt;li>The &lt;strong>Program [0]&lt;/strong> shown refers to the &lt;em>CategoryName&lt;/em> of the ILogger instance. This is determine by the full name (namespace + class name) of the generic parameter used when injecting &lt;em>ILogger&amp;lt;&amp;gt;&lt;/em>.
+&lt;ul>
+&lt;li>In the above example, &lt;code>ILogger&amp;lt;Program&amp;gt;&lt;/code> is injected, so the category is the full name of &lt;code>Program&lt;/code>, which in this example is just &lt;em>Program&lt;/em>.&lt;/li>
+&lt;li>The &lt;strong>[0]&lt;/strong> refers to an &lt;strong>EventId&lt;/strong> (in this case, this has not been set)&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;p>The &lt;strong>Logging&lt;/strong> section in the appsettings.json file can be used to determine the minimum log level for a specific category name, or for all categories.
+Below is a sample the appsettings.json &lt;strong>Logging&lt;/strong> section:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5">5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6">6&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-json" data-lang="json">&lt;span class="s2">&amp;#34;Logging&amp;#34;&lt;/span>&lt;span class="err">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;span class="nt">&amp;#34;LogLevel&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;span class="nt">&amp;#34;Default&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;Information&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="nt">&amp;#34;Microsoft.AspNetCore&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;Error&amp;#34;&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>In the above example, as the default log level is &lt;strong>&amp;ldquo;Information&amp;rdquo;&lt;/strong>, invoking &lt;em>logger.LogDebug&lt;/em> would not output any data as &lt;em>debug has a lower log level than information&lt;/em>.&lt;br>
+In additional, any log calls which have a category name of &lt;strong>&amp;ldquo;Microsoft.AspNetCore&amp;rdquo;&lt;/strong> will not be logged unless &lt;em>error or above&lt;/em> is being logged.&lt;/p>
+&lt;p>This mechanism can be used to log different types of data, based on the category of the data.&lt;/p>
+&lt;p>There is more to the default .NET logging infrastructure, not covered in this post - see the references below which contain a link to the official .NET logging documentation.&lt;/p>
+&lt;hr>
+&lt;h2 id="the-issue-with-default-logging">The issue with default logging&lt;/h2>
+&lt;p>The default logging described above works well, and there is &lt;code>nothing inherently &amp;quot;wrong&amp;quot; with it&lt;/code>.&lt;/p>
+&lt;p>However, the big problem is that there is &lt;code>no consistency with the structure of the information being output&lt;/code>.&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>What time was the message output?&lt;/strong>&lt;/li>
+&lt;li>&lt;strong>What application logged the message?&lt;/strong> Especially important if multiple application are logging to a central location&lt;/li>
+&lt;li>&lt;strong>How to identity if multiple message are related or linked to each other?&lt;/strong> How can we tell which messages are all related to a single http request, especially if multiple requests are being served at the same time?&lt;/li>
+&lt;/ul>
+&lt;p>There is also the question of how a collection of messages in various different formats can easily be indexed and searched.&lt;/p>
+&lt;p>These could all be addressed by manually making sure that each and every time any message is logged that it:&lt;/p>
+&lt;ul>
+&lt;li>Contains the date and time&lt;/li>
+&lt;li>Contains the application name&lt;/li>
+&lt;li>Contains a context/request id&lt;/li>
+&lt;/ul>
+&lt;p>However, there is still no guaranteed message structure and format - this is where structured logging steps in.&lt;br>
+&lt;code>Structured logging ensures that any information which is output, is always done so in a consistent, structured, well-defined format&lt;/code>.&lt;/p>
+&lt;hr>
+&lt;h2 id="structured-logging">Structured logging&lt;/h2>
+&lt;p>.NET doesn&amp;rsquo;t perform structured logging out the box, so a 3rd party library will be used - &lt;a class="link" href="https://serilog.net/" target="_blank" rel="noopener"
+>&lt;code>Serilog&lt;/code>&lt;/a>. Serilog has become the defacto standard for doing structured logging due to its ease of use, and configurability.&lt;/p>
+&lt;p>Serilog works by replacing the default &lt;em>ILogger&amp;lt;&amp;gt;&lt;/em> implementation with its own implementation - so no changes are required to any part of the code which use any &lt;em>ILogger&lt;/em> methods. The application only needs to be configured on startup to use the Serilog implementation instead of the default one.&lt;/p>
+&lt;blockquote>
+&lt;div>
+&lt;div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px;">
+&lt;i class="inline-svg" >&lt;svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-info-circle" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#00abfb" fill="none" stroke-linecap="round" stroke-linejoin="round">
+&lt;path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+&lt;circle cx="12" cy="12" r="9" />
+&lt;line x1="12" y1="8" x2="12.01" y2="8" />
+&lt;polyline points="11 12 12 12 12 16 13 16" />
+&lt;/svg>&lt;/i>
+&lt;/div>
+&lt;div>
+&lt;p>&lt;strong>Serilog&lt;/strong> can be configured to send the log messages to one or multiple &lt;em>sink(s)&lt;/em>, which are data destinations. In the samples below only the console sink will be configured&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;/blockquote>
+&lt;p>In the below example. the &lt;code>Serilog&lt;/code>, &lt;code>Serilog.AspNetCore&lt;/code> and &lt;code>Serilog.Sinks.Console&lt;/code> NuGet packages have been added to the project.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-16">16&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-17">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-17">17&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-18">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-18">18&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-19">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-19">19&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-20">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-20">20&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">using&lt;/span> &lt;span class="nn">Serilog&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">builder&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">WebApplication&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">CreateBuilder&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">args&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="n">builder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Services&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">AddEndpointsApiExplorer&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="n">builder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Services&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">AddSwaggerGen&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="n">builder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Host&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">UseSerilog&lt;/span>&lt;span class="p">((&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">loggerConfig&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">loggerConfig&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteTo&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Console&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="p">});&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">app&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">builder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Build&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="c1">// Configure the HTTP request pipeline.
+&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">app&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Environment&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">IsDevelopment&lt;/span>&lt;span class="p">())&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">app&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">UseSwagger&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="n">app&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">UseSwaggerUI&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>&lt;strong>Lines 1&lt;/strong> as well as &lt;strong>lines 8-11&lt;/strong> were the only changes made to the application. The code is configuring the builder host (an IHostBuilder implementation) to &lt;em>Use Serilog&lt;/em>, and then configures which sinks to &lt;em>Write To&lt;/em>.&lt;br>
+As &lt;code>Serilog.Sinks.Console&lt;/code> is the only Serilog sink package added to the project, only &amp;ldquo;WriteTo.&lt;em>Console&lt;/em>&amp;rdquo; is available.&lt;/p>
+&lt;p>By adding just these few lines, Serilog now takes over the implementation of &lt;em>ILogger&amp;lt;&amp;gt;&lt;/em>, and the output now looks as follows:&lt;/p>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 272;
+flex-basis: 653px"
+>
+&lt;a href="https://always-developing.github.io/p/01-2022-structured-logging/2.DefaultSerilog.png" data-size="771x283">
+&lt;img src="https://always-developing.github.io/p/01-2022-structured-logging/2.DefaultSerilog.png"
+width="771"
+height="283"
+srcset="https://always-developing.github.io/p/01-2022-structured-logging/2.DefaultSerilog_hu22e13ecc521dce1e02b289c16e96f78d_200941_480x0_resize_box_3.png 480w, https://always-developing.github.io/p/01-2022-structured-logging/2.DefaultSerilog_hu22e13ecc521dce1e02b289c16e96f78d_200941_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Default Serilog output">
+&lt;/a>
+&lt;figcaption>Default Serilog output&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;p>The format of the output is &lt;code>now always in a standard format&lt;/code>, the Serilog &lt;em>default output template&lt;/em> which is &lt;code>{Timestamp:HH:mm:ss} [{EventType:x8} {Level:u3}] {Message:lj}{NewLine}{Exception}&lt;/code>&lt;/p>
+&lt;p>However, the &lt;em>output template&lt;/em> can be updated and customized, which will be explored in the next section.&lt;/p>
+&lt;hr>
+&lt;h2 id="refine-and-customize">Refine and customize&lt;/h2>
+&lt;h3 id="object-parameters">Object parameters&lt;/h3>
+&lt;p>One important aspect of Serilog, is that it will &lt;code>automatically serialize object parameters to JSON and reflect that in the output&lt;/code>, while the default .NET ILogger implementation will &lt;code>call the ToString() method on the object&lt;/code>.&lt;/p>
+&lt;p>In our sample, this actually results in the same output, as &lt;code>WeatherForecast is a record&lt;/code> and it&amp;rsquo;s &lt;em>ToString()&lt;/em> implementation will return a JSON representation of the record.&lt;/p>
+&lt;p>If the ILogger is used to log a &lt;em>record of type WeatherForecast&lt;/em>:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#"> &lt;span class="n">logger&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">LogInformation&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;Forecast[0]: {@WeatherForecast}&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">forecasts&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="m">0&lt;/span>&lt;span class="p">]);&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>The output message is the same, just in different output formats:&lt;/p>
+&lt;p>Default .NET ILogger:
+&lt;figure
+class="gallery-image"
+style="
+flex-grow: 1313;
+flex-basis: 3152px"
+>
+&lt;a href="https://always-developing.github.io/p/01-2022-structured-logging/3.RecordDefault.png" data-size="683x52">
+&lt;img src="https://always-developing.github.io/p/01-2022-structured-logging/3.RecordDefault.png"
+width="683"
+height="52"
+srcset="https://always-developing.github.io/p/01-2022-structured-logging/3.RecordDefault_hu524fb6f72e1535ff81a194032081f5b6_5337_480x0_resize_box_3.png 480w, https://always-developing.github.io/p/01-2022-structured-logging/3.RecordDefault_hu524fb6f72e1535ff81a194032081f5b6_5337_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Default logger record output">
+&lt;/a>
+&lt;figcaption>Default logger record output&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;p>Serilog:&lt;br>
+&lt;figure
+class="gallery-image"
+style="
+flex-grow: 2154;
+flex-basis: 5170px"
+>
+&lt;a href="https://always-developing.github.io/p/01-2022-structured-logging/4.RecordSerilog.png" data-size="754x35">
+&lt;img src="https://always-developing.github.io/p/01-2022-structured-logging/4.RecordSerilog.png"
+width="754"
+height="35"
+srcset="https://always-developing.github.io/p/01-2022-structured-logging/4.RecordSerilog_hubd1db66782def2765088df03ba5dc203_6198_480x0_resize_box_3.png 480w, https://always-developing.github.io/p/01-2022-structured-logging/4.RecordSerilog_hubd1db66782def2765088df03ba5dc203_6198_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Serilog record output">
+&lt;/a>
+&lt;figcaption>Serilog record output&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;p>However, &lt;code>if WeatherForecast was a class, instead of a record, the output would be vastly different&lt;/code>.&lt;/p>
+&lt;p>Assume that WeatherForecast is now a class with the same fields as the record, and that forecasts[0] is an instance of &lt;code>class WeatherForecast&lt;/code>:&lt;/p>
+&lt;p>Default .NET ILogger:
+&lt;figure
+class="gallery-image"
+style="
+flex-grow: 994;
+flex-basis: 2387px"
+>
+&lt;a href="https://always-developing.github.io/p/01-2022-structured-logging/5.ClassDefault.png" data-size="388x39">
+&lt;img src="https://always-developing.github.io/p/01-2022-structured-logging/5.ClassDefault.png"
+width="388"
+height="39"
+srcset="https://always-developing.github.io/p/01-2022-structured-logging/5.ClassDefault_hu1b5ec291168a448f006e895ffb746a64_2296_480x0_resize_box_3.png 480w, https://always-developing.github.io/p/01-2022-structured-logging/5.ClassDefault_hu1b5ec291168a448f006e895ffb746a64_2296_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Default logger class output">
+&lt;/a>
+&lt;figcaption>Default logger class output&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;p>Serilog:&lt;br>
+&lt;figure
+class="gallery-image"
+style="
+flex-grow: 2054;
+flex-basis: 4929px"
+>
+&lt;a href="https://always-developing.github.io/p/01-2022-structured-logging/6.ClassSerilog.png" data-size="760x37">
+&lt;img src="https://always-developing.github.io/p/01-2022-structured-logging/6.ClassSerilog.png"
+width="760"
+height="37"
+srcset="https://always-developing.github.io/p/01-2022-structured-logging/6.ClassSerilog_huf6efa1907e1c5c6b9d258e6df8f5c59a_7221_480x0_resize_box_3.png 480w, https://always-developing.github.io/p/01-2022-structured-logging/6.ClassSerilog_huf6efa1907e1c5c6b9d258e6df8f5c59a_7221_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Serilog class output">
+&lt;/a>
+&lt;figcaption>Serilog class output&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;p>The default &lt;code>.NET ILogger outputs the ToString() result&lt;/code>, while Serilog &lt;code>outputs a the result of serializing the object&lt;/code> (as well as including the object type).&lt;/p>
+&lt;hr>
+&lt;h3 id="output-customization">Output customization&lt;/h3>
+&lt;p>There are a couple of ways to change the output format:&lt;/p>
+&lt;h4 id="output-format">Output Format&lt;/h4>
+&lt;p>When specifying which sinks to write to, it is possible to &lt;em>overwrite the default output template for that sink&lt;/em>. In the below example,&lt;/p>
+&lt;ol>
+&lt;li>The log level has been moved to the start of the template&lt;/li>
+&lt;li>A constant application name (&amp;ldquo;StructuredLoggingDemo&amp;rdquo;) has been included&lt;/li>
+&lt;li>Milliseconds now included in the time stamp&lt;/li>
+&lt;/ol>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5">5&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="n">builder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Host&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">UseSerilog&lt;/span>&lt;span class="p">((&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">loggerConfig&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">loggerConfig&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteTo&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Console&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">outputTemplate&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s">&amp;#34;[{EventType:x8} {Level:u3}] =&amp;gt; &amp;#34;&lt;/span> &lt;span class="p">+&lt;/span>
+&lt;span class="s">&amp;#34;StructuredLoggingDemo: {Timestamp:HH:mm:ss:ms} {Message:lj}{NewLine}{Exception}&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">});&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>This results in the output looking as follows, with the updates mentioned above included:&lt;/p>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 1186;
+flex-basis: 2846px"
+>
+&lt;a href="https://always-developing.github.io/p/01-2022-structured-logging/7.CustomTemplate.png" data-size="854x72">
+&lt;img src="https://always-developing.github.io/p/01-2022-structured-logging/7.CustomTemplate.png"
+width="854"
+height="72"
+srcset="https://always-developing.github.io/p/01-2022-structured-logging/7.CustomTemplate_hu422ab64a66f39f48ff84a181ed719bde_16592_480x0_resize_box_3.png 480w, https://always-developing.github.io/p/01-2022-structured-logging/7.CustomTemplate_hu422ab64a66f39f48ff84a181ed719bde_16592_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Custom output template">
+&lt;/a>
+&lt;figcaption>Custom output template&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;p>Serilog, and by extension the template, can also be enriched with additional properties at runtime.&lt;/p>
+&lt;p>Below Serilog is enriched with:&lt;/p>
+&lt;ul>
+&lt;li>The application name, using reflection&lt;/li>
+&lt;li>The application start up date (admittedly, not the most useful thing to include on &lt;em>every&lt;/em> log message, but acceptable for a demo application)&lt;/li>
+&lt;/ul>
+&lt;p>These additional properties are then being utilized in the output template with the format &lt;code>{Enrich_Property_Name}&lt;/code> ({ApplicationName} and {StartupDate} in the below example)&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="n">builder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Host&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">UseSerilog&lt;/span>&lt;span class="p">((&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">loggerConfig&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">loggerConfig&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">Enrich&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WithProperty&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;ApplicationName&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="n">Assembly&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetExecutingAssembly&lt;/span>&lt;span class="p">().&lt;/span>&lt;span class="n">GetName&lt;/span>&lt;span class="p">().&lt;/span>&lt;span class="n">Name&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">Enrich&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WithProperty&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;StartupDate&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="n">DateTime&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Now&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">ToShortDateString&lt;/span>&lt;span class="p">())&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">WriteTo&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Console&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">outputTemplate&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;span class="s">&amp;#34;[{EventType:x8} {Level:u3}] =&amp;gt; {ApplicationName} &amp;#34;&lt;/span> &lt;span class="p">+&lt;/span>
+&lt;span class="s">&amp;#34;({StartupDate}): {Timestamp:HH:mm:ss:ms}&amp;#34;&lt;/span> &lt;span class="p">+&lt;/span>
+&lt;span class="s">&amp;#34; {Message:lj}{NewLine}{Exception}&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">});&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>This results in the output looking as follows, with the updates mentioned above:&lt;/p>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 1147;
+flex-basis: 2753px"
+>
+&lt;a href="https://always-developing.github.io/p/01-2022-structured-logging/8.RevisedCustomTemplate.png" data-size="826x72">
+&lt;img src="https://always-developing.github.io/p/01-2022-structured-logging/8.RevisedCustomTemplate.png"
+width="826"
+height="72"
+srcset="https://always-developing.github.io/p/01-2022-structured-logging/8.RevisedCustomTemplate_hu7a44f434b71dc1ebcea5e37bf2d4df27_13713_480x0_resize_box_3.png 480w, https://always-developing.github.io/p/01-2022-structured-logging/8.RevisedCustomTemplate_hu7a44f434b71dc1ebcea5e37bf2d4df27_13713_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Enriched output template">
+&lt;/a>
+&lt;figcaption>Enriched output template&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;p>Custom enrichers can also be written to automatically enrich the logger with specific set of properties. There are also a number of &lt;a class="link" href="https://www.nuget.org/packages?q=serilog.enrichers" target="_blank" rel="noopener"
+>enrichers available &amp;ldquo;out the box&amp;rdquo; as NuGet packages&lt;/a>, which when included make the values available for use in the output template.&lt;/p>
+&lt;p>For example, the &lt;a class="link" href="https://www.nuget.org/packages/Serilog.Enrichers.Environment/2.2.0" target="_blank" rel="noopener"
+>Serilog.Enrichers.Environment&lt;/a> package will enrich the logger with System Environment properties.&lt;/p>
+&lt;h4 id="formatters">Formatters&lt;/h4>
+&lt;p>Serilog also the concept of &lt;code>formatters&lt;/code> - which are used to &lt;code>change and customize the format of the output&lt;/code>. In the preceding examples, the output has been in plain text - a formatter can be used to output the &lt;em>entire output message&lt;/em> in JSON, for example.&lt;/p>
+&lt;p>There are a number &lt;a class="link" href="https://www.nuget.org/packages?q=Serilog.Formatting" target="_blank" rel="noopener"
+>formatters available &amp;ldquo;out the box&amp;rdquo; as NuGet packages&lt;/a>.&lt;/p>
+&lt;p>In the below example, the &lt;code>Serilog.Formatting.Compact&lt;/code> NuGet package has been referenced, and the &lt;code>CompactJsonFormatter&lt;/code> added to the Serilog configuration.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5">5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6">6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7">7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8">8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9">9&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="n">builder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Host&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">UseSerilog&lt;/span>&lt;span class="p">((&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">loggerConfig&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">loggerConfig&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">Enrich&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WithProperty&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;ApplicationName&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="n">Assembly&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetExecutingAssembly&lt;/span>&lt;span class="p">().&lt;/span>&lt;span class="n">GetName&lt;/span>&lt;span class="p">().&lt;/span>&lt;span class="n">Name&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">Enrich&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WithProperty&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;StartupDate&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="n">DateTime&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Now&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">ToShortDateString&lt;/span>&lt;span class="p">())&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">WriteTo&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Console&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="k">new&lt;/span> &lt;span class="n">CompactJsonFormatter&lt;/span>&lt;span class="p">());&lt;/span>
+&lt;span class="p">});&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>This results in the output as follows:&lt;/p>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 777;
+flex-basis: 1866px"
+>
+&lt;a href="https://always-developing.github.io/p/01-2022-structured-logging/9.CompactOutput.png" data-size="902x116">
+&lt;img src="https://always-developing.github.io/p/01-2022-structured-logging/9.CompactOutput.png"
+width="902"
+height="116"
+srcset="https://always-developing.github.io/p/01-2022-structured-logging/9.CompactOutput_hu27bc1af81ed8d752eb197bb989f5fea9_20800_480x0_resize_box_3.png 480w, https://always-developing.github.io/p/01-2022-structured-logging/9.CompactOutput_hu27bc1af81ed8d752eb197bb989f5fea9_20800_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Compact JSON output">
+&lt;/a>
+&lt;figcaption>Compact JSON output&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;p>At first glance, &lt;code>this is harder to read - so why would we want to output the messages in this format?&lt;/code>&lt;/p>
+&lt;hr>
+&lt;h2 id="benefits-of-structured-output">Benefits of structured output&lt;/h2>
+&lt;p>While the output above is definitely harder to read as is, in a production environment its not often that output would be written directly to the console. Its more often that the data would be sent to a log analyzing system (such as &lt;a class="link" href="https://www.elastic.co/what-is/elk-stack" target="_blank" rel="noopener"
+>The ELK Stack&lt;/a>, &lt;a class="link" href="https://www.datadoghq.com/" target="_blank" rel="noopener"
+>Datadog&lt;/a> or one of the many alternatives) for consumption.&lt;/p>
+&lt;p>These systems allow for:&lt;/p>
+&lt;ul>
+&lt;li>The consumption of log data&lt;/li>
+&lt;li>The analysis of log data&lt;/li>
+&lt;li>Visualization of log data&lt;/li>
+&lt;/ul>
+&lt;p>With the &lt;code>entire output being structured as JSON&lt;/code> (not just the message portion as in earlier examples), the entire output can now be easily indexed, searched, analyzed and visualized.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-json" data-lang="json">&lt;span class="p">{&lt;/span>
+&lt;span class="nt">&amp;#34;@t&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;2022-01-22T04:44:31.8254123Z&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="nt">&amp;#34;@mt&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;Number of forecasts: &amp;#39;5&amp;#39;. Max temperature of: &amp;#39;43&amp;#39;&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="nt">&amp;#34;SourceContext&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;Program&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="nt">&amp;#34;RequestId&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;0HMETC7FHFGLL:00000003&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="nt">&amp;#34;RequestPath&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;/weatherforecast&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="nt">&amp;#34;ConnectionId&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;0HMETC7FHFGLL&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="nt">&amp;#34;ApplicationName&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;StructuredLoggingDemo&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="nt">&amp;#34;StartupDate&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;2022/01/22&amp;#34;&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>In addition to the above benefits, there is also the performance aspect. The &lt;code>volume&lt;/code> of output data as well as the &lt;code>output format&lt;/code> and &lt;code>template format&lt;/code> all have an impact on performance. This should be taken into account and benchmarked for each use case.&lt;/p>
+&lt;p>In my experience, the &lt;code>CompactJsonFormatter&lt;/code> output was faster and had a better memory impact when compared with default .NET and default Serilog functionality.&lt;/p>
+&lt;hr>
+&lt;h2 id="log-levels">Log levels&lt;/h2>
+&lt;p>A note on log levels - Serilog provides the same functionality as the default .NET ILogger implementation, with regards to setting the minimum log level at a &lt;code>default global level&lt;/code>, at a &lt;code>category name level&lt;/code> and at a &lt;code>storage/sink level&lt;/code>.&lt;/p>
+&lt;p>The configuration of Serilog is different to that of the default ILogger, but they both essentially provide the same capabilities.&lt;/p>
+&lt;p>See the references for additional documentation with more details.&lt;/p>
+&lt;hr>
+&lt;h2 id="conclusion">Conclusion&lt;/h2>
+&lt;p>There is a log more detail and functionality provided by both the default .NET ILogger implementation as well as the Serilog implementation. Additional resources are provided below should you want to dive deeper into the capabilities of either of the implementations.&lt;br>
+However after reading this post, you should now have an understanding of the &lt;em>basic functionality&lt;/em> of each, how to refine and customize the output to suite your applications needs, as well as why structured logging can be beneficial to performance and data visibility.&lt;/p>
+&lt;hr>
+&lt;h2 id="references">References&lt;/h2>
+&lt;p>&lt;a class="link" href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging/?view=aspnetcore-6.0" target="_blank" rel="noopener"
+>Logging in .NET Core and ASP.NET Core - official documentation&lt;/a>&lt;br>
+&lt;a class="link" href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging/?view=aspnetcore-6.0#log-level" target="_blank" rel="noopener"
+>.NET Core and ASP.NET Core log levels&lt;/a>&lt;br>
+&lt;a class="link" href="https://github.com/serilog/serilog/wiki/" target="_blank" rel="noopener"
+>Serilog Wiki&lt;/a>&lt;br>
+&lt;a class="link" href="https://github.com/serilog/serilog/wiki/Configuration-Basics#minimum-level" target="_blank" rel="noopener"
+>Serilog log levels&lt;/a>&lt;br>
+&lt;a class="link" href="https://www.nuget.org/packages?q=serilog.enrichers" target="_blank" rel="noopener"
+>Serilog enrichers&lt;/a>&lt;br>
+&lt;a class="link" href="https://www.nuget.org/packages?q=Serilog.Formatting" target="_blank" rel="noopener"
+>Serilog formatters&lt;/a>&lt;/p></description></item><item><title>Git workflows - explained</title><link>https://always-developing.github.io/p/01-2022-git-workflow/</link><pubDate>Sat, 15 Jan 2022 03:00:00 +0200</pubDate><guid>https://always-developing.github.io/p/01-2022-git-workflow/</guid><description>&lt;h2 id="introduction">Introduction&lt;/h2>
 &lt;p>This post will give a brief introduction and explanation to &lt;code>Git&lt;/code> and &lt;code>Git workflows&lt;/code>, and then go into detail for the most prominent workflows (in my experience), when to use them, as well as the main pros and cons of each approach.&lt;/p>
 &lt;hr>
 &lt;h2 id="background">Background&lt;/h2>
