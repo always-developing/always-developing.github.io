@@ -1,4 +1,89 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Mon, 31 Jan 2022 03:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Structured logging - an introduction</title><link>https://always-developing.github.io/p/01-2022-structured-logging/</link><pubDate>Mon, 31 Jan 2022 03:00:00 +0200</pubDate><guid>https://always-developing.github.io/p/01-2022-structured-logging/</guid><description>&lt;h2 id="introduction">Introduction&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Tue, 01 Feb 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Use the ILogger IsEnabled method</title><link>https://always-developing.github.io/dailydrop/2022/02/01-ilogger-isenabled/</link><pubDate>Tue, 01 Feb 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/02/01-ilogger-isenabled/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+&lt;p>When performing logging using the ILogger interface, to have more effective memory usage, ensure to &lt;code>check if logging is enabled for the relevant log level&lt;/code> before calling the log method.&lt;/p>
+&lt;p>For example:&lt;/p>
+&lt;p>❌ Don&amp;rsquo;t do this:
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#"> &lt;span class="n">logger&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">LogWarning&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;Value is outside expected range of &amp;#39;{0}&amp;#39; to &amp;#39;{1}&amp;#39;&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="m">100&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="m">120&lt;/span>&lt;span class="p">);&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;p>✅ Do this:
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">if&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">logger&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">IsEnabled&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">LogLevel&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Warning&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">logger&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">LogWarning&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;Value is outside expected range of &amp;#39;{0}&amp;#39; to &amp;#39;{1}&amp;#39;&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="m">100&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="m">120&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;p>Both examples will:&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>Output the message&lt;/strong> if the &lt;em>Warning&lt;/em> log level is enabled&lt;/li>
+&lt;li>&lt;strong>Not output the message&lt;/strong> if the &lt;em>Warning&lt;/em> log level is not enabled, for example if the &lt;em>Default&lt;/em> log level in the appsettings.json has been set to &lt;em>Error&lt;/em>.&lt;/li>
+&lt;/ul>
+&lt;p>The resulted output in both examples are the same, the message output when &lt;em>Warning&lt;/em> log level is enabled, and the message is not output when the &lt;em>Warning&lt;/em> log level is disabled - so &lt;code>why even do the additional IsEnabled check?&lt;/code>&lt;/p>
+&lt;hr>
+&lt;h2 id="why-check">Why check?&lt;/h2>
+&lt;p>Internally, the ILogger implementation will check if the requested log level (warning in the above examples) is enabled or not and output the message accordingly.&lt;/p>
+&lt;p>The problem with this, and the above examples, is the way in which the parameters are passed int the &lt;em>Log&lt;/em> methods.&lt;br>
+As you can see below, the method takes the message and then parameters as an object array:&lt;/p>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 808;
+flex-basis: 1939px"
+>
+&lt;a href="https://always-developing.github.io/dailydrop/2022/02/01-ilogger-isenabled/1.objectarray.png" data-size="695x86">
+&lt;img src="https://always-developing.github.io/dailydrop/2022/02/01-ilogger-isenabled/1.objectarray.png"
+width="695"
+height="86"
+srcset="https://always-developing.github.io/dailydrop/2022/02/01-ilogger-isenabled/1.objectarray_hu479c87ef9fb58db048a1359f4aca9341_26798_480x0_resize_box_3.png 480w, https://always-developing.github.io/dailydrop/2022/02/01-ilogger-isenabled/1.objectarray_hu479c87ef9fb58db048a1359f4aca9341_26798_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Object array params">
+&lt;/a>
+&lt;figcaption>Object array params&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;p>Why is this not ideal?&lt;/p>
+&lt;p>In the above examples, the two parameter values (100 and 120) are integers which are store on the stack. However when sent to the method as parameters, they are boxed into objects which are then stored on the heap. This boxing means additional memory needs to be allocated, and also means this additional memory needs to be cleaned up by the garbage collector as some point.&lt;/p>
+&lt;p>Including the &lt;em>logger.IsEnabled&lt;/em> call will ensure &lt;code>the Log method is not called, the parameters are never boxed, and the additional memory is never allocated&lt;/code>.&lt;/p>
+&lt;p>Will this make a fundamental difference when outputting one warning message as in the above example? No.&lt;br>
+Will this make a fundamental difference when outputting thousands or tens of thousands of messages in your application? Probably&lt;/p>
+&lt;p>At least now with this knowledge, you can make an informed decision whether the additional checks are required or not for your specific use case. As always, if unsure benchmark the results (using BenchmarkDotNet for example) for your use case.&lt;/p>
+&lt;hr>
+&lt;h2 id="notes">Notes&lt;/h2>
+&lt;p>There are other potentially better ways to do logging - for example, this post on &lt;a class="link" href="https://www.alwaysdeveloping.net/p/01-2022-structured-logging/" target="_blank" rel="noopener"
+>Structured logging using Serilog&lt;/a> describes the problems when traditional logging, and how to implement Serilog to improve the logging experience.&lt;/p>
+&lt;p>However, if you are currently using the default ILogger implementation, consider the above examples and the impact on memory.&lt;/p>
+&lt;hr>
+&lt;h2 id="references">References&lt;/h2>
+&lt;p>&lt;a class="link" href="https://www.youtube.com/watch?v=bnVfrd3lRv8" target="_blank" rel="noopener"
+>You are doing .NET logging wrong. Let&amp;rsquo;s fix it&lt;/a>&lt;/p>
+&lt;blockquote>
+&lt;div>
+&lt;div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px;">
+&lt;i class="inline-svg" >&lt;svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-info-circle" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#00abfb" fill="none" stroke-linecap="round" stroke-linejoin="round">
+&lt;path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+&lt;circle cx="12" cy="12" r="9" />
+&lt;line x1="12" y1="8" x2="12.01" y2="8" />
+&lt;polyline points="11 12 12 12 12 16 13 16" />
+&lt;/svg>&lt;/i>
+&lt;/div>
+&lt;div>
+&lt;p>&lt;p>At the start of 2022, I set myself a goal of learning one new coding related piece of knowledge a day. Anything related to coding directly or indirectly (usually around the .NET ecosystem), that I find interesting or useful. It could be something I knew at one point, but had forgotten, or something completely new I may or may never actually use.&lt;/p>
+&lt;p>The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others as well.&lt;/p>
+&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;/blockquote></description></item><item><title>Structured logging - an introduction</title><link>https://always-developing.github.io/p/01-2022-structured-logging/</link><pubDate>Mon, 31 Jan 2022 03:00:00 +0200</pubDate><guid>https://always-developing.github.io/p/01-2022-structured-logging/</guid><description>&lt;h2 id="introduction">Introduction&lt;/h2>
 &lt;p>This post will give an introduction to &lt;code>structured logging&lt;/code>, why its needed and should be used. It will also go into detail how to implement and customize the output using Serilog.&lt;/p>
 &lt;hr>
 &lt;h2 id="default-net-logging">Default .NET Logging&lt;/h2>
