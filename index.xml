@@ -1,4 +1,334 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Wed, 02 Feb 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>C# Records - the rundown</title><link>https://always-developing.github.io/dailydrop/2022/02/02-record-intro/</link><pubDate>Wed, 02 Feb 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/02/02-record-intro/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Thu, 03 Feb 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Use IOptions&lt;> for application configuration</title><link>https://always-developing.github.io/dailydrop/2022/02/03-ioptions/</link><pubDate>Thu, 03 Feb 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/02/03-ioptions/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+&lt;p>Instead of trying to manually setup the dependency injection container with configuration from the, for example, appsettings.json file, use the built in .NET functionality and use the &lt;em>IOptions&lt;/em> interface instead - and get &lt;em>IOptionsSnapshot&lt;/em> and &lt;em>IOptionsMonitor&lt;/em> for free!&lt;/p>
+&lt;p>This post won&amp;rsquo;t go into details around the &lt;em>&lt;a class="link" href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options?view=aspnetcore-6.0" target="_blank" rel="noopener"
+>options pattern&lt;/a>&lt;/em> specifically, but it&amp;rsquo;s the recommended approach when dealing with application settings as it enables the application to adhere to two important software architecture principles:&lt;/p>
+&lt;ul>
+&lt;li>The &lt;code>Interface Segregation Principle&lt;/code> (the I in SOLID)&lt;/li>
+&lt;li>&lt;code>Separation of concerns&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;p>Onto some code examples - on startup when configuration the DI container:&lt;/p>
+&lt;p>❌ Rather don&amp;rsquo;t do this:
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="kt">var&lt;/span> &lt;span class="n">appOptions&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">ApplicationOptions&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="n">configuration&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetSection&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;appConfiguration&amp;#34;&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="n">Bind&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">appOptions&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="n">services&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">AddSingleton&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">options&lt;/span>&lt;span class="p">);&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;p>With the above, &lt;em>&lt;strong>ApplicationOptions&lt;/strong>&lt;/em> can be injected into the relevant constructor and the application settings accessed.&lt;br>
+Nothing inherently &amp;ldquo;wrong&amp;rdquo; with this, it works and follows the &lt;em>options pattern&lt;/em>. However there is a better way.&lt;/p>
+&lt;p>✅ Rather do this:
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="kt">var&lt;/span> &lt;span class="n">optionSection&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">configuration&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetSection&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;appConfiguration&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="n">services&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Configure&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">ApplicationOptions&lt;/span>&lt;span class="p">&amp;gt;(&lt;/span>&lt;span class="n">optionSection&lt;/span>&lt;span class="p">);&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/p>
+&lt;p>With the above, &lt;em>&lt;strong>ApplicationOptions&lt;/strong>&lt;/em> can NO longer be injected into the relevant constructor, instead &lt;em>&lt;strong>IOptions&amp;lt;ApplicationOptions&amp;gt;&lt;/strong>&lt;/em> (or one of the other two interfaces mentioned below) can be injected, allowing for access to the settings.&lt;/p>
+&lt;hr>
+&lt;h2 id="why-use-configure">Why use Configure&lt;/h2>
+&lt;p>So why use the &lt;em>IServiceCollection.Configure&lt;/em> method instead of the &lt;em>Bind + AddSingleton&lt;/em> methods as described above.&lt;/p>
+&lt;p>Just by using the &lt;em>IServiceCollection.Configure&lt;/em> method, one automatically gets ato leverage the functionality of the three options interfaces.&lt;/p>
+&lt;p>For all three examples below, the following section has been added to &lt;em>appsettings.json&lt;/em>:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-json" data-lang="json"> &lt;span class="s2">&amp;#34;appConfiguration&amp;#34;&lt;/span>&lt;span class="err">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;span class="nt">&amp;#34;ApplicationName&amp;#34;&lt;/span> &lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;OptionsDemo&amp;#34;&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>And the options class, &lt;em>ApplicationOptions&lt;/em> defined as follows:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-c#" data-lang="c#">&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">ApplicationOptions&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">ApplicationName&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">get&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="k">set&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;hr>
+&lt;h3 id="ioptions">IOptions&amp;lt;&amp;gt;&lt;/h3>
+&lt;p>✅ Added as DI container as &lt;strong>singleton&lt;/strong>&lt;br>
+❌ Does &lt;strong>not&lt;/strong> allow reading of the configuration settings from source after the app has started.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-16">16&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-17">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-17">17&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-18">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-18">18&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-19">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-19">19&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-c#" data-lang="c#">&lt;span class="kt">var&lt;/span> &lt;span class="n">builder&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">WebApplication&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">CreateBuilder&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">args&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="c1">// get the &amp;#34;appConfiguration&amp;#34; section from the configuration
+&lt;/span>&lt;span class="c1">//(appsettings.json in this case)
+&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="kt">var&lt;/span> &lt;span class="n">optionSection&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">builder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Configuration&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetSection&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;appConfiguration&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="c1">// add to DI as ApplicationOptions
+&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="n">builder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Services&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Configure&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">ApplicationOptions&lt;/span>&lt;span class="p">&amp;gt;(&lt;/span>&lt;span class="n">optionSection&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">app&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">builder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Build&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="c1">// endpoint, which has the IOptions injected into it from the
+&lt;/span>&lt;span class="c1">// DI container
+&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="n">app&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">MapGet&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;/appname&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">IOptions&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">ApplicationOptions&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="n">options&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="c1">// .Value returns ApplicationOptions
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="k">return&lt;/span> &lt;span class="n">options&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Value&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">ApplicationName&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">});&lt;/span>
+&lt;span class="n">app&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Run&lt;/span>&lt;span class="p">();&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>When the endpoint &lt;em>/appname&lt;/em> is called, the application name from the appsettings.json is returned, via &lt;em>IOptions&lt;/em>.&lt;/p>
+&lt;p>This injects &lt;em>IOptions&amp;lt;ApplicationOptions&amp;gt;&lt;/em> as a &lt;code>singleton&lt;/code>, and if the value in the appsettings.json file changes while the application is running, &lt;code>the change will not be reflected in IOptions&amp;lt;ApplicationOptions&amp;gt;&lt;/code>.&lt;/p>
+&lt;hr>
+&lt;h3 id="ioptionssnapshot">IOptionsSnapshot&amp;lt;&amp;gt;&lt;/h3>
+&lt;p>✅ Added as DI container as &lt;strong>scoped&lt;/strong>&lt;br>
+✅ Supports &lt;strong>named options&lt;/strong>&lt;br>
+✅ Configuration settings can be recomputed for each request (as the service is scoped)&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-16">16&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-17">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-17">17&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-18">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-18">18&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-19">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-19">19&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-c#" data-lang="c#">&lt;span class="kt">var&lt;/span> &lt;span class="n">builder&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">WebApplication&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">CreateBuilder&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">args&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="c1">// get the &amp;#34;appConfiguration&amp;#34; section from the configuration
+&lt;/span>&lt;span class="c1">//(appsettings.json in this case)
+&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="kt">var&lt;/span> &lt;span class="n">optionSection&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">builder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Configuration&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetSection&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;appConfiguration&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="c1">// add to DI as ApplicationOptions
+&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="n">builder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Services&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Configure&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">ApplicationOptions&lt;/span>&lt;span class="p">&amp;gt;(&lt;/span>&lt;span class="n">optionSection&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">app&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">builder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Build&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="c1">// endpoint, which has the IOptionsSnapshot injected into it from the
+&lt;/span>&lt;span class="c1">// DI container
+&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="n">app&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">MapGet&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;/appname&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">IOptionsSnapshot&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">ApplicationOptions&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="n">options&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="c1">// .Value returns ApplicationOptions
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="k">return&lt;/span> &lt;span class="n">options&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Value&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">ApplicationName&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">});&lt;/span>
+&lt;span class="n">app&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Run&lt;/span>&lt;span class="p">();&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>This injects &lt;em>IOptionsSnapshot&amp;lt;ApplicationOptions&amp;gt;&lt;/em> as &lt;code>scoped&lt;/code>, and if the value in the appsettings.json file changes while the application is running, this change &lt;code>will be reflected in IOptionsSnapshot&amp;lt;ApplicationOptions&amp;gt;&lt;/code>.&lt;/p>
+&lt;p>In other words, for each scope (http request) a new snapshot of the ApplicationOptions values is calculated from source, and injected.&lt;/p>
+&lt;hr>
+&lt;h3 id="ioptionsmonitor">IOptionsMonitor&amp;lt;&amp;gt;&lt;/h3>
+&lt;p>✅ Added as DI container as &lt;strong>singleton&lt;/strong>&lt;br>
+✅ Supports &lt;strong>named options&lt;/strong>&lt;br>
+✅ Supports options &lt;strong>changed notifications&lt;/strong>&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-16">16&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-17">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-17">17&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-18">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-18">18&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-19">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-19">19&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-c#" data-lang="c#">&lt;span class="kt">var&lt;/span> &lt;span class="n">builder&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">WebApplication&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">CreateBuilder&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">args&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">optionSection&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">builder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Configuration&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetSection&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;appConfiguration&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="n">builder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Services&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Configure&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">ApplicationOptions&lt;/span>&lt;span class="p">&amp;gt;(&lt;/span>&lt;span class="n">optionSection&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">app&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">builder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Build&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="n">app&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Services&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetService&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">IOptionsMonitor&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">ApplicationOptions&lt;/span>&lt;span class="p">&amp;gt;&amp;gt;()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">OnChange&lt;/span>&lt;span class="p">((&lt;/span>&lt;span class="n">ApplicationOptions&lt;/span> &lt;span class="n">options&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">options&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">ApplicationName&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">});&lt;/span>
+&lt;span class="n">app&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">MapGet&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;/appname&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">IOptionsMonitor&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">ApplicationOptions&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="n">options&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">return&lt;/span> &lt;span class="n">options&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">CurrentValue&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">ApplicationName&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">});&lt;/span>
+&lt;span class="n">app&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Run&lt;/span>&lt;span class="p">();&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>This injects &lt;em>IOptionsMonitor&amp;lt;ApplicationOptions&amp;gt;&lt;/em> as a &lt;code>singleton&lt;/code>, but functions very much the same as &lt;em>IOptionsSnapshot&lt;/em>. If the value in the appsettings.json file changes while the application is running, this change &lt;code>will be reflected in IOptionsMonitor&amp;lt;ApplicationOptions&amp;gt;&lt;/code>.&lt;/p>
+&lt;p>However &lt;em>IOptionsMonitor&lt;/em> has the additional benefit of having an &lt;em>OnChange&lt;/em> method, which accepts an &lt;em>Action&amp;lt;&amp;gt;&lt;/em> which is called each time a value is changed. In other words, &lt;code>one can be notified of a value change&lt;/code>.&lt;/p>
+&lt;p>In the above example, the lambda action method is called each time the value changes and writes the new value to the console (Line 11).&lt;/p>
+&lt;hr>
+&lt;h2 id="named-options">Named Options&lt;/h2>
+&lt;p>Both &lt;em>IOptionsSnapshot&lt;/em> and &lt;em>IOptionsMonitor&lt;/em> support &lt;code>named options&lt;/code>. What this means, is that multiple of the same options (but different values) can be added to the DI container with a name, and then retrieved by name.&lt;/p>
+&lt;p>If there are multiple sets of the same configuration structure, for example:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-json" data-lang="json">&lt;span class="s2">&amp;#34;cloudKeyConfiguration&amp;#34;&lt;/span>&lt;span class="err">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;span class="nt">&amp;#34;azure&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;span class="nt">&amp;#34;name&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;Microsoft&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="nt">&amp;#34;key&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;azurekey123&amp;#34;&lt;/span>
+&lt;span class="p">},&lt;/span>
+&lt;span class="nt">&amp;#34;aws&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;span class="nt">&amp;#34;name&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;Amazon&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="nt">&amp;#34;key&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;awskey456&amp;#34;&lt;/span>
+&lt;span class="p">},&lt;/span>
+&lt;span class="nt">&amp;#34;gcp&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;span class="nt">&amp;#34;name&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;Google&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="nt">&amp;#34;key&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;gcpkey789&amp;#34;&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>And the options class, &lt;em>CloudKeyOptions&lt;/em> defined as follows:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5">5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6">6&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-c#" data-lang="c#">&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">CloudKeyOptions&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">Name&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">get&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="k">set&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">Key&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">get&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="k">set&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>Usage is as follows:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-16">16&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-17">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-17">17&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-18">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-18">18&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-19">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-19">19&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-20">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-20">20&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-21">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-21">21&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-c#" data-lang="c#">&lt;span class="kt">var&lt;/span> &lt;span class="n">builder&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">WebApplication&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">CreateBuilder&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">args&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="c1">// add to DI container by name
+&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="kt">var&lt;/span> &lt;span class="n">optionSectionAzure&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">builder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Configuration&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetSection&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;cloudKeyConfiguration:azure&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="n">builder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Services&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Configure&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">CloudKeyOptions&lt;/span>&lt;span class="p">&amp;gt;(&lt;/span>&lt;span class="s">&amp;#34;azure&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">optionSectionAzure&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">optionSectionAws&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">builder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Configuration&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetSection&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;cloudKeyConfiguration:aws&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="n">builder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Services&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Configure&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">CloudKeyOptions&lt;/span>&lt;span class="p">&amp;gt;(&lt;/span>&lt;span class="s">&amp;#34;aws&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">optionSectionAws&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">optionSectionGcp&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">builder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Configuration&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetSection&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;cloudKeyConfiguration:gcp&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="n">builder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Services&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Configure&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">CloudKeyOptions&lt;/span>&lt;span class="p">&amp;gt;(&lt;/span>&lt;span class="s">&amp;#34;gcp&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">optionSectionGcp&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">app&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">builder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Build&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="n">app&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">MapGet&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;/key/{provider}&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="kt">string&lt;/span> &lt;span class="n">provider&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="n">IOptionsSnapshot&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">CloudKeyOptions&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="n">options&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">return&lt;/span> &lt;span class="n">options&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Get&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">provider&lt;/span>&lt;span class="p">)?.&lt;/span>&lt;span class="n">Key&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">});&lt;/span>
+&lt;span class="n">app&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Run&lt;/span>&lt;span class="p">();&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>&lt;em>IOptionsSnapshot&amp;lt;CloudKeyOptions&amp;gt;&lt;/em> is injected, and a query string parameter is used to determine which named option to retrieve.&lt;/p>
+&lt;hr>
+&lt;h2 id="references">References&lt;/h2>
+&lt;p>&lt;a class="link" href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options?view=aspnetcore-6.0" target="_blank" rel="noopener"
+>C# configuration fundamentals&lt;/a>&lt;br>
+&lt;a class="link" href="https://thecodeblogger.com/2021/04/21/options-pattern-in-net-ioptions-ioptionssnapshot-ioptionsmonitor/" target="_blank" rel="noopener"
+>Options Pattern In .NET&lt;/a>&lt;/p>
+&lt;blockquote>
+&lt;div>
+&lt;div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px;">
+&lt;i class="inline-svg" >&lt;svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-info-circle" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#00abfb" fill="none" stroke-linecap="round" stroke-linejoin="round">
+&lt;path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+&lt;circle cx="12" cy="12" r="9" />
+&lt;line x1="12" y1="8" x2="12.01" y2="8" />
+&lt;polyline points="11 12 12 12 12 16 13 16" />
+&lt;/svg>&lt;/i>
+&lt;/div>
+&lt;div>
+&lt;p>&lt;p>At the start of 2022, I set myself a goal of learning one new coding related piece of knowledge a day. Anything related to coding directly or indirectly (usually around the .NET ecosystem), that I find interesting or useful. It could be something I knew at one point, but had forgotten, or something completely new I may or may never actually use.&lt;/p>
+&lt;p>The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others as well.&lt;/p>
+&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;/blockquote></description></item><item><title>C# Records - the rundown</title><link>https://always-developing.github.io/dailydrop/2022/02/02-record-intro/</link><pubDate>Wed, 02 Feb 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/02/02-record-intro/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
 &lt;p>Heard about the new feature of C# called &lt;code>records&lt;/code>, but not entirely sure whats its all about? Here&amp;rsquo;s the brief overview.&lt;/p>
 &lt;p>Records:&lt;/p>
 &lt;ul>
