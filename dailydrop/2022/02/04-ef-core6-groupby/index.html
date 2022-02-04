@@ -1,0 +1,570 @@
+<!doctype html><html lang=en-uk>
+<head><meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="Improvements made to the Entity Framework Core 6 GroupBy functionality"><title>EF Core 6: GroupBy enhancements</title>
+<link rel=canonical href=https://always-developing.github.io/dailydrop/2022/02/04-ef-core6-groupby/>
+<link rel=stylesheet href=/scss/style.min.css><meta property="og:title" content="EF Core 6: GroupBy enhancements">
+<meta property="og:description" content="Improvements made to the Entity Framework Core 6 GroupBy functionality">
+<meta property="og:url" content="https://always-developing.github.io/dailydrop/2022/02/04-ef-core6-groupby/">
+<meta property="og:site_name" content="Always Developing">
+<meta property="og:type" content="article"><meta property="article:section" content="Dailydrop"><meta property="article:tag" content="c#"><meta property="article:tag" content=".net"><meta property="article:tag" content="dailydrop"><meta property="article:tag" content="efcore"><meta property="article:tag" content="efcore6"><meta property="article:tag" content="ef"><meta property="article:tag" content="entityframeworkcore"><meta property="article:tag" content="groupby"><meta property="article:tag" content=".net6"><meta property="article:published_time" content="2022-02-04T01:00:00+02:00"><meta property="article:modified_time" content="2022-02-04T01:00:00+02:00">
+<meta name=twitter:title content="EF Core 6: GroupBy enhancements">
+<meta name=twitter:description content="Improvements made to the Entity Framework Core 6 GroupBy functionality">
+<link rel="shortcut icon" href=favicon.ico>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CXPLFS7K38"></script>
+<script>var doNotTrack=!1;if(!doNotTrack){window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date),gtag('config','G-CXPLFS7K38',{anonymize_ip:!1})}</script>
+</head>
+<body class="article-page has-toc">
+<script>(function(){const a='StackColorScheme';localStorage.getItem(a)||localStorage.setItem(a,"dark")})()</script><script>(function(){const b='StackColorScheme',a=localStorage.getItem(b),c=window.matchMedia('(prefers-color-scheme: dark)').matches===!0;a=='dark'||a==='auto'&&c?document.documentElement.dataset.scheme='dark':document.documentElement.dataset.scheme='light'})()</script>
+<div class="container main-container flex
+extended">
+<div id=article-toolbar>
+<a href=https://always-developing.github.io/ class=back-home><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="15 6 9 12 15 18"/></svg>
+<span>Back</span>
+</a>
+</div>
+<main class="main full-width">
+<article class=main-article>
+<header class=article-header>
+<div class=article-details>
+<header class=article-category>
+<a href=/categories/dailydrop/>
+DailyDrop
+</a>
+</header>
+<h2 class=article-title>
+<a href=/dailydrop/2022/02/04-ef-core6-groupby/>EF Core 6: GroupBy enhancements</a>
+</h2>
+<h3 class=article-subtitle>
+Improvements made to the Entity Framework Core 6 GroupBy functionality
+</h3>
+<footer class=article-time>
+<div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
+<time class=article-time--published>Feb 04, 2022</time>
+</div>
+<div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<time class=article-time--reading>
+5 minute read
+</time>
+</div>
+</footer>
+</div>
+</header>
+<section class=article-content>
+<h2 id=daily-knowledge-drop>Daily Knowledge Drop</h2>
+<p>The <code>GroupBy</code> support in Entity Framework Core 6 got an update, and has made things a lot easier.<br>
+In short, the following is now supported:</p>
+<ul>
+<li>Translate GroupBy followed by FirstOrDefault (or similar) over a group</li>
+<li>Supports selecting the top N results from a group</li>
+<li>Expands navigation&rsquo;s after the GroupBy operator has been applied</li>
+</ul>
+<h2 id=examples>Examples</h2>
+<h3 id=setup>Setup</h3>
+<p>In all the example below the setup is very simple - a single <code>Song</code> entity and corresponding database table. All sample below were tested with SQL Server.</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5> 5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6> 6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7> 7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
+</span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
+</span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
+</span><span class=lnt id=ienumusage-12><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-12>12</a>
+</span><span class=lnt id=ienumusage-13><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-13>13</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=k>public</span> <span class=k>class</span> <span class=nc>Song</span>
+<span class=p>{</span>
+    <span class=k>public</span> <span class=kt>int</span> <span class=n>Id</span> <span class=p>{</span> <span class=k>get</span><span class=p>;</span> <span class=k>set</span><span class=p>;</span> <span class=p>}</span> 
+    <span class=k>public</span> <span class=kt>string</span> <span class=n>Name</span> <span class=p>{</span> <span class=k>get</span><span class=p>;</span> <span class=k>set</span><span class=p>;</span> <span class=p>}</span>
+    <span class=k>public</span> <span class=kt>string</span> <span class=n>Artist</span> <span class=p>{</span> <span class=k>get</span><span class=p>;</span> <span class=k>set</span><span class=p>;</span> <span class=p>}</span>
+    <span class=k>public</span> <span class=kt>int</span> <span class=n>YearReleased</span> <span class=p>{</span> <span class=k>get</span><span class=p>;</span> <span class=k>set</span><span class=p>;</span> <span class=p>}</span>
+    <span class=k>public</span> <span class=kt>int</span> <span class=n>LengthInSeconds</span> <span class=p>{</span> <span class=k>get</span><span class=p>;</span> <span class=k>set</span><span class=p>;</span> <span class=p>}</span>
+    <span class=k>public</span> <span class=k>override</span> <span class=kt>string</span> <span class=n>ToString</span><span class=p>()</span>
+    <span class=p>{</span>
+        <span class=k>return</span> <span class=s>$&#34;Song `{Name}` by &#39;{Artist} released &#34;</span> <span class=p>+</span>
+                <span class=s>$&#34;in &#39;{YearReleased}&#39; and is &#39;{LengthInSeconds}&#39; seconds long&#34;</span><span class=p>;</span>
+    <span class=p>}</span>
+<span class=p>}</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>The results are based on data in the example dataset, and not necessarily reflective of real world values.</p>
+<p>The below are examples in Entity Framework Core 3.1, where possible, and Entity Framework Core 6 (both are LTS versions).</p>
+<hr>
+<h3 id=count-groupby>Count GroupBy</h3>
+<p><code>Retrieve the number of songs per artist.</code></p>
+<h4 id=efcore-31>EFCore 3.1</h4>
+<p>Code:</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2>2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3>3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4>4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5>5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6>6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7>7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8>8</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=kt>var</span> <span class=n>query</span> <span class=p>=</span> <span class=n>db</span><span class=p>.</span><span class=n>Songs</span>
+    <span class=p>.</span><span class=n>GroupBy</span><span class=p>(</span><span class=n>s</span> <span class=p>=&gt;</span> <span class=n>s</span><span class=p>.</span><span class=n>Artist</span><span class=p>)</span>
+    <span class=p>.</span><span class=n>Select</span><span class=p>(</span><span class=n>e</span> <span class=p>=&gt;</span> <span class=k>new</span> <span class=p>{</span> <span class=n>e</span><span class=p>.</span><span class=n>Key</span><span class=p>,</span> <span class=n>Count</span> <span class=p>=</span> <span class=n>e</span><span class=p>.</span><span class=n>Count</span><span class=p>()</span> <span class=p>});</span>
+
+<span class=k>foreach</span> <span class=p>(</span><span class=kt>var</span> <span class=n>item</span> <span class=k>in</span> <span class=n>query</span><span class=p>.</span><span class=n>ToList</span><span class=p>())</span>
+<span class=p>{</span>
+    <span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>item</span><span class=p>);</span>
+<span class=p>}</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>SQL generated:</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2>2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3>3</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-tsql data-lang=tsql><span class=k>SELECT</span><span class=w> </span><span class=o>[</span><span class=n>s</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>Artist</span><span class=o>]</span><span class=w> </span><span class=k>AS</span><span class=w> </span><span class=o>[</span><span class=n>Key</span><span class=o>]</span><span class=p>,</span><span class=w> </span><span class=nf>COUNT</span><span class=p>(</span><span class=o>*</span><span class=p>)</span><span class=w> </span><span class=k>AS</span><span class=w> </span><span class=o>[</span><span class=n>Count</span><span class=o>]</span><span class=w>
+</span><span class=w></span><span class=k>FROM</span><span class=w> </span><span class=o>[</span><span class=n>Song</span><span class=o>]</span><span class=w> </span><span class=k>AS</span><span class=w> </span><span class=o>[</span><span class=n>s</span><span class=o>]</span><span class=w>
+</span><span class=w></span><span class=k>GROUP</span><span class=w> </span><span class=k>BY</span><span class=w> </span><span class=o>[</span><span class=n>s</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>Artist</span><span class=o>]</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>Output:</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2>2</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=o>{</span> <span class=nv>Key</span> <span class=o>=</span> Foo Fighters, <span class=nv>Count</span> <span class=o>=</span> <span class=m>4</span> <span class=o>}</span>
+<span class=o>{</span> <span class=nv>Key</span> <span class=o>=</span> John Mayer, <span class=nv>Count</span> <span class=o>=</span> <span class=m>3</span> <span class=o>}</span></code></pre></td></tr></table>
+</div>
+</div>
+<h4 id=efcore-6>EFCore 6</h4>
+<p>Code and resulting SQL generated are exactly the same.</p>
+<hr>
+<h3 id=top-1-groupby>Top 1 GroupBy</h3>
+<p><code>Retrieve an artist and the first year a song of theirs was released</code></p>
+<h4 id=efcore-31-1>EFCore 3.1</h4>
+<p>Code:</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5> 5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6> 6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7> 7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
+</span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
+</span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
+</span><span class=lnt id=ienumusage-12><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-12>12</a>
+</span><span class=lnt id=ienumusage-13><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-13>13</a>
+</span><span class=lnt id=ienumusage-14><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-14>14</a>
+</span><span class=lnt id=ienumusage-15><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-15>15</a>
+</span><span class=lnt id=ienumusage-16><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-16>16</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=kt>var</span> <span class=n>query</span> <span class=p>=</span> <span class=n>db</span><span class=p>.</span><span class=n>Songs</span>
+    <span class=p>.</span><span class=n>Select</span><span class=p>(</span><span class=n>s</span> <span class=p>=&gt;</span> <span class=n>s</span><span class=p>.</span><span class=n>Artist</span><span class=p>).</span><span class=n>Distinct</span><span class=p>()</span>
+    <span class=p>.</span><span class=n>Select</span><span class=p>(</span><span class=n>e</span> <span class=p>=&gt;</span> <span class=k>new</span>
+    <span class=p>{</span>
+        <span class=n>Artist</span> <span class=p>=</span> <span class=n>e</span><span class=p>,</span>
+        <span class=n>Year</span> <span class=p>=</span> <span class=n>db</span><span class=p>.</span><span class=n>Songs</span>
+            <span class=p>.</span><span class=n>Where</span><span class=p>(</span><span class=n>s</span> <span class=p>=&gt;</span> <span class=n>s</span><span class=p>.</span><span class=n>Artist</span> <span class=p>==</span> <span class=n>e</span><span class=p>)</span>
+            <span class=p>.</span><span class=n>OrderBy</span><span class=p>(</span><span class=n>s</span> <span class=p>=&gt;</span> <span class=n>s</span><span class=p>.</span><span class=n>YearReleased</span><span class=p>)</span>
+            <span class=p>.</span><span class=n>Select</span><span class=p>(</span><span class=n>y</span> <span class=p>=&gt;</span> <span class=n>y</span><span class=p>.</span><span class=n>YearReleased</span><span class=p>)</span>
+            <span class=p>.</span><span class=n>FirstOrDefault</span><span class=p>()</span>
+    <span class=p>});</span>
+
+<span class=k>foreach</span> <span class=p>(</span><span class=kt>var</span> <span class=n>item</span> <span class=k>in</span> <span class=n>query</span><span class=p>.</span><span class=n>ToList</span><span class=p>())</span>
+<span class=p>{</span>
+    <span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>item</span><span class=p>);</span>
+<span class=p>}</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>SQL generated:</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5> 5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6> 6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7> 7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
+</span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-tsql data-lang=tsql><span class=k>SELECT</span><span class=w> </span><span class=o>[</span><span class=n>t</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>Artist</span><span class=o>]</span><span class=p>,</span><span class=w> </span><span class=p>(</span><span class=w>
+</span><span class=w>    </span><span class=k>SELECT</span><span class=w> </span><span class=k>TOP</span><span class=p>(</span><span class=mi>1</span><span class=p>)</span><span class=w> </span><span class=o>[</span><span class=n>s</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>YearReleased</span><span class=o>]</span><span class=w>
+</span><span class=w>    </span><span class=k>FROM</span><span class=w> </span><span class=o>[</span><span class=n>Song</span><span class=o>]</span><span class=w> </span><span class=k>AS</span><span class=w> </span><span class=o>[</span><span class=n>s</span><span class=o>]</span><span class=w>
+</span><span class=w>    </span><span class=k>WHERE</span><span class=w> </span><span class=p>(</span><span class=o>[</span><span class=n>s</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>Artist</span><span class=o>]</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=o>[</span><span class=n>t</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>Artist</span><span class=o>]</span><span class=p>)</span><span class=w> 
+</span><span class=w>        </span><span class=ow>OR</span><span class=w> </span><span class=p>(</span><span class=o>[</span><span class=n>s</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>Artist</span><span class=o>]</span><span class=w> </span><span class=k>IS</span><span class=w> </span><span class=k>NULL</span><span class=w> </span><span class=ow>AND</span><span class=w> </span><span class=o>[</span><span class=n>t</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>Artist</span><span class=o>]</span><span class=w> </span><span class=k>IS</span><span class=w> </span><span class=k>NULL</span><span class=p>)</span><span class=w>
+</span><span class=w>    </span><span class=k>ORDER</span><span class=w> </span><span class=k>BY</span><span class=w> </span><span class=o>[</span><span class=n>s</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>YearReleased</span><span class=o>]</span><span class=p>)</span><span class=w> </span><span class=k>AS</span><span class=w> </span><span class=o>[</span><span class=n>Year</span><span class=o>]</span><span class=w>
+</span><span class=w></span><span class=k>FROM</span><span class=w> </span><span class=p>(</span><span class=w>
+</span><span class=w>    </span><span class=k>SELECT</span><span class=w> </span><span class=k>DISTINCT</span><span class=w> </span><span class=o>[</span><span class=n>s0</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>Artist</span><span class=o>]</span><span class=w>
+</span><span class=w>    </span><span class=k>FROM</span><span class=w> </span><span class=o>[</span><span class=n>Song</span><span class=o>]</span><span class=w> </span><span class=k>AS</span><span class=w> </span><span class=o>[</span><span class=n>s0</span><span class=o>]</span><span class=w>
+</span><span class=w></span><span class=p>)</span><span class=w> </span><span class=k>AS</span><span class=w> </span><span class=o>[</span><span class=n>t</span><span class=o>]</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>Output:</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2>2</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=o>{</span> <span class=nv>Artist</span> <span class=o>=</span> Foo Fighters, <span class=nv>Year</span> <span class=o>=</span> <span class=m>1997</span> <span class=o>}</span>
+<span class=o>{</span> <span class=nv>Artist</span> <span class=o>=</span> John Mayer, <span class=nv>Year</span> <span class=o>=</span> <span class=m>2003</span> <span class=o>}</span></code></pre></td></tr></table>
+</div>
+</div>
+<h4 id=efcore-6-1>EFCore 6</h4>
+<p>Code:</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5> 5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6> 6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7> 7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
+</span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
+</span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=kt>var</span> <span class=n>query</span> <span class=p>=</span> <span class=n>db</span><span class=p>.</span><span class=n>Songs</span>
+    <span class=p>.</span><span class=n>GroupBy</span><span class=p>(</span><span class=n>a</span> <span class=p>=&gt;</span> <span class=n>a</span><span class=p>.</span><span class=n>Artist</span><span class=p>)</span>
+    <span class=p>.</span><span class=n>Select</span><span class=p>(</span><span class=n>g</span> <span class=p>=&gt;</span> <span class=n>g</span><span class=p>.</span><span class=n>OrderBy</span><span class=p>(</span><span class=n>a</span> <span class=p>=&gt;</span> <span class=n>a</span><span class=p>.</span><span class=n>YearReleased</span><span class=p>)</span>
+                <span class=p>.</span><span class=n>Select</span><span class=p>(</span><span class=n>s</span> <span class=p>=&gt;</span> <span class=k>new</span> <span class=p>{</span> <span class=n>Artist</span> <span class=p>=</span> <span class=n>s</span><span class=p>.</span><span class=n>Artist</span><span class=p>,</span> <span class=n>Year</span> <span class=p>=</span> <span class=n>s</span><span class=p>.</span><span class=n>YearReleased</span> <span class=p>})</span>
+                <span class=p>.</span><span class=n>FirstOrDefault</span><span class=p>()</span>
+        <span class=p>);</span>
+
+<span class=k>foreach</span> <span class=p>(</span><span class=kt>var</span> <span class=n>item</span> <span class=k>in</span> <span class=n>query</span><span class=p>.</span><span class=n>ToList</span><span class=p>())</span>
+<span class=p>{</span>
+    <span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>item</span><span class=p>);</span>
+<span class=p>}</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>SQL generated:</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5> 5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6> 6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7> 7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
+</span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
+</span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
+</span><span class=lnt id=ienumusage-12><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-12>12</a>
+</span><span class=lnt id=ienumusage-13><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-13>13</a>
+</span><span class=lnt id=ienumusage-14><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-14>14</a>
+</span><span class=lnt id=ienumusage-15><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-15>15</a>
+</span><span class=lnt id=ienumusage-16><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-16>16</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-tsql data-lang=tsql><span class=k>SELECT</span><span class=w> </span><span class=o>[</span><span class=n>t0</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>Artist</span><span class=o>]</span><span class=p>,</span><span class=w> </span><span class=o>[</span><span class=n>t0</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>Year</span><span class=o>]</span><span class=p>,</span><span class=w> </span><span class=o>[</span><span class=n>t0</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>c</span><span class=o>]</span><span class=w>
+</span><span class=w></span><span class=k>FROM</span><span class=w> </span><span class=p>(</span><span class=w>
+</span><span class=w>    </span><span class=k>SELECT</span><span class=w> </span><span class=o>[</span><span class=n>s</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>Artist</span><span class=o>]</span><span class=w>
+</span><span class=w>    </span><span class=k>FROM</span><span class=w> </span><span class=o>[</span><span class=n>Song</span><span class=o>]</span><span class=w> </span><span class=k>AS</span><span class=w> </span><span class=o>[</span><span class=n>s</span><span class=o>]</span><span class=w>
+</span><span class=w>    </span><span class=k>GROUP</span><span class=w> </span><span class=k>BY</span><span class=w> </span><span class=o>[</span><span class=n>s</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>Artist</span><span class=o>]</span><span class=w>
+</span><span class=w></span><span class=p>)</span><span class=w> </span><span class=k>AS</span><span class=w> </span><span class=o>[</span><span class=n>t</span><span class=o>]</span><span class=w>
+</span><span class=w></span><span class=nf>LEFT</span><span class=w> </span><span class=k>JOIN</span><span class=w> </span><span class=p>(</span><span class=w>
+</span><span class=w>    </span><span class=k>SELECT</span><span class=w> </span><span class=o>[</span><span class=n>t1</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>Artist</span><span class=o>]</span><span class=p>,</span><span class=w> </span><span class=o>[</span><span class=n>t1</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>Year</span><span class=o>]</span><span class=p>,</span><span class=w> </span><span class=o>[</span><span class=n>t1</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>c</span><span class=o>]</span><span class=w>
+</span><span class=w>    </span><span class=k>FROM</span><span class=w> </span><span class=p>(</span><span class=w>
+</span><span class=w>        </span><span class=k>SELECT</span><span class=w> </span><span class=o>[</span><span class=n>s0</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>Artist</span><span class=o>]</span><span class=p>,</span><span class=w> </span><span class=o>[</span><span class=n>s0</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>YearReleased</span><span class=o>]</span><span class=w> </span><span class=k>AS</span><span class=w> </span><span class=o>[</span><span class=n>Year</span><span class=o>]</span><span class=p>,</span><span class=w> </span><span class=mi>1</span><span class=w> </span><span class=k>AS</span><span class=w> </span><span class=o>[</span><span class=n>c</span><span class=o>]</span><span class=p>,</span><span class=w> 
+</span><span class=w>            </span><span class=nf>ROW_NUMBER</span><span class=p>()</span><span class=w> </span><span class=k>OVER</span><span class=p>(</span><span class=k>PARTITION</span><span class=w> </span><span class=k>BY</span><span class=w> </span><span class=o>[</span><span class=n>s0</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>Artist</span><span class=o>]</span><span class=w> 
+</span><span class=w>            </span><span class=k>ORDER</span><span class=w> </span><span class=k>BY</span><span class=w> </span><span class=o>[</span><span class=n>s0</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>YearReleased</span><span class=o>]</span><span class=p>)</span><span class=w> </span><span class=k>AS</span><span class=w> </span><span class=o>[</span><span class=n>row</span><span class=o>]</span><span class=w>
+</span><span class=w>        </span><span class=k>FROM</span><span class=w> </span><span class=o>[</span><span class=n>Song</span><span class=o>]</span><span class=w> </span><span class=k>AS</span><span class=w> </span><span class=o>[</span><span class=n>s0</span><span class=o>]</span><span class=w>
+</span><span class=w>    </span><span class=p>)</span><span class=w> </span><span class=k>AS</span><span class=w> </span><span class=o>[</span><span class=n>t1</span><span class=o>]</span><span class=w>
+</span><span class=w>    </span><span class=k>WHERE</span><span class=w> </span><span class=o>[</span><span class=n>t1</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>row</span><span class=o>]</span><span class=w> </span><span class=o>&lt;=</span><span class=w> </span><span class=mi>1</span><span class=w>
+</span><span class=w></span><span class=p>)</span><span class=w> </span><span class=k>AS</span><span class=w> </span><span class=o>[</span><span class=n>t0</span><span class=o>]</span><span class=w> </span><span class=k>ON</span><span class=w> </span><span class=o>[</span><span class=n>t</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>Artist</span><span class=o>]</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=o>[</span><span class=n>t0</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>Artist</span><span class=o>]</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>Output:</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2>2</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=o>{</span> <span class=nv>Artist</span> <span class=o>=</span> Foo Fighters, <span class=nv>Year</span> <span class=o>=</span> <span class=m>1997</span> <span class=o>}</span>
+<span class=o>{</span> <span class=nv>Artist</span> <span class=o>=</span> John Mayer, <span class=nv>Year</span> <span class=o>=</span> <span class=m>2003</span> <span class=o>}</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>The LINQ is more intuitive and concise, while the SQL appears to be more complex. More complex SQL does not necessarily mean less performant though - as with everything it should be benchmarked with your expected data volume.</p>
+<hr>
+<h3 id=top-n-groupby>Top N GroupBy</h3>
+<p><code>Retrieve an artist and the first N years a song if theirs was released</code></p>
+<h4 id=efcore-31-2>EFCore 3.1</h4>
+<p>It was a struggle to even get an example working for EF Core 3.1 for this scenario. It could be possible, but the fact it was so difficult to even try get it to work directly speaks to the need for the enhancements made in EF Core 6.</p>
+<h4 id=efcore-6-2>EFCore 6</h4>
+<p>Code:</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5> 5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6> 6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7> 7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
+</span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
+</span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
+</span><span class=lnt id=ienumusage-12><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-12>12</a>
+</span><span class=lnt id=ienumusage-13><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-13>13</a>
+</span><span class=lnt id=ienumusage-14><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-14>14</a>
+</span><span class=lnt id=ienumusage-15><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-15>15</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=kt>var</span> <span class=n>query</span> <span class=p>=</span> <span class=n>db</span><span class=p>.</span><span class=n>Songs</span>
+    <span class=p>.</span><span class=n>GroupBy</span><span class=p>(</span><span class=n>a</span> <span class=p>=&gt;</span> <span class=n>a</span><span class=p>.</span><span class=n>Artist</span><span class=p>)</span>
+    <span class=p>.</span><span class=n>Select</span><span class=p>(</span><span class=n>g</span> <span class=p>=&gt;</span> <span class=k>new</span>
+    <span class=p>{</span>
+        <span class=n>Artist</span> <span class=p>=</span> <span class=n>g</span><span class=p>.</span><span class=n>Key</span><span class=p>,</span>
+        <span class=n>Years</span> <span class=p>=</span> <span class=n>g</span><span class=p>.</span><span class=n>OrderBy</span><span class=p>(</span><span class=n>a</span> <span class=p>=&gt;</span> <span class=n>a</span><span class=p>.</span><span class=n>YearReleased</span><span class=p>)</span>
+                <span class=p>.</span><span class=n>Distinct</span><span class=p>()</span>
+                <span class=p>.</span><span class=n>Take</span><span class=p>(</span><span class=m>2</span><span class=p>)</span>
+                <span class=p>.</span><span class=n>Select</span><span class=p>(</span><span class=n>s</span> <span class=p>=&gt;</span> <span class=n>s</span><span class=p>.</span><span class=n>YearReleased</span><span class=p>)</span>
+    <span class=p>});</span>
+
+<span class=k>foreach</span> <span class=p>(</span><span class=kt>var</span> <span class=n>item</span> <span class=k>in</span> <span class=n>query</span><span class=p>.</span><span class=n>ToList</span><span class=p>())</span>
+<span class=p>{</span>
+    <span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=s>$&#34;Artist = {item.Artist}, Years = {string.Join(&#39;,&#39;, item.Years)}&#34;</span><span class=p>);</span>
+<span class=p>}</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>SQL generated:</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5> 5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6> 6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7> 7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
+</span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
+</span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
+</span><span class=lnt id=ienumusage-12><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-12>12</a>
+</span><span class=lnt id=ienumusage-13><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-13>13</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-tsql data-lang=tsql><span class=k>SELECT</span><span class=w> </span><span class=o>[</span><span class=n>t</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>Artist</span><span class=o>]</span><span class=p>,</span><span class=w> </span><span class=o>[</span><span class=n>t0</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>YearReleased</span><span class=o>]</span><span class=p>,</span><span class=w> </span><span class=o>[</span><span class=n>t0</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>Id</span><span class=o>]</span><span class=w>
+</span><span class=w></span><span class=k>FROM</span><span class=w> </span><span class=p>(</span><span class=w>
+</span><span class=w>    </span><span class=k>SELECT</span><span class=w> </span><span class=o>[</span><span class=n>s</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>Artist</span><span class=o>]</span><span class=w>
+</span><span class=w>    </span><span class=k>FROM</span><span class=w> </span><span class=o>[</span><span class=n>Song</span><span class=o>]</span><span class=w> </span><span class=k>AS</span><span class=w> </span><span class=o>[</span><span class=n>s</span><span class=o>]</span><span class=w>
+</span><span class=w>    </span><span class=k>GROUP</span><span class=w> </span><span class=k>BY</span><span class=w> </span><span class=o>[</span><span class=n>s</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>Artist</span><span class=o>]</span><span class=w>
+</span><span class=w></span><span class=p>)</span><span class=w> </span><span class=k>AS</span><span class=w> </span><span class=o>[</span><span class=n>t</span><span class=o>]</span><span class=w>
+</span><span class=w></span><span class=k>OUTER</span><span class=w> </span><span class=n>APPLY</span><span class=w> </span><span class=p>(</span><span class=w>
+</span><span class=w>    </span><span class=k>SELECT</span><span class=w> </span><span class=k>DISTINCT</span><span class=w> </span><span class=k>TOP</span><span class=p>(</span><span class=mi>2</span><span class=p>)</span><span class=w> </span><span class=o>[</span><span class=n>s0</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>Id</span><span class=o>]</span><span class=p>,</span><span class=w> </span><span class=o>[</span><span class=n>s0</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>Artist</span><span class=o>]</span><span class=p>,</span><span class=w> 
+</span><span class=w>        </span><span class=o>[</span><span class=n>s0</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>LengthInSeconds</span><span class=o>]</span><span class=p>,</span><span class=w> </span><span class=o>[</span><span class=n>s0</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>Name</span><span class=o>]</span><span class=p>,</span><span class=w> </span><span class=o>[</span><span class=n>s0</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>YearReleased</span><span class=o>]</span><span class=w>
+</span><span class=w>    </span><span class=k>FROM</span><span class=w> </span><span class=o>[</span><span class=n>Song</span><span class=o>]</span><span class=w> </span><span class=k>AS</span><span class=w> </span><span class=o>[</span><span class=n>s0</span><span class=o>]</span><span class=w>
+</span><span class=w>    </span><span class=k>WHERE</span><span class=w> </span><span class=o>[</span><span class=n>t</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>Artist</span><span class=o>]</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=o>[</span><span class=n>s0</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>Artist</span><span class=o>]</span><span class=w>
+</span><span class=w></span><span class=p>)</span><span class=w> </span><span class=k>AS</span><span class=w> </span><span class=o>[</span><span class=n>t0</span><span class=o>]</span><span class=w>
+</span><span class=w></span><span class=k>ORDER</span><span class=w> </span><span class=k>BY</span><span class=w> </span><span class=o>[</span><span class=n>t</span><span class=o>]</span><span class=p>.</span><span class=o>[</span><span class=n>Artist</span><span class=o>]</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>Output:</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2>2</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=nv>Artist</span> <span class=o>=</span> Foo Fighters, <span class=nv>Years</span> <span class=o>=</span> 1997,1999
+<span class=nv>Artist</span> <span class=o>=</span> John Mayer, <span class=nv>Years</span> <span class=o>=</span> 2003,2003</code></pre></td></tr></table>
+</div>
+</div>
+<hr>
+<h2 id=notes>Notes</h2>
+<p>The above are just a few very basic examples of the enhanced functionality. The official Microsoft EF Core 6 documentation referenced below has many more examples - however hopefully this has at least introduced the enhanced GroupBy support, and how EF Core 6 makes it easier to use.</p>
+<p>As always, the recommendation is to benchmark the various LINQ techniques (and corresponding SQL) against your data structure and volumes, and make an informed decision about the best way to structure the LINQ.</p>
+<hr>
+<h2 id=references>References</h2>
+<p><a class=link href=https://docs.microsoft.com/en-us/ef/core/what-is-new/ef-core-6.0/whatsnew#improved-groupby-support target=_blank rel=noopener>Whats new in EF Crore 6 - improved GroupBy support</a></p>
+<blockquote>
+<div>
+<div style=width:5%;float:left;vertical-align:middle;padding-right:60px>
+<i class=inline-svg><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-info-circle" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#00abfb" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12.01" y2="8"/><polyline points="11 12 12 12 12 16 13 16"/></svg></i>
+</div>
+<div>
+<p><p>At the start of 2022, I set myself a goal of learning one new coding related piece of knowledge a day. Anything related to coding directly or indirectly (usually around the .NET ecosystem), that I find interesting or useful. It could be something I knew at one point, but had forgotten, or something completely new I may or may never actually use.</p>
+<p>The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others as well.</p>
+</p>
+</div>
+</div>
+</blockquote>
+</section>
+<footer class=article-footer>
+<section class=article-tags>
+<a href=/tags/c#/>c#</a>
+<a href=/tags/.net/>.net</a>
+<a href=/tags/dailydrop/>dailydrop</a>
+<a href=/tags/efcore/>efcore</a>
+<a href=/tags/efcore6/>efcore6</a>
+<a href=/tags/ef/>ef</a>
+<a href=/tags/entityframeworkcore/>entityframeworkcore</a>
+<a href=/tags/groupby/>groupby</a>
+<a href=/tags/.net6/>.net6</a>
+</section>
+</footer>
+</article>
+<aside class=related-contents--wrapper>
+<h2 class=section-title>Related contents</h2>
+<div class=related-contents>
+<div class="flex article-list--tile">
+<article>
+<a href=/dailydrop/2022/02/03-ioptions/>
+<div class=article-details>
+<h2 class=article-title>Use IOptions&lt;> for application configuration</h2>
+</div>
+</a>
+</article>
+<article>
+<a href=/dailydrop/2022/02/02-record-intro/>
+<div class=article-details>
+<h2 class=article-title>C# Records - the rundown</h2>
+</div>
+</a>
+</article>
+<article>
+<a href=/dailydrop/2022/02/01-ilogger-isenabled/>
+<div class=article-details>
+<h2 class=article-title>Use the ILogger IsEnabled method</h2>
+</div>
+</a>
+</article>
+<article>
+<a href=/p/11-2020-dynamic-context/>
+<div class=article-details>
+<h2 class=article-title>Dynamic Context (for Entity Framework Core)</h2>
+</div>
+</a>
+</article>
+<article>
+<a href=/p/analyzer-extra/>
+<div class=article-details>
+<h2 class=article-title>Roslyn Analyzer - tips and tricks (Part 5)</h2>
+</div>
+</a>
+</article>
+</div>
+</div>
+</aside>
+<script src=https://giscus.app/client.js data-repo=always-developing/always-developing.github.io data-repo-id=R_kgDOGQJLBQ data-category=Comments data-category-id=DIC_kwDOGQJLBc4B_pUA data-mapping=pathname data-reactions-enabled=1 data-emit-metadata=0 data-theme=light crossorigin=anonymous async></script>
+<script>function setGiscusTheme(b){let a=document.querySelector('iframe.giscus-frame');a&&a.contentWindow.postMessage({giscus:{setConfig:{theme:b}}},"https://giscus.app")}(function(){addEventListener('message',b=>{if(event.origin!=='https://giscus.app')return;a()}),window.addEventListener('onColorSchemeChange',a);function a(){document.documentElement.dataset.scheme==="light"?setGiscusTheme('light'):setGiscusTheme('dark')}})()</script>
+<footer class=site-footer>
+<section class=copyright>
+&copy;
+2021 -
+2022 Always Developing
+</section>
+<section class=powerby>
+Always Developing | always learning | always growing <br>
+Built with <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a> <br>
+Theme <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.2.0>Stack</a></b> designed by <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a>
+</section>
+</footer>
+<div class=pswp tabindex=-1 role=dialog aria-hidden=true>
+<div class=pswp__bg></div>
+<div class=pswp__scroll-wrap>
+<div class=pswp__container>
+<div class=pswp__item></div>
+<div class=pswp__item></div>
+<div class=pswp__item></div>
+</div>
+<div class="pswp__ui pswp__ui--hidden">
+<div class=pswp__top-bar>
+<div class=pswp__counter></div>
+<button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+<button class="pswp__button pswp__button--share" title=Share></button>
+<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+<div class=pswp__preloader>
+<div class=pswp__preloader__icn>
+<div class=pswp__preloader__cut>
+<div class=pswp__preloader__donut></div>
+</div>
+</div>
+</div>
+</div>
+<div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+<div class=pswp__share-tooltip></div>
+</div>
+<button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+</button>
+<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+</button>
+<div class=pswp__caption>
+<div class=pswp__caption__center></div>
+</div>
+</div>
+</div>
+</div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.css integrity="sha256-c0uckgykQ9v5k+IqViZOZKc47Jn7KQil4/MP3ySA3F8=" crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.css integrity="sha256-SBLU4vv6CA6lHsZ1XyTdhyjJxCjPif/TRkjnsyGAGnE=" crossorigin=anonymous>
+</main>
+<aside class="sidebar right-sidebar sticky">
+<section class="widget archives">
+<div class=widget-icon><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg>
+</div>
+<h2 class="widget-title section-title">Table of contents</h2>
+<div class=widget--toc>
+<nav id=TableOfContents>
+<ol>
+<li><a href=#daily-knowledge-drop>Daily Knowledge Drop</a></li>
+<li><a href=#examples>Examples</a>
+<ol>
+<li><a href=#setup>Setup</a></li>
+<li><a href=#count-groupby>Count GroupBy</a>
+<ol>
+<li><a href=#efcore-31>EFCore 3.1</a></li>
+<li><a href=#efcore-6>EFCore 6</a></li>
+</ol>
+</li>
+<li><a href=#top-1-groupby>Top 1 GroupBy</a>
+<ol>
+<li><a href=#efcore-31-1>EFCore 3.1</a></li>
+<li><a href=#efcore-6-1>EFCore 6</a></li>
+</ol>
+</li>
+<li><a href=#top-n-groupby>Top N GroupBy</a>
+<ol>
+<li><a href=#efcore-31-2>EFCore 3.1</a></li>
+<li><a href=#efcore-6-2>EFCore 6</a></li>
+</ol>
+</li>
+</ol>
+</li>
+<li><a href=#notes>Notes</a></li>
+<li><a href=#references>References</a></li>
+</ol>
+</nav>
+</div>
+</section>
+</aside>
+</div>
+<script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g=" crossorigin=anonymous defer></script><script type=text/javascript src=/ts/main.js defer></script>
+<script>(function(){const a=document.createElement('link');a.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",a.type="text/css",a.rel="stylesheet",document.head.appendChild(a)})()</script>
+</body>
+</html>
