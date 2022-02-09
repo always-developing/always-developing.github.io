@@ -1,4 +1,199 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Tue, 08 Feb 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Scheduling with GitHub Actions</title><link>https://always-developing.github.io/dailydrop/2022/02/08-github-action-schedule/</link><pubDate>Tue, 08 Feb 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/02/08-github-action-schedule/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Wed, 09 Feb 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Performant logging with LoggerMessageAttribute</title><link>https://always-developing.github.io/dailydrop/2022/02/09-logger-message-attribute/</link><pubDate>Wed, 09 Feb 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/02/09-logger-message-attribute/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+&lt;p>.NET6 introduced a new attribute called &lt;code>LoggerMessageAttribute&lt;/code>, which leverages source generators and is &lt;em>designed to deliver a highly useable and performant logging solution&lt;/em>.&lt;/p>
+&lt;p>It works by using source generators, triggered at compile time by the presence of &lt;code>LoggerMessageAttribute&lt;/code> to generate the additional source code. This solution, due to the compile time generation, is able to eliminate performance hits, such as &lt;em>boxing&lt;/em>, &lt;em>temporary memory allocation&lt;/em> as well as &lt;em>copies&lt;/em> which enables it to be typically considerably faster than the existing run time logging methods.&lt;/p>
+&lt;hr>
+&lt;h2 id="usage">Usage&lt;/h2>
+&lt;h3 id="basic-usage">Basic usage&lt;/h3>
+&lt;p>The &lt;code>LoggerMessageAttribute&lt;/code> is constrained to be used on a &lt;code>partial method&lt;/code> in a &lt;code>partial class&lt;/code>.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5">5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6">6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7">7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8">8&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">public&lt;/span> &lt;span class="k">static&lt;/span> &lt;span class="k">partial&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">LoggerHelperStatic&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="na"> [LoggerMessage(EventId = 0,Level = LogLevel.Critical,Message =
+&lt;/span>&lt;span class="na"> &amp;#34;Unable to open a database connection to &amp;#39;{dbServer}&amp;#39; &amp;#34; +
+&lt;/span>&lt;span class="na"> &amp;#34;after a timeout of {timeoutSeconds} seconds&amp;#34;)]&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="k">static&lt;/span> &lt;span class="k">partial&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">UnableToOpenDbConnection&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">ILogger&lt;/span> &lt;span class="n">logger&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="kt">string&lt;/span> &lt;span class="n">dbServer&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="kt">int&lt;/span> &lt;span class="n">timeoutSeconds&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;ul>
+&lt;li>&lt;strong>Lines 3-5&lt;/strong>: Here the information for the log is defined. In the above example, the &lt;em>EventId&lt;/em>, &lt;em>LogLevel&lt;/em> as well as the &lt;em>Log Message&lt;/em>.&lt;/li>
+&lt;/ul>
+&lt;p>&lt;strong>Thats all there is to it. This method can now be called from anywhere in code using&lt;/strong> &lt;code>LoggerHelperStatic.UnableToOpenDbConnection(...)&lt;/code>.&lt;/p>
+&lt;p>Even though the method doesn&amp;rsquo;t have a body defined, the presence of the &lt;code>LoggerMessageAttribute&lt;/code> will trigger the source generator, which will use the log information defined to generate the required source code for the body.&lt;/p>
+&lt;h3 id="extended-usage">Extended usage&lt;/h3>
+&lt;p>If the method is &lt;code>static&lt;/code>, then an ILogger interface is &lt;strong>required&lt;/strong> to be one of the parameters to the method. The method is not required to be static however, and if not made static the source generator will use an ILogger field within the containing class.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">public&lt;/span> &lt;span class="k">partial&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">LoggerHelperInstance&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">private&lt;/span> &lt;span class="k">readonly&lt;/span> &lt;span class="n">ILogger&lt;/span> &lt;span class="m">_l&lt;/span>&lt;span class="n">ogger&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="n">LoggerHelperInstance&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">ILogger&lt;/span> &lt;span class="n">logger&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="m">_l&lt;/span>&lt;span class="n">ogger&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">logger&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="na">
+&lt;/span>&lt;span class="na"> [LoggerMessage(EventId = 0, Level = LogLevel.Critical, Message =
+&lt;/span>&lt;span class="na"> &amp;#34;Unable to open a database connection to `{dbServer}` &amp;#34; +
+&lt;/span>&lt;span class="na"> &amp;#34;after a timeout of {timeoutSeconds} seconds&amp;#34;)]&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="k">partial&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">UnableToOpenDbConnection&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="kt">string&lt;/span> &lt;span class="n">dbServer&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="kt">int&lt;/span> &lt;span class="n">timeoutSeconds&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>In the above examples, the log level is also explicitly set to &lt;code>Critical&lt;/code> in the &lt;code>LoggerMessageAttribute&lt;/code>. Sometimes it may be required that the log level is specified at runtime - in this case the LogLevel can be omitted from the &lt;code>LoggerMessageAttribute&lt;/code> definition, and included as a parameter to the method.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="na">[LoggerMessage(EventId = 0, Message =
+&lt;/span>&lt;span class="na"> &amp;#34;Unable to open the file &amp;#39;{fileName} at location &amp;#39;{fileLocation}&amp;#39;&amp;#34;)]&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="k">static&lt;/span> &lt;span class="k">partial&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">UnableToOpenFile&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">ILogger&lt;/span> &lt;span class="n">logger&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">LogLevel&lt;/span> &lt;span class="n">logLevel&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="kt">string&lt;/span> &lt;span class="n">fileName&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">fileLocation&lt;/span>&lt;span class="p">);&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;hr>
+&lt;h3 id="how-it-works">How it works&lt;/h3>
+&lt;p>This all works due to a feature introduced in .NET5 - &lt;code>source generators&lt;/code>. At compile time, a source generator will look for a specific condition in code, and output additional source code which is added to the original code base.&lt;/p>
+&lt;p>In the case of &lt;code>LoggerMessageAttribute&lt;/code>, the condition is the presence of the attribute which then triggers the source generator to generate the body of the defined method - this is &lt;em>why the class and method are required to be partial&lt;/em>.&lt;/p>
+&lt;p>Below is the generated code for the body of the &lt;em>LoggerHelperInstance =&amp;gt; UnableToOpenDbConnection&lt;/em> method. It might be a bit of a challenging to read with the formatting, as I&amp;rsquo;ve left it in its original generated state.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">partial&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">LoggerHelperInstance&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="na"> [global::System.CodeDom.Compiler.GeneratedCodeAttribute(&amp;#34;Microsoft.Extensions.Logging.Generators&amp;#34;, &amp;#34;6.0.5.2210&amp;#34;)]&lt;/span>
+&lt;span class="k">private&lt;/span> &lt;span class="k">static&lt;/span> &lt;span class="k">readonly&lt;/span> &lt;span class="k">global&lt;/span>&lt;span class="p">::&lt;/span>&lt;span class="n">System&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Action&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="k">global&lt;/span>&lt;span class="p">::&lt;/span>&lt;span class="n">Microsoft&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Extensions&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Logging&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">ILogger&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="k">global&lt;/span>&lt;span class="p">::&lt;/span>&lt;span class="n">System&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">String&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="k">global&lt;/span>&lt;span class="p">::&lt;/span>&lt;span class="n">System&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Int32&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="k">global&lt;/span>&lt;span class="p">::&lt;/span>&lt;span class="n">System&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Exception&lt;/span>&lt;span class="p">?&amp;gt;&lt;/span> &lt;span class="m">__&lt;/span>&lt;span class="n">UnableToOpenDbConnectionCallback&lt;/span> &lt;span class="p">=&lt;/span>
+&lt;span class="k">global&lt;/span>&lt;span class="p">::&lt;/span>&lt;span class="n">Microsoft&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Extensions&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Logging&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">LoggerMessage&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Define&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="k">global&lt;/span>&lt;span class="p">::&lt;/span>&lt;span class="n">System&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">String&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="k">global&lt;/span>&lt;span class="p">::&lt;/span>&lt;span class="n">System&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Int32&lt;/span>&lt;span class="p">&amp;gt;(&lt;/span>&lt;span class="k">global&lt;/span>&lt;span class="p">::&lt;/span>&lt;span class="n">Microsoft&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Extensions&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Logging&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">LogLevel&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Critical&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="k">global&lt;/span>&lt;span class="p">::&lt;/span>&lt;span class="n">Microsoft&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Extensions&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Logging&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">EventId&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="m">0&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">nameof&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">UnableToOpenDbConnection&lt;/span>&lt;span class="p">)),&lt;/span> &lt;span class="s">&amp;#34;Unable to open a database connection to `{dbServer}` after a timeout of {timeoutSeconds} seconds&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="k">global&lt;/span>&lt;span class="p">::&lt;/span>&lt;span class="n">Microsoft&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Extensions&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Logging&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">LogDefineOptions&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="n">SkipEnabledCheck&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="k">true&lt;/span> &lt;span class="p">});&lt;/span>
+&lt;span class="na">
+&lt;/span>&lt;span class="na"> [global::System.CodeDom.Compiler.GeneratedCodeAttribute(&amp;#34;Microsoft.Extensions.Logging.Generators&amp;#34;, &amp;#34;6.0.5.2210&amp;#34;)]&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="k">partial&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">UnableToOpenDbConnection&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="k">global&lt;/span>&lt;span class="p">::&lt;/span>&lt;span class="n">System&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">String&lt;/span> &lt;span class="n">dbServer&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="k">global&lt;/span>&lt;span class="p">::&lt;/span>&lt;span class="n">System&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Int32&lt;/span> &lt;span class="n">timeoutSeconds&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="m">_l&lt;/span>&lt;span class="n">ogger&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">IsEnabled&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="k">global&lt;/span>&lt;span class="p">::&lt;/span>&lt;span class="n">Microsoft&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Extensions&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Logging&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">LogLevel&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Critical&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="m">__&lt;/span>&lt;span class="n">UnableToOpenDbConnectionCallback&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="m">_l&lt;/span>&lt;span class="n">ogger&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">dbServer&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">timeoutSeconds&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="k">null&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>As one can see, it&amp;rsquo;s not a straightforward wrap of the &lt;em>ILogger.LogCritical&lt;/em> method, but instead makes use of the &lt;em>LoggerMessage.Define&lt;/em> method with a callback &lt;em>Action&lt;/em>.&lt;/p>
+&lt;h3 id="performance-gains">Performance gains&lt;/h3>
+&lt;p>So why does this method improve on performance?&lt;/p>
+&lt;p>With the normal traditional &lt;em>ILogger Log&lt;/em> method:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="c1">// Traditional ILogger.LogCritical call
+&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="m">_l&lt;/span>&lt;span class="n">ogger&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">LogCritical&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;Unable to open a database connection to `{dbServer}` &amp;#34;&lt;/span> &lt;span class="p">+&lt;/span>
+&lt;span class="s">&amp;#34;after a timeout of {timeoutSeconds} seconds&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s">&amp;#34;(local)&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="m">10&lt;/span>&lt;span class="p">);&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>The parameters are passed in as an &lt;code>object?[]&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="c1">// The signature of the LogCritical method, part of Microsoft.Extensions.Logging
+&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="k">public&lt;/span> &lt;span class="k">static&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">LogCritical&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="k">this&lt;/span> &lt;span class="n">ILogger&lt;/span> &lt;span class="n">logger&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">EventId&lt;/span> &lt;span class="n">eventId&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="kt">string?&lt;/span> &lt;span class="n">message&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="k">params&lt;/span> &lt;span class="kt">object?&lt;/span>&lt;span class="p">[]&lt;/span> &lt;span class="n">args&lt;/span>&lt;span class="p">)&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>In the above example, the &lt;code>string value &amp;quot;(local)&amp;quot;&lt;/code> and the &lt;code>int value 10&lt;/code> are boxed from their respective values into an object as part of the object[]. They are then unboxed when being used - all of this has a performance overhead.&lt;/p>
+&lt;p>As the source generator, used in conjunction with &lt;code>LoggerMessageAttribute&lt;/code>, can determine the types of the parameters at compile time, it can optimize the code being generated for the individual use case to &lt;em>avoid the need to box and unbox&lt;/em>, and also avoid the performance hits that come with it. The same applies to any &lt;em>temporary memory allocation&lt;/em> and &lt;em>copying&lt;/em> which may be occurring when using the object?[] on the &lt;em>ILogger&lt;/em> implementation.&lt;/p>
+&lt;hr>
+&lt;h2 id="constraints">Constraints&lt;/h2>
+&lt;p>There are however some constraints which must be followed when using &lt;code>LoggerMessageAttribute&lt;/code>:&lt;/p>
+&lt;ul>
+&lt;li>Logging methods must be &lt;strong>static&lt;/strong>, &lt;strong>partial&lt;/strong>, and &lt;strong>return void&lt;/strong>.&lt;/li>
+&lt;li>Logging &lt;strong>method names&lt;/strong> must &lt;strong>not start with an underscore&lt;/strong>.&lt;/li>
+&lt;li>&lt;strong>Parameter names&lt;/strong> of logging methods must &lt;strong>not start with an underscore&lt;/strong>.&lt;/li>
+&lt;li>Logging methods may &lt;strong>not be defined in a nested type&lt;/strong>.&lt;/li>
+&lt;li>Logging methods &lt;strong>cannot be generic&lt;/strong>.&lt;/li>
+&lt;/ul>
+&lt;p>All in all though, these constraints are pretty reasonable and make sense when thought about in conjunction with what the source generator is doing.&lt;/p>
+&lt;hr>
+&lt;h2 id="notes">Notes&lt;/h2>
+&lt;p>There is more detailed functionality available with &lt;code>LoggerMessageAttribute&lt;/code>, which is outlined in the reference link below - however the above should be a great starting point to using &lt;code>LoggerMessageAttribute&lt;/code> and optimizing logging in your application.&lt;/p>
+&lt;hr>
+&lt;h2 id="references">References&lt;/h2>
+&lt;p>&lt;a class="link" href="https://docs.microsoft.com/en-us/dotnet/core/extensions/logger-message-generator" target="_blank" rel="noopener"
+>Compile-time logging source generation&lt;/a>&lt;/p>
+&lt;blockquote>
+&lt;div>
+&lt;div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px;">
+&lt;i class="inline-svg" >&lt;svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffbf00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+&lt;path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+&lt;path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+&lt;path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+&lt;line x1="9.7" y1="17" x2="14.3" y2="17" />
+&lt;/svg>&lt;/i>
+&lt;/div>
+&lt;div>
+&lt;h3>Daily Drop 7: 09-02-2022&lt;/h3>
+&lt;/div>
+&lt;br>
+&lt;div>
+At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.&lt;br>It could be anything - some .NET/C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.&lt;br>&lt;br>
+The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+&lt;/div>
+&lt;/div>
+&lt;/blockquote></description></item><item><title>Scheduling with GitHub Actions</title><link>https://always-developing.github.io/dailydrop/2022/02/08-github-action-schedule/</link><pubDate>Tue, 08 Feb 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/02/08-github-action-schedule/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
 &lt;p>A &lt;code>GitHub Action&lt;/code> can be configured to executed on a set schedule, and it&amp;rsquo;s as simple as adding a line to the workflow YAML using &lt;code>Cron syntax&lt;/code>.&lt;/p>
 &lt;p>As part of the development of this blog, there was a requirement to execute an Action on a schedule - which turned out to be easier than anticipated.&lt;/p>
 &lt;hr>
