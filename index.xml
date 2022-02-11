@@ -1,4 +1,254 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Thu, 10 Feb 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>C# Channels - Produce &amp; Consume data</title><link>https://always-developing.github.io/dailydrop/2022/02/10-channels/</link><pubDate>Thu, 10 Feb 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/02/10-channels/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Fri, 11 Feb 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Extract calling method metadata with C#</title><link>https://always-developing.github.io/dailydrop/2022/02/11-caller-metadata/</link><pubDate>Fri, 11 Feb 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/02/11-caller-metadata/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+&lt;p>As part of the C# &lt;code>System.Runtime&lt;/code> assembly, there are a number of &lt;code>Attributes&lt;/code> which can be used to get information about the &lt;code>caller of a method&lt;/code>.&lt;/p>
+&lt;p>The pattern for usage is the same for all attributes. To extract the metadata when a method is called, the following needs to be done:&lt;/p>
+&lt;ul>
+&lt;li>A &lt;code>new parameter&lt;/code> needs to be added to the method (the type of the parameter depends on the attribute, see examples below)&lt;/li>
+&lt;li>The new parameter must have a &lt;code>default value&lt;/code>&lt;/li>
+&lt;li>The new parameter must be &lt;code>decorated&lt;/code> with the relevant &lt;code>Attribute&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h2 id="attributes">Attributes&lt;/h2>
+&lt;p>Lets look at a few examples. All examples built using .NET6 minimal console application.&lt;/p>
+&lt;h3 id="line-number">Line Number&lt;/h3>
+&lt;p>To get the &lt;em>caller line number&lt;/em>, the &lt;code>CallerLineNumber&lt;/code> attribute is used.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5">5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6">6&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="n">LogMessageWithLineNumber&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;Message 1&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="k">static&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">LogMessageWithLineNumber&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="kt">string&lt;/span> &lt;span class="n">message&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">CallerLineNumber&lt;/span>&lt;span class="p">]&lt;/span> &lt;span class="kt">int&lt;/span> &lt;span class="n">lineNumber&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="m">0&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$&amp;#34;LineNumber={lineNumber}: {message}&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>On &lt;strong>Line 3&lt;/strong>, we can see a decorated parameter, with a default value has been added. This field will &lt;em>automatically be populated with the line number of the calling method&lt;/em>&lt;/p>
+&lt;p>The output is as follows:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-http" data-lang="http">&lt;span class="err"> LineNumber=4: Message 1&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;hr>
+&lt;h3 id="file-path">File Path&lt;/h3>
+&lt;p>To get the &lt;em>file path of the calling method&lt;/em>, the &lt;code>CallerFilePath&lt;/code> attribute is used.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5">5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6">6&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="n">LogMessageWithPath&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;Message 2&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="k">static&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">LogMessageWithPath&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="kt">string&lt;/span> &lt;span class="n">message&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">CallerFilePath&lt;/span>&lt;span class="p">]&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">filepath&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="s">&amp;#34;&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$&amp;#34;Path={filepath}: {message}&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>The output is as follows:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-posh" data-lang="posh"> &lt;span class="n">Path&lt;/span>&lt;span class="p">=&lt;/span>&lt;span class="n">C:&lt;/span>&lt;span class="p">\&lt;/span>&lt;span class="n">Development&lt;/span>&lt;span class="p">\&lt;/span>&lt;span class="n">Projects&lt;/span>&lt;span class="p">\&lt;/span>&lt;span class="n">Blog&lt;/span>&lt;span class="p">\&lt;/span>&lt;span class="n">CallerMetadata&lt;/span>&lt;span class="p">\&lt;/span>&lt;span class="n">CallerMetadata&lt;/span>&lt;span class="p">\&lt;/span>&lt;span class="n">Program&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">cs&lt;/span>&lt;span class="err">:&lt;/span> &lt;span class="n">Message&lt;/span> &lt;span class="n">2&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;hr>
+&lt;h3 id="method-name">Method Name&lt;/h3>
+&lt;p>To get the &lt;em>calling method name&lt;/em>, the &lt;code>CallerMemberName&lt;/code> attribute is used.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5">5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6">6&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="n">LogMessageWithPath&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;Message 2&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="k">static&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">LogMessageWithMethod&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="kt">string&lt;/span> &lt;span class="n">message&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">CallerMemberName&lt;/span>&lt;span class="p">]&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">memberName&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="s">&amp;#34;&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$&amp;#34;Method={memberName}: {message}&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>The output is as follows:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-posh" data-lang="posh"> &lt;span class="n">Method&lt;/span>&lt;span class="p">=&amp;lt;&lt;/span>&lt;span class="n">Main&lt;/span>&lt;span class="p">&amp;gt;$&lt;/span>&lt;span class="err">:&lt;/span> &lt;span class="n">Message&lt;/span> &lt;span class="n">3&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>As the example is using the .NET6 Console minimal project, there is no explicitly defined &lt;em>main&lt;/em> method - hence the method reflecting as &lt;em>&amp;lt;Main&amp;gt;$&lt;/em>&lt;/p>
+&lt;p>Lets look at another example.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">new&lt;/span> &lt;span class="n">ClassCall&lt;/span>&lt;span class="p">().&lt;/span>&lt;span class="n">DoubleHop&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="k">class&lt;/span> &lt;span class="nc">ClassCall&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">DoubleHop&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">LogMessageWithMethod&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;Message from class&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="k">static&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">LogMessageWithMethod&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="kt">string&lt;/span> &lt;span class="n">message&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="na"> [CallerMemberName]&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">memberName&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="s">&amp;#34;&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$&amp;#34;Method={memberName}: {message}&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>In this example, the source of the call to &lt;em>LogMessageWithMethod&lt;/em> is the &lt;em>DoubleHop&lt;/em> method, as such the output is as follows:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-posh" data-lang="posh"> &lt;span class="n">Method&lt;/span>&lt;span class="p">=&lt;/span>&lt;span class="n">DoubleHop&lt;/span>&lt;span class="err">:&lt;/span> &lt;span class="n">Message&lt;/span> &lt;span class="n">from&lt;/span> &lt;span class="n">class&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;hr>
+&lt;h3 id="expression">Expression&lt;/h3>
+&lt;p>The last attribute is the most interesting and the most useful. The &lt;code>CallerArgumentExpression&lt;/code> attribute is used to get the &lt;em>expression used as the argument to the method&lt;/em>.&lt;/p>
+&lt;p>In the following example, the same string message &amp;ldquo;Message 4&amp;rdquo; will be logged, however the string will be generated differently each time the method is invoked.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="c1">// Just send a string
+&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="n">LogMessageWithExpression&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;Message 4&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="c1">// Add two string together with the + operator
+&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="n">LogMessageWithExpression&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;Message&amp;#34;&lt;/span> &lt;span class="p">+&lt;/span> &lt;span class="s">&amp;#34; 4&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="c1">// Concatenate two string using Concat method
+&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="n">LogMessageWithExpression&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">String&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Concat&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;Message&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s">&amp;#34; 4&amp;#34;&lt;/span>&lt;span class="p">));&lt;/span>
+&lt;span class="k">static&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">LogMessageWithExpression&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="kt">string&lt;/span> &lt;span class="k">value&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="na"> [CallerArgumentExpression(&amp;#34;value&amp;#34;)]&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">expression&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="s">&amp;#34;&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$&amp;#34;{{{value}}} was generated by {{{expression}}}&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>In this case, the &lt;code>CallerArgumentExpression&lt;/code> attribute takes a parameter itself, and that is the &lt;code>name of the parameter for which is should get the caller argument expression&lt;/code>.&lt;/p>
+&lt;p>The output is as follows:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-posh" data-lang="posh"> &lt;span class="p">{&lt;/span>&lt;span class="n">Message&lt;/span> &lt;span class="n">4&lt;/span>&lt;span class="p">}&lt;/span> &lt;span class="n">was&lt;/span> &lt;span class="n">generated&lt;/span> &lt;span class="n">by&lt;/span> &lt;span class="p">{&lt;/span>&lt;span class="s2">&amp;#34;Message 4&amp;#34;&lt;/span>&lt;span class="p">}&lt;/span>
+&lt;span class="p">{&lt;/span>&lt;span class="n">Message&lt;/span> &lt;span class="n">4&lt;/span>&lt;span class="p">}&lt;/span> &lt;span class="n">was&lt;/span> &lt;span class="n">generated&lt;/span> &lt;span class="n">by&lt;/span> &lt;span class="p">{&lt;/span>&lt;span class="s2">&amp;#34;Message&amp;#34;&lt;/span> &lt;span class="p">+&lt;/span> &lt;span class="s2">&amp;#34; 4&amp;#34;&lt;/span>&lt;span class="p">}&lt;/span>
+&lt;span class="p">{&lt;/span>&lt;span class="n">Message&lt;/span> &lt;span class="n">4&lt;/span>&lt;span class="p">}&lt;/span> &lt;span class="n">was&lt;/span> &lt;span class="n">generated&lt;/span> &lt;span class="n">by&lt;/span> &lt;span class="p">{&lt;/span>&lt;span class="n">String&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Concat&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;Message&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s2">&amp;#34; 4&amp;#34;&lt;/span>&lt;span class="p">)}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>We can see from the output, that the &lt;code>expression parameter gets populated with the code used to generate the parameter value&lt;/code> (the expression for the parameter argument).&lt;/p>
+&lt;p>This can be invaluable when logging, as not only can a piece of information be logged, but also which piece of code is generating the information.&lt;/p>
+&lt;h2 id="overriding-parameter-values">Overriding parameter values&lt;/h2>
+&lt;p>In all of the above examples, as mentioned, the parameter decorated with the relevant attribute needs to have a default value. So what happens if a &lt;code>value is explicitly supplied for the parameter&lt;/code>?&lt;br>
+As one might expect, instead of using the default and allowing the attribute to populate the parameter, the &lt;code>explicitly supplied value is used&lt;/code>.&lt;/p>
+&lt;p>Here a value is explicitly supplied for the &lt;em>memberName&lt;/em> parameter:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5">5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6">6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7">7&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="n">LogMessageWithMethod&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;Message 5&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s">&amp;#34;OwnMethodName&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="k">static&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">LogMessageWithMethod&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="kt">string&lt;/span> &lt;span class="n">message&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="na"> [CallerMemberName]&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">memberName&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="s">&amp;#34;&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$&amp;#34;Method={memberName}: {message}&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>The output, as expected:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-posh" data-lang="posh"> &lt;span class="n">Method&lt;/span>&lt;span class="p">=&lt;/span>&lt;span class="n">OwnMethodName&lt;/span>&lt;span class="err">:&lt;/span> &lt;span class="n">Message&lt;/span> &lt;span class="n">5&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;hr>
+&lt;h2 id="notes">Notes&lt;/h2>
+&lt;p>While simple to implement, using these features can be very intrusive, with the need to add additional parameters to relevant methods. However if required, these tools can provide invaluable information about the calling location.&lt;/p>
+&lt;hr>
+&lt;h2 id="references">References&lt;/h2>
+&lt;p>&lt;a class="link" href="https://khalidabuhakmeh.com/get-csharp-metadata-from-a-callsite#using-callerfilepathattribute" target="_blank" rel="noopener"
+>Get C# Metadata From a Call Site&lt;/a>&lt;/p>
+&lt;blockquote>
+&lt;div>
+&lt;div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px;">
+&lt;i class="inline-svg" >&lt;svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffbf00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+&lt;path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+&lt;path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+&lt;path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+&lt;line x1="9.7" y1="17" x2="14.3" y2="17" />
+&lt;/svg>&lt;/i>
+&lt;/div>
+&lt;div>
+&lt;h3>Daily Drop 9: 11-02-2022&lt;/h3>
+&lt;/div>
+&lt;br>
+&lt;div>
+At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.&lt;br>It could be anything - some .NET/C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.&lt;br>&lt;br>
+The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+&lt;/div>
+&lt;/div>
+&lt;/blockquote></description></item><item><title>C# Channels - Produce &amp; Consume data</title><link>https://always-developing.github.io/dailydrop/2022/02/10-channels/</link><pubDate>Thu, 10 Feb 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/02/10-channels/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
 &lt;p>Today we dive into a little-known C# feature, I&amp;rsquo;d previously never heard about called &lt;code>Channels&lt;/code>.&lt;/p>
 &lt;p>So what is a channel? - In short, a channel is a feature which allows for &lt;code>passing of data between a producer and consumer(s)&lt;/code>. It is an &lt;code>efficient, thread-safe queuing mechanism.&lt;/code>&lt;/p>
 &lt;hr>
