@@ -1,4 +1,103 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Mon, 14 Feb 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Filtering try-catch statement</title><link>https://always-developing.github.io/dailydrop/2022/02/14-exceptions-when/</link><pubDate>Mon, 14 Feb 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/02/14-exceptions-when/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Tue, 15 Feb 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Aliases with global using directives</title><link>https://always-developing.github.io/dailydrop/2022/02/15-global-using-directives/</link><pubDate>Tue, 15 Feb 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/02/15-global-using-directives/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+&lt;p>With the introduction of &lt;code>global usings&lt;/code> in C#10, it is now also possible to defined a &lt;code>global alias&lt;/code> to have a shortcut to a specific type, across an entire project.&lt;/p>
+&lt;hr>
+&lt;h2 id="global-usings">Global usings&lt;/h2>
+&lt;p>A quick intro to &lt;code>global usings&lt;/code> - In C#10 the concept of global usings was introduced. It allows for a &lt;code>using&lt;/code> statement to be prefixed with &lt;code>global&lt;/code>, which then includes that &lt;em>using&lt;/em> in all files automatically when compiled.&lt;/p>
+&lt;p>Assume we have a file called &lt;strong>GlobalUsings.cs&lt;/strong>:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#"> &lt;span class="n">global&lt;/span> &lt;span class="k">using&lt;/span> &lt;span class="nn">System.Threading.Tasks&lt;/span>&lt;span class="p">;&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>In the Program.cs:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="c1">// No using System.Threading.Tasks here
+&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;About to delay&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="n">Task&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Delay&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="m">1000&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;Delay finished&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>Here we can include &lt;strong>all&lt;/strong> includes needed for the project in one file (&lt;strong>GlobalUsings.cs&lt;/strong>), and keep all other files free of &lt;em>usings&lt;/em>.&lt;/p>
+&lt;hr>
+&lt;h2 id="global-alias">Global alias&lt;/h2>
+&lt;p>This global using functionality can be leverage to create global aliases.&lt;/p>
+&lt;p>Assume we are writing an application for a library - we need to incorporate the &lt;a class="link" href="https://en.wikipedia.org/wiki/Dewey_Decimal_Classification" target="_blank" rel="noopener"
+>Dewey Decimal System&lt;/a> through-out the application. The Dewey Decimal System is basically used to links book(s) to a specific shelf in the library, so they can be easily found - so we decide to use a &lt;code>Dictionary&amp;lt;string,List&amp;lt;string&amp;gt;&amp;gt;&lt;/code> to represent this.&lt;br>
+The dictionary key will be the &lt;em>shelf reference&lt;/em> and the dictionary value will be the &lt;em>list of book titles&lt;/em> on specific shelf&lt;/p>
+&lt;p>&lt;strong>Note:&lt;/strong> There are a number of ways to represent the Dewey Decimal System data, and a &lt;code>Dictionary&amp;lt;string,List&amp;lt;string&amp;gt;&amp;gt;&lt;/code> is not necessarily the best or most performant, it is just used for demo purposes.&lt;/p>
+&lt;p>Throughout code, if we wanted to present this, we could do the following:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="kt">var&lt;/span> &lt;span class="n">hds&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">Dictionary&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="kt">string&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="n">List&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="kt">string&lt;/span>&lt;span class="p">&amp;gt;&amp;gt;();&lt;/span>
+&lt;span class="c1">// OR
+&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="n">Dictionary&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="kt">string&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">List&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="kt">string&lt;/span>&lt;span class="p">&amp;gt;&amp;gt;&lt;/span> &lt;span class="n">hds1&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">Dictionary&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="kt">string&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">List&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="kt">string&lt;/span>&lt;span class="p">&amp;gt;&amp;gt;();&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>This is a relatively long type to type out the entire time and to clutter up the code - an alternative is to create a &lt;code>global alias&lt;/code> for this type.&lt;/p>
+&lt;p>In the &lt;strong>GlobalUsings.cs&lt;/strong> file we create an alias called &lt;code>dewey&lt;/code> and alias it to &lt;code>System.Collections.Generic.Dictionary&amp;lt;string, System.Collections.Generic.List&amp;lt;string&amp;gt;&amp;gt;&lt;/code>&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#"> &lt;span class="n">global&lt;/span> &lt;span class="k">using&lt;/span> &lt;span class="nn">dewey&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">System&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Collections&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Generic&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Dictionary&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="kt">string&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="n">System&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Collections&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Generic&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">List&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="kt">string&lt;/span>&lt;span class="p">&amp;gt;&amp;gt;;&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>Now in our application, in any place we want to use &lt;code>System.Collections.Generic.Dictionary&amp;lt;string, System.Collections.Generic.List&amp;lt;string&amp;gt;&amp;gt;&lt;/code> we can instead use the alias. Its defined as &lt;code>global&lt;/code> so no additional &lt;em>usings&lt;/em> are required:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#"> &lt;span class="kt">var&lt;/span> &lt;span class="n">hds&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">dewey&lt;/span>&lt;span class="p">();&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>We can now operate on the &lt;code>dewey&lt;/code> type as we would a &lt;code>System.Collections.Generic.Dictionary&amp;lt;string, System.Collections.Generic.List&amp;lt;string&amp;gt;&amp;gt;&lt;/code>.&lt;/p>
+&lt;p>The alias &lt;em>dewey&lt;/em> is pointing to the type &lt;em>System.Collections.Generic.Dictionary&amp;lt;string, System.Collections.Generic.List&amp;lt;string&amp;gt;&amp;gt;&lt;/em> &lt;strong>they are the same type, just with different names&lt;/strong>.&lt;/p>
+&lt;hr>
+&lt;h2 id="conclusion">Conclusion&lt;/h2>
+&lt;p>The concept of an &lt;code>alias&lt;/code> is not new to C#, however the new ability to make it global to the entire project makes it a very convenient tool to create shortcuts, especially for the longer named types.&lt;/p>
+&lt;hr>
+&lt;h2 id="references">References&lt;/h2>
+&lt;p>&lt;a class="link" href="https://benbowen.blog/post/two_decades_of_csharp_vi/#global_using_directives" target="_blank" rel="noopener"
+>Global Using Directives&lt;/a>&lt;/p>
+&lt;blockquote>
+&lt;div>
+&lt;div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px;">
+&lt;i class="inline-svg" >&lt;svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffbf00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+&lt;path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+&lt;path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+&lt;path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+&lt;line x1="9.7" y1="17" x2="14.3" y2="17" />
+&lt;/svg>&lt;/i>
+&lt;/div>
+&lt;div>
+&lt;h3>Daily Drop 11: 15-02-2022&lt;/h3>
+&lt;/div>
+&lt;br>
+&lt;div>
+At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.&lt;br>It could be anything - some .NET/C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.&lt;br>&lt;br>
+The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+&lt;/div>
+&lt;/div>
+&lt;/blockquote></description></item><item><title>Filtering try-catch statement</title><link>https://always-developing.github.io/dailydrop/2022/02/14-exceptions-when/</link><pubDate>Mon, 14 Feb 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/02/14-exceptions-when/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
 &lt;p>It is possible to &lt;code>filter the catch portion of the try-catch statement&lt;/code>, as well as catch &lt;code>multiple exceptions at the same time&lt;/code> using the C# &lt;em>when&lt;/em> keyword.&lt;/p>
 &lt;hr>
 &lt;h2 id="multiple-exceptions">Multiple exceptions&lt;/h2>
