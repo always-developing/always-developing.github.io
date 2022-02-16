@@ -1,4 +1,367 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Tue, 15 Feb 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Aliases with global using directives</title><link>https://always-developing.github.io/dailydrop/2022/02/15-global-using-directives/</link><pubDate>Tue, 15 Feb 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/02/15-global-using-directives/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Wed, 16 Feb 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Task.WaitAsync in .NET6</title><link>https://always-developing.github.io/dailydrop/2022/02/16-task-wait-async/</link><pubDate>Wed, 16 Feb 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/02/16-task-wait-async/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+&lt;p>A new method on &lt;code>Task&lt;/code> called &lt;code>WaitAsync&lt;/code> was introduced in .NET6. This method allows for &lt;em>waiting on a Task for a specific period of time before throwing a timeout exception&lt;/em>.&lt;/p>
+&lt;p>On the surface, this might not seem very useful, but lets look at some examples to see how this new method can be leveraged.&lt;/p>
+&lt;hr>
+&lt;h2 id="the-issue">The issue&lt;/h2>
+&lt;h3 id="long-running-processes">Long running processes&lt;/h3>
+&lt;p>Suppose we have a long running method which returns a Task - in the below example we are simulating a &lt;em>download process which takes 5 seconds&lt;/em>&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">await&lt;/span> &lt;span class="n">LongRunningProcessAsync&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="k">async&lt;/span> &lt;span class="n">Task&lt;/span> &lt;span class="n">LongRunningProcessAsync&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$&amp;#34;{DateTime.Now.TimeOfDay} =&amp;gt; Starting large download...&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="k">for&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="kt">int&lt;/span> &lt;span class="n">x&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="m">0&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="n">x&lt;/span> &lt;span class="p">&amp;lt;&lt;/span> &lt;span class="m">4&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="n">x&lt;/span>&lt;span class="p">++)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">await&lt;/span> &lt;span class="n">Task&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Delay&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="m">1000&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$&amp;#34;{DateTime.Now.TimeOfDay} =&amp;gt; Download Complete&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>As probably expected, the output is a follows, with 5 seconds gap between the start and completion of the &amp;ldquo;download&amp;rdquo;:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-posh" data-lang="posh"> &lt;span class="n">06&lt;/span>&lt;span class="err">:&lt;/span>&lt;span class="n">51&lt;/span>&lt;span class="err">:&lt;/span>&lt;span class="n">29&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">4337633&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">Starting&lt;/span> &lt;span class="n">large&lt;/span> &lt;span class="n">download&lt;/span>&lt;span class="p">...&lt;/span>
+&lt;span class="n">06&lt;/span>&lt;span class="err">:&lt;/span>&lt;span class="n">51&lt;/span>&lt;span class="err">:&lt;/span>&lt;span class="n">34&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">4755862&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">Download&lt;/span> &lt;span class="n">Complete&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>In the above example, the long running process is capped at 5 seconds, but in a real world situation, this would be an &lt;strong>unknown number&lt;/strong>, dependant the &lt;em>size of the file downloading&lt;/em>, &lt;em>network speed and availability&lt;/em> etc.&lt;/p>
+&lt;p>So how can we &lt;code>force a cap on the download time&lt;/code>, and if it takes &lt;code>longer than the cap the process is cancelled&lt;/code>, and feedback can be given back to the user.&lt;/p>
+&lt;hr>
+&lt;h2 id="solutions">Solutions&lt;/h2>
+&lt;h3 id="cancellation-token">Cancellation token&lt;/h3>
+&lt;p>The &lt;strong>best&lt;/strong> way to handle cancellation of the task would be by using a &lt;code>CancellationToken&lt;/code>.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-16">16&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-17">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-17">17&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-18">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-18">18&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-19">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-19">19&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-20">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-20">20&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-21">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-21">21&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-22">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-22">22&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-23">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-23">23&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-24">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-24">24&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-25">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-25">25&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-26">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-26">26&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-27">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-27">27&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">using&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="kt">var&lt;/span> &lt;span class="n">cts&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">CancellationTokenSource&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">TimeSpan&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">FromSeconds&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="m">1&lt;/span>&lt;span class="p">)))&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">try&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">await&lt;/span> &lt;span class="n">LongRunningProcessAsync&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">cts&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Token&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="k">catch&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">TimeoutException&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$&amp;#34;{DateTime.Now.TimeOfDay} =&amp;gt; &amp;#34;&lt;/span> &lt;span class="p">+&lt;/span>
+&lt;span class="s">$&amp;#34;Download took too long and was cancelled&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="k">async&lt;/span> &lt;span class="n">Task&lt;/span> &lt;span class="n">LongRunningProcessAsync&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">CancellationToken&lt;/span> &lt;span class="n">token&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$&amp;#34;{DateTime.Now.TimeOfDay} =&amp;gt; Starting large download...&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="k">for&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="kt">int&lt;/span> &lt;span class="n">x&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="m">0&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="n">x&lt;/span> &lt;span class="p">&amp;lt;&lt;/span> &lt;span class="m">4&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="n">x&lt;/span>&lt;span class="p">++)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">if&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">token&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">IsCancellationRequested&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">throw&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">TimeoutException&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="k">await&lt;/span> &lt;span class="n">Task&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Delay&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="m">1000&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$&amp;#34;{DateTime.Now.TimeOfDay} =&amp;gt; Download Complete&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;ul>
+&lt;li>&lt;strong>Line 1&lt;/strong>: A new CancellationTokenSource is used, with a timeout of 1 second&lt;/li>
+&lt;li>&lt;strong>Line 5&lt;/strong>: The long running method is called, and has been updated to accept a &lt;em>CancellationToken&lt;/em>, which is supplied&lt;/li>
+&lt;li>&lt;strong>Line 19&lt;/strong>: Every iteration, the token is checked to see if a cancellation was requested (which in this example would happen after 1 second)&lt;/li>
+&lt;li>&lt;strong>Line 21&lt;/strong>: If a cancellation has been requested, throw an exception and abort the long running process&lt;/li>
+&lt;/ul>
+&lt;p>The output is as follows:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-posh" data-lang="posh"> &lt;span class="n">07&lt;/span>&lt;span class="err">:&lt;/span>&lt;span class="n">07&lt;/span>&lt;span class="err">:&lt;/span>&lt;span class="n">28&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">2537474&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">Starting&lt;/span> &lt;span class="n">large&lt;/span> &lt;span class="n">download&lt;/span>&lt;span class="p">...&lt;/span>
+&lt;span class="n">07&lt;/span>&lt;span class="err">:&lt;/span>&lt;span class="n">07&lt;/span>&lt;span class="err">:&lt;/span>&lt;span class="n">29&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">3237966&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">Download&lt;/span> &lt;span class="n">took&lt;/span> &lt;span class="n">too&lt;/span> &lt;span class="n">long&lt;/span> &lt;span class="n">and&lt;/span> &lt;span class="n">was&lt;/span> &lt;span class="n">cancelled&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>PROS:&lt;/p>
+&lt;ul>
+&lt;li>The long running process stops when the cancellation occurs&lt;/li>
+&lt;/ul>
+&lt;p>CONS:&lt;/p>
+&lt;ul>
+&lt;li>The method needs to change to support a cancellation token as a parameter&lt;/li>
+&lt;/ul>
+&lt;p>In this example changing the method to support the cancellation token was straightforward, and many existing third party libraries already support cancellation tokens.&lt;/p>
+&lt;p>But how could the same problem be solved &lt;code>when the method does not support a cancellation token and cannot be changed&lt;/code>?&lt;/p>
+&lt;hr>
+&lt;h3 id="parallel-tasks">Parallel tasks&lt;/h3>
+&lt;p>One method is to &lt;code>start a second task which runs for a set period of time, in parallel to the long running process&lt;/code>. We wait for one of the tasks to finish and based on which finished first, we can handle how to proceed.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-16">16&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-17">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-17">17&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-18">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-18">18&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-19">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-19">19&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-20">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-20">20&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-21">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-21">21&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-22">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-22">22&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-23">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-23">23&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-24">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-24">24&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-25">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-25">25&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-26">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-26">26&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-27">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-27">27&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-28">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-28">28&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-29">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-29">29&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-30">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-30">30&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-31">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-31">31&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-32">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-32">32&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-33">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-33">33&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-34">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-34">34&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-35">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-35">35&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-36">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-36">36&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-37">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-37">37&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-38">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-38">38&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-39">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-39">39&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-40">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-40">40&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-41">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-41">41&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-42">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-42">42&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-43">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-43">43&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="c1">// start the process of creating cancellation token
+&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="k">using&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="kt">var&lt;/span> &lt;span class="n">cts&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">CancellationTokenSource&lt;/span>&lt;span class="p">())&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">try&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="c1">// create a timeout delay task, which will run for 1 second
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="kt">var&lt;/span> &lt;span class="n">timeout&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">TimeSpan&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">FromSeconds&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="m">1&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="kt">var&lt;/span> &lt;span class="n">timeoutTask&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">Task&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Delay&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">timeout&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">cts&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Token&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="c1">// wait for either the timeout task OR the
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="c1">// long running task to finish
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="kt">var&lt;/span> &lt;span class="n">firstTask&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="k">await&lt;/span> &lt;span class="n">Task&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WhenAny&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="k">new&lt;/span>&lt;span class="p">[]&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="n">timeoutTask&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="n">LongRunningProcessAsync&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="p">});&lt;/span>
+&lt;span class="c1">// if the first task to finish was the timeout task,
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="c1">// we can throw a timeout exception as the long running
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="c1">// process has now exceeded the allowed timeout
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">firstTask&lt;/span> &lt;span class="p">==&lt;/span> &lt;span class="n">timeoutTask&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">throw&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">TimeoutException&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="k">else&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">cts&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Cancel&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="k">catch&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">TimeoutException&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$&amp;#34;{DateTime.Now.TimeOfDay} =&amp;gt; &amp;#34;&lt;/span> &lt;span class="p">+&lt;/span>
+&lt;span class="s">$&amp;#34;Download took too long and was cancelled&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="c1">// This method is unable to change, so no CancellationToken can be used
+&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="k">async&lt;/span> &lt;span class="n">Task&lt;/span> &lt;span class="n">LongRunningProcessAsync&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$&amp;#34;{DateTime.Now.TimeOfDay} =&amp;gt; Starting large download...&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="k">for&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="kt">int&lt;/span> &lt;span class="n">x&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="m">0&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="n">x&lt;/span> &lt;span class="p">&amp;lt;&lt;/span> &lt;span class="m">4&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="n">x&lt;/span>&lt;span class="p">++)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">await&lt;/span> &lt;span class="n">Task&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Delay&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="m">1000&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$&amp;#34;{DateTime.Now.TimeOfDay} =&amp;gt; Download Complete&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;ul>
+&lt;li>&lt;strong>Line 8&lt;/strong>: A delay/timeout task is started which will run for 1 second&lt;/li>
+&lt;li>&lt;strong>Line 12-13&lt;/strong>: The long running process and the timeout task are both awaited, and the code waits for the first one to finish&lt;/li>
+&lt;li>&lt;strong>Line 18&lt;/strong>: If the first task to finish is the timeout task, we know the long running process has run for longer than 1 second, and we need to feedback to the user&lt;/li>
+&lt;li>&lt;strong>Line 20&lt;/strong>: Timeout exception is thrown&lt;/li>
+&lt;/ul>
+&lt;p>&lt;strong>Note:&lt;/strong> The above could have been done without the use of the &lt;em>CancellationTokenSource&lt;/em> and use of &lt;em>cts.Token&lt;/em>. However, whenever possible if a method (&lt;strong>Task.Delay&lt;/strong> in this case) supports a cancellation token parameter, it should be used.&lt;/p>
+&lt;p>The output is as follows:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-posh" data-lang="posh"> &lt;span class="n">07&lt;/span>&lt;span class="err">:&lt;/span>&lt;span class="n">56&lt;/span>&lt;span class="err">:&lt;/span>&lt;span class="n">40&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">5198266&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">Starting&lt;/span> &lt;span class="n">large&lt;/span> &lt;span class="n">download&lt;/span>&lt;span class="p">...&lt;/span>
+&lt;span class="n">07&lt;/span>&lt;span class="err">:&lt;/span>&lt;span class="n">56&lt;/span>&lt;span class="err">:&lt;/span>&lt;span class="n">41&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">5520772&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">Download&lt;/span> &lt;span class="n">took&lt;/span> &lt;span class="n">too&lt;/span> &lt;span class="n">long&lt;/span> &lt;span class="n">and&lt;/span> &lt;span class="n">was&lt;/span> &lt;span class="n">cancelled&lt;/span>
+&lt;span class="n">07&lt;/span>&lt;span class="err">:&lt;/span>&lt;span class="n">56&lt;/span>&lt;span class="err">:&lt;/span>&lt;span class="n">44&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">5803565&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">Download&lt;/span> &lt;span class="n">Complete&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>But wait - &lt;code>the download still completed?&lt;/code>&lt;/p>
+&lt;p>Unfortunately, because the method doesn&amp;rsquo;t accept a cancellation token (or provide some other way) to handle cancellations, there is no way to truly cancel it.&lt;br>
+What the above technique does, is allow the flow of execution to continue after waiting for the task for a certain period of time. The long running process task will still run to completion in the background.&lt;/p>
+&lt;p>PROS:&lt;/p>
+&lt;ul>
+&lt;li>A long running task can be &amp;ldquo;cancelled&amp;rdquo; even without a cancellation token or any modifications to code&lt;/li>
+&lt;/ul>
+&lt;p>CONS:&lt;/p>
+&lt;ul>
+&lt;li>The long running task is not truly cancelled, it still executes in the background. Control is just given back to the main processing thread&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h3 id="taskwaitasync">Task.WaitAsync&lt;/h3>
+&lt;p>The new &lt;code>Task.WaitASync&lt;/code> method performs the same function as the above technique, it is just much cleaner.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-16">16&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-17">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-17">17&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-18">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-18">18&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-19">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-19">19&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-20">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-20">20&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-21">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-21">21&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-22">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-22">22&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-23">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-23">23&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-24">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-24">24&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">try&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="c1">// start the long running process, and wait on the task
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="c1">// for a maximum of 1 second
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="k">await&lt;/span> &lt;span class="n">LongRunningProcessAsync&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">.&lt;/span>&lt;span class="n">WaitAsync&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">TimeSpan&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">FromSeconds&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="m">1&lt;/span>&lt;span class="p">));&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="k">catch&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">TimeoutException&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$&amp;#34;{DateTime.Now.TimeOfDay} =&amp;gt; &amp;#34;&lt;/span> &lt;span class="p">+&lt;/span>
+&lt;span class="s">$&amp;#34;Download took too long and was cancelled&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="c1">// This method is unable to change, so no CancellationToken can be used
+&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="k">async&lt;/span> &lt;span class="n">Task&lt;/span> &lt;span class="n">LongRunningProcessAsync&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$&amp;#34;{DateTime.Now.TimeOfDay} =&amp;gt; Starting large download...&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="k">for&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="kt">int&lt;/span> &lt;span class="n">x&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="m">0&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="n">x&lt;/span> &lt;span class="p">&amp;lt;&lt;/span> &lt;span class="m">4&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="n">x&lt;/span>&lt;span class="p">++)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">await&lt;/span> &lt;span class="n">Task&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Delay&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="m">1000&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$&amp;#34;{DateTime.Now.TimeOfDay} =&amp;gt; Download Complete&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>The output is as follows:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-posh" data-lang="posh"> &lt;span class="n">18&lt;/span>&lt;span class="err">:&lt;/span>&lt;span class="n">02&lt;/span>&lt;span class="err">:&lt;/span>&lt;span class="n">46&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">4930592&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">Starting&lt;/span> &lt;span class="n">large&lt;/span> &lt;span class="n">download&lt;/span>&lt;span class="p">...&lt;/span>
+&lt;span class="n">18&lt;/span>&lt;span class="err">:&lt;/span>&lt;span class="n">02&lt;/span>&lt;span class="err">:&lt;/span>&lt;span class="n">47&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">5520137&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">Download&lt;/span> &lt;span class="n">took&lt;/span> &lt;span class="n">too&lt;/span> &lt;span class="n">long&lt;/span> &lt;span class="n">and&lt;/span> &lt;span class="n">was&lt;/span> &lt;span class="n">cancelled&lt;/span>
+&lt;span class="n">18&lt;/span>&lt;span class="err">:&lt;/span>&lt;span class="n">02&lt;/span>&lt;span class="err">:&lt;/span>&lt;span class="n">50&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">5424670&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">Download&lt;/span> &lt;span class="n">Complete&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>As can be seen, the resulting output is the same, however the code required is a lot more compact and cleaner. Unfortunately, even with this new method, without a cancellation token, the long running task will still execute in the background.&lt;/p>
+&lt;p>PROS:&lt;/p>
+&lt;ul>
+&lt;li>A long running task can be &amp;ldquo;cancelled&amp;rdquo; even without a cancellation token&lt;/li>
+&lt;/ul>
+&lt;p>CONS:&lt;/p>
+&lt;ul>
+&lt;li>The long running task is not truly cancelled, it still executes in thee background. Control is just given back to the main processing thread&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h2 id="conclusion">Conclusion&lt;/h2>
+&lt;p>The preferred solution for cancelling a long running task is to use a &lt;em>CancellationToken&lt;/em>., and if this is available should always be used. However this is not always possible, and in that case the &lt;code>Task.WaitAsync&lt;/code> is the best and cleanest way of handling a task &amp;ldquo;cancellation&amp;rdquo;.&lt;/p>
+&lt;hr>
+&lt;h2 id="references">References&lt;/h2>
+&lt;p>&lt;a class="link" href="https://www.tabsoverspaces.com/233882-new-task-waitasync-method-in-net-6?utm_source=feed" target="_blank" rel="noopener"
+>New Task.WaitAsync method in .NET 6&lt;/a>&lt;/p>
+&lt;blockquote>
+&lt;div>
+&lt;div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px;">
+&lt;i class="inline-svg" >&lt;svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffbf00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+&lt;path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+&lt;path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+&lt;path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+&lt;line x1="9.7" y1="17" x2="14.3" y2="17" />
+&lt;/svg>&lt;/i>
+&lt;/div>
+&lt;div>
+&lt;h3>Daily Drop 12: 16-02-2022&lt;/h3>
+&lt;/div>
+&lt;br>
+&lt;div>
+At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.&lt;br>It could be anything - some .NET/C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.&lt;br>&lt;br>
+The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+&lt;/div>
+&lt;/div>
+&lt;/blockquote></description></item><item><title>Aliases with global using directives</title><link>https://always-developing.github.io/dailydrop/2022/02/15-global-using-directives/</link><pubDate>Tue, 15 Feb 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/02/15-global-using-directives/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
 &lt;p>With the introduction of &lt;code>global usings&lt;/code> in C#10, it is now also possible to defined a &lt;code>global alias&lt;/code> to have a shortcut to a specific type, across an entire project.&lt;/p>
 &lt;hr>
 &lt;h2 id="global-usings">Global usings&lt;/h2>
