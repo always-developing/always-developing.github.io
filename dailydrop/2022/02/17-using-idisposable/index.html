@@ -1,0 +1,535 @@
+<!doctype html><html lang=en-uk>
+<head><meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="Use using by implementing a single interface"><title>Using with IDisposable</title>
+<link rel=canonical href=https://always-developing.github.io/dailydrop/2022/02/17-using-idisposable/>
+<link rel=stylesheet href=/scss/style.min.css><meta property="og:title" content="Using with IDisposable">
+<meta property="og:description" content="Use using by implementing a single interface">
+<meta property="og:url" content="https://always-developing.github.io/dailydrop/2022/02/17-using-idisposable/">
+<meta property="og:site_name" content="Always Developing">
+<meta property="og:type" content="article"><meta property="article:section" content="Dailydrop"><meta property="article:tag" content="c#"><meta property="article:tag" content=".net"><meta property="article:tag" content="dailydrop"><meta property="article:tag" content="idisposable"><meta property="article:tag" content="using"><meta property="article:tag" content="disposable"><meta property="article:published_time" content="2022-02-17T01:00:00+02:00"><meta property="article:modified_time" content="2022-02-17T01:00:00+02:00">
+<meta name=twitter:title content="Using with IDisposable">
+<meta name=twitter:description content="Use using by implementing a single interface">
+<link rel="shortcut icon" href=favicon.ico>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CXPLFS7K38"></script>
+<script>var doNotTrack=!1;if(!doNotTrack){window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date),gtag('config','G-CXPLFS7K38',{anonymize_ip:!1})}</script>
+</head>
+<body class="article-page has-toc">
+<script>(function(){const a='StackColorScheme';localStorage.getItem(a)||localStorage.setItem(a,"dark")})()</script><script>(function(){const b='StackColorScheme',a=localStorage.getItem(b),c=window.matchMedia('(prefers-color-scheme: dark)').matches===!0;a=='dark'||a==='auto'&&c?document.documentElement.dataset.scheme='dark':document.documentElement.dataset.scheme='light'})()</script>
+<div class="container main-container flex
+extended">
+<div id=article-toolbar>
+<a href=https://always-developing.github.io/ class=back-home><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="15 6 9 12 15 18"/></svg>
+<span>Back</span>
+</a>
+</div>
+<main class="main full-width">
+<article class=main-article>
+<header class=article-header>
+<div class=article-details>
+<header class=article-category>
+<a href=/categories/dailydrop/>
+DailyDrop
+</a>
+</header>
+<h2 class=article-title>
+<a href=/dailydrop/2022/02/17-using-idisposable/>Using with IDisposable</a>
+</h2>
+<h3 class=article-subtitle>
+Use using by implementing a single interface
+</h3>
+<footer class=article-time>
+<div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
+<time class=article-time--published>Feb 17, 2022</time>
+</div>
+<div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<time class=article-time--reading>
+5 minute read
+</time>
+</div>
+</footer>
+</div>
+</header>
+<section class=article-content>
+<h2 id=daily-knowledge-drop>Daily Knowledge Drop</h2>
+<p>To make use of the <code>using</code> statement in C#, all you need to do is implement the <code>IDisposable</code> interface on a class.</p>
+<p><em>The <code>using</code> statement provides a convenient syntax to ensure the correct use of IDisposable objects</em>. The object in question will exists for the scope of the <code>using</code> and then automatically be <em>disposed</em> once out of scope.</p>
+<p>This functionality can also be leveraged to create scoped helper instances for certain use cases.</p>
+<hr>
+<h2 id=examples>Examples</h2>
+<p>All the example below make use of a simple <strong><em>Order</em></strong> with multiple <strong><em>OrderLines</em></strong> entity structure.</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5> 5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6> 6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7> 7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
+</span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
+</span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
+</span><span class=lnt id=ienumusage-12><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-12>12</a>
+</span><span class=lnt id=ienumusage-13><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-13>13</a>
+</span><span class=lnt id=ienumusage-14><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-14>14</a>
+</span><span class=lnt id=ienumusage-15><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-15>15</a>
+</span><span class=lnt id=ienumusage-16><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-16>16</a>
+</span><span class=lnt id=ienumusage-17><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-17>17</a>
+</span><span class=lnt id=ienumusage-18><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-18>18</a>
+</span><span class=lnt id=ienumusage-19><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-19>19</a>
+</span><span class=lnt id=ienumusage-20><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-20>20</a>
+</span><span class=lnt id=ienumusage-21><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-21>21</a>
+</span><span class=lnt id=ienumusage-22><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-22>22</a>
+</span><span class=lnt id=ienumusage-23><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-23>23</a>
+</span><span class=lnt id=ienumusage-24><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-24>24</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=k>class</span> <span class=nc>Order</span>
+<span class=p>{</span>
+    <span class=k>public</span> <span class=n>Guid</span> <span class=n>Id</span> <span class=p>{</span> <span class=k>get</span><span class=p>;</span> <span class=k>set</span><span class=p>;</span> <span class=p>}</span>
+
+    <span class=k>public</span> <span class=n>DateTime</span> <span class=n>DateCreated</span> <span class=p>{</span> <span class=k>get</span><span class=p>;</span> <span class=k>set</span><span class=p>;</span> <span class=p>}</span>
+
+    <span class=k>public</span> <span class=n>OrderLine</span><span class=p>[]</span> <span class=n>Lines</span> <span class=p>{</span> <span class=k>get</span><span class=p>;</span> <span class=k>set</span><span class=p>;</span> <span class=p>}</span>
+
+    <span class=c1>// Provide an convenient way to output the order
+</span><span class=c1></span>    <span class=k>public</span> <span class=k>override</span> <span class=kt>string</span> <span class=n>ToString</span><span class=p>()</span>
+    <span class=p>{</span>
+        <span class=k>return</span> <span class=n>JsonSerializer</span><span class=p>.</span><span class=n>Serialize</span><span class=p>(</span><span class=k>this</span><span class=p>,</span> 
+            <span class=k>new</span> <span class=n>JsonSerializerOptions</span> <span class=p>{</span> <span class=n>WriteIndented</span> <span class=p>=</span> <span class=k>true</span> <span class=p>});</span>
+    <span class=p>}</span>
+<span class=p>}</span>
+
+<span class=k>class</span> <span class=nc>OrderLine</span>
+<span class=p>{</span>
+    <span class=k>public</span> <span class=n>Guid</span> <span class=n>Id</span> <span class=p>{</span> <span class=k>get</span><span class=p>;</span> <span class=k>set</span><span class=p>;</span> <span class=p>}</span>
+
+    <span class=k>public</span> <span class=n>DateTime</span> <span class=n>DateCreated</span> <span class=p>{</span> <span class=k>get</span><span class=p>;</span> <span class=k>set</span><span class=p>;</span> <span class=p>}</span>
+
+    <span class=k>public</span> <span class=n>Guid</span> <span class=n>OrderId</span> <span class=p>{</span> <span class=k>get</span><span class=p>;</span> <span class=k>set</span><span class=p>;</span> <span class=p>}</span>
+<span class=p>}</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>When an <em>Order</em> is created, the <em>OrderLines</em> should be created at the same time. Both entities are required to have the <code>same DateCreated</code> value and we also require the <code>OrderLine.OrderId to be set to the Order.Id</code></p>
+<p>For something so relatively simple, there are a couple of issues.</p>
+<p>See the code below which <strong>DOES NOT COMPILE</strong>:</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5> 5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6> 6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7> 7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
+</span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
+</span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
+</span><span class=lnt id=ienumusage-12><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-12>12</a>
+</span><span class=lnt id=ienumusage-13><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-13>13</a>
+</span><span class=lnt id=ienumusage-14><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-14>14</a>
+</span><span class=lnt id=ienumusage-15><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-15>15</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=kt>var</span> <span class=n>order</span> <span class=p>=</span> <span class=k>new</span> <span class=n>Order</span>
+<span class=p>{</span>
+    <span class=n>Id</span> <span class=p>=</span> <span class=n>Guid</span><span class=p>.</span><span class=n>NewGuid</span><span class=p>(),</span>
+    <span class=n>DateCreated</span> <span class=p>=</span> <span class=n>DateTime</span><span class=p>.</span><span class=n>Now</span><span class=p>,</span>
+    <span class=n>Lines</span> <span class=p>=</span> <span class=k>new</span><span class=p>[]</span>
+    <span class=p>{</span>
+        <span class=k>new</span> <span class=n>OrderLine</span>
+        <span class=p>{</span>
+            <span class=n>Id</span> <span class=p>=</span> <span class=n>Guid</span><span class=p>.</span><span class=n>NewGuid</span><span class=p>(),</span>
+            <span class=n>DateCreated</span> <span class=p>=</span> <span class=n>DateTime</span><span class=p>.</span><span class=n>Now</span><span class=p>,</span>
+            <span class=c1>// How to set this???
+</span><span class=c1></span>            <span class=n>OrderId</span> <span class=p>=</span> <span class=p>???</span>
+        <span class=p>}</span>
+    <span class=p>}</span>
+<span class=p>};</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>The issues:</p>
+<ol>
+<li>The two <em>DateCreated</em> values will not be the same (off by probably only a few nano or milliseconds, but still off)</li>
+<li>There is no way to easily set the OrderId value on the <em>OrderLine</em> entity</li>
+</ol>
+<h3 id=variable-snapshot>Variable snapshot</h3>
+<p>These issues can quite easily be solved by using variables to snapshot values before the entity creation:</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5> 5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6> 6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7> 7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
+</span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
+</span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
+</span><span class=lnt id=ienumusage-12><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-12>12</a>
+</span><span class=lnt id=ienumusage-13><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-13>13</a>
+</span><span class=lnt id=ienumusage-14><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-14>14</a>
+</span><span class=lnt id=ienumusage-15><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-15>15</a>
+</span><span class=lnt id=ienumusage-16><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-16>16</a>
+</span><span class=lnt id=ienumusage-17><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-17>17</a>
+</span><span class=lnt id=ienumusage-18><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-18>18</a>
+</span><span class=lnt id=ienumusage-19><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-19>19</a>
+</span><span class=lnt id=ienumusage-20><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-20>20</a>
+</span><span class=lnt id=ienumusage-21><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-21>21</a>
+</span><span class=lnt id=ienumusage-22><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-22>22</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=c1>// snapshot values to be used later
+</span><span class=c1></span><span class=kt>var</span> <span class=n>datetimeCreated</span> <span class=p>=</span> <span class=n>DateTime</span><span class=p>.</span><span class=n>Now</span><span class=p>;</span>
+<span class=kt>var</span> <span class=n>orderId</span> <span class=p>=</span> <span class=n>Guid</span><span class=p>.</span><span class=n>NewGuid</span><span class=p>();</span>
+
+<span class=kt>var</span> <span class=n>order</span> <span class=p>=</span> <span class=k>new</span> <span class=n>Order</span>
+<span class=p>{</span>
+    <span class=c1>// use the snapshot orderId
+</span><span class=c1></span>    <span class=n>Id</span> <span class=p>=</span> <span class=n>orderId</span><span class=p>,</span>
+    <span class=c1>// use the snapshot date created
+</span><span class=c1></span>    <span class=n>DateCreated</span> <span class=p>=</span> <span class=n>datetimeCreated</span><span class=p>,</span>
+    <span class=n>Lines</span> <span class=p>=</span> <span class=k>new</span><span class=p>[]</span>
+    <span class=p>{</span>
+        <span class=k>new</span> <span class=n>OrderLine</span>
+        <span class=p>{</span>
+            <span class=n>Id</span> <span class=p>=</span> <span class=n>Guid</span><span class=p>.</span><span class=n>NewGuid</span><span class=p>(),</span>
+            <span class=c1>// use the snapshot date created
+</span><span class=c1></span>            <span class=n>DateCreated</span> <span class=p>=</span> <span class=n>datetimeCreated</span><span class=p>,</span>
+            <span class=c1>// use the snapshot orderId
+</span><span class=c1></span>            <span class=n>OrderId</span> <span class=p>=</span> <span class=n>orderId</span>
+        <span class=p>}</span>
+    <span class=p>}</span>
+<span class=p>};</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>This will 100% work and is completely acceptable to do - however a cleaner way, which makes use of the <code>using</code> statement.</p>
+<hr>
+<h3 id=using-snapshot>Using snapshot</h3>
+<p>First thing is to define a <em>OrderInfoSnapshot</em> class which implements <em>IDisposable</em>:</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5> 5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6> 6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7> 7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
+</span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
+</span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
+</span><span class=lnt id=ienumusage-12><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-12>12</a>
+</span><span class=lnt id=ienumusage-13><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-13>13</a>
+</span><span class=lnt id=ienumusage-14><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-14>14</a>
+</span><span class=lnt id=ienumusage-15><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-15>15</a>
+</span><span class=lnt id=ienumusage-16><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-16>16</a>
+</span><span class=lnt id=ienumusage-17><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-17>17</a>
+</span><span class=lnt id=ienumusage-18><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-18>18</a>
+</span><span class=lnt id=ienumusage-19><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-19>19</a>
+</span><span class=lnt id=ienumusage-20><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-20>20</a>
+</span><span class=lnt id=ienumusage-21><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-21>21</a>
+</span><span class=lnt id=ienumusage-22><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-22>22</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=k>class</span> <span class=nc>OrderInfoSnapshot</span> <span class=p>:</span> <span class=n>IDisposable</span>
+<span class=p>{</span>
+    <span class=k>private</span> <span class=n>DateTime</span> <span class=m>_</span><span class=n>created</span><span class=p>;</span>
+    <span class=k>private</span> <span class=n>Guid</span> <span class=m>_</span><span class=n>orderId</span><span class=p>;</span>
+
+    <span class=k>public</span> <span class=n>DateTime</span> <span class=n>Created</span> <span class=p>=&gt;</span> <span class=m>_</span><span class=n>created</span><span class=p>;</span>
+
+    <span class=k>public</span> <span class=n>Guid</span> <span class=n>OrderId</span> <span class=p>=&gt;</span> <span class=m>_</span><span class=n>orderId</span><span class=p>;</span>
+
+    <span class=k>public</span> <span class=n>OrderInfoSnapshot</span><span class=p>()</span>
+    <span class=p>{</span>
+        <span class=m>_</span><span class=n>created</span> <span class=p>=</span> <span class=n>DateTime</span><span class=p>.</span><span class=n>Now</span><span class=p>;</span>
+        <span class=m>_</span><span class=n>orderId</span> <span class=p>=</span> <span class=n>Guid</span><span class=p>.</span><span class=n>NewGuid</span><span class=p>();</span>
+    <span class=p>}</span>
+
+    <span class=k>public</span> <span class=k>void</span> <span class=n>Dispose</span><span class=p>()</span>
+    <span class=p>{</span>
+        <span class=c1>// do cleanup etc here
+</span><span class=c1></span>        <span class=c1>// look at resources for correct
+</span><span class=c1></span>        <span class=c1>// Dispose usage
+</span><span class=c1></span>    <span class=p>}</span>
+<span class=p>}</span></code></pre></td></tr></table>
+</div>
+</div>
+<ul>
+<li><strong>Line 1</strong>: Implement <em>IDisposable</em></li>
+<li><strong>Line 10-14</strong>: On creation of an instance, we snapshot the values we are interested in</li>
+<li><strong>Line 16-20</strong>: Implement the <em>IDisposable</em> <em>Dispose</em> method. This is a very simple example, but more sophisticated cleanup can happen here - see the references for more details.</li>
+</ul>
+<p>Now instead of using a number of variables for the various snapshots required, <em>OrderInfoSnapshot</em> can be used with a <code>using</code> statement:</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5> 5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6> 6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7> 7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
+</span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
+</span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
+</span><span class=lnt id=ienumusage-12><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-12>12</a>
+</span><span class=lnt id=ienumusage-13><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-13>13</a>
+</span><span class=lnt id=ienumusage-14><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-14>14</a>
+</span><span class=lnt id=ienumusage-15><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-15>15</a>
+</span><span class=lnt id=ienumusage-16><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-16>16</a>
+</span><span class=lnt id=ienumusage-17><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-17>17</a>
+</span><span class=lnt id=ienumusage-18><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-18>18</a>
+</span><span class=lnt id=ienumusage-19><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-19>19</a>
+</span><span class=lnt id=ienumusage-20><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-20>20</a>
+</span><span class=lnt id=ienumusage-21><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-21>21</a>
+</span><span class=lnt id=ienumusage-22><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-22>22</a>
+</span><span class=lnt id=ienumusage-23><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-23>23</a>
+</span><span class=lnt id=ienumusage-24><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-24>24</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=c1>// create the snapshot
+</span><span class=c1></span><span class=k>using</span> <span class=p>(</span><span class=kt>var</span> <span class=n>orderInfo</span> <span class=p>=</span> <span class=k>new</span> <span class=n>OrderInfoSnapshot</span><span class=p>())</span>
+<span class=p>{</span>
+    <span class=kt>var</span> <span class=n>order</span> <span class=p>=</span> <span class=k>new</span> <span class=n>Order</span>
+    <span class=p>{</span>
+        <span class=c1>// grab the OrderId from the snapshot
+</span><span class=c1></span>        <span class=n>Id</span> <span class=p>=</span> <span class=n>orderInfo</span><span class=p>.</span><span class=n>OrderId</span><span class=p>,</span>
+        <span class=c1>// Create from the snapshot
+</span><span class=c1></span>        <span class=n>DateCreated</span> <span class=p>=</span> <span class=n>orderInfo</span><span class=p>.</span><span class=n>Created</span><span class=p>,</span>
+        <span class=n>Lines</span> <span class=p>=</span> <span class=k>new</span><span class=p>[]</span>
+        <span class=p>{</span>
+            <span class=k>new</span> <span class=n>OrderLine</span>
+            <span class=p>{</span>
+                <span class=n>Id</span> <span class=p>=</span> <span class=n>Guid</span><span class=p>.</span><span class=n>NewGuid</span><span class=p>(),</span>
+                <span class=c1>// Create from the snapshot
+</span><span class=c1></span>                <span class=n>DateCreated</span> <span class=p>=</span> <span class=n>orderInfo</span><span class=p>.</span><span class=n>Created</span><span class=p>,</span>
+                <span class=c1>// OrderId from the snapshot
+</span><span class=c1></span>                <span class=n>OrderId</span> <span class=p>=</span> <span class=n>orderInfo</span><span class=p>.</span><span class=n>OrderId</span>
+            <span class=p>}</span>
+        <span class=p>}</span>
+    <span class=p>};</span>
+
+    <span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>order</span><span class=p>);</span>
+<span class=p>}</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>The <em>OrderInfoSnapshot</em> will automatically be disposed (which in this case doesn&rsquo;t need to do much cleanup) once the end of the <code>using</code> scope is reached.</p>
+<p>As mentioned, this is a very simple example, but if the <em>OrderInfoSnapshot</em> was required to access multiple other resources, all the connections could be cleaned up in the <em>Dispose</em> method.</p>
+<hr>
+<h2 id=alternative-syntax>Alternative syntax</h2>
+<p>Introduced in C# 8, there is an alternative syntax for <code>using</code>s - the end result and operation is exactly the same though.</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5> 5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6> 6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7> 7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
+</span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
+</span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
+</span><span class=lnt id=ienumusage-12><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-12>12</a>
+</span><span class=lnt id=ienumusage-13><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-13>13</a>
+</span><span class=lnt id=ienumusage-14><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-14>14</a>
+</span><span class=lnt id=ienumusage-15><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-15>15</a>
+</span><span class=lnt id=ienumusage-16><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-16>16</a>
+</span><span class=lnt id=ienumusage-17><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-17>17</a>
+</span><span class=lnt id=ienumusage-18><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-18>18</a>
+</span><span class=lnt id=ienumusage-19><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-19>19</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=c1>// create the snapshot
+</span><span class=c1></span><span class=k>using</span> <span class=nn>var</span> <span class=n>orderInfo</span> <span class=p>=</span> <span class=k>new</span> <span class=n>OrderInfoSnapshot</span><span class=p>();</span>
+
+<span class=kt>var</span> <span class=n>order</span> <span class=p>=</span> <span class=k>new</span> <span class=n>Order</span>
+<span class=p>{</span>
+    <span class=n>Id</span> <span class=p>=</span> <span class=n>orderInfo</span><span class=p>.</span><span class=n>OrderId</span><span class=p>,</span>
+    <span class=n>DateCreated</span> <span class=p>=</span> <span class=n>orderInfo</span><span class=p>.</span><span class=n>Created</span><span class=p>,</span>
+    <span class=n>Lines</span> <span class=p>=</span> <span class=k>new</span><span class=p>[]</span>
+    <span class=p>{</span>
+        <span class=k>new</span> <span class=n>OrderLine</span>
+        <span class=p>{</span>
+            <span class=n>Id</span> <span class=p>=</span> <span class=n>Guid</span><span class=p>.</span><span class=n>NewGuid</span><span class=p>(),</span>
+            <span class=n>DateCreated</span> <span class=p>=</span> <span class=n>orderInfo</span><span class=p>.</span><span class=n>Created</span><span class=p>,</span>
+            <span class=n>OrderId</span> <span class=p>=</span> <span class=n>orderInfo</span><span class=p>.</span><span class=n>OrderId</span>
+        <span class=p>}</span>
+    <span class=p>}</span>
+<span class=p>};</span>
+
+<span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>order</span><span class=p>);</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>The scope of the <em>OrderInfoSnapshot</em> instance is now the method it was created in, and it will still automatically be disposed when going out of scope.</p>
+<hr>
+<h2 id=notes>Notes</h2>
+<p>Implementing IDisposable <em>correctly</em> is a bit more complicated than shown above - see the references for more details.</p>
+<hr>
+<h2 id=conclusion>Conclusion</h2>
+<p>The <em>IDisposable</em> is not required on every class, but it makes sense and can be useful when you want to:</p>
+<ol>
+<li>Explicitly dispose of resources used when going out of scope</li>
+<li>Make use of the <code>using</code> syntax to be able to create a create a scoped entity (as in the above examples)</li>
+</ol>
+<hr>
+<h2 id=references>References</h2>
+<p><a class=link href="https://docs.microsoft.com/en-us/dotnet/api/system.idisposable?view=net-6.0" target=_blank rel=noopener>IDisposable Interface</a></p>
+<blockquote>
+<div>
+<div style=width:5%;float:left;vertical-align:middle;padding-right:60px>
+<i class=inline-svg><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffbf00" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 12h1m8-9v1m8 8h1M5.6 5.6l.7.7m12.1-.7-.7.7"/><path d="M9 16a5 5 0 116 0 3.5 3.5.0 00-1 3 2 2 0 01-4 0 3.5 3.5.0 00-1-3"/><line x1="9.7" y1="17" x2="14.3" y2="17"/></svg></i>
+</div>
+<div>
+<h3>Daily Drop 13: 17-02-2022</h3>
+</div>
+<br>
+<div>
+At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br>It could be anything - some .NET/C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
+The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+</div>
+</div>
+</blockquote>
+</section>
+<footer class=article-footer>
+<section class=article-tags>
+<a href=/tags/c#/>c#</a>
+<a href=/tags/.net/>.net</a>
+<a href=/tags/dailydrop/>dailydrop</a>
+<a href=/tags/idisposable/>idisposable</a>
+<a href=/tags/using/>using</a>
+<a href=/tags/disposable/>disposable</a>
+</section>
+</footer>
+</article>
+<aside class=related-contents--wrapper>
+<h2 class=section-title>Related contents</h2>
+<div class=related-contents>
+<div class="flex article-list--tile">
+<article>
+<a href=/dailydrop/2022/02/15-global-using-directives/>
+<div class=article-details>
+<h2 class=article-title>Aliases with global using directives</h2>
+</div>
+</a>
+</article>
+<article>
+<a href=/dailydrop/2022/02/16-task-wait-async/>
+<div class=article-details>
+<h2 class=article-title>Task.WaitAsync in .NET6</h2>
+</div>
+</a>
+</article>
+<article>
+<a href=/dailydrop/2022/02/14-exceptions-when/>
+<div class=article-details>
+<h2 class=article-title>Filtering try-catch statement</h2>
+</div>
+</a>
+</article>
+<article>
+<a href=/dailydrop/2022/02/11-caller-metadata/>
+<div class=article-details>
+<h2 class=article-title>Extract calling method metadata with C#</h2>
+</div>
+</a>
+</article>
+<article>
+<a href=/dailydrop/2022/02/10-channels/>
+<div class=article-details>
+<h2 class=article-title>C# Channels - Produce & Consume data</h2>
+</div>
+</a>
+</article>
+</div>
+</div>
+</aside>
+<script src=https://giscus.app/client.js data-repo=always-developing/always-developing.github.io data-repo-id=R_kgDOGQJLBQ data-category=Comments data-category-id=DIC_kwDOGQJLBc4B_pUA data-mapping=pathname data-reactions-enabled=1 data-emit-metadata=0 data-theme=light crossorigin=anonymous async></script>
+<script>function setGiscusTheme(b){let a=document.querySelector('iframe.giscus-frame');a&&a.contentWindow.postMessage({giscus:{setConfig:{theme:b}}},"https://giscus.app")}(function(){addEventListener('message',b=>{if(event.origin!=='https://giscus.app')return;a()}),window.addEventListener('onColorSchemeChange',a);function a(){document.documentElement.dataset.scheme==="light"?setGiscusTheme('light'):setGiscusTheme('dark')}})()</script>
+<footer class=site-footer>
+<section class=copyright>
+&copy;
+2021 -
+2022 Always Developing
+</section>
+<section class=powerby>
+Always Developing | always learning | always growing <br>
+Built with <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a> <br>
+Theme <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.2.0>Stack</a></b> designed by <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a>
+</section>
+</footer>
+<div class=pswp tabindex=-1 role=dialog aria-hidden=true>
+<div class=pswp__bg></div>
+<div class=pswp__scroll-wrap>
+<div class=pswp__container>
+<div class=pswp__item></div>
+<div class=pswp__item></div>
+<div class=pswp__item></div>
+</div>
+<div class="pswp__ui pswp__ui--hidden">
+<div class=pswp__top-bar>
+<div class=pswp__counter></div>
+<button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+<button class="pswp__button pswp__button--share" title=Share></button>
+<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+<div class=pswp__preloader>
+<div class=pswp__preloader__icn>
+<div class=pswp__preloader__cut>
+<div class=pswp__preloader__donut></div>
+</div>
+</div>
+</div>
+</div>
+<div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+<div class=pswp__share-tooltip></div>
+</div>
+<button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+</button>
+<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+</button>
+<div class=pswp__caption>
+<div class=pswp__caption__center></div>
+</div>
+</div>
+</div>
+</div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.css integrity="sha256-c0uckgykQ9v5k+IqViZOZKc47Jn7KQil4/MP3ySA3F8=" crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.css integrity="sha256-SBLU4vv6CA6lHsZ1XyTdhyjJxCjPif/TRkjnsyGAGnE=" crossorigin=anonymous>
+</main>
+<aside class="sidebar right-sidebar sticky">
+<section class="widget archives">
+<div class=widget-icon><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg>
+</div>
+<h2 class="widget-title section-title">Table of contents</h2>
+<div class=widget--toc>
+<nav id=TableOfContents>
+<ol>
+<li><a href=#daily-knowledge-drop>Daily Knowledge Drop</a></li>
+<li><a href=#examples>Examples</a>
+<ol>
+<li><a href=#variable-snapshot>Variable snapshot</a></li>
+<li><a href=#using-snapshot>Using snapshot</a></li>
+</ol>
+</li>
+<li><a href=#alternative-syntax>Alternative syntax</a></li>
+<li><a href=#notes>Notes</a></li>
+<li><a href=#conclusion>Conclusion</a></li>
+<li><a href=#references>References</a></li>
+</ol>
+</nav>
+</div>
+</section>
+</aside>
+</div>
+<script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g=" crossorigin=anonymous defer></script><script type=text/javascript src=/ts/main.js defer></script>
+<script>(function(){const a=document.createElement('link');a.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",a.type="text/css",a.rel="stylesheet",document.head.appendChild(a)})()</script>
+</body>
+</html>
