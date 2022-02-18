@@ -1,4 +1,109 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Thu, 17 Feb 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Using with IDisposable</title><link>https://always-developing.github.io/dailydrop/2022/02/17-using-idisposable/</link><pubDate>Thu, 17 Feb 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/02/17-using-idisposable/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Fri, 18 Feb 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Garbage collection configuration</title><link>https://always-developing.github.io/dailydrop/2022/02/18-gc-variables/</link><pubDate>Fri, 18 Feb 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/02/18-gc-variables/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+&lt;p>There are a number of settings related to the .NET &lt;code>garbage collector (GC)&lt;/code> which can be set at runtime using a variety of methods. Generally these do not need to be manually configured, but can be changed from the default to tweak and optimize performance of the application.&lt;/p>
+&lt;hr>
+&lt;h2 id="configurations">Configurations&lt;/h2>
+&lt;p>The settings which can be configured are listed below (more detailed information can be found under &lt;em>references&lt;/em> section below)&lt;/p>
+&lt;h3 id="gc-flavour">GC flavour&lt;/h3>
+&lt;ul>
+&lt;li>&lt;code>Workstation or server GC&lt;/code>: should the application use workstation or server garbage collection.&lt;/li>
+&lt;li>&lt;code>Background GC&lt;/code>: configures if background (concurrent) garbage collection is enabled.&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h3 id="resource-usage">Resource usage&lt;/h3>
+&lt;ul>
+&lt;li>&lt;code>Heap Count&lt;/code>: limits the number of heaps created by the garbage collector.&lt;/li>
+&lt;li>&lt;code>Affinitize ranges&lt;/code>: specifies thee list of processors to use for garbage collector threads.&lt;/li>
+&lt;li>&lt;code>CPU groups&lt;/code>: configures whether he garbage collector used CPU groups or not.&lt;/li>
+&lt;li>&lt;code>Affinitize&lt;/code>: Specifies whether to affinitize garbage collection threads with processors (To affinitize a GC thread means that it can only run on its specific CPU).&lt;/li>
+&lt;li>&lt;code>Heap limit&lt;/code>: Specifies the maximum commit size, in bytes, for the GC heap and GC bookkeeping.&lt;/li>
+&lt;li>&lt;code>Heap limit percent&lt;/code>: Specifies the allowable GC heap usage as a percentage of the total physical memory.&lt;/li>
+&lt;li>&lt;code>Per-object-heap limits&lt;/code>: Specifies the garbage collectors allowable heap usage on a per-object-heap basis. The different heaps are the large object heap (LOH), small object heap (SOH), and pinned object heap (POH).&lt;/li>
+&lt;li>&lt;code>Per-object-heap limit percents&lt;/code>: Specifies the garbage collectors allowable heap usage on a per-object-heap basis.&lt;/li>
+&lt;li>&lt;code>High memory percent&lt;/code>: The physical memory load percentage above which garbage collection becomes more aggressive about doing full, compacting garbage collections to avoid paging.&lt;/li>
+&lt;li>&lt;code>Retain VM&lt;/code>: Configures whether segments that should be deleted are put on a standby list for future use or are released back to the operating system (OS).&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h3 id="misc">Misc&lt;/h3>
+&lt;ul>
+&lt;li>&lt;code>Large pages&lt;/code>: Specifies whether large pages should be used when a heap hard limit is set.&lt;/li>
+&lt;li>&lt;code>Allow large objects&lt;/code>: Configures garbage collector support on 64-bit platforms for arrays that are greater than 2 gigabytes (GB) in total size.&lt;/li>
+&lt;li>&lt;code>Large object heap threshold&lt;/code>: Specifies the threshold size, in bytes, that causes objects to go on the large object heap (LOH).&lt;/li>
+&lt;li>&lt;code>Standalone garbage collector&lt;/code>: Specifies a path to the library containing the garbage collector that the runtime intends to load.&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h2 id="configuration-methods">Configuration methods&lt;/h2>
+&lt;p>There are 4 different ways to set the garbage collector variables - however, &lt;code>not all methods are available for all settings&lt;/code>.&lt;/p>
+&lt;p>Let&amp;rsquo;s have a look at the &lt;code>Workstation or server GC&lt;/code> setting as an example, which can be configured using any of the 4 methods.&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>&lt;strong>Method&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>Setting name&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>Values&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>Version introduced&lt;/strong>&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>runtimeconfig.json&lt;/td>
+&lt;td>&lt;code>System.GC.Server&lt;/code>&lt;/td>
+&lt;td>&lt;code>false&lt;/code> - workstation / &lt;code>true&lt;/code> - server&lt;/td>
+&lt;td>.NET Core 1.0&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>MSBuild property&lt;/td>
+&lt;td>&lt;code>ServerGarbageCollection&lt;/code>&lt;/td>
+&lt;td>&lt;code>false&lt;/code> - workstation / &lt;code>true&lt;/code> - server&lt;/td>
+&lt;td>.NET Core 1.0&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Environment variable&lt;/td>
+&lt;td>&lt;code>COMPlus_gcServer&lt;/code>&lt;/td>
+&lt;td>&lt;code>0&lt;/code> - workstation / &lt;code>1&lt;/code> - server&lt;/td>
+&lt;td>.NET Core 1.0&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Environment variable&lt;/td>
+&lt;td>&lt;code>DOTNET_gcServer&lt;/code>&lt;/td>
+&lt;td>&lt;code>0&lt;/code> - workstation / &lt;code>1&lt;/code> - server&lt;/td>
+&lt;td>.NET 6&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>.NET Framework app.config&lt;/td>
+&lt;td>&lt;code>&amp;lt;GCServer&amp;gt;&lt;/code> element&lt;/td>
+&lt;td>&lt;code>false&lt;/code> - workstation / &lt;code>true&lt;/code> - server&lt;/td>
+&lt;td>&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;hr>
+&lt;h2 id="notes">Notes&lt;/h2>
+&lt;p>For most applications in typical situations, the default GC configuration should provide optimal performance. However if trying to achieve peak performance of a running application, these settings can be used (and benchmarked along the way)&lt;/p>
+&lt;p>Please see the references section for more information on each of the settings, which method can be used to set them as well as the valid values.&lt;/p>
+&lt;hr>
+&lt;h2 id="references">References&lt;/h2>
+&lt;p>&lt;a class="link" href="https://docs.microsoft.com/en-us/dotnet/core/runtime-config/garbage-collector" target="_blank" rel="noopener"
+>Runtime configuration options for garbage collection&lt;/a>&lt;/p>
+&lt;blockquote>
+&lt;div>
+&lt;div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px;">
+&lt;i class="inline-svg" >&lt;svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffbf00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+&lt;path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+&lt;path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+&lt;path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+&lt;line x1="9.7" y1="17" x2="14.3" y2="17" />
+&lt;/svg>&lt;/i>
+&lt;/div>
+&lt;div>
+&lt;h3>Daily Drop 14: 18-02-2022&lt;/h3>
+&lt;/div>
+&lt;br>
+&lt;div>
+At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.&lt;br>It could be anything - some .NET/C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.&lt;br>&lt;br>
+The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+&lt;/div>
+&lt;/div>
+&lt;/blockquote></description></item><item><title>Using with IDisposable</title><link>https://always-developing.github.io/dailydrop/2022/02/17-using-idisposable/</link><pubDate>Thu, 17 Feb 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/02/17-using-idisposable/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
 &lt;p>To make use of the &lt;code>using&lt;/code> statement in C#, all you need to do is implement the &lt;code>IDisposable&lt;/code> interface on a class.&lt;/p>
 &lt;p>&lt;em>The &lt;code>using&lt;/code> statement provides a convenient syntax to ensure the correct use of IDisposable objects&lt;/em>. The object in question will exists for the scope of the &lt;code>using&lt;/code> and then automatically be &lt;em>disposed&lt;/em> once out of scope.&lt;/p>
 &lt;p>This functionality can also be leveraged to create scoped helper instances for certain use cases.&lt;/p>
