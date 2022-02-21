@@ -1,4 +1,202 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Fri, 18 Feb 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Garbage collection configuration</title><link>https://always-developing.github.io/dailydrop/2022/02/18-gc-variables/</link><pubDate>Fri, 18 Feb 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/02/18-gc-variables/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Mon, 21 Feb 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>EF Core 6 EntityTypeConfiguration Attribute</title><link>https://always-developing.github.io/dailydrop/2022/02/21-ef-core6-entitytypeconfig/</link><pubDate>Mon, 21 Feb 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/02/21-ef-core6-entitytypeconfig/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+&lt;p>A new attribute called &lt;code>EntityTypeConfiguration&lt;/code> was introduced in Entity Framework 6, which allows for easier configuration of custom entity configurations.&lt;/p>
+&lt;p>Let&amp;rsquo;s take a look at how is simplifies the configuration of an entity.&lt;/p>
+&lt;hr>
+&lt;h2 id="configurations-previously">Configurations previously&lt;/h2>
+&lt;p>There are a number of steps performed when manually configuring an entity using Entity Framework Core (EF).&lt;/p>
+&lt;p>Note: &lt;em>The entity structure below is not optimized or suitable for a production system, it is used just for sample purposes&lt;/em>&lt;/p>
+&lt;h3 id="define-the-entity">Define the entity&lt;/h3>
+&lt;p>In this example, we are going to be using a &lt;code>Song entity&lt;/code>.&lt;/p>
+&lt;p>This is straight forward and nothing EF related here.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">Song&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="kt">int&lt;/span> &lt;span class="n">Id&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">get&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="k">set&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">Name&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">get&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="k">set&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">Artist&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">get&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="k">set&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="kt">int&lt;/span> &lt;span class="n">YearReleased&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">get&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="k">set&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="kt">int&lt;/span> &lt;span class="n">LengthInSeconds&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">get&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="k">set&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;hr>
+&lt;h3 id="add-the-dbset">Add the DbSet&lt;/h3>
+&lt;p>The next step is to make EF aware of this entity. We do this by creating a &lt;code>Dbset (using the entity) on the DbContext&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">EntityTypeConfigContext&lt;/span> &lt;span class="p">:&lt;/span> &lt;span class="n">DbContext&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="c1">// This links the entity to EF
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="k">public&lt;/span> &lt;span class="n">DbSet&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">Song&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="n">Songs&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">get&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="k">set&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;span class="k">protected&lt;/span> &lt;span class="k">override&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">OnConfiguring&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">DbContextOptionsBuilder&lt;/span> &lt;span class="n">optionsBuilder&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">optionsBuilder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">UseSqlServer&lt;/span>&lt;span class="p">(&lt;/span>
+&lt;span class="s">@&amp;#34;Server=.\SQLEXPRESS;Database=EntityTypeConfig;Integrated Security=True&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;hr>
+&lt;h3 id="customize-entity-configuration">Customize entity configuration&lt;/h3>
+&lt;p>The next step is to create a &lt;code>configuration for the entity&lt;/code>.&lt;/p>
+&lt;p>The default SQL column size for strings is &lt;em>nvarchar(max)&lt;/em> - the below configuration changes this to 250 chars for the entity, for example.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5">5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6">6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7">7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8">8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9">9&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">SongConfiguration&lt;/span> &lt;span class="p">:&lt;/span> &lt;span class="n">IEntityTypeConfiguration&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">Song&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">Configure&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">EntityTypeBuilder&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">Song&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="n">builder&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">builder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">HasIndex&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">p&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">p&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Id&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s">&amp;#34;Id&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="n">builder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Property&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">p&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">p&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Name&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="n">HasMaxLength&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="m">250&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="n">builder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Property&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">p&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">p&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Artist&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="n">HasMaxLength&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="m">250&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;hr>
+&lt;h3 id="apply-the-configuration">Apply the configuration&lt;/h3>
+&lt;p>The final step is to &lt;code>apply the configuration&lt;/code> to the DbContext:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-16">16&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">EntityTypeConfigContext&lt;/span> &lt;span class="p">:&lt;/span> &lt;span class="n">DbContext&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="n">DbSet&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">Song&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="n">Songs&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">get&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="k">set&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;span class="k">protected&lt;/span> &lt;span class="k">override&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">OnModelCreating&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">ModelBuilder&lt;/span> &lt;span class="n">modelBuilder&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="c1">// when the model is creating, specify
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="c1">// the configuration should be used
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="n">modelBuilder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">ApplyConfiguration&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="k">new&lt;/span> &lt;span class="n">SongConfiguration&lt;/span>&lt;span class="p">());&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="k">protected&lt;/span> &lt;span class="k">override&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">OnConfiguring&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">DbContextOptionsBuilder&lt;/span> &lt;span class="n">optionsBuilder&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">optionsBuilder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">UseSqlServer&lt;/span>&lt;span class="p">(&lt;/span>
+&lt;span class="s">@&amp;#34;Server=.\SQLEXPRESS;Database=EntityTypeConfig;Integrated Security=True&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;hr>
+&lt;h2 id="entitytypeconfiguration-attribute">EntityTypeConfiguration attribute&lt;/h2>
+&lt;p>The above 4 steps will still work with EF Core 6, however the last step can now be simplified.&lt;/p>
+&lt;p>Instead of manually adding each entity configuration to the &lt;em>OnModelCreating&lt;/em> method on the context, the entity itself can be tagged with the &lt;code>EntityTypeConfiguration&lt;/code> attribute.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="c1">// This attribute will ensure the &amp;#34;SongConfiguration&amp;#34; is used
+&lt;/span>&lt;span class="c1">// when configuring the &amp;#34;Song&amp;#34; entity in EF
+&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="na">[EntityTypeConfiguration(typeof(SongConfiguration))]&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">Song&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="kt">int&lt;/span> &lt;span class="n">Id&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">get&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="k">set&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">Name&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">get&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="k">set&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">Artist&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">get&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="k">set&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="kt">int&lt;/span> &lt;span class="n">YearReleased&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">get&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="k">set&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="kt">int&lt;/span> &lt;span class="n">LengthInSeconds&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">get&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="k">set&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>The &lt;code>SongConfiguration&lt;/code> configuration will now automatically be used for the &lt;code>Song&lt;/code> entity by the EF when creating the database model.&lt;/p>
+&lt;hr>
+&lt;h2 id="notes">Notes&lt;/h2>
+&lt;p>While using the &lt;code>EntityTypeConfiguration&lt;/code> attribute is cleaner and easier, and probably likely less to be overlooked by the developer, the technique will not work for everyone. Depending on the application design/architecture it might not make sense to &amp;ldquo;pollute&amp;rdquo; the entity wth any EF specific references.&lt;/p>
+&lt;p>What is important though, is that there are &lt;em>now multiple options to leverage&lt;/em> depending on what sense for your specific use case.&lt;/p>
+&lt;hr>
+&lt;h2 id="references">References&lt;/h2>
+&lt;p>&lt;a class="link" href="https://blog.okyrylchuk.dev/entity-framework-core-6-features-part-1" target="_blank" rel="noopener"
+>Entity Framework Core 6 features - Part 1&lt;/a>&lt;/p>
+&lt;blockquote>
+&lt;div>
+&lt;div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px;">
+&lt;i class="inline-svg" >&lt;svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffbf00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+&lt;path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+&lt;path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+&lt;path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+&lt;line x1="9.7" y1="17" x2="14.3" y2="17" />
+&lt;/svg>&lt;/i>
+&lt;/div>
+&lt;div>
+&lt;h3>Daily Drop 15: 21-02-2022&lt;/h3>
+&lt;/div>
+&lt;br>
+&lt;div>
+At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.&lt;br>It could be anything - some .NET/C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.&lt;br>&lt;br>
+The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+&lt;/div>
+&lt;/div>
+&lt;/blockquote></description></item><item><title>Garbage collection configuration</title><link>https://always-developing.github.io/dailydrop/2022/02/18-gc-variables/</link><pubDate>Fri, 18 Feb 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/02/18-gc-variables/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
 &lt;p>There are a number of settings related to the .NET &lt;code>garbage collector (GC)&lt;/code> which can be set at runtime using a variety of methods. Generally these do not need to be manually configured, but can be changed from the default to tweak and optimize performance of the application.&lt;/p>
 &lt;hr>
 &lt;h2 id="configurations">Configurations&lt;/h2>
