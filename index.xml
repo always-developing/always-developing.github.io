@@ -1,4 +1,380 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Mon, 21 Feb 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>EF Core 6 EntityTypeConfiguration Attribute</title><link>https://always-developing.github.io/dailydrop/2022/02/21-ef-core6-entitytypeconfig/</link><pubDate>Mon, 21 Feb 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/02/21-ef-core6-entitytypeconfig/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Tue, 22 Feb 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Customize source generator output location</title><link>https://always-developing.github.io/dailydrop/2022/02/22-emit-source-generator-files/</link><pubDate>Tue, 22 Feb 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/02/22-emit-source-generator-files/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+&lt;p>The output location of code created by a &lt;code>Roslyn source generator&lt;/code> can be customized, so that the output file can be included in source control (to be included in code reviews for example).&lt;/p>
+&lt;p>This post will give a brief overview of source generators, and then show the default behavior and how it can be customized.&lt;/p>
+&lt;p>This post will not go into detail regarding the finer details of source generators - if you would like more details on source generators, see the reference links below.&lt;/p>
+&lt;hr>
+&lt;h2 id="source-generators">Source generators&lt;/h2>
+&lt;p>In short, a source generator is a piece of &lt;code>code which writes code&lt;/code>. The functionality ships as part of &lt;em>Roslyn&lt;/em>, the .NET Compiler Platform SDK.&lt;/p>
+&lt;p>Source generators allow for the inspection of user code as &lt;em>compile time&lt;/em>, and then based on specific criteria, can add additional code to the original code base, on the fly.&lt;/p>
+&lt;p>Let&amp;rsquo;s look at a very simple example, and all it&amp;rsquo;s moving parts. In the example, &lt;code>based on an attribute being present on a class, an additional method called &amp;quot;WhoAmI&amp;quot; will be added to the class, which will return the class the method is a member of&lt;/code>.&lt;/p>
+&lt;p>This code is very basic and by no means production ready.&lt;/p>
+&lt;hr>
+&lt;h3 id="define-the-qualifier">Define the qualifier&lt;/h3>
+&lt;p>For a class to qualify for the new &lt;em>WhoAmI&lt;/em> method, it will need to be decorated with an attribute - so first the attribute is defined. This is not specific to source generators, just a normal C#attribute.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5">5&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="na">[AttributeUsage(AttributeTargets.Class)]&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">WhoAmIAttribute&lt;/span> &lt;span class="p">:&lt;/span> &lt;span class="n">Attribute&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="n">WhoAmIAttribute&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;hr>
+&lt;h3 id="find-qualifying-classes">Find qualifying classes&lt;/h3>
+&lt;p>The next step is to setup the rule to find qualifying classes. This is done using an &lt;em>ISyntaxReceiver&lt;/em> implementation. Roslyn will parse the entire code base and for each separate syntax node (each part of code) will call the &lt;em>ISyntaxReceiver&lt;/em> implementation.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-16">16&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-17">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-17">17&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-18">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-18">18&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-19">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-19">19&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-20">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-20">20&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-21">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-21">21&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">WhoAmISyntaxReceiver&lt;/span> &lt;span class="p">:&lt;/span> &lt;span class="n">ISyntaxReceiver&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="c1">// This is to store the class which qualified
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="k">public&lt;/span> &lt;span class="n">ClassDeclarationSyntax&lt;/span> &lt;span class="n">QualifyingClass&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">get&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="k">private&lt;/span> &lt;span class="k">set&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">OnVisitSyntaxNode&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">SyntaxNode&lt;/span> &lt;span class="n">syntaxNode&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="c1">// if the node is a class declaration
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">syntaxNode&lt;/span> &lt;span class="k">is&lt;/span> &lt;span class="n">ClassDeclarationSyntax&lt;/span> &lt;span class="n">cds&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="c1">// check if the class is decorated
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="c1">// with an attribute called &amp;#34;WhoAmI&amp;#34;
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">cds&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">AttributeLists&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">SelectMany&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">al&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span>
+&lt;span class="n">al&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Attributes&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Where&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">a&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span>
+&lt;span class="n">a&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Name&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">ToString&lt;/span>&lt;span class="p">().&lt;/span>&lt;span class="n">Equals&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;WhoAmI&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="n">StringComparison&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">InvariantCultureIgnoreCase&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">)).&lt;/span>&lt;span class="n">Any&lt;/span>&lt;span class="p">())&lt;/span>
+&lt;span class="n">QualifyingClass&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">cds&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;ul>
+&lt;li>&lt;strong>Line 9&lt;/strong>: The type of the node is checked, and if its not a &lt;em>ClassDeclaration&lt;/em> we can ignore as it will automatically not qualify&lt;/li>
+&lt;li>&lt;strong>Line 13-17&lt;/strong>: Check if there are any attributes decorating the class and which are called &amp;ldquo;WhoAmI&amp;rdquo;&lt;/li>
+&lt;li>&lt;strong>Line 18&lt;/strong>: Store the ClassDeclarationSyntax details of the class which qualified&lt;/li>
+&lt;/ul>
+&lt;p>&lt;strong>This implementation, as well as the generator are created in a separate project called &lt;em>WhoAmI.Generator&lt;/em>.&lt;/strong>&lt;/p>
+&lt;hr>
+&lt;h3 id="generate-the-code">Generate the code&lt;/h3>
+&lt;p>Next, is to setup the actual generator. The generator will received input from the &lt;em>ISyntaxReceiver&lt;/em> implementation, generate the code as a string, and then output a C# file.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-16">16&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-17">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-17">17&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-18">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-18">18&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-19">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-19">19&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-20">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-20">20&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-21">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-21">21&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-22">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-22">22&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-23">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-23">23&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-24">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-24">24&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-25">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-25">25&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-26">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-26">26&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-27">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-27">27&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-28">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-28">28&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-29">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-29">29&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-30">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-30">30&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-31">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-31">31&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-32">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-32">32&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-33">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-33">33&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-34">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-34">34&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-35">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-35">35&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-36">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-36">36&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="na">[Generator]&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">WhoAmIGenerator&lt;/span> &lt;span class="p">:&lt;/span> &lt;span class="n">ISourceGenerator&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">Execute&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">GeneratorExecutionContext&lt;/span> &lt;span class="n">context&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">WhoAmISyntaxReceiver&lt;/span> &lt;span class="n">syntaxReceiver&lt;/span> &lt;span class="p">=&lt;/span>
+&lt;span class="p">(&lt;/span>&lt;span class="n">WhoAmISyntaxReceiver&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">SyntaxReceiver&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="c1">// just double check the type is not null
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="n">ClassDeclarationSyntax&lt;/span> &lt;span class="n">qualifyingClass&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">syntaxReceiver&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">QualifyingClass&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">qualifyingClass&lt;/span> &lt;span class="k">is&lt;/span> &lt;span class="k">null&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">return&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="c1">// add the generated implementation to the compilation
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="n">SourceText&lt;/span> &lt;span class="n">sourceText&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">SourceText&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">From&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$@&amp;#34;
+&lt;/span>&lt;span class="s">namespace EmitGenerated;
+&lt;/span>&lt;span class="s">
+&lt;/span>&lt;span class="s">public partial class {qualifyingClass.Identifier}
+&lt;/span>&lt;span class="s">{{
+&lt;/span>&lt;span class="s"> public string WhoAmI()
+&lt;/span>&lt;span class="s"> {{
+&lt;/span>&lt;span class="s"> return this.GetType().Name;
+&lt;/span>&lt;span class="s"> }}
+&lt;/span>&lt;span class="s">}}&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">Encoding&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">UTF8&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">AddSource&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$&amp;#34;{qualifyingClass.Identifier}.Generated.cs&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">sourceText&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">Initialize&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">GeneratorInitializationContext&lt;/span> &lt;span class="n">context&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="c1">// register the generator to recieve notification from WhoAmISyntaxReceiver
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">RegisterForSyntaxNotifications&lt;/span>&lt;span class="p">(()&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">WhoAmISyntaxReceiver&lt;/span>&lt;span class="p">());&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;ul>
+&lt;li>&lt;strong>Line 10&lt;/strong>: Get the qualifying class from the receiver&lt;/li>
+&lt;li>&lt;strong>Line 17-26&lt;/strong>: Generate the required code as a string&lt;/li>
+&lt;li>&lt;strong>Line 28&lt;/strong>: Output the C# file with the given name and code&lt;/li>
+&lt;li>&lt;strong>Line 34&lt;/strong>: Register the receiver with the generator&lt;/li>
+&lt;/ul>
+&lt;p>&lt;strong>This implementation, as well as the receiver mentioned above, are created in a separate project called &lt;em>WhoAmI.Generator&lt;/em>.&lt;/strong>&lt;/p>
+&lt;hr>
+&lt;h3 id="project-reference">Project Reference&lt;/h3>
+&lt;p>Now we have to register the generator in the main project. The &lt;em>WhoAmI.Generator&lt;/em> project (which contains the generator and the receiver) can be referenced as a normal &lt;em>Project Reference&lt;/em> initially. However, the csproj then needs to be edited to indicate that the referenced project is a generator and not a normal project reference.&lt;/p>
+&lt;p>The &lt;em>OutputItemType&lt;/em> and &lt;em>ReferenceOutputAssembly&lt;/em> values are added. The relevant section in the csproj file will look as follows:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-xml" data-lang="xml">&lt;span class="nt">&amp;lt;ItemGroup&amp;gt;&lt;/span>
+&lt;span class="nt">&amp;lt;ProjectReference&lt;/span> &lt;span class="na">Include=&lt;/span>&lt;span class="s">&amp;#34;..\WhoAmI.Generator\WhoAmI.Generator.csproj&amp;#34;&lt;/span>
+&lt;span class="na">OutputItemType=&lt;/span>&lt;span class="s">&amp;#34;Analyzer&amp;#34;&lt;/span> &lt;span class="na">ReferenceOutputAssembly=&lt;/span>&lt;span class="s">&amp;#34;false&amp;#34;&lt;/span> &lt;span class="nt">/&amp;gt;&lt;/span>
+&lt;span class="nt">&amp;lt;/ItemGroup&amp;gt;&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;hr>
+&lt;h3 id="implement-and-output">Implement and output&lt;/h3>
+&lt;p>Finally, it&amp;rsquo;s time to use the generator.&lt;/p>
+&lt;p>A partial class is created, and decorated with the attribute:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="na">[WhoAmI]&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="k">partial&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">RandomClass&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>Even though the class doesn&amp;rsquo;t directly contain a method called &lt;em>WhoAmI&lt;/em>, the generator will create the method in a separate file (which is allowed as the class is partial):&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="kt">var&lt;/span> &lt;span class="n">rc&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">RandomClass&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">rc&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WhoAmI&lt;/span>&lt;span class="p">());&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>The output:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-posh" data-lang="posh"> &lt;span class="n">RandomClass&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>We are now able to call the &lt;em>WhoAmI&lt;/em> method to find out the type.&lt;/p>
+&lt;h3 id="limitations">Limitations&lt;/h3>
+&lt;p>The advantage of generators is that the code is automatically generated at &lt;em>compile time&lt;/em>, however the side-effect of this is that the code is not emitted to a file on disk. The only way to see the code generated it to browse to the file under &lt;em>Dependencies =&amp;gt; Analyzers&lt;/em>.&lt;/p>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 325;
+flex-basis: 780px"
+>
+&lt;a href="https://always-developing.github.io/dailydrop/2022/02/22-emit-source-generator-files/1.source-output.png" data-size="761x234">
+&lt;img src="https://always-developing.github.io/dailydrop/2022/02/22-emit-source-generator-files/1.source-output.png"
+width="761"
+height="234"
+srcset="https://always-developing.github.io/dailydrop/2022/02/22-emit-source-generator-files/1.source-output_hu61b356e2225364a468b6303342304c36_95814_480x0_resize_box_3.png 480w, https://always-developing.github.io/dailydrop/2022/02/22-emit-source-generator-files/1.source-output_hu61b356e2225364a468b6303342304c36_95814_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Generated output">
+&lt;/a>
+&lt;figcaption>Generated output&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;p>Up until now this process has worked and might suite your needs just fine. But if you need the &lt;code>generated file(s) to be code reviewed and committed to source control&lt;/code>, the current setup will not allow that.&lt;/p>
+&lt;p>Next we&amp;rsquo;ll look at how the process can be configured to emit the file.&lt;/p>
+&lt;hr>
+&lt;h2 id="customization">Customization&lt;/h2>
+&lt;h2 id="emit-the-file">Emit the file&lt;/h2>
+&lt;p>First, lets configure that the file should be emitted. This is done by adding an &lt;code>EmitCompilerGeneratedFiles&lt;/code> node to the csproj file of the application.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-xml" data-lang="xml">&lt;span class="nt">&amp;lt;PropertyGroup&amp;gt;&lt;/span>
+&lt;span class="nt">&amp;lt;EmitCompilerGeneratedFiles&amp;gt;&lt;/span>true&lt;span class="nt">&amp;lt;/EmitCompilerGeneratedFiles&amp;gt;&lt;/span>
+&lt;span class="nt">&amp;lt;/PropertyGroup&amp;gt;&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>The file is now generated in the following location:&lt;br>
+&lt;code>{BaseIntermediateOutpath}/generated/{Assembly}/{SourceGeneratorName}/{GeneratedFile}&lt;/code>&lt;/p>
+&lt;p>Typically this could be the obj folder:&lt;/p>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 689;
+flex-basis: 1654px"
+>
+&lt;a href="https://always-developing.github.io/dailydrop/2022/02/22-emit-source-generator-files/2.emit-output.png" data-size="765x111">
+&lt;img src="https://always-developing.github.io/dailydrop/2022/02/22-emit-source-generator-files/2.emit-output.png"
+width="765"
+height="111"
+srcset="https://always-developing.github.io/dailydrop/2022/02/22-emit-source-generator-files/2.emit-output_hu23d0b89292b104d34d57db0e441ad5be_6823_480x0_resize_box_3.png 480w, https://always-developing.github.io/dailydrop/2022/02/22-emit-source-generator-files/2.emit-output_hu23d0b89292b104d34d57db0e441ad5be_6823_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Default emit output">
+&lt;/a>
+&lt;figcaption>Default emit output&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;hr>
+&lt;h3 id="change-the-location">Change the location&lt;/h3>
+&lt;p>The &lt;code>CompilerGeneratedFilesOutputPath&lt;/code> node can be added to control where file should be emitted to:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-xml" data-lang="xml">&lt;span class="nt">&amp;lt;PropertyGroup&amp;gt;&lt;/span>
+&lt;span class="nt">&amp;lt;EmitCompilerGeneratedFiles&amp;gt;&lt;/span>true&lt;span class="nt">&amp;lt;/EmitCompilerGeneratedFiles&amp;gt;&lt;/span>
+&lt;span class="nt">&amp;lt;CompilerGeneratedFilesOutputPath&amp;gt;&lt;/span>SourceGenerated&lt;span class="nt">&amp;lt;/CompilerGeneratedFilesOutputPath&amp;gt;&lt;/span>
+&lt;span class="nt">&amp;lt;/PropertyGroup&amp;gt;&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>The file is now generated in the following location:&lt;br>
+&lt;code>{CompilerGeneratedFilesOutputPath}/{Assembly}/{SourceGeneratorName}/{GeneratedFile}&lt;/code>&lt;/p>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 587;
+flex-basis: 1408px"
+>
+&lt;a href="https://always-developing.github.io/dailydrop/2022/02/22-emit-source-generator-files/3.custom-ouput.png" data-size="681x116">
+&lt;img src="https://always-developing.github.io/dailydrop/2022/02/22-emit-source-generator-files/3.custom-ouput.png"
+width="681"
+height="116"
+srcset="https://always-developing.github.io/dailydrop/2022/02/22-emit-source-generator-files/3.custom-ouput_huc59396d3b3c05c350f13f18c151f6f3c_6638_480x0_resize_box_3.png 480w, https://always-developing.github.io/dailydrop/2022/02/22-emit-source-generator-files/3.custom-ouput_huc59396d3b3c05c350f13f18c151f6f3c_6638_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Custom emit output">
+&lt;/a>
+&lt;figcaption>Custom emit output&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;hr>
+&lt;h3 id="fix-errors">Fix errors&lt;/h3>
+&lt;p>As it stands now, the application won&amp;rsquo;t compile due to the following error:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-posh" data-lang="posh"> &lt;span class="nb">Type &lt;/span>&lt;span class="s1">&amp;#39;RandomClass&amp;#39;&lt;/span> &lt;span class="n">already&lt;/span> &lt;span class="n">defines&lt;/span> &lt;span class="n">a&lt;/span> &lt;span class="n">member&lt;/span> &lt;span class="n">called&lt;/span> &lt;span class="s1">&amp;#39;WhoAmI&amp;#39;&lt;/span> &lt;span class="n">with&lt;/span> &lt;span class="n">the&lt;/span> &lt;span class="n">same&lt;/span> &lt;span class="k">parameter&lt;/span> &lt;span class="n">types&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>We have configured the file to be emitted to the custom location, however the file is &lt;em>&lt;strong>still also being emitted into memory and compiled as part of the source&lt;/strong>&lt;/em>.&lt;br>
+Knowing this, the above error now makes sense - we have two files used in compilation, generating the same method.&lt;/p>
+&lt;p>The final step is to exclude the files emitted to disk from being used in the compilation. An &lt;em>ItemGroup&lt;/em> is added to the csproj file, which instructions any cs files emitted to disk by the source generator to be excluded from compilation.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5">5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6">6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7">7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8">8&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-xml" data-lang="xml">&lt;span class="nt">&amp;lt;PropertyGroup&amp;gt;&lt;/span>
+&lt;span class="nt">&amp;lt;EmitCompilerGeneratedFiles&amp;gt;&lt;/span>true&lt;span class="nt">&amp;lt;/EmitCompilerGeneratedFiles&amp;gt;&lt;/span>
+&lt;span class="nt">&amp;lt;CompilerGeneratedFilesOutputPath&amp;gt;&lt;/span>SourceGenerated&lt;span class="nt">&amp;lt;/CompilerGeneratedFilesOutputPath&amp;gt;&lt;/span>
+&lt;span class="nt">&amp;lt;/PropertyGroup&amp;gt;&lt;/span>
+&lt;span class="nt">&amp;lt;ItemGroup&amp;gt;&lt;/span>
+&lt;span class="nt">&amp;lt;Compile&lt;/span> &lt;span class="na">Remove=&lt;/span>&lt;span class="s">&amp;#34;$(CompilerGeneratedFilesOutputPath)/**/*.cs&amp;#34;&lt;/span> &lt;span class="nt">/&amp;gt;&lt;/span>
+&lt;span class="nt">&amp;lt;/ItemGroup&amp;gt;&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>The files will still be emitted to disk, and so can be included in source control and code reviews, but are now marked to be excluded in the compilation process.&lt;/p>
+&lt;hr>
+&lt;h2 id="notes">Notes&lt;/h2>
+&lt;p>Source generators are a powerful tool to be leveraged to solve certain use cases - however the tooling to support them is not always as powerful. The ability to emit the files to disk can be used to assist with the development inner look to ensure the output code is correct, as well as included as part of source control to be properly reviewed.&lt;/p>
+&lt;hr>
+&lt;h2 id="references">References&lt;/h2>
+&lt;p>&lt;a class="link" href="https://docs.microsoft.com/en-us/dotnet/csharp/roslyn-sdk/source-generators-overview" target="_blank" rel="noopener"
+>Source Generators&lt;/a>&lt;br>
+&lt;a class="link" href="https://andrewlock.net/creating-a-source-generator-part-6-saving-source-generator-output-in-source-control/" target="_blank" rel="noopener"
+>Saving source generator output in source control&lt;/a>&lt;/p>
+&lt;blockquote>
+&lt;div>
+&lt;div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px;">
+&lt;i class="inline-svg" >&lt;svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffbf00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+&lt;path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+&lt;path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+&lt;path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+&lt;line x1="9.7" y1="17" x2="14.3" y2="17" />
+&lt;/svg>&lt;/i>
+&lt;/div>
+&lt;div>
+&lt;h3>Daily Drop 16: 22-02-2022&lt;/h3>
+&lt;/div>
+&lt;br>
+&lt;div>
+At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.&lt;br>It could be anything - some .NET/C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.&lt;br>&lt;br>
+The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+&lt;/div>
+&lt;/div>
+&lt;/blockquote></description></item><item><title>EF Core 6 EntityTypeConfiguration Attribute</title><link>https://always-developing.github.io/dailydrop/2022/02/21-ef-core6-entitytypeconfig/</link><pubDate>Mon, 21 Feb 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/02/21-ef-core6-entitytypeconfig/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
 &lt;p>A new attribute called &lt;code>EntityTypeConfiguration&lt;/code> was introduced in Entity Framework 6, which allows for easier configuration of custom entity configurations.&lt;/p>
 &lt;p>Let&amp;rsquo;s take a look at how is simplifies the configuration of an entity.&lt;/p>
 &lt;hr>
