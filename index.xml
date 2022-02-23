@@ -1,4 +1,312 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Tue, 22 Feb 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Customize source generator output location</title><link>https://always-developing.github.io/dailydrop/2022/02/22-emit-source-generator-files/</link><pubDate>Tue, 22 Feb 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/02/22-emit-source-generator-files/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Wed, 23 Feb 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Indexers - access a class as an array</title><link>https://always-developing.github.io/dailydrop/2022/02/23-indexers/</link><pubDate>Wed, 23 Feb 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/02/23-indexers/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+&lt;p>Any (relevant) class can be extended so that it can be accessed as an array, using &lt;code>Indexers&lt;/code>, just by adding a property to the class.&lt;/p>
+&lt;hr>
+&lt;h2 id="without-indexers">Without indexers&lt;/h2>
+&lt;p>In the examples below, we are using a &lt;code>ProductPrice&lt;/code> entity. This class keeps some basic details of a product, as well as an array of prices, one price for each month of the year. So &lt;em>Prices[0]&lt;/em> is the price for January, &lt;em>Prices[1]&lt;/em> is the price for February and so on.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">ProductPrice&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="kt">int&lt;/span> &lt;span class="n">ProductId&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">get&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="k">set&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">ProductName&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">get&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="k">set&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="kt">decimal&lt;/span>&lt;span class="p">[]&lt;/span> &lt;span class="n">Prices&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">get&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="k">set&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="n">ProductPrice&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="kt">int&lt;/span> &lt;span class="n">productId&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">productName&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="kt">decimal&lt;/span>&lt;span class="p">[]&lt;/span> &lt;span class="n">prices&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">ProductId&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">productId&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="n">ProductName&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">productName&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="n">Prices&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">prices&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>To access a price for a specific month, we can do this via the &lt;em>Prices&lt;/em> property exposed on the class&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5">5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6">6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7">7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8">8&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="kt">var&lt;/span> &lt;span class="n">pp&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">ProductPrice&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="m">112&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s">&amp;#34;Green t-shirt&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="k">new&lt;/span> &lt;span class="kt">decimal&lt;/span>&lt;span class="p">[]&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="m">0&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="m">0&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="m">0&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="m">100&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="m">100&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="m">80&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="m">80&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="m">50&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="m">50&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="m">100&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="m">100&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="m">60&lt;/span> &lt;span class="p">});&lt;/span>
+&lt;span class="kt">int&lt;/span> &lt;span class="n">month&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="m">5&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">pp&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Prices&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Length&lt;/span> &lt;span class="p">&amp;gt;=&lt;/span> &lt;span class="n">month&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Write&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">pp&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Prices&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="n">month&lt;/span>&lt;span class="p">]);&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>This code will function just fine - however the &lt;code>ProductPrice&lt;/code> class can be extended to make it more intuitive and easier to work with.&lt;/p>
+&lt;hr>
+&lt;h2 id="with-indexers">With indexers&lt;/h2>
+&lt;p>The main purpose of the &lt;code>ProductPrice&lt;/code> class is to store price information related to a product. So let&amp;rsquo;s update the class so that we can access a price directly, without going via the &lt;em>Price&lt;/em> property.&lt;/p>
+&lt;p>&lt;code>ProductPrice&lt;/code> class update:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-16">16&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-17">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-17">17&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-18">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-18">18&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-19">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-19">19&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-20">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-20">20&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-21">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-21">21&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-22">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-22">22&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-23">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-23">23&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-24">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-24">24&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-25">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-25">25&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-26">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-26">26&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-27">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-27">27&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-28">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-28">28&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-29">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-29">29&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-30">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-30">30&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">ProductPrice&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="kt">int&lt;/span> &lt;span class="n">ProductId&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">get&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="k">set&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">ProductName&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">get&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="k">set&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;span class="c1">// Now private
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="k">private&lt;/span> &lt;span class="kt">decimal&lt;/span>&lt;span class="p">[]&lt;/span> &lt;span class="n">Prices&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">get&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="n">ProductPrice&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="kt">int&lt;/span> &lt;span class="n">productId&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">productName&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="kt">decimal&lt;/span>&lt;span class="p">[]&lt;/span> &lt;span class="n">prices&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">ProductId&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">productId&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="n">ProductName&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">productName&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="n">Prices&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">prices&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="c1">// this allows the class to be accessed as an array
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="k">public&lt;/span> &lt;span class="kt">decimal&lt;/span> &lt;span class="k">this&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="kt">int&lt;/span> &lt;span class="n">index&lt;/span>&lt;span class="p">]&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">get&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="c1">// do the length check internally
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="k">if&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">Prices&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Length&lt;/span> &lt;span class="p">&amp;gt;=&lt;/span> &lt;span class="n">index&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="k">return&lt;/span> &lt;span class="n">Prices&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="n">index&lt;/span>&lt;span class="p">];&lt;/span>
+&lt;span class="k">return&lt;/span> &lt;span class="m">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="c1">// ability to confirm the length of the class
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="k">public&lt;/span> &lt;span class="kt">int&lt;/span> &lt;span class="n">Length&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">Prices&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Length&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;ul>
+&lt;li>&lt;strong>Line 8&lt;/strong>: The &lt;em>Prices&lt;/em> property is now private&lt;/li>
+&lt;li>&lt;strong>Line 18-26&lt;/strong>: The indexer has been added. It uses the &lt;em>this[int index]&lt;/em> format&lt;/li>
+&lt;li>&lt;strong>Line 23-24&lt;/strong>: Custom logic to check if trying to access an out of bound index, then return 0 (instead of throwing an exception)&lt;/li>
+&lt;li>&lt;strong>Line 29&lt;/strong>: Expose a &lt;em>Length&lt;/em> property which will return the number of prices&lt;/li>
+&lt;/ul>
+&lt;p>The &lt;code>ProductPrice&lt;/code> class can now be used as follows:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5">5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6">6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7">7&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="kt">var&lt;/span> &lt;span class="n">pp&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">ProductPrice&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="m">112&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s">&amp;#34;Green t-shirt&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="k">new&lt;/span> &lt;span class="kt">decimal&lt;/span>&lt;span class="p">[]&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="m">0&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="m">0&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="m">0&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="m">100&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="m">100&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="m">80&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="m">80&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="m">50&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="m">50&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="m">100&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="m">100&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="m">60&lt;/span> &lt;span class="p">});&lt;/span>
+&lt;span class="kt">int&lt;/span> &lt;span class="n">month&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="m">5&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="kt">int&lt;/span> &lt;span class="n">invalidMonth&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="m">100&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">pp&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="n">month&lt;/span>&lt;span class="p">]);&lt;/span>
+&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">pp&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="n">invalidMonth&lt;/span>&lt;span class="p">]);&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;ul>
+&lt;li>&lt;strong>Line 6&lt;/strong>: The price can now be accessed directly on the class using [], no need to go via &lt;em>Prices&lt;/em> as before&lt;/li>
+&lt;li>&lt;strong>Line 7&lt;/strong>: An invalid month can be sent without bounds checking, as the class will perform the check internally&lt;/li>
+&lt;/ul>
+&lt;p>The output for the above is&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-posh" data-lang="posh">&lt;span class="n">80&lt;/span>
+&lt;span class="n">0&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;hr>
+&lt;h2 id="field-indexer">Field indexer&lt;/h2>
+&lt;p>Another use for &lt;code>indexers&lt;/code> is to index the fields/properties on a class.&lt;/p>
+&lt;p>In the below example, we have an &lt;code>Address&lt;/code> class which has a number of string fields:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-16">16&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-17">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-17">17&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-18">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-18">18&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-19">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-19">19&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-20">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-20">20&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-21">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-21">21&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-22">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-22">22&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-23">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-23">23&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-24">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-24">24&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-25">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-25">25&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-26">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-26">26&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-27">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-27">27&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-28">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-28">28&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-29">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-29">29&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-30">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-30">30&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-31">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-31">31&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-32">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-32">32&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-33">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-33">33&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-34">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-34">34&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-35">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-35">35&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">Address&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">Number&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">get&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="k">set&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">Line1&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">get&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="k">set&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">Line2&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">get&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="k">set&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">Suburb&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">get&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="k">set&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">Town&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">get&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="k">set&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">Province&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">get&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="k">set&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="n">Address&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="kt">string&lt;/span> &lt;span class="n">number&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">line1&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">line2&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="kt">string&lt;/span> &lt;span class="n">suburb&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">town&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">province&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">Number&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">number&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="n">Line1&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">line1&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="n">Line2&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">line2&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="n">Suburb&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">suburb&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="n">Town&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">town&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="n">Province&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">province&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="c1">// add indexer functionality
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="k">public&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="k">this&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="kt">int&lt;/span> &lt;span class="n">index&lt;/span>&lt;span class="p">]&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="c1">// build up an array of all the properties,
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="c1">// and then access the corresponding item
+&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="k">get&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="k">new&lt;/span> &lt;span class="kt">string&lt;/span>&lt;span class="p">[]&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="n">Number&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">Line1&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">Line2&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">Suburb&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">Town&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">Province&lt;/span> &lt;span class="p">})&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">index&lt;/span>&lt;span class="p">];&lt;/span>
+&lt;span class="p">}&lt;/span>
+&lt;span class="k">public&lt;/span> &lt;span class="kt">int&lt;/span> &lt;span class="n">Length&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="m">6&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>The indexer functionality has been added, but the class &lt;code>contains no arrays to index&lt;/code>.&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>Line 31&lt;/strong>: An array is built up of all the properties on the class, and then accessed via the index&lt;/li>
+&lt;/ul>
+&lt;p>This allows for accessing a property via an index. This can be leveraged to iteration through the properties on the class:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5">5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6">6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7">7&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="kt">var&lt;/span> &lt;span class="n">address&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">Address&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;11&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s">&amp;#34;Main Road&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s">&amp;#34;XYZ Estate&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="s">&amp;#34;Suburb1&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s">&amp;#34;Town2&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s">&amp;#34;Province3&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;span class="k">for&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="kt">int&lt;/span> &lt;span class="n">i&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="m">0&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="n">i&lt;/span> &lt;span class="p">&amp;lt;&lt;/span> &lt;span class="n">address&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Length&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="n">i&lt;/span>&lt;span class="p">++)&lt;/span>
+&lt;span class="p">{&lt;/span>
+&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">address&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="n">i&lt;/span>&lt;span class="p">]);&lt;/span>
+&lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>The output:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5">5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6">6&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-posh" data-lang="posh">&lt;span class="n">11&lt;/span>
+&lt;span class="n">Main&lt;/span> &lt;span class="n">Road&lt;/span>
+&lt;span class="n">XYZ&lt;/span> &lt;span class="n">Estate&lt;/span>
+&lt;span class="n">Suburb1&lt;/span>
+&lt;span class="n">Town2&lt;/span>
+&lt;span class="n">Province3&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;hr>
+&lt;h2 id="notes">Notes&lt;/h2>
+&lt;p>While extending a class to use &lt;code>indexers&lt;/code> will generally not be required for everyday use, its advantageous to know that &lt;code>indexers&lt;/code> exist and are available for the use cases where they will make working with the class a lot easier and intuitive.&lt;/p>
+&lt;hr>
+&lt;h2 id="references">References&lt;/h2>
+&lt;p>&lt;a class="link" href="https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/indexers/using-indexers" target="_blank" rel="noopener"
+>Using indexers (C# Programming Guide)&lt;/a>&lt;/p>
+&lt;blockquote>
+&lt;div>
+&lt;div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px;">
+&lt;i class="inline-svg" >&lt;svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffbf00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+&lt;path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+&lt;path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+&lt;path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+&lt;line x1="9.7" y1="17" x2="14.3" y2="17" />
+&lt;/svg>&lt;/i>
+&lt;/div>
+&lt;div>
+&lt;h3>Daily Drop 17: 23-02-2022&lt;/h3>
+&lt;/div>
+&lt;br>
+&lt;div>
+At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.&lt;br>It could be anything - some .NET/C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.&lt;br>&lt;br>
+The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+&lt;/div>
+&lt;/div>
+&lt;/blockquote></description></item><item><title>Customize source generator output location</title><link>https://always-developing.github.io/dailydrop/2022/02/22-emit-source-generator-files/</link><pubDate>Tue, 22 Feb 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/02/22-emit-source-generator-files/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
 &lt;p>The output location of code created by a &lt;code>Roslyn source generator&lt;/code> can be customized, so that the output file can be included in source control (to be included in code reviews for example).&lt;/p>
 &lt;p>This post will give a brief overview of source generators, and then show the default behavior and how it can be customized.&lt;/p>
 &lt;p>This post will not go into detail regarding the finer details of source generators - if you would like more details on source generators, see the reference links below.&lt;/p>
@@ -154,7 +462,7 @@
 &lt;span class="p">}&lt;/span>
 &lt;span class="k">public&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">Initialize&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">GeneratorInitializationContext&lt;/span> &lt;span class="n">context&lt;/span>&lt;span class="p">)&lt;/span>
 &lt;span class="p">{&lt;/span>
-&lt;span class="c1">// register the generator to recieve notification from WhoAmISyntaxReceiver
+&lt;span class="c1">// register the generator to receive notification from WhoAmISyntaxReceiver
 &lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">RegisterForSyntaxNotifications&lt;/span>&lt;span class="p">(()&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">WhoAmISyntaxReceiver&lt;/span>&lt;span class="p">());&lt;/span>
 &lt;span class="p">}&lt;/span>
 &lt;span class="p">}&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
