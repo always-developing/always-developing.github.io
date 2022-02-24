@@ -1,0 +1,823 @@
+<!doctype html><html lang=en-uk>
+<head><meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="Query interception with Entity Framework Core interceptors"><title>Entity Framework Core interceptors</title>
+<link rel=canonical href=https://always-developing.github.io/dailydrop/2022/02/24-efcore-interceptors/>
+<link rel=stylesheet href=/scss/style.min.css><meta property="og:title" content="Entity Framework Core interceptors">
+<meta property="og:description" content="Query interception with Entity Framework Core interceptors">
+<meta property="og:url" content="https://always-developing.github.io/dailydrop/2022/02/24-efcore-interceptors/">
+<meta property="og:site_name" content="Always Developing">
+<meta property="og:type" content="article"><meta property="article:section" content="Dailydrop"><meta property="article:tag" content="c#"><meta property="article:tag" content=".net"><meta property="article:tag" content="dailydrop"><meta property="article:tag" content="efcore"><meta property="article:tag" content="ef"><meta property="article:tag" content="entityframework"><meta property="article:tag" content="entityframeworkcore"><meta property="article:tag" content="interceptor"><meta property="article:tag" content="interceptors"><meta property="article:published_time" content="2022-02-24T01:00:00+02:00"><meta property="article:modified_time" content="2022-02-24T01:00:00+02:00">
+<meta name=twitter:title content="Entity Framework Core interceptors">
+<meta name=twitter:description content="Query interception with Entity Framework Core interceptors">
+<link rel="shortcut icon" href=favicon.ico>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CXPLFS7K38"></script>
+<script>var doNotTrack=!1;if(!doNotTrack){window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date),gtag('config','G-CXPLFS7K38',{anonymize_ip:!1})}</script>
+</head>
+<body class="article-page has-toc">
+<script>(function(){const a='StackColorScheme';localStorage.getItem(a)||localStorage.setItem(a,"dark")})()</script><script>(function(){const b='StackColorScheme',a=localStorage.getItem(b),c=window.matchMedia('(prefers-color-scheme: dark)').matches===!0;a=='dark'||a==='auto'&&c?document.documentElement.dataset.scheme='dark':document.documentElement.dataset.scheme='light'})()</script>
+<div class="container main-container flex
+extended">
+<div id=article-toolbar>
+<a href=https://always-developing.github.io/ class=back-home><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="15 6 9 12 15 18"/></svg>
+<span>Back</span>
+</a>
+</div>
+<main class="main full-width">
+<article class=main-article>
+<header class=article-header>
+<div class=article-details>
+<header class=article-category>
+<a href=/categories/dailydrop/>
+DailyDrop
+</a>
+</header>
+<h2 class=article-title>
+<a href=/dailydrop/2022/02/24-efcore-interceptors/>Entity Framework Core interceptors</a>
+</h2>
+<h3 class=article-subtitle>
+Query interception with Entity Framework Core interceptors
+</h3>
+<footer class=article-time>
+<div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
+<time class=article-time--published>Feb 24, 2022</time>
+</div>
+<div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<time class=article-time--reading>
+8 minute read
+</time>
+</div>
+</footer>
+</div>
+</header>
+<section class=article-content>
+<h2 id=daily-knowledge-drop>Daily Knowledge Drop</h2>
+<p>Entity Framework Core has the concept of <code>interceptors</code> which allow for the <code>insertion of custom logic during the query execution process</code>.</p>
+<p>There a number of real world applications for the functionality, for example:</p>
+<ul>
+<li>Caching and retrieval of data</li>
+<li>Logging query or diagnostics information under certain conditions</li>
+<li>Modifying the query parameters, such as the timeout under certain conditions</li>
+</ul>
+<hr>
+<h2 id=interceptor-structure>Interceptor structure</h2>
+<p>Creating an <code>interceptor</code> is straight forward - a class is created which <em>implements the abstract class DbCommandInterceptor</em>, and then <em>overrides the required relevant method(s)</em>.</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5> 5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6> 6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7> 7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
+</span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
+</span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
+</span><span class=lnt id=ienumusage-12><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-12>12</a>
+</span><span class=lnt id=ienumusage-13><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-13>13</a>
+</span><span class=lnt id=ienumusage-14><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-14>14</a>
+</span><span class=lnt id=ienumusage-15><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-15>15</a>
+</span><span class=lnt id=ienumusage-16><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-16>16</a>
+</span><span class=lnt id=ienumusage-17><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-17>17</a>
+</span><span class=lnt id=ienumusage-18><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-18>18</a>
+</span><span class=lnt id=ienumusage-19><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-19>19</a>
+</span><span class=lnt id=ienumusage-20><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-20>20</a>
+</span><span class=lnt id=ienumusage-21><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-21>21</a>
+</span><span class=lnt id=ienumusage-22><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-22>22</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=k>public</span> <span class=k>class</span> <span class=nc>ExecutionThresholdInterceptor</span> <span class=p>:</span> <span class=n>DbCommandInterceptor</span>
+<span class=p>{</span>
+    <span class=c1>// declare const message string
+</span><span class=c1></span>    <span class=k>private</span> <span class=k>const</span> <span class=kt>string</span> <span class=n>executionRangeExceededMessage</span> <span class=p>=</span> 
+            <span class=s>&#34;Query ran longer than expected. Milliseconds: {0}, Query: {1}&#34;</span><span class=p>;</span>
+
+    <span class=c1>// override the method executed when the datareader has been executed
+</span><span class=c1></span>    <span class=k>public</span> <span class=k>override</span> <span class=n>DbDataReader</span> <span class=n>ReaderExecuted</span><span class=p>(</span><span class=n>DbCommand</span> <span class=n>command</span><span class=p>,</span> 
+        <span class=n>CommandExecutedEventData</span> <span class=n>eventData</span><span class=p>,</span> <span class=n>DbDataReader</span> <span class=n>result</span><span class=p>)</span>
+    <span class=p>{</span>
+        <span class=c1>// check how long the query took to execute
+</span><span class=c1></span>        <span class=c1>// if its longer than the threshold
+</span><span class=c1></span>        <span class=k>if</span><span class=p>(</span> <span class=n>eventData</span><span class=p>.</span><span class=n>Duration</span><span class=p>.</span><span class=n>TotalMilliseconds</span> <span class=p>&gt;</span> <span class=m>10</span><span class=p>)</span>
+        <span class=p>{</span>
+            <span class=c1>// Log a rudimentary error message
+</span><span class=c1></span>            <span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>executionRangeExceededMessage</span><span class=p>,</span> 
+                <span class=n>eventData</span><span class=p>.</span><span class=n>Duration</span><span class=p>.</span><span class=n>TotalMilliseconds</span><span class=p>,</span> <span class=n>command</span><span class=p>.</span><span class=n>CommandText</span><span class=p>);</span>
+        <span class=p>}</span>
+
+        <span class=k>return</span> <span class=n>result</span><span class=p>;</span>
+    <span class=p>}</span>
+<span class=p>}</span></code></pre></td></tr></table>
+</div>
+</div>
+<ul>
+<li><strong>Line 1</strong>: Implement from <em>DbCommandInterceptor</em></li>
+<li><strong>Line 8-9</strong>: Override the <em>ReaderExecuted</em> method which is invoked after the query is executed</li>
+<li><strong>Line 13</strong>: Check the query execution length</li>
+<li><strong>Line 16-17</strong>: If the execution length is over the threshold, log the information</li>
+</ul>
+<p>There are a number of methods available for overriding, where custom logic can be executed. Each are called at a different stage of the query creation and execution process:</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Information</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CommandCreated</td>
+<td>Called immediately after EF calls CreateCommand()</td>
+</tr>
+<tr>
+<td>CommandCreating</td>
+<td>Called just before EF intends to call CreateCommand()</td>
+</tr>
+<tr>
+<td>CommandFailed</td>
+<td>Called when execution of a command has failed with an exception</td>
+</tr>
+<tr>
+<td>CommandFailedAsync</td>
+<td>Called when execution of a command has failed with an exception</td>
+</tr>
+<tr>
+<td>DataReaderDisposing</td>
+<td>Called when execution of a DbDataReader is about to be disposed</td>
+</tr>
+<tr>
+<td>NonQueryExecuted</td>
+<td>Called immediately after EF calls ExecuteNonQuery()</td>
+</tr>
+<tr>
+<td>NonQueryExecutedAsync</td>
+<td>Called immediately after EF calls ExecuteNonQueryAsync()</td>
+</tr>
+<tr>
+<td>NonQueryExecuting</td>
+<td>Called just before EF intends to call ExecuteNonQuery()</td>
+</tr>
+<tr>
+<td>NonQueryExecutingAsync</td>
+<td>Called just before EF intends to call ExecuteNonQueryAsync()</td>
+</tr>
+<tr>
+<td>ReaderExecuted</td>
+<td>Called immediately after EF calls ExecuteReader()</td>
+</tr>
+<tr>
+<td>ReaderExecutedAsync</td>
+<td>Called immediately after EF calls ExecuteReaderAsync()</td>
+</tr>
+<tr>
+<td>ReaderExecuting</td>
+<td>Called just before EF intends to call ExecuteReader()</td>
+</tr>
+<tr>
+<td>ReaderExecutingAsync</td>
+<td>Called just before EF intends to call ExecuteReaderAsync()</td>
+</tr>
+<tr>
+<td>ScalarExecuted</td>
+<td>Called immediately after EF calls ExecuteScalar()</td>
+</tr>
+<tr>
+<td>ScalarExecutedAsync</td>
+<td>Called immediately after EF calls ExecuteScalarAsync()</td>
+</tr>
+<tr>
+<td>ScalarExecuting</td>
+<td>Called just before EF intends to call ExecuteScalar()</td>
+</tr>
+<tr>
+<td>ScalarExecutingAsync</td>
+<td>Called just before EF intends to call ExecuteScalarAsync()</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id=interceptor-configuration>Interceptor configuration</h2>
+<p>Once we have an <code>interceptor</code> defined (implementing <em>DbCommandInterceptor</em>), the next step is to make EF Core aware of it. This is done on the <em>DbContext</em>:</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5> 5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6> 6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7> 7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
+</span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
+</span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
+</span><span class=lnt id=ienumusage-12><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-12>12</a>
+</span><span class=lnt id=ienumusage-13><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-13>13</a>
+</span><span class=lnt id=ienumusage-14><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-14>14</a>
+</span><span class=lnt id=ienumusage-15><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-15>15</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=k>public</span> <span class=k>class</span> <span class=nc>EFInterceptorsContext</span> <span class=p>:</span> <span class=n>DbContext</span>
+<span class=p>{</span>
+    <span class=k>public</span> <span class=n>DbSet</span><span class=p>&lt;</span><span class=n>Song</span><span class=p>&gt;</span> <span class=n>Songs</span> <span class=p>{</span> <span class=k>get</span><span class=p>;</span> <span class=k>set</span><span class=p>;</span> <span class=p>}</span>
+
+    <span class=k>protected</span> <span class=k>override</span> <span class=k>void</span> <span class=n>OnConfiguring</span><span class=p>(</span><span class=n>DbContextOptionsBuilder</span> <span class=n>optionsBuilder</span><span class=p>)</span>
+    <span class=p>{</span>
+        <span class=n>optionsBuilder</span><span class=p>.</span><span class=n>UseSqlServer</span><span class=p>(</span>
+            <span class=s>@&#34;Server=.\SQLEXPRESS;Database=EFInterceptors;Integrated Security=True&#34;</span><span class=p>)</span>
+               <span class=c1>// add the interceptor(s)
+</span><span class=c1></span>                <span class=p>.</span><span class=n>AddInterceptors</span><span class=p>(</span><span class=n>thresholdInterceptor</span><span class=p>);</span> 
+        <span class=p>}</span>
+
+        <span class=k>private</span> <span class=k>static</span> <span class=k>readonly</span> <span class=n>ExecutionThresholdInterceptor</span> <span class=n>thresholdInterceptor</span> <span class=p>=</span> 
+            <span class=k>new</span> <span class=n>ExecutionThresholdInterceptor</span><span class=p>();</span>
+<span class=p>}</span></code></pre></td></tr></table>
+</div>
+</div>
+<ul>
+<li><strong>Line 10</strong>: The interceptor is added to the EF configuration</li>
+<li><strong>Line 13-14</strong>: Interceptors are often stateless, so a single interceptor instance can be used for all DbContext instances</li>
+</ul>
+<p>Executing a query using the <em>DbContext</em>, we get the following output to the console window from the interceptor:</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5> 5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6> 6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7> 7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
+</span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
+</span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
+</span><span class=lnt id=ienumusage-12><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-12>12</a>
+</span><span class=lnt id=ienumusage-13><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-13>13</a>
+</span><span class=lnt id=ienumusage-14><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-14>14</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-posh data-lang=posh><span class=n>Query</span> <span class=n>ran</span> <span class=n>longer</span> <span class=n>than</span> <span class=n>expected</span><span class=p>.</span> <span class=n>Milliseconds</span><span class=err>:</span> <span class=n>25</span><span class=p>,</span><span class=n>089</span><span class=p>,</span> <span class=n>Query</span><span class=err>:</span> 
+<span class=nb>SELECT </span><span class=no>[t].[Artist], [t0].[YearReleased], [t0].[Id]</span>
+<span class=n>FROM</span> <span class=p>(</span>
+    <span class=nb>SELECT </span><span class=no>[s].[Artist]</span>
+    <span class=n>FROM</span> <span class=no>[Song] AS [s]</span>
+    <span class=nb>GROUP </span><span class=n>BY</span> <span class=no>[s].[Artist]</span>
+<span class=p>)</span> <span class=n>AS</span> <span class=no>[t]</span>
+<span class=n>OUTER</span> <span class=n>APPLY</span> <span class=p>(</span>
+    <span class=nb>SELECT </span><span class=n>DISTINCT</span> <span class=no>[s0].[Id], [s0].[Artist], [s0].[LengthInSeconds]</span><span class=p>,</span> 
+        <span class=no>[s0].[Name], [s0].[YearReleased]</span>
+    <span class=n>FROM</span> <span class=no>[Song] AS [s0]</span>
+    <span class=nb>WHERE </span><span class=no>[t].[Artist]</span> <span class=p>=</span> <span class=no>[s0].[Artist]</span>
+<span class=p>)</span> <span class=n>AS</span> <span class=no>[t0]</span>
+<span class=n>ORDER</span> <span class=n>BY</span> <span class=no>[t].[Artist]</span></code></pre></td></tr></table>
+</div>
+</div>
+<hr>
+<h2 id=suppress-execution>Suppress Execution</h2>
+<p>It is possible to <em>suppress the execution</em> of a query from an <code>interceptor</code> - however other installed <code>interceptors</code> will still be executed, so they will each need to check if the exception has been suppressed by a previous <code>interceptor</code>.</p>
+<p>In this example below, we&rsquo;ll configure two <code>interceptors</code> to be run <em>before the query is executed</em>:</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5> 5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6> 6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7> 7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
+</span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
+</span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
+</span><span class=lnt id=ienumusage-12><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-12>12</a>
+</span><span class=lnt id=ienumusage-13><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-13>13</a>
+</span><span class=lnt id=ienumusage-14><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-14>14</a>
+</span><span class=lnt id=ienumusage-15><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-15>15</a>
+</span><span class=lnt id=ienumusage-16><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-16>16</a>
+</span><span class=lnt id=ienumusage-17><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-17>17</a>
+</span><span class=lnt id=ienumusage-18><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-18>18</a>
+</span><span class=lnt id=ienumusage-19><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-19>19</a>
+</span><span class=lnt id=ienumusage-20><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-20>20</a>
+</span><span class=lnt id=ienumusage-21><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-21>21</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=c1>// This interceptor will suppress the execution of the query if the
+</span><span class=c1>// query is looking at the &#34;Song&#34; table
+</span><span class=c1></span><span class=k>public</span> <span class=k>class</span> <span class=nc>TableDownInterceptor</span> <span class=p>:</span> <span class=n>DbCommandInterceptor</span>
+<span class=p>{</span>
+    <span class=k>private</span> <span class=k>const</span> <span class=kt>string</span> <span class=n>suppressMessage</span> <span class=p>=</span> <span class=s>&#34;Table &#39;{0}&#39;is not currently &#34;</span> <span class=p>+</span>
+        <span class=s>&#34;available for querying. Query being suppressed: {1}&#34;</span><span class=p>;</span>
+
+    <span class=k>public</span> <span class=k>override</span> <span class=n>InterceptionResult</span><span class=p>&lt;</span><span class=n>DbDataReader</span><span class=p>&gt;</span> <span class=n>ReaderExecuting</span><span class=p>(</span><span class=n>DbCommand</span> <span class=n>command</span><span class=p>,</span> 
+        <span class=n>CommandEventData</span> <span class=n>eventData</span><span class=p>,</span> <span class=n>InterceptionResult</span><span class=p>&lt;</span><span class=n>DbDataReader</span><span class=p>&gt;</span> <span class=n>result</span><span class=p>)</span>
+    <span class=p>{</span>
+        <span class=c1>// very rudimentary check
+</span><span class=c1></span>        <span class=k>if</span> <span class=p>(</span><span class=n>eventData</span><span class=p>.</span><span class=n>Command</span><span class=p>.</span><span class=n>CommandText</span><span class=p>.</span><span class=n>Contains</span><span class=p>(</span><span class=s>&#34;[Song]&#34;</span><span class=p>))</span>
+        <span class=p>{</span>
+            <span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>suppressMessage</span><span class=p>,</span> <span class=s>&#34;Song&#34;</span><span class=p>,</span> <span class=n>eventData</span><span class=p>.</span><span class=n>Command</span><span class=p>.</span><span class=n>CommandText</span><span class=p>);</span>
+            <span class=c1>// Suppress the results with a custom empty data reader
+</span><span class=c1></span>            <span class=n>result</span> <span class=p>=</span> <span class=n>InterceptionResult</span><span class=p>&lt;</span><span class=n>DbDataReader</span><span class=p>&gt;</span>
+                <span class=p>.</span><span class=n>SuppressWithResult</span><span class=p>(</span><span class=k>new</span> <span class=n>TableDownDataReader</span><span class=p>());</span>
+        <span class=p>}</span>
+        <span class=k>return</span> <span class=n>result</span><span class=p>;</span>
+    <span class=p>}</span>
+<span class=p>}</span></code></pre></td></tr></table>
+</div>
+</div>
+<ul>
+<li><strong>Line 12</strong>: Simple check to see if the command text contains the &ldquo;Song&rdquo; table</li>
+<li><strong>Line 14</strong>: Output a message indicating the query is being suppressed</li>
+<li><strong>Line 16-17</strong>: Suppress the original result, with a custom empty data reader (see code below)</li>
+</ul>
+<p>The custom <em>DataReader</em> looks as follows. It does nothing by return an empty dataset:</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5> 5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6> 6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7> 7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
+</span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
+</span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
+</span><span class=lnt id=ienumusage-12><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-12>12</a>
+</span><span class=lnt id=ienumusage-13><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-13>13</a>
+</span><span class=lnt id=ienumusage-14><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-14>14</a>
+</span><span class=lnt id=ienumusage-15><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-15>15</a>
+</span><span class=lnt id=ienumusage-16><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-16>16</a>
+</span><span class=lnt id=ienumusage-17><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-17>17</a>
+</span><span class=lnt id=ienumusage-18><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-18>18</a>
+</span><span class=lnt id=ienumusage-19><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-19>19</a>
+</span><span class=lnt id=ienumusage-20><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-20>20</a>
+</span><span class=lnt id=ienumusage-21><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-21>21</a>
+</span><span class=lnt id=ienumusage-22><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-22>22</a>
+</span><span class=lnt id=ienumusage-23><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-23>23</a>
+</span><span class=lnt id=ienumusage-24><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-24>24</a>
+</span><span class=lnt id=ienumusage-25><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-25>25</a>
+</span><span class=lnt id=ienumusage-26><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-26>26</a>
+</span><span class=lnt id=ienumusage-27><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-27>27</a>
+</span><span class=lnt id=ienumusage-28><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-28>28</a>
+</span><span class=lnt id=ienumusage-29><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-29>29</a>
+</span><span class=lnt id=ienumusage-30><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-30>30</a>
+</span><span class=lnt id=ienumusage-31><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-31>31</a>
+</span><span class=lnt id=ienumusage-32><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-32>32</a>
+</span><span class=lnt id=ienumusage-33><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-33>33</a>
+</span><span class=lnt id=ienumusage-34><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-34>34</a>
+</span><span class=lnt id=ienumusage-35><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-35>35</a>
+</span><span class=lnt id=ienumusage-36><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-36>36</a>
+</span><span class=lnt id=ienumusage-37><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-37>37</a>
+</span><span class=lnt id=ienumusage-38><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-38>38</a>
+</span><span class=lnt id=ienumusage-39><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-39>39</a>
+</span><span class=lnt id=ienumusage-40><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-40>40</a>
+</span><span class=lnt id=ienumusage-41><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-41>41</a>
+</span><span class=lnt id=ienumusage-42><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-42>42</a>
+</span><span class=lnt id=ienumusage-43><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-43>43</a>
+</span><span class=lnt id=ienumusage-44><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-44>44</a>
+</span><span class=lnt id=ienumusage-45><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-45>45</a>
+</span><span class=lnt id=ienumusage-46><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-46>46</a>
+</span><span class=lnt id=ienumusage-47><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-47>47</a>
+</span><span class=lnt id=ienumusage-48><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-48>48</a>
+</span><span class=lnt id=ienumusage-49><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-49>49</a>
+</span><span class=lnt id=ienumusage-50><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-50>50</a>
+</span><span class=lnt id=ienumusage-51><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-51>51</a>
+</span><span class=lnt id=ienumusage-52><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-52>52</a>
+</span><span class=lnt id=ienumusage-53><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-53>53</a>
+</span><span class=lnt id=ienumusage-54><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-54>54</a>
+</span><span class=lnt id=ienumusage-55><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-55>55</a>
+</span><span class=lnt id=ienumusage-56><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-56>56</a>
+</span><span class=lnt id=ienumusage-57><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-57>57</a>
+</span><span class=lnt id=ienumusage-58><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-58>58</a>
+</span><span class=lnt id=ienumusage-59><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-59>59</a>
+</span><span class=lnt id=ienumusage-60><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-60>60</a>
+</span><span class=lnt id=ienumusage-61><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-61>61</a>
+</span><span class=lnt id=ienumusage-62><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-62>62</a>
+</span><span class=lnt id=ienumusage-63><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-63>63</a>
+</span><span class=lnt id=ienumusage-64><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-64>64</a>
+</span><span class=lnt id=ienumusage-65><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-65>65</a>
+</span><span class=lnt id=ienumusage-66><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-66>66</a>
+</span><span class=lnt id=ienumusage-67><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-67>67</a>
+</span><span class=lnt id=ienumusage-68><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-68>68</a>
+</span><span class=lnt id=ienumusage-69><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-69>69</a>
+</span><span class=lnt id=ienumusage-70><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-70>70</a>
+</span><span class=lnt id=ienumusage-71><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-71>71</a>
+</span><span class=lnt id=ienumusage-72><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-72>72</a>
+</span><span class=lnt id=ienumusage-73><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-73>73</a>
+</span><span class=lnt id=ienumusage-74><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-74>74</a>
+</span><span class=lnt id=ienumusage-75><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-75>75</a>
+</span><span class=lnt id=ienumusage-76><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-76>76</a>
+</span><span class=lnt id=ienumusage-77><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-77>77</a>
+</span><span class=lnt id=ienumusage-78><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-78>78</a>
+</span><span class=lnt id=ienumusage-79><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-79>79</a>
+</span><span class=lnt id=ienumusage-80><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-80>80</a>
+</span><span class=lnt id=ienumusage-81><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-81>81</a>
+</span><span class=lnt id=ienumusage-82><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-82>82</a>
+</span><span class=lnt id=ienumusage-83><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-83>83</a>
+</span><span class=lnt id=ienumusage-84><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-84>84</a>
+</span><span class=lnt id=ienumusage-85><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-85>85</a>
+</span><span class=lnt id=ienumusage-86><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-86>86</a>
+</span><span class=lnt id=ienumusage-87><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-87>87</a>
+</span><span class=lnt id=ienumusage-88><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-88>88</a>
+</span><span class=lnt id=ienumusage-89><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-89>89</a>
+</span><span class=lnt id=ienumusage-90><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-90>90</a>
+</span><span class=lnt id=ienumusage-91><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-91>91</a>
+</span><span class=lnt id=ienumusage-92><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-92>92</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=k>internal</span> <span class=k>class</span> <span class=nc>TableDownDataReader</span> <span class=p>:</span> <span class=n>DbDataReader</span>
+<span class=p>{</span>
+    <span class=k>public</span> <span class=k>override</span> <span class=kt>int</span> <span class=n>FieldCount</span>
+        <span class=p>=&gt;</span> <span class=k>throw</span> <span class=k>new</span> <span class=n>NotImplementedException</span><span class=p>();</span>
+
+    <span class=k>public</span> <span class=k>override</span> <span class=kt>int</span> <span class=n>RecordsAffected</span> <span class=p>=&gt;</span> <span class=m>0</span><span class=p>;</span>
+
+    <span class=k>public</span> <span class=k>override</span> <span class=kt>bool</span> <span class=n>HasRows</span> <span class=p>=&gt;</span> <span class=k>false</span><span class=p>;</span>
+
+    <span class=k>public</span> <span class=k>override</span> <span class=kt>bool</span> <span class=n>IsClosed</span>
+        <span class=p>=&gt;</span> <span class=k>throw</span> <span class=k>new</span> <span class=n>NotImplementedException</span><span class=p>();</span>
+
+    <span class=k>public</span> <span class=k>override</span> <span class=kt>int</span> <span class=n>Depth</span> <span class=p>=&gt;</span> <span class=m>0</span><span class=p>;</span>
+
+    <span class=k>public</span> <span class=k>override</span> <span class=kt>bool</span> <span class=n>Read</span><span class=p>()</span> <span class=p>=&gt;</span> <span class=k>false</span><span class=p>;</span>
+
+    <span class=k>public</span> <span class=k>override</span> <span class=kt>int</span> <span class=n>GetInt32</span><span class=p>(</span><span class=kt>int</span> <span class=n>ordinal</span><span class=p>)</span> <span class=p>=&gt;</span> <span class=m>0</span><span class=p>;</span>
+
+    <span class=k>public</span> <span class=k>override</span> <span class=kt>bool</span> <span class=n>IsDBNull</span><span class=p>(</span><span class=kt>int</span> <span class=n>ordinal</span><span class=p>)</span> <span class=p>=&gt;</span> <span class=k>false</span><span class=p>;</span>
+
+    <span class=k>public</span> <span class=k>override</span> <span class=kt>string</span> <span class=n>GetString</span><span class=p>(</span><span class=kt>int</span> <span class=n>ordinal</span><span class=p>)</span> <span class=p>=&gt;</span> <span class=kt>string</span><span class=p>.</span><span class=n>Empty</span><span class=p>;</span>
+
+    <span class=k>public</span> <span class=k>override</span> <span class=kt>bool</span> <span class=n>GetBoolean</span><span class=p>(</span><span class=kt>int</span> <span class=n>ordinal</span><span class=p>)</span>
+        <span class=p>=&gt;</span> <span class=k>throw</span> <span class=k>new</span> <span class=n>NotImplementedException</span><span class=p>();</span>
+
+    <span class=k>public</span> <span class=k>override</span> <span class=kt>byte</span> <span class=n>GetByte</span><span class=p>(</span><span class=kt>int</span> <span class=n>ordinal</span><span class=p>)</span>
+        <span class=p>=&gt;</span> <span class=k>throw</span> <span class=k>new</span> <span class=n>NotImplementedException</span><span class=p>();</span>
+
+    <span class=k>public</span> <span class=k>override</span> <span class=kt>long</span> <span class=n>GetBytes</span><span class=p>(</span><span class=kt>int</span> <span class=n>ordinal</span><span class=p>,</span> <span class=kt>long</span> <span class=n>dataOffset</span><span class=p>,</span> 
+        <span class=kt>byte</span><span class=p>[]</span> <span class=n>buffer</span><span class=p>,</span> <span class=kt>int</span> <span class=n>bufferOffset</span><span class=p>,</span> <span class=kt>int</span> <span class=n>length</span><span class=p>)</span>
+        <span class=p>=&gt;</span> <span class=k>throw</span> <span class=k>new</span> <span class=n>NotImplementedException</span><span class=p>();</span>
+
+    <span class=k>public</span> <span class=k>override</span> <span class=kt>char</span> <span class=n>GetChar</span><span class=p>(</span><span class=kt>int</span> <span class=n>ordinal</span><span class=p>)</span>
+        <span class=p>=&gt;</span> <span class=k>throw</span> <span class=k>new</span> <span class=n>NotImplementedException</span><span class=p>();</span>
+
+    <span class=k>public</span> <span class=k>override</span> <span class=kt>long</span> <span class=n>GetChars</span><span class=p>(</span><span class=kt>int</span> <span class=n>ordinal</span><span class=p>,</span> <span class=kt>long</span> <span class=n>dataOffset</span><span class=p>,</span> 
+        <span class=kt>char</span><span class=p>[]</span> <span class=n>buffer</span><span class=p>,</span> <span class=kt>int</span> <span class=n>bufferOffset</span><span class=p>,</span> <span class=kt>int</span> <span class=n>length</span><span class=p>)</span>
+        <span class=p>=&gt;</span> <span class=k>throw</span> <span class=k>new</span> <span class=n>NotImplementedException</span><span class=p>();</span>
+
+    <span class=k>public</span> <span class=k>override</span> <span class=kt>string</span> <span class=n>GetDataTypeName</span><span class=p>(</span><span class=kt>int</span> <span class=n>ordinal</span><span class=p>)</span>
+        <span class=p>=&gt;</span> <span class=k>throw</span> <span class=k>new</span> <span class=n>NotImplementedException</span><span class=p>();</span>
+
+    <span class=k>public</span> <span class=k>override</span> <span class=n>DateTime</span> <span class=n>GetDateTime</span><span class=p>(</span><span class=kt>int</span> <span class=n>ordinal</span><span class=p>)</span>
+        <span class=p>=&gt;</span> <span class=k>throw</span> <span class=k>new</span> <span class=n>NotImplementedException</span><span class=p>();</span>
+
+    <span class=k>public</span> <span class=k>override</span> <span class=kt>decimal</span> <span class=n>GetDecimal</span><span class=p>(</span><span class=kt>int</span> <span class=n>ordinal</span><span class=p>)</span>
+        <span class=p>=&gt;</span> <span class=k>throw</span> <span class=k>new</span> <span class=n>NotImplementedException</span><span class=p>();</span>
+
+    <span class=k>public</span> <span class=k>override</span> <span class=kt>double</span> <span class=n>GetDouble</span><span class=p>(</span><span class=kt>int</span> <span class=n>ordinal</span><span class=p>)</span>
+        <span class=p>=&gt;</span> <span class=k>throw</span> <span class=k>new</span> <span class=n>NotImplementedException</span><span class=p>();</span>
+
+    <span class=k>public</span> <span class=k>override</span> <span class=n>Type</span> <span class=n>GetFieldType</span><span class=p>(</span><span class=kt>int</span> <span class=n>ordinal</span><span class=p>)</span>
+        <span class=p>=&gt;</span> <span class=k>throw</span> <span class=k>new</span> <span class=n>NotImplementedException</span><span class=p>();</span>
+
+    <span class=k>public</span> <span class=k>override</span> <span class=kt>float</span> <span class=n>GetFloat</span><span class=p>(</span><span class=kt>int</span> <span class=n>ordinal</span><span class=p>)</span>
+        <span class=p>=&gt;</span> <span class=k>throw</span> <span class=k>new</span> <span class=n>NotImplementedException</span><span class=p>();</span>
+
+    <span class=k>public</span> <span class=k>override</span> <span class=n>Guid</span> <span class=n>GetGuid</span><span class=p>(</span><span class=kt>int</span> <span class=n>ordinal</span><span class=p>)</span>
+        <span class=p>=&gt;</span> <span class=k>throw</span> <span class=k>new</span> <span class=n>NotImplementedException</span><span class=p>();</span>
+
+    <span class=k>public</span> <span class=k>override</span> <span class=kt>short</span> <span class=n>GetInt16</span><span class=p>(</span><span class=kt>int</span> <span class=n>ordinal</span><span class=p>)</span>
+        <span class=p>=&gt;</span> <span class=k>throw</span> <span class=k>new</span> <span class=n>NotImplementedException</span><span class=p>();</span>
+
+    <span class=k>public</span> <span class=k>override</span> <span class=kt>long</span> <span class=n>GetInt64</span><span class=p>(</span><span class=kt>int</span> <span class=n>ordinal</span><span class=p>)</span>
+        <span class=p>=&gt;</span> <span class=k>throw</span> <span class=k>new</span> <span class=n>NotImplementedException</span><span class=p>();</span>
+
+    <span class=k>public</span> <span class=k>override</span> <span class=kt>string</span> <span class=n>GetName</span><span class=p>(</span><span class=kt>int</span> <span class=n>ordinal</span><span class=p>)</span>
+        <span class=p>=&gt;</span> <span class=k>throw</span> <span class=k>new</span> <span class=n>NotImplementedException</span><span class=p>();</span>
+
+    <span class=k>public</span> <span class=k>override</span> <span class=kt>int</span> <span class=n>GetOrdinal</span><span class=p>(</span><span class=kt>string</span> <span class=n>name</span><span class=p>)</span>
+        <span class=p>=&gt;</span> <span class=k>throw</span> <span class=k>new</span> <span class=n>NotImplementedException</span><span class=p>();</span>
+
+    <span class=k>public</span> <span class=k>override</span> <span class=kt>object</span> <span class=n>GetValue</span><span class=p>(</span><span class=kt>int</span> <span class=n>ordinal</span><span class=p>)</span>
+        <span class=p>=&gt;</span> <span class=k>throw</span> <span class=k>new</span> <span class=n>NotImplementedException</span><span class=p>();</span>
+
+    <span class=k>public</span> <span class=k>override</span> <span class=kt>int</span> <span class=n>GetValues</span><span class=p>(</span><span class=kt>object</span><span class=p>[]</span> <span class=n>values</span><span class=p>)</span>
+        <span class=p>=&gt;</span> <span class=k>throw</span> <span class=k>new</span> <span class=n>NotImplementedException</span><span class=p>();</span>
+
+    <span class=k>public</span> <span class=k>override</span> <span class=kt>object</span> <span class=k>this</span><span class=p>[</span><span class=kt>int</span> <span class=n>ordinal</span><span class=p>]</span>
+        <span class=p>=&gt;</span> <span class=k>throw</span> <span class=k>new</span> <span class=n>NotImplementedException</span><span class=p>();</span>
+
+    <span class=k>public</span> <span class=k>override</span> <span class=kt>object</span> <span class=k>this</span><span class=p>[</span><span class=kt>string</span> <span class=n>name</span><span class=p>]</span>
+        <span class=p>=&gt;</span> <span class=k>throw</span> <span class=k>new</span> <span class=n>NotImplementedException</span><span class=p>();</span>
+
+    <span class=k>public</span> <span class=k>override</span> <span class=kt>bool</span> <span class=n>NextResult</span><span class=p>()</span>
+        <span class=p>=&gt;</span> <span class=k>throw</span> <span class=k>new</span> <span class=n>NotImplementedException</span><span class=p>();</span>
+
+    <span class=k>public</span> <span class=k>override</span> <span class=n>IEnumerator</span> <span class=n>GetEnumerator</span><span class=p>()</span>
+    <span class=p>{</span>
+        <span class=k>throw</span> <span class=k>new</span> <span class=n>NotImplementedException</span><span class=p>();</span>
+    <span class=p>}</span>
+<span class=p>}</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>Now we configure a second interceptor which will check if the first interceptor has suppressed the result, before executing it&rsquo;s own logic:</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5> 5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6> 6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7> 7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
+</span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
+</span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
+</span><span class=lnt id=ienumusage-12><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-12>12</a>
+</span><span class=lnt id=ienumusage-13><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-13>13</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=k>public</span> <span class=k>class</span> <span class=nc>LoggingInterceptor</span> <span class=p>:</span> <span class=n>DbCommandInterceptor</span>
+<span class=p>{</span>
+    <span class=k>public</span> <span class=k>override</span> <span class=n>InterceptionResult</span><span class=p>&lt;</span><span class=n>DbDataReader</span><span class=p>&gt;</span> <span class=n>ReaderExecuting</span><span class=p>(</span>
+        <span class=n>DbCommand</span> <span class=n>command</span><span class=p>,</span> <span class=n>CommandEventData</span> <span class=n>eventData</span><span class=p>,</span> 
+        <span class=n>InterceptionResult</span><span class=p>&lt;</span><span class=n>DbDataReader</span><span class=p>&gt;</span> <span class=n>result</span><span class=p>)</span>
+    <span class=p>{</span>
+        <span class=k>if</span> <span class=p>(!</span><span class=n>result</span><span class=p>.</span><span class=n>HasResult</span><span class=p>)</span>
+        <span class=p>{</span>
+            <span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>eventData</span><span class=p>.</span><span class=n>Command</span><span class=p>.</span><span class=n>CommandText</span><span class=p>);</span>
+        <span class=p>}</span>
+        <span class=k>return</span> <span class=n>result</span><span class=p>;</span>
+    <span class=p>}</span>
+<span class=p>}</span></code></pre></td></tr></table>
+</div>
+</div>
+<ul>
+<li><strong>Line 7</strong>: Check if the <em>result</em> entity already has a value (supplied by the previous interceptor) and if so, then don&rsquo;t execute the <code>interceptor</code> logic, as the result has already been handled.</li>
+</ul>
+<p>Multiple <code>interceptors</code> can be added to EF Core:</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5> 5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6> 6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7> 7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
+</span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
+</span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
+</span><span class=lnt id=ienumusage-12><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-12>12</a>
+</span><span class=lnt id=ienumusage-13><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-13>13</a>
+</span><span class=lnt id=ienumusage-14><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-14>14</a>
+</span><span class=lnt id=ienumusage-15><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-15>15</a>
+</span><span class=lnt id=ienumusage-16><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-16>16</a>
+</span><span class=lnt id=ienumusage-17><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-17>17</a>
+</span><span class=lnt id=ienumusage-18><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-18>18</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=k>public</span> <span class=k>class</span> <span class=nc>EFInterceptorsContext</span> <span class=p>:</span> <span class=n>DbContext</span>
+<span class=p>{</span>
+    <span class=k>public</span> <span class=n>DbSet</span><span class=p>&lt;</span><span class=n>Song</span><span class=p>&gt;</span> <span class=n>Songs</span> <span class=p>{</span> <span class=k>get</span><span class=p>;</span> <span class=k>set</span><span class=p>;</span> <span class=p>}</span>
+
+    <span class=k>protected</span> <span class=k>override</span> <span class=k>void</span> <span class=n>OnConfiguring</span><span class=p>(</span><span class=n>DbContextOptionsBuilder</span> <span class=n>optionsBuilder</span><span class=p>)</span>
+    <span class=p>{</span>
+        <span class=n>optionsBuilder</span><span class=p>.</span><span class=n>UseSqlServer</span><span class=p>(</span>
+            <span class=s>@&#34;Server=.\SQLEXPRESS;Database=EFInterceptors;Integrated Security=True&#34;</span><span class=p>)</span>
+            <span class=c1>// add the interceptor(s)
+</span><span class=c1></span>            <span class=p>.</span><span class=n>AddInterceptors</span><span class=p>(</span><span class=n>tableDownInterceptor</span><span class=p>,</span> <span class=n>loggingInterceptor</span><span class=p>);</span> 
+    <span class=p>}</span>
+
+    <span class=k>private</span> <span class=k>static</span> <span class=k>readonly</span> <span class=n>LoggingInterceptor</span> <span class=n>loggingInterceptor</span> 
+        <span class=p>=</span> <span class=k>new</span> <span class=n>LoggingInterceptor</span><span class=p>();</span>
+
+    <span class=k>private</span> <span class=k>static</span> <span class=k>readonly</span> <span class=n>TableDownInterceptor</span> <span class=n>tableDownInterceptor</span> 
+        <span class=p>=</span> <span class=k>new</span> <span class=n>TableDownInterceptor</span><span class=p>();</span>
+<span class=p>}</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>Running the same query as before we get the following output:</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5> 5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6> 6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7> 7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
+</span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
+</span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
+</span><span class=lnt id=ienumusage-12><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-12>12</a>
+</span><span class=lnt id=ienumusage-13><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-13>13</a>
+</span><span class=lnt id=ienumusage-14><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-14>14</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-posh data-lang=posh><span class=n>Table</span> <span class=s1>&#39;Song&#39;</span> <span class=n>is</span> <span class=n>not</span> <span class=n>currently</span> <span class=n>available</span> <span class=k>for</span> <span class=n>querying</span><span class=p>.</span> <span class=n>Query</span> <span class=n>being</span> <span class=n>suppressed</span><span class=err>:</span> 
+<span class=nb>SELECT </span><span class=no>[t].[Artist], [t0].[YearReleased], [t0].[Id]</span>
+<span class=n>FROM</span> <span class=p>(</span>
+    <span class=nb>SELECT </span><span class=no>[s].[Artist]</span>
+    <span class=n>FROM</span> <span class=no>[Song] AS [s]</span>
+    <span class=nb>GROUP </span><span class=n>BY</span> <span class=no>[s].[Artist]</span>
+<span class=p>)</span> <span class=n>AS</span> <span class=no>[t]</span>
+<span class=n>OUTER</span> <span class=n>APPLY</span> <span class=p>(</span>
+    <span class=nb>SELECT </span><span class=n>DISTINCT</span> <span class=no>[s0].[Id], [s0].[Artist], [s0].[LengthInSeconds]</span><span class=p>,</span> 
+        <span class=no>[s0].[Name], [s0].[YearReleased]</span>
+    <span class=n>FROM</span> <span class=no>[Song] AS [s0]</span>
+    <span class=nb>WHERE </span><span class=no>[t].[Artist]</span> <span class=p>=</span> <span class=no>[s0].[Artist]</span>
+<span class=p>)</span> <span class=n>AS</span> <span class=no>[t0]</span>
+<span class=n>ORDER</span> <span class=n>BY</span> <span class=no>[t].[Artist]</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>Only the output logic from <code>TableDownDataReader</code> is executed, and not the output logic from <code>LoggingInterceptor</code>.</p>
+<hr>
+<h2 id=additional-example>Additional example</h2>
+<p>Another <code>interceptor</code> example which wil log the query executed when an exception occurs. Generally the exception will be surfaced, but without the actual query being executed - knowing this can assist in narrowing down the root cause of the exception:</p>
+<div class=highlight><div class=chroma>
+<table class=lntable><tr><td class=lntd>
+<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
+</span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
+</span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
+</span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5> 5</a>
+</span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6> 6</a>
+</span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7> 7</a>
+</span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
+</span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
+</span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
+</span></code></pre></td>
+<td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=k>public</span> <span class=k>class</span> <span class=nc>ExceptionInterceptor</span> <span class=p>:</span> <span class=n>DbCommandInterceptor</span>
+<span class=p>{</span>
+    <span class=k>private</span> <span class=k>const</span> <span class=kt>string</span> <span class=n>exceptionMessage</span> <span class=p>=</span> 
+        <span class=s>&#34;Exception occurred running the following command: {0}&#34;</span><span class=p>;</span>
+
+    <span class=k>public</span> <span class=k>override</span> <span class=k>void</span> <span class=n>CommandFailed</span><span class=p>(</span><span class=n>DbCommand</span> <span class=n>command</span><span class=p>,</span> <span class=n>CommandErrorEventData</span> <span class=n>eventData</span><span class=p>)</span>
+    <span class=p>{</span>
+        <span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>exceptionMessage</span><span class=p>,</span> <span class=n>eventData</span><span class=p>.</span><span class=n>Command</span><span class=p>.</span><span class=n>CommandText</span><span class=p>);</span>
+    <span class=p>}</span>
+<span class=p>}</span></code></pre></td></tr></table>
+</div>
+</div>
+<hr>
+<h2 id=notes>Notes</h2>
+<p><code>Interceptors</code> are very easy to setup, and can offer a wide range of real world applications. There are potential performance overheads intercepting every single query (and logging it, for example) - but as with most features, there is always a tradeoff (in this case between performance and usefulness), and these would need to be evaluated for each specific use case.</p>
+<hr>
+<h2 id=references>References</h2>
+<p><a class=link href=https://docs.microsoft.com/en-us/ef/core/logging-events-diagnostics/interceptors target=_blank rel=noopener>Interceptors</a><br>
+<a class=link href="https://docs.microsoft.com/en-us/dotnet/api/microsoft.entityframeworkcore.diagnostics.dbcommandinterceptor?view=efcore-6.0" target=_blank rel=noopener>DbCommandInterceptor Class</a></p>
+<blockquote>
+<div>
+<div style=width:5%;float:left;vertical-align:middle;padding-right:60px>
+<i class=inline-svg><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffbf00" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 12h1m8-9v1m8 8h1M5.6 5.6l.7.7m12.1-.7-.7.7"/><path d="M9 16a5 5 0 116 0 3.5 3.5.0 00-1 3 2 2 0 01-4 0 3.5 3.5.0 00-1-3"/><line x1="9.7" y1="17" x2="14.3" y2="17"/></svg></i>
+</div>
+<div>
+<h3>Daily Drop 18: 24-02-2022</h3>
+</div>
+<br>
+<div>
+At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br>It could be anything - some .NET/C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
+The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+</div>
+</div>
+</blockquote>
+</section>
+<footer class=article-footer>
+<section class=article-tags>
+<a href=/tags/c#/>c#</a>
+<a href=/tags/.net/>.net</a>
+<a href=/tags/dailydrop/>dailydrop</a>
+<a href=/tags/efcore/>efcore</a>
+<a href=/tags/ef/>ef</a>
+<a href=/tags/entityframework/>entityframework</a>
+<a href=/tags/entityframeworkcore/>entityframeworkcore</a>
+<a href=/tags/interceptor/>interceptor</a>
+<a href=/tags/interceptors/>interceptors</a>
+</section>
+</footer>
+</article>
+<aside class=related-contents--wrapper>
+<h2 class=section-title>Related contents</h2>
+<div class=related-contents>
+<div class="flex article-list--tile">
+<article>
+<a href=/dailydrop/2022/02/04-ef-core6-groupby/>
+<div class=article-details>
+<h2 class=article-title>EF Core 6: GroupBy enhancements</h2>
+</div>
+</a>
+</article>
+<article>
+<a href=/dailydrop/2022/02/21-ef-core6-entitytypeconfig/>
+<div class=article-details>
+<h2 class=article-title>EF Core 6 EntityTypeConfiguration Attribute</h2>
+</div>
+</a>
+</article>
+<article>
+<a href=/p/11-2020-dynamic-context/>
+<div class=article-details>
+<h2 class=article-title>Dynamic Context (for Entity Framework Core)</h2>
+</div>
+</a>
+</article>
+<article>
+<a href=/p/analyzer-extra/>
+<div class=article-details>
+<h2 class=article-title>Roslyn Analyzer - tips and tricks (Part 5)</h2>
+</div>
+</a>
+</article>
+<article>
+<a href=/p/analyzer-test/>
+<div class=article-details>
+<h2 class=article-title>Roslyn Analyzer - testing an analyzer and code fix (Part 4)</h2>
+</div>
+</a>
+</article>
+</div>
+</div>
+</aside>
+<script src=https://giscus.app/client.js data-repo=always-developing/always-developing.github.io data-repo-id=R_kgDOGQJLBQ data-category=Comments data-category-id=DIC_kwDOGQJLBc4B_pUA data-mapping=pathname data-reactions-enabled=1 data-emit-metadata=0 data-theme=light crossorigin=anonymous async></script>
+<script>function setGiscusTheme(b){let a=document.querySelector('iframe.giscus-frame');a&&a.contentWindow.postMessage({giscus:{setConfig:{theme:b}}},"https://giscus.app")}(function(){addEventListener('message',b=>{if(event.origin!=='https://giscus.app')return;a()}),window.addEventListener('onColorSchemeChange',a);function a(){document.documentElement.dataset.scheme==="light"?setGiscusTheme('light'):setGiscusTheme('dark')}})()</script>
+<footer class=site-footer>
+<section class=copyright>
+&copy;
+2021 -
+2022 Always Developing
+</section>
+<section class=powerby>
+Always Developing | always learning | always growing <br>
+Built with <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a> <br>
+Theme <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.2.0>Stack</a></b> designed by <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a>
+</section>
+</footer>
+<div class=pswp tabindex=-1 role=dialog aria-hidden=true>
+<div class=pswp__bg></div>
+<div class=pswp__scroll-wrap>
+<div class=pswp__container>
+<div class=pswp__item></div>
+<div class=pswp__item></div>
+<div class=pswp__item></div>
+</div>
+<div class="pswp__ui pswp__ui--hidden">
+<div class=pswp__top-bar>
+<div class=pswp__counter></div>
+<button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+<button class="pswp__button pswp__button--share" title=Share></button>
+<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+<div class=pswp__preloader>
+<div class=pswp__preloader__icn>
+<div class=pswp__preloader__cut>
+<div class=pswp__preloader__donut></div>
+</div>
+</div>
+</div>
+</div>
+<div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+<div class=pswp__share-tooltip></div>
+</div>
+<button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+</button>
+<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+</button>
+<div class=pswp__caption>
+<div class=pswp__caption__center></div>
+</div>
+</div>
+</div>
+</div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.css integrity="sha256-c0uckgykQ9v5k+IqViZOZKc47Jn7KQil4/MP3ySA3F8=" crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.css integrity="sha256-SBLU4vv6CA6lHsZ1XyTdhyjJxCjPif/TRkjnsyGAGnE=" crossorigin=anonymous>
+</main>
+<aside class="sidebar right-sidebar sticky">
+<section class="widget archives">
+<div class=widget-icon><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg>
+</div>
+<h2 class="widget-title section-title">Table of contents</h2>
+<div class=widget--toc>
+<nav id=TableOfContents>
+<ol>
+<li><a href=#daily-knowledge-drop>Daily Knowledge Drop</a></li>
+<li><a href=#interceptor-structure>Interceptor structure</a></li>
+<li><a href=#interceptor-configuration>Interceptor configuration</a></li>
+<li><a href=#suppress-execution>Suppress Execution</a></li>
+<li><a href=#additional-example>Additional example</a></li>
+<li><a href=#notes>Notes</a></li>
+<li><a href=#references>References</a></li>
+</ol>
+</nav>
+</div>
+</section>
+</aside>
+</div>
+<script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g=" crossorigin=anonymous defer></script><script type=text/javascript src=/ts/main.js defer></script>
+<script>(function(){const a=document.createElement('link');a.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",a.type="text/css",a.rel="stylesheet",document.head.appendChild(a)})()</script>
+</body>
+</html>
