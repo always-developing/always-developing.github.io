@@ -1,7 +1,6 @@
 <!doctype html><html lang=en-uk>
 <head><meta charset=utf-8>
-<meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="A step by step guide to writing an analyzer code fix"><title>Roslyn Analyzer - writing the code fix (Part 3)</title>
-<link rel=canonical href=https://always-developing.github.io/p/analyzer-code-fix/>
+<meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="A step by step guide to writing an analyzer code fix"><title>Roslyn Analyzer - writing the code fix (Part 3)</title><link rel=canonical href=https://always-developing.github.io/p/analyzer-code-fix/>
 <link rel=stylesheet href=/scss/style.min.css><meta property="og:title" content="Roslyn Analyzer - writing the code fix (Part 3)">
 <meta property="og:description" content="A step by step guide to writing an analyzer code fix">
 <meta property="og:url" content="https://always-developing.github.io/p/analyzer-code-fix/">
@@ -11,18 +10,16 @@
 <meta name=twitter:description content="A step by step guide to writing an analyzer code fix">
 <link rel="shortcut icon" href=favicon.ico>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-CXPLFS7K38"></script>
-<script>var doNotTrack=!1;if(!doNotTrack){window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date),gtag('config','G-CXPLFS7K38',{anonymize_ip:!1})}</script>
-</head>
-<body class="article-page has-toc">
-<script>(function(){const a='StackColorScheme';localStorage.getItem(a)||localStorage.setItem(a,"dark")})()</script><script>(function(){const b='StackColorScheme',a=localStorage.getItem(b),c=window.matchMedia('(prefers-color-scheme: dark)').matches===!0;a=='dark'||a==='auto'&&c?document.documentElement.dataset.scheme='dark':document.documentElement.dataset.scheme='light'})()</script>
+<script>var doNotTrack=!1;if(!doNotTrack){window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","G-CXPLFS7K38",{anonymize_ip:!1})}</script>
+</head><body class="article-page has-toc">
+<script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"dark")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script>
 <div class="container main-container flex
 extended">
 <div id=article-toolbar>
 <a href=https://always-developing.github.io/ class=back-home><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="15 6 9 12 15 18"/></svg>
 <span>Back</span>
 </a>
-</div>
-<main class="main full-width">
+</div><main class="main full-width">
 <article class=main-article>
 <header class=article-header>
 <div class=article-details>
@@ -33,41 +30,25 @@ Blog
 <a href=/categories/series/>
 Series
 </a>
-</header>
-<h2 class=article-title>
+</header><h2 class=article-title>
 <a href=/p/analyzer-code-fix/>Roslyn Analyzer - writing the code fix (Part 3)</a>
-</h2>
-<h3 class=article-subtitle>
+</h2><h3 class=article-subtitle>
 A step by step guide to writing an analyzer code fix
-</h3>
-<footer class=article-time>
+</h3><footer class=article-time>
 <div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
 <time class=article-time--published>Nov 26, 2021</time>
-</div>
-<div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+</div><div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
 <time class=article-time--reading>
 5 minute read
 </time>
-</div>
-</footer>
-</div>
-</header>
-<section class=article-content>
+</div></footer></div></header><section class=article-content>
 <p>All posts in the series:<br>
 <strong>Part 1:</strong> <a class=link href=../analyzer-explained>Roslyn Analyzer - explained</a> <br>
 <strong>Part 2:</strong> <a class=link href=../analyzer-write/>Roslyn Analyzer - writing an analyzer</a><br>
 <strong>Part 3:</strong> Roslyn Analyzer - writing a code fix (this post)<br>
 <strong>Part 4:</strong> <a class=link href=../analyzer-test/>Roslyn Analyzer - testing an analyzer and code fix</a><br>
-<strong>Part 5:</strong> <a class=link href=../analyzer-extra/>Roslyn Analyzer - tips and tricks</a></p>
-<p>All code in the posts, including the sample project and working <code>analyzer</code> and <code>code fix</code> are <a class=link href=https://github.com/always-developing/CodeAnalysis.EntityFrameworkCore.Sample target=_blank rel=noopener>available on Github</a>.</p>
-<h2 id=code-fix-introduction>Code fix introduction</h2>
-<p>As detailed in the <a class=link href=../analyzer-write>previous post in the series</a>, now that there is a working <code>analyzer</code> which accurately reports diagnostic information to Roslyn, the next step is to write the <code>code fix</code> to resolve the diagnostic.</p>
-<p>Not all <code>analyzers</code> will have a <code>code fix</code> - the resolution might be out of the scope of Roslyn to resolve, in which case the diagnostic should info the developer how to resolve the report.</p>
-<hr>
-<h2 id=coding-the-code-fix>Coding the code fix</h2>
-<h3 id=code-fix-setup>Code fix setup</h3>
-<p>First step is to configure the <code>code fix</code> so it applies to a specific diagnostic (or multiple diagnostics)</p>
-<div class=highlight><div class=chroma>
+<strong>Part 5:</strong> <a class=link href=../analyzer-extra/>Roslyn Analyzer - tips and tricks</a></p><p>All code in the posts, including the sample project and working <code>analyzer</code> and <code>code fix</code> are <a class=link href=https://github.com/always-developing/CodeAnalysis.EntityFrameworkCore.Sample target=_blank rel=noopener>available on Github</a>.</p><h2 id=code-fix-introduction>Code fix introduction</h2><p>As detailed in the <a class=link href=../analyzer-write>previous post in the series</a>, now that there is a working <code>analyzer</code> which accurately reports diagnostic information to Roslyn, the next step is to write the <code>code fix</code> to resolve the diagnostic.</p><p>Not all <code>analyzers</code> will have a <code>code fix</code> - the resolution might be out of the scope of Roslyn to resolve, in which case the diagnostic should info the developer how to resolve the report.</p><hr>
+<h2 id=coding-the-code-fix>Coding the code fix</h2><h3 id=code-fix-setup>Code fix setup</h3><p>First step is to configure the <code>code fix</code> so it applies to a specific diagnostic (or multiple diagnostics)</p><div class=highlight><div class=chroma>
 <table class=lntable><tr><td class=lntd>
 <pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
 </span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
@@ -86,35 +67,26 @@ A step by step guide to writing an analyzer code fix
 </span><span class=lnt id=ienumusage-15><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-15>15</a>
 </span><span class=lnt id=ienumusage-16><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-16>16</a>
 </span><span class=lnt id=ienumusage-17><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-17>17</a>
-</span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=na>[ExportCodeFixProvider(LanguageNames.CSharp, 
-</span><span class=na>    Name = nameof(DevOnlyMigrateCodeFixProvider)), Shared]</span>
-<span class=k>public</span> <span class=k>class</span> <span class=nc>DevOnlyMigrateCodeFixProvider</span> <span class=p>:</span> <span class=n>CodeFixProvider</span>
-<span class=p>{</span>
-    <span class=k>public</span> <span class=k>sealed</span> <span class=k>override</span> <span class=n>ImmutableArray</span><span class=p>&lt;</span><span class=kt>string</span><span class=p>&gt;</span> <span class=n>FixableDiagnosticIds</span>
-    <span class=p>{</span>
-        <span class=k>get</span> <span class=p>{</span> <span class=k>return</span> <span class=n>ImmutableArray</span><span class=p>.</span><span class=n>Create</span><span class=p>(</span><span class=n>DevOnlyMigrateAnalyzer</span><span class=p>.</span><span class=n>DiagnosticId</span><span class=p>);</span> <span class=p>}</span>
-    <span class=p>}</span>
-
-    <span class=k>public</span> <span class=k>sealed</span> <span class=k>override</span> <span class=n>FixAllProvider</span> <span class=n>GetFixAllProvider</span><span class=p>()</span>
-    <span class=p>{</span>
-        <span class=k>return</span> <span class=n>WellKnownFixAllProviders</span><span class=p>.</span><span class=n>BatchFixer</span><span class=p>;</span>
-    <span class=p>}</span>
-    <span class=p>.</span>
-    <span class=p>.</span>
-    <span class=p>.</span>
-<span class=p>}</span></code></pre></td></tr></table>
-</div>
-</div>
-<ul>
-<li><strong>Line 3</strong>: The class must inherit from <em>CodeFixProvider</em></li>
-<li><strong>Line 5-8</strong>: The overridden <em>FixableDiagnosticIds</em> returns a list of the diagnostic ids this <code>code fix</code> will resolve</li>
-</ul>
-<hr>
-<h3 id=register-the-code-fix>Register the code fix</h3>
-<p>The next step is to register the code fix with Roslyn - this is done by overriding the <em>RegisterCodeFixesAsync</em> method.</p>
-<div class=highlight><div class=chroma>
+</span></code></pre></td><td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=na>[ExportCodeFixProvider(LanguageNames.CSharp, 
+</span></span></span><span class=line><span class=cl><span class=na>    Name = nameof(DevOnlyMigrateCodeFixProvider)), Shared]</span>
+</span></span><span class=line><span class=cl><span class=k>public</span> <span class=k>class</span> <span class=nc>DevOnlyMigrateCodeFixProvider</span> <span class=p>:</span> <span class=n>CodeFixProvider</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>public</span> <span class=k>sealed</span> <span class=k>override</span> <span class=n>ImmutableArray</span><span class=p>&lt;</span><span class=kt>string</span><span class=p>&gt;</span> <span class=n>FixableDiagnosticIds</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>get</span> <span class=p>{</span> <span class=k>return</span> <span class=n>ImmutableArray</span><span class=p>.</span><span class=n>Create</span><span class=p>(</span><span class=n>DevOnlyMigrateAnalyzer</span><span class=p>.</span><span class=n>DiagnosticId</span><span class=p>);</span> <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>public</span> <span class=k>sealed</span> <span class=k>override</span> <span class=n>FixAllProvider</span> <span class=n>GetFixAllProvider</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=n>WellKnownFixAllProviders</span><span class=p>.</span><span class=n>BatchFixer</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=p>.</span>
+</span></span><span class=line><span class=cl>    <span class=p>.</span>
+</span></span><span class=line><span class=cl>    <span class=p>.</span>
+</span></span><span class=line><span class=cl><span class=p>}</span></span></span></code></pre></td></tr></table></div></div><ul>
+<li><strong>Line 3</strong>: The class must inherit from <em>CodeFixProvider</em></li><li><strong>Line 5-8</strong>: The overridden <em>FixableDiagnosticIds</em> returns a list of the diagnostic ids this <code>code fix</code> will resolve</li></ul><hr>
+<h3 id=register-the-code-fix>Register the code fix</h3><p>The next step is to register the code fix with Roslyn - this is done by overriding the <em>RegisterCodeFixesAsync</em> method.</p><div class=highlight><div class=chroma>
 <table class=lntable><tr><td class=lntd>
 <pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
 </span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
@@ -136,47 +108,31 @@ A step by step guide to writing an analyzer code fix
 </span><span class=lnt id=ienumusage-18><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-18>18</a>
 </span><span class=lnt id=ienumusage-19><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-19>19</a>
 </span><span class=lnt id=ienumusage-20><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-20>20</a>
-</span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=k>public</span> <span class=k>sealed</span> <span class=k>override</span> <span class=k>async</span> <span class=n>Task</span> <span class=n>RegisterCodeFixesAsync</span><span class=p>(</span><span class=n>CodeFixContext</span> <span class=n>context</span><span class=p>)</span>
-<span class=p>{</span>
-    <span class=kt>var</span> <span class=n>root</span> <span class=p>=</span> <span class=k>await</span> <span class=n>context</span><span class=p>.</span><span class=n>Document</span><span class=p>.</span><span class=n>GetSyntaxRootAsync</span><span class=p>(</span><span class=n>context</span><span class=p>.</span><span class=n>CancellationToken</span><span class=p>)</span>
-        <span class=p>.</span><span class=n>ConfigureAwait</span><span class=p>(</span><span class=k>false</span><span class=p>);</span>
-
-    <span class=kt>var</span> <span class=n>diagnostic</span> <span class=p>=</span> <span class=n>context</span><span class=p>.</span><span class=n>Diagnostics</span><span class=p>.</span><span class=n>First</span><span class=p>();</span>
-    <span class=kt>var</span> <span class=n>diagnosticSpan</span> <span class=p>=</span> <span class=n>diagnostic</span><span class=p>.</span><span class=n>Location</span><span class=p>.</span><span class=n>SourceSpan</span><span class=p>;</span>
-
-    <span class=kt>var</span> <span class=n>declaration</span> <span class=p>=</span> <span class=n>root</span><span class=p>.</span><span class=n>FindToken</span><span class=p>(</span><span class=n>diagnosticSpan</span><span class=p>.</span><span class=n>Start</span><span class=p>).</span><span class=n>Parent</span><span class=p>.</span>
-        <span class=n>AncestorsAndSelf</span><span class=p>().</span><span class=n>OfType</span><span class=p>&lt;</span><span class=n>InvocationExpressionSyntax</span><span class=p>&gt;().</span><span class=n>First</span><span class=p>();</span>
-
-    <span class=c1>// Register a code action that will invoke the fix.
-</span><span class=c1></span>    <span class=n>context</span><span class=p>.</span><span class=n>RegisterCodeFix</span><span class=p>(</span>
-        <span class=n>CodeAction</span><span class=p>.</span><span class=n>Create</span><span class=p>(</span>
-            <span class=n>equivalenceKey</span><span class=p>:</span> <span class=n>DevOnlyMigrateAnalyzer</span><span class=p>.</span><span class=n>DiagnosticId</span><span class=p>,</span>
-            <span class=n>title</span><span class=p>:</span> <span class=s>&#34;Surround with correct #if directive&#34;</span><span class=p>,</span>
-            <span class=n>createChangedDocument</span><span class=p>:</span> <span class=n>c</span> <span class=p>=&gt;</span> 
-                <span class=n>InsertIfDirectiveAsync</span><span class=p>(</span><span class=n>context</span><span class=p>.</span><span class=n>Document</span><span class=p>,</span> <span class=n>declaration</span><span class=p>,</span> <span class=n>c</span><span class=p>)),</span>
-        <span class=n>diagnostic</span><span class=p>);</span>
-<span class=p>}</span></code></pre></td></tr></table>
-</div>
-</div>
+</span></code></pre></td><td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=k>public</span> <span class=k>sealed</span> <span class=k>override</span> <span class=k>async</span> <span class=n>Task</span> <span class=n>RegisterCodeFixesAsync</span><span class=p>(</span><span class=n>CodeFixContext</span> <span class=n>context</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>var</span> <span class=n>root</span> <span class=p>=</span> <span class=k>await</span> <span class=n>context</span><span class=p>.</span><span class=n>Document</span><span class=p>.</span><span class=n>GetSyntaxRootAsync</span><span class=p>(</span><span class=n>context</span><span class=p>.</span><span class=n>CancellationToken</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>.</span><span class=n>ConfigureAwait</span><span class=p>(</span><span class=k>false</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=kt>var</span> <span class=n>diagnostic</span> <span class=p>=</span> <span class=n>context</span><span class=p>.</span><span class=n>Diagnostics</span><span class=p>.</span><span class=n>First</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>    <span class=kt>var</span> <span class=n>diagnosticSpan</span> <span class=p>=</span> <span class=n>diagnostic</span><span class=p>.</span><span class=n>Location</span><span class=p>.</span><span class=n>SourceSpan</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=kt>var</span> <span class=n>declaration</span> <span class=p>=</span> <span class=n>root</span><span class=p>.</span><span class=n>FindToken</span><span class=p>(</span><span class=n>diagnosticSpan</span><span class=p>.</span><span class=n>Start</span><span class=p>).</span><span class=n>Parent</span><span class=p>.</span>
+</span></span><span class=line><span class=cl>        <span class=n>AncestorsAndSelf</span><span class=p>().</span><span class=n>OfType</span><span class=p>&lt;</span><span class=n>InvocationExpressionSyntax</span><span class=p>&gt;().</span><span class=n>First</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>// Register a code action that will invoke the fix.</span>
+</span></span><span class=line><span class=cl>    <span class=n>context</span><span class=p>.</span><span class=n>RegisterCodeFix</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=n>CodeAction</span><span class=p>.</span><span class=n>Create</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>            <span class=n>equivalenceKey</span><span class=p>:</span> <span class=n>DevOnlyMigrateAnalyzer</span><span class=p>.</span><span class=n>DiagnosticId</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>            <span class=n>title</span><span class=p>:</span> <span class=s>&#34;Surround with correct #if directive&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>            <span class=n>createChangedDocument</span><span class=p>:</span> <span class=n>c</span> <span class=p>=&gt;</span> 
+</span></span><span class=line><span class=cl>                <span class=n>InsertIfDirectiveAsync</span><span class=p>(</span><span class=n>context</span><span class=p>.</span><span class=n>Document</span><span class=p>,</span> <span class=n>declaration</span><span class=p>,</span> <span class=n>c</span><span class=p>)),</span>
+</span></span><span class=line><span class=cl>        <span class=n>diagnostic</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span></span></span></code></pre></td></tr></table></div></div><ul>
+<li><strong>Lines 3-4</strong>: Gets the entire syntax tree from the context</li><li><strong>Lines 6-7</strong>: Get the first diagnostic reported, and get its Span (the location within the root syntax tree)</li><li><strong>Lines 9-10</strong>: Find the syntax node at the location of the diagnostic</li><li><strong>Lines 13-19</strong>: Register the code fix:
 <ul>
-<li><strong>Lines 3-4</strong>: Gets the entire syntax tree from the context</li>
-<li><strong>Lines 6-7</strong>: Get the first diagnostic reported, and get its Span (the location within the root syntax tree)</li>
-<li><strong>Lines 9-10</strong>: Find the syntax node at the location of the diagnostic</li>
-<li><strong>Lines 13-19</strong>: Register the code fix:
-<ul>
-<li><strong>Line 15</strong>: Register the specific diagnostic id</li>
-<li><strong>Line 16</strong>: The text which appears in the quick action menu</li>
-<li><strong>Lines 17-19</strong>: The method to call which will handle altering the document</li>
-</ul>
-</li>
-</ul>
-<hr>
-<h3 id=alter-the-syntax-tree>Alter the syntax tree</h3>
-<p>A <code>code fix</code> consists of taking the original document (which contains the full context tree), modifying various nodes in the tree to reflect how the fixed code should look, and then returning the updated document.</p>
-<p>For the sample <code>analyzer</code>, this is done in <em>InsertIfDirectiveAsync</em>, the method registered in the previous step:</p>
-<div class=highlight><div class=chroma>
+<li><strong>Line 15</strong>: Register the specific diagnostic id</li><li><strong>Line 16</strong>: The text which appears in the quick action menu</li><li><strong>Lines 17-19</strong>: The method to call which will handle altering the document</li></ul></li></ul><hr>
+<h3 id=alter-the-syntax-tree>Alter the syntax tree</h3><p>A <code>code fix</code> consists of taking the original document (which contains the full context tree), modifying various nodes in the tree to reflect how the fixed code should look, and then returning the updated document.</p><p>For the sample <code>analyzer</code>, this is done in <em>InsertIfDirectiveAsync</em>, the method registered in the previous step:</p><div class=highlight><div class=chroma>
 <table class=lntable><tr><td class=lntd>
 <pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
 </span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
@@ -226,94 +182,67 @@ A step by step guide to writing an analyzer code fix
 </span><span class=lnt id=ienumusage-46><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-46>46</a>
 </span><span class=lnt id=ienumusage-47><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-47>47</a>
 </span><span class=lnt id=ienumusage-48><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-48>48</a>
-</span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=k>private</span> <span class=k>async</span> <span class=n>Task</span><span class=p>&lt;</span><span class=n>Document</span><span class=p>&gt;</span> <span class=n>InsertIfDirectiveAsync</span><span class=p>(</span><span class=n>Document</span> <span class=n>document</span><span class=p>,</span> 
-    <span class=n>InvocationExpressionSyntax</span> <span class=n>invocationExpr</span><span class=p>,</span> <span class=n>CancellationToken</span> <span class=n>cancellationToken</span><span class=p>)</span>
-<span class=p>{</span>
-    <span class=kt>var</span> <span class=n>memberAccessExpr</span> <span class=p>=</span> <span class=n>invocationExpr</span><span class=p>.</span><span class=n>Expression</span> <span class=k>as</span> <span class=n>MemberAccessExpressionSyntax</span><span class=p>;</span>
-    <span class=kt>var</span> <span class=n>originalRoot</span> <span class=p>=</span> <span class=k>await</span> <span class=n>document</span><span class=p>.</span><span class=n>GetSyntaxRootAsync</span><span class=p>(</span><span class=n>cancellationToken</span><span class=p>);</span>
-    <span class=kt>var</span> <span class=n>statement</span> <span class=p>=</span> <span class=n>GetStatement</span><span class=p>(</span><span class=n>invocationExpr</span><span class=p>);</span>
-
-    <span class=c1>// get the closest If directive
-</span><span class=c1></span>    <span class=kt>var</span> <span class=n>closestIfDirective</span> <span class=p>=</span> <span class=n>CodeAnalysisHelper</span><span class=p>.</span><span class=n>GetClosestIfDirective</span><span class=p>(</span><span class=n>memberAccessExpr</span><span class=p>,</span> 
-        <span class=n>originalRoot</span><span class=p>);</span>
-
-    <span class=c1>// if there was one
-</span><span class=c1></span>    <span class=k>if</span> <span class=p>(</span><span class=n>closestIfDirective</span> <span class=p>!=</span> <span class=k>null</span><span class=p>)</span>
-    <span class=p>{</span>
-        <span class=c1>// work out the replacement directive and replace 
-</span><span class=c1></span>        <span class=kt>var</span> <span class=n>replacementIfDirective</span> <span class=p>=</span> <span class=n>SyntaxFactory</span><span class=p>.</span><span class=n>IfDirectiveTrivia</span><span class=p>(</span>
-            <span class=n>SyntaxFactory</span><span class=p>.</span><span class=n>ParseExpression</span><span class=p>(</span><span class=s>$&#34; DEBUG{Environment.NewLine}&#34;</span><span class=p>),</span> 
-            <span class=k>true</span><span class=p>,</span> <span class=k>true</span><span class=p>,</span> <span class=k>true</span><span class=p>);</span>
-
-        <span class=kt>var</span> <span class=n>replacementIfDirectiveList</span> <span class=p>=</span> <span class=n>SyntaxFactory</span><span class=p>.</span><span class=n>TriviaList</span><span class=p>(</span><span class=k>new</span> <span class=n>SyntaxTrivia</span><span class=p>[]</span>
-        <span class=p>{</span>
-            <span class=n>SyntaxFactory</span><span class=p>.</span><span class=n>Trivia</span><span class=p>(</span><span class=n>replacementIfDirective</span><span class=p>)</span>
-        <span class=p>});</span>
-
-        <span class=kt>var</span> <span class=n>ifDirectiveNode</span> <span class=p>=</span> <span class=n>statement</span><span class=p>.</span><span class=n>FindNode</span><span class=p>(</span><span class=n>closestIfDirective</span><span class=p>.</span><span class=n>Value</span><span class=p>.</span><span class=n>Span</span><span class=p>);</span>
-
-        <span class=k>if</span><span class=p>(</span><span class=n>ifDirectiveNode</span> <span class=p>!=</span> <span class=k>null</span> <span class=p>&amp;&amp;</span> <span class=n>ifDirectiveNode</span><span class=p>.</span><span class=n>HasLeadingTrivia</span><span class=p>)</span>
-        <span class=p>{</span>
-            <span class=kt>var</span> <span class=n>newIfDirectiveNode</span> <span class=p>=</span> <span class=n>ifDirectiveNode</span>
-                <span class=p>.</span><span class=n>WithLeadingTrivia</span><span class=p>(</span><span class=n>replacementIfDirectiveList</span><span class=p>);</span>
-            <span class=kt>var</span> <span class=n>newReplacementStatement</span> <span class=p>=</span> <span class=n>statement</span>
-                <span class=p>.</span><span class=n>ReplaceNode</span><span class=p>(</span><span class=n>ifDirectiveNode</span><span class=p>,</span> <span class=n>newIfDirectiveNode</span><span class=p>);</span>
-            <span class=kt>var</span> <span class=n>newReplacementRoot</span> <span class=p>=</span> <span class=n>originalRoot</span>
-                <span class=p>.</span><span class=n>ReplaceNode</span><span class=p>(</span><span class=n>statement</span><span class=p>,</span> <span class=n>newReplacementStatement</span><span class=p>);</span>
-
-            <span class=k>return</span> <span class=n>document</span><span class=p>.</span><span class=n>WithSyntaxRoot</span><span class=p>(</span><span class=n>newReplacementRoot</span><span class=p>);</span>
-        <span class=p>}</span>
-
-        <span class=k>return</span> <span class=n>document</span><span class=p>;</span>
-    <span class=p>}</span>
-
-    <span class=c1>// this branch is if there is no directive
-</span><span class=c1></span>    <span class=kt>var</span> <span class=n>statementWithDirective</span> <span class=p>=</span> <span class=n>InsertNewIfDirective</span><span class=p>(</span><span class=n>statement</span><span class=p>);</span>
-    <span class=kt>var</span> <span class=n>newRootWithEndDirective</span> <span class=p>=</span> <span class=n>originalRoot</span>
-        <span class=p>.</span><span class=n>ReplaceNode</span><span class=p>(</span><span class=n>statement</span><span class=p>,</span> <span class=n>statementWithDirective</span><span class=p>);</span>
-
-    <span class=k>return</span> <span class=n>document</span><span class=p>.</span><span class=n>WithSyntaxRoot</span><span class=p>(</span><span class=n>newRootWithEndDirective</span><span class=p>);</span>
-<span class=p>}</span></code></pre></td></tr></table>
-</div>
-</div>
+</span></code></pre></td><td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=k>private</span> <span class=k>async</span> <span class=n>Task</span><span class=p>&lt;</span><span class=n>Document</span><span class=p>&gt;</span> <span class=n>InsertIfDirectiveAsync</span><span class=p>(</span><span class=n>Document</span> <span class=n>document</span><span class=p>,</span> 
+</span></span><span class=line><span class=cl>    <span class=n>InvocationExpressionSyntax</span> <span class=n>invocationExpr</span><span class=p>,</span> <span class=n>CancellationToken</span> <span class=n>cancellationToken</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>var</span> <span class=n>memberAccessExpr</span> <span class=p>=</span> <span class=n>invocationExpr</span><span class=p>.</span><span class=n>Expression</span> <span class=k>as</span> <span class=n>MemberAccessExpressionSyntax</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=kt>var</span> <span class=n>originalRoot</span> <span class=p>=</span> <span class=k>await</span> <span class=n>document</span><span class=p>.</span><span class=n>GetSyntaxRootAsync</span><span class=p>(</span><span class=n>cancellationToken</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=kt>var</span> <span class=n>statement</span> <span class=p>=</span> <span class=n>GetStatement</span><span class=p>(</span><span class=n>invocationExpr</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>// get the closest If directive</span>
+</span></span><span class=line><span class=cl>    <span class=kt>var</span> <span class=n>closestIfDirective</span> <span class=p>=</span> <span class=n>CodeAnalysisHelper</span><span class=p>.</span><span class=n>GetClosestIfDirective</span><span class=p>(</span><span class=n>memberAccessExpr</span><span class=p>,</span> 
+</span></span><span class=line><span class=cl>        <span class=n>originalRoot</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>// if there was one</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>closestIfDirective</span> <span class=p>!=</span> <span class=k>null</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=c1>// work out the replacement directive and replace </span>
+</span></span><span class=line><span class=cl>        <span class=kt>var</span> <span class=n>replacementIfDirective</span> <span class=p>=</span> <span class=n>SyntaxFactory</span><span class=p>.</span><span class=n>IfDirectiveTrivia</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>            <span class=n>SyntaxFactory</span><span class=p>.</span><span class=n>ParseExpression</span><span class=p>(</span><span class=s>$&#34; DEBUG{Environment.NewLine}&#34;</span><span class=p>),</span> 
+</span></span><span class=line><span class=cl>            <span class=k>true</span><span class=p>,</span> <span class=k>true</span><span class=p>,</span> <span class=k>true</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=kt>var</span> <span class=n>replacementIfDirectiveList</span> <span class=p>=</span> <span class=n>SyntaxFactory</span><span class=p>.</span><span class=n>TriviaList</span><span class=p>(</span><span class=k>new</span> <span class=n>SyntaxTrivia</span><span class=p>[]</span>
+</span></span><span class=line><span class=cl>        <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=n>SyntaxFactory</span><span class=p>.</span><span class=n>Trivia</span><span class=p>(</span><span class=n>replacementIfDirective</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>});</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=kt>var</span> <span class=n>ifDirectiveNode</span> <span class=p>=</span> <span class=n>statement</span><span class=p>.</span><span class=n>FindNode</span><span class=p>(</span><span class=n>closestIfDirective</span><span class=p>.</span><span class=n>Value</span><span class=p>.</span><span class=n>Span</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>if</span><span class=p>(</span><span class=n>ifDirectiveNode</span> <span class=p>!=</span> <span class=k>null</span> <span class=p>&amp;&amp;</span> <span class=n>ifDirectiveNode</span><span class=p>.</span><span class=n>HasLeadingTrivia</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=kt>var</span> <span class=n>newIfDirectiveNode</span> <span class=p>=</span> <span class=n>ifDirectiveNode</span>
+</span></span><span class=line><span class=cl>                <span class=p>.</span><span class=n>WithLeadingTrivia</span><span class=p>(</span><span class=n>replacementIfDirectiveList</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>            <span class=kt>var</span> <span class=n>newReplacementStatement</span> <span class=p>=</span> <span class=n>statement</span>
+</span></span><span class=line><span class=cl>                <span class=p>.</span><span class=n>ReplaceNode</span><span class=p>(</span><span class=n>ifDirectiveNode</span><span class=p>,</span> <span class=n>newIfDirectiveNode</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>            <span class=kt>var</span> <span class=n>newReplacementRoot</span> <span class=p>=</span> <span class=n>originalRoot</span>
+</span></span><span class=line><span class=cl>                <span class=p>.</span><span class=n>ReplaceNode</span><span class=p>(</span><span class=n>statement</span><span class=p>,</span> <span class=n>newReplacementStatement</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>            <span class=k>return</span> <span class=n>document</span><span class=p>.</span><span class=n>WithSyntaxRoot</span><span class=p>(</span><span class=n>newReplacementRoot</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=n>document</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>// this branch is if there is no directive</span>
+</span></span><span class=line><span class=cl>    <span class=kt>var</span> <span class=n>statementWithDirective</span> <span class=p>=</span> <span class=n>InsertNewIfDirective</span><span class=p>(</span><span class=n>statement</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=kt>var</span> <span class=n>newRootWithEndDirective</span> <span class=p>=</span> <span class=n>originalRoot</span>
+</span></span><span class=line><span class=cl>        <span class=p>.</span><span class=n>ReplaceNode</span><span class=p>(</span><span class=n>statement</span><span class=p>,</span> <span class=n>statementWithDirective</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=n>document</span><span class=p>.</span><span class=n>WithSyntaxRoot</span><span class=p>(</span><span class=n>newRootWithEndDirective</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span></span></span></code></pre></td></tr></table></div></div><ul>
+<li><strong>Lines 1-2</strong>: The parameters to the method are the full Document, as well as the specific syntax which triggered the diagnostic</li><li><strong>Line 6</strong>: A helper method is called to get the code statement which <em>invocationExpr</em> (Migrate method call) is part of.<br>
+The statement is the larger code block containing the <em>invocationExpr</em> : _context?.Database.Migrate()</li><li><strong>Lines 9-10</strong>: A helper method is called to get the closest #if directive which occurs before the <em>invocationExpr</em> location</li><li><strong>Lines 13-39</strong>: This handles replacing the existing #if directive with a version which has the correct condition
 <ul>
-<li><strong>Lines 1-2</strong>: The parameters to the method are the full Document, as well as the specific syntax which triggered the diagnostic</li>
-<li><strong>Line 6</strong>: A helper method is called to get the code statement which <em>invocationExpr</em> (Migrate method call) is part of.<br>
-The statement is the larger code block containing the <em>invocationExpr</em> : _context?.Database.Migrate()</li>
-<li><strong>Lines 9-10</strong>: A helper method is called to get the closest #if directive which occurs before the <em>invocationExpr</em> location</li>
-<li><strong>Lines 13-39</strong>: This handles replacing the existing #if directive with a version which has the correct condition
-<ul>
-<li><strong>Lines 16-23</strong>: Builds the replacement trivia: <code>#if DEBUG</code></li>
-<li><strong>Line 25</strong>: Find the existing trivia in the statement node</li>
-<li><strong>Lines 29-34</strong>: Replaces the text in the #if directive, then replaced the directive in the statement with the new directive, then replaced the statement in the root with the new statement</li>
-<li><strong>Lines 36</strong>: Return the document with the new syntax root</li>
-</ul>
-</li>
-<li><strong>Lines 43-47</strong>: This handles inserting a new #if directive into the statement (InsertNewIfDirective method), and then returns the document with the newly inserted directive.</li>
-</ul>
-<hr>
-<h3 id=applying-the-code-fix>Applying the code fix</h3>
-<p>Nothing more is required - Visual Studio and Roslyn will automatically call the <code>code fix</code> method to:</p>
-<ol>
-<li>Give a preview of the fix being applied when the cursor is held over the quick action menu item.</li>
-<li>Apply the fix when the quick action menu item is clicked.</li>
-</ol>
-<p><figure class=gallery-image style=flex-grow:278;flex-basis:667px>
+<li><strong>Lines 16-23</strong>: Builds the replacement trivia: <code>#if DEBUG</code></li><li><strong>Line 25</strong>: Find the existing trivia in the statement node</li><li><strong>Lines 29-34</strong>: Replaces the text in the #if directive, then replaced the directive in the statement with the new directive, then replaced the statement in the root with the new statement</li><li><strong>Lines 36</strong>: Return the document with the new syntax root</li></ul></li><li><strong>Lines 43-47</strong>: This handles inserting a new #if directive into the statement (InsertNewIfDirective method), and then returns the document with the newly inserted directive.</li></ul><hr>
+<h3 id=applying-the-code-fix>Applying the code fix</h3><p>Nothing more is required - Visual Studio and Roslyn will automatically call the <code>code fix</code> method to:</p><ol>
+<li>Give a preview of the fix being applied when the cursor is held over the quick action menu item.</li><li>Apply the fix when the quick action menu item is clicked.</li></ol><p><figure class=gallery-image style=flex-grow:278;flex-basis:667px>
 <a href=/p/analyzer-code-fix/FixPreview.png data-size=690x248>
 <img src=/p/analyzer-code-fix/FixPreview.png width=690 height=248 srcset="/p/analyzer-code-fix/FixPreview_hu4cab6ce6ea1db54dbb70da6bc5a61d25_37377_480x0_resize_box_3.png 480w, /p/analyzer-code-fix/FixPreview_hu4cab6ce6ea1db54dbb70da6bc5a61d25_37377_1024x0_resize_box_3.png 1024w" loading=lazy alt="The code fix preview">
 </a>
-<figcaption>The code fix preview</figcaption>
-</figure></p>
-<hr>
-<h2 id=next-steps-testing-the-analyzer-and-code-fix>Next steps: Testing the analyzer and code fix</h2>
-<p>Next up, <a class=link href=../analyzer-test/>part 4 in the series</a> will detail how to test the custom <code>analyzer</code> and associated <code>code fix</code>. This includes information on using the analyzer <code>unit tests infrastructure</code> to assist with development, as well as using the <code>VSIX</code> project.</p>
-<h2 id=useful-links>Useful links</h2>
-<p><a class=link href=https://github.com/dotnet/roslyn target=_blank rel=noopener>Roslyn repository</a><br>
-<a class=link href=https://github.com/always-developing/CodeAnalysis.EntityFrameworkCore.Sample target=_blank rel=noopener>Sample analyzer and code fix repository</a></p>
-</section>
-<footer class=article-footer>
+<figcaption>The code fix preview</figcaption></figure></p><hr>
+<h2 id=next-steps-testing-the-analyzer-and-code-fix>Next steps: Testing the analyzer and code fix</h2><p>Next up, <a class=link href=../analyzer-test/>part 4 in the series</a> will detail how to test the custom <code>analyzer</code> and associated <code>code fix</code>. This includes information on using the analyzer <code>unit tests infrastructure</code> to assist with development, as well as using the <code>VSIX</code> project.</p><h2 id=useful-links>Useful links</h2><p><a class=link href=https://github.com/dotnet/roslyn target=_blank rel=noopener>Roslyn repository</a><br>
+<a class=link href=https://github.com/always-developing/CodeAnalysis.EntityFrameworkCore.Sample target=_blank rel=noopener>Sample analyzer and code fix repository</a></p></section><footer class=article-footer>
 <section class=article-tags>
 <a href=/tags/c#/>c#</a>
 <a href=/tags/.net/>.net</a>
@@ -327,128 +256,67 @@ The statement is the larger code block containing the <em>invocationExpr</em> : 
 <a href=/tags/entityframework/>entityframework</a>
 <a href=/tags/ef/>ef</a>
 <a href=/tags/analyzer-series/>analyzer-series</a>
-</section>
-</footer>
-</article>
-<aside class=related-contents--wrapper>
-<h2 class=section-title>Related contents</h2>
-<div class=related-contents>
+</section></footer></article><aside class=related-contents--wrapper>
+<h2 class=section-title>Related contents</h2><div class=related-contents>
 <div class="flex article-list--tile">
 <article>
 <a href=/p/analyzer-write/>
 <div class=article-details>
-<h2 class=article-title>Roslyn Analyzer - writing the analyzer (Part 2)</h2>
-</div>
-</a>
-</article>
-<article>
+<h2 class=article-title>Roslyn Analyzer - writing the analyzer (Part 2)</h2></div></a>
+</article><article>
 <a href=/p/analyzer-explained/>
 <div class=article-details>
-<h2 class=article-title>Roslyn Analyzer - explained (Part 1)</h2>
-</div>
-</a>
-</article>
-<article>
+<h2 class=article-title>Roslyn Analyzer - explained (Part 1)</h2></div></a>
+</article><article>
 <a href=/p/multiple-implementations/>
 <div class=article-details>
-<h2 class=article-title>Multiple implementations of same interface - the options</h2>
-</div>
-</a>
-</article>
-<article>
+<h2 class=article-title>Multiple implementations of same interface - the options</h2></div></a>
+</article><article>
 <a href=/p/vs-keyboard-shortcuts/>
 <div class=article-details>
-<h2 class=article-title>Useful Visual Studio keyboard shortcuts</h2>
-</div>
-</a>
-</article>
-<article>
+<h2 class=article-title>Useful Visual Studio keyboard shortcuts</h2></div></a>
+</article><article>
 <a href=/p/string-vs-string/>
 <div class=article-details>
-<h2 class=article-title>C# String vs string</h2>
-</div>
-</a>
-</article>
-</div>
-</div>
-</aside>
-<script src=https://giscus.app/client.js data-repo=always-developing/always-developing.github.io data-repo-id=R_kgDOGQJLBQ data-category=Comments data-category-id=DIC_kwDOGQJLBc4B_pUA data-mapping=pathname data-reactions-enabled=1 data-emit-metadata=0 data-theme=light crossorigin=anonymous async></script>
-<script>function setGiscusTheme(b){let a=document.querySelector('iframe.giscus-frame');a&&a.contentWindow.postMessage({giscus:{setConfig:{theme:b}}},"https://giscus.app")}(function(){addEventListener('message',b=>{if(event.origin!=='https://giscus.app')return;a()}),window.addEventListener('onColorSchemeChange',a);function a(){document.documentElement.dataset.scheme==="light"?setGiscusTheme('light'):setGiscusTheme('dark')}})()</script>
+<h2 class=article-title>C# String vs string</h2></div></a>
+</article></div></div></aside><script src=https://giscus.app/client.js data-repo=always-developing/always-developing.github.io data-repo-id=R_kgDOGQJLBQ data-category=Comments data-category-id=DIC_kwDOGQJLBc4B_pUA data-mapping=pathname data-reactions-enabled=1 data-emit-metadata=0 data-theme=light crossorigin=anonymous async></script>
+<script>function setGiscusTheme(t){let e=document.querySelector("iframe.giscus-frame");e&&e.contentWindow.postMessage({giscus:{setConfig:{theme:t}}},"https://giscus.app")}(function(){addEventListener("message",t=>{if(event.origin!=="https://giscus.app")return;e()}),window.addEventListener("onColorSchemeChange",e);function e(){document.documentElement.dataset.scheme==="light"?setGiscusTheme("light"):setGiscusTheme("dark")}})()</script>
 <footer class=site-footer>
 <section class=copyright>
 &copy;
 2021 -
 2022 Always Developing
-</section>
-<section class=powerby>
+</section><section class=powerby>
 Always Developing | always learning | always growing <br>
 Built with <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a> <br>
 Theme <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.2.0>Stack</a></b> designed by <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a>
-</section>
-</footer>
-<div class=pswp tabindex=-1 role=dialog aria-hidden=true>
-<div class=pswp__bg></div>
-<div class=pswp__scroll-wrap>
+</section></footer><div class=pswp tabindex=-1 role=dialog aria-hidden=true>
+<div class=pswp__bg></div><div class=pswp__scroll-wrap>
 <div class=pswp__container>
-<div class=pswp__item></div>
-<div class=pswp__item></div>
-<div class=pswp__item></div>
-</div>
-<div class="pswp__ui pswp__ui--hidden">
+<div class=pswp__item></div><div class=pswp__item></div><div class=pswp__item></div></div><div class="pswp__ui pswp__ui--hidden">
 <div class=pswp__top-bar>
-<div class=pswp__counter></div>
-<button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+<div class=pswp__counter></div><button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
 <button class="pswp__button pswp__button--share" title=Share></button>
 <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
 <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
 <div class=pswp__preloader>
 <div class=pswp__preloader__icn>
 <div class=pswp__preloader__cut>
-<div class=pswp__preloader__donut></div>
-</div>
-</div>
-</div>
-</div>
-<div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
-<div class=pswp__share-tooltip></div>
-</div>
-<button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+<div class=pswp__preloader__donut></div></div></div></div></div><div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+<div class=pswp__share-tooltip></div></div><button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
 </button>
 <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
 </button>
 <div class=pswp__caption>
-<div class=pswp__caption__center></div>
-</div>
-</div>
-</div>
-</div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.css integrity="sha256-c0uckgykQ9v5k+IqViZOZKc47Jn7KQil4/MP3ySA3F8=" crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.css integrity="sha256-SBLU4vv6CA6lHsZ1XyTdhyjJxCjPif/TRkjnsyGAGnE=" crossorigin=anonymous>
-</main>
-<aside class="sidebar right-sidebar sticky">
+<div class=pswp__caption__center></div></div></div></div></div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.css integrity="sha256-c0uckgykQ9v5k+IqViZOZKc47Jn7KQil4/MP3ySA3F8=" crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.css integrity="sha256-SBLU4vv6CA6lHsZ1XyTdhyjJxCjPif/TRkjnsyGAGnE=" crossorigin=anonymous>
+</main><aside class="sidebar right-sidebar sticky">
 <section class="widget archives">
 <div class=widget-icon><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg>
-</div>
-<h2 class="widget-title section-title">Table of contents</h2>
-<div class=widget--toc>
+</div><h2 class="widget-title section-title">Table of contents</h2><div class=widget--toc>
 <nav id=TableOfContents>
 <ol>
-<li><a href=#code-fix-introduction>Code fix introduction</a></li>
-<li><a href=#coding-the-code-fix>Coding the code fix</a>
+<li><a href=#code-fix-introduction>Code fix introduction</a></li><li><a href=#coding-the-code-fix>Coding the code fix</a>
 <ol>
-<li><a href=#code-fix-setup>Code fix setup</a></li>
-<li><a href=#register-the-code-fix>Register the code fix</a></li>
-<li><a href=#alter-the-syntax-tree>Alter the syntax tree</a></li>
-<li><a href=#applying-the-code-fix>Applying the code fix</a></li>
-</ol>
-</li>
-<li><a href=#next-steps-testing-the-analyzer-and-code-fix>Next steps: Testing the analyzer and code fix</a></li>
-<li><a href=#useful-links>Useful links</a></li>
-</ol>
-</nav>
-</div>
-</section>
-</aside>
-</div>
-<script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g=" crossorigin=anonymous defer></script><script type=text/javascript src=/ts/main.js defer></script>
-<script>(function(){const a=document.createElement('link');a.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",a.type="text/css",a.rel="stylesheet",document.head.appendChild(a)})()</script>
-</body>
-</html>
+<li><a href=#code-fix-setup>Code fix setup</a></li><li><a href=#register-the-code-fix>Register the code fix</a></li><li><a href=#alter-the-syntax-tree>Alter the syntax tree</a></li><li><a href=#applying-the-code-fix>Applying the code fix</a></li></ol></li><li><a href=#next-steps-testing-the-analyzer-and-code-fix>Next steps: Testing the analyzer and code fix</a></li><li><a href=#useful-links>Useful links</a></li></ol></nav></div></section></aside></div><script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g=" crossorigin=anonymous defer></script><script type=text/javascript src=/ts/main.js defer></script>
+<script>(function(){const e=document.createElement("link");e.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",e.type="text/css",e.rel="stylesheet",document.head.appendChild(e)})()</script>
+</body></html>

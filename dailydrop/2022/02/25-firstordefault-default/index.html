@@ -1,7 +1,6 @@
 <!doctype html><html lang=en-uk>
 <head><meta charset=utf-8>
-<meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="Exploring the FirstOfDefault improvements introduced in .NET6"><title>LINQ improvements - FirstOrDefault defaults</title>
-<link rel=canonical href=https://always-developing.github.io/dailydrop/2022/02/25-firstordefault-default/>
+<meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="Exploring the FirstOfDefault improvements introduced in .NET6"><title>LINQ improvements - FirstOrDefault defaults</title><link rel=canonical href=https://always-developing.github.io/dailydrop/2022/02/25-firstordefault-default/>
 <link rel=stylesheet href=/scss/style.min.css><meta property="og:title" content="LINQ improvements - FirstOrDefault defaults">
 <meta property="og:description" content="Exploring the FirstOfDefault improvements introduced in .NET6">
 <meta property="og:url" content="https://always-developing.github.io/dailydrop/2022/02/25-firstordefault-default/">
@@ -11,18 +10,16 @@
 <meta name=twitter:description content="Exploring the FirstOfDefault improvements introduced in .NET6">
 <link rel="shortcut icon" href=favicon.ico>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-CXPLFS7K38"></script>
-<script>var doNotTrack=!1;if(!doNotTrack){window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date),gtag('config','G-CXPLFS7K38',{anonymize_ip:!1})}</script>
-</head>
-<body class="article-page has-toc">
-<script>(function(){const a='StackColorScheme';localStorage.getItem(a)||localStorage.setItem(a,"dark")})()</script><script>(function(){const b='StackColorScheme',a=localStorage.getItem(b),c=window.matchMedia('(prefers-color-scheme: dark)').matches===!0;a=='dark'||a==='auto'&&c?document.documentElement.dataset.scheme='dark':document.documentElement.dataset.scheme='light'})()</script>
+<script>var doNotTrack=!1;if(!doNotTrack){window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","G-CXPLFS7K38",{anonymize_ip:!1})}</script>
+</head><body class="article-page has-toc">
+<script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"dark")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script>
 <div class="container main-container flex
 extended">
 <div id=article-toolbar>
 <a href=https://always-developing.github.io/ class=back-home><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="15 6 9 12 15 18"/></svg>
 <span>Back</span>
 </a>
-</div>
-<main class="main full-width">
+</div><main class="main full-width">
 <article class=main-article>
 <header class=article-header>
 <div class=article-details>
@@ -30,33 +27,20 @@ extended">
 <a href=/categories/dailydrop/>
 DailyDrop
 </a>
-</header>
-<h2 class=article-title>
+</header><h2 class=article-title>
 <a href=/dailydrop/2022/02/25-firstordefault-default/>LINQ improvements - FirstOrDefault defaults</a>
-</h2>
-<h3 class=article-subtitle>
+</h2><h3 class=article-subtitle>
 Exploring the FirstOfDefault improvements introduced in .NET6
-</h3>
-<footer class=article-time>
+</h3><footer class=article-time>
 <div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
 <time class=article-time--published>Feb 25, 2022</time>
-</div>
-<div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+</div><div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
 <time class=article-time--reading>
 4 minute read
 </time>
-</div>
-</footer>
-</div>
-</header>
-<section class=article-content>
-<h2 id=daily-knowledge-drop>Daily Knowledge Drop</h2>
-<p>A number of enhancements have been made to LINQ as part of .NET6 - one of those is the ability to <code>set a default value to be returned from .FirstOrDefault()</code>.</p>
-<hr>
-<h2 id=examples>Examples</h2>
-<p><em>List&lt;></em> is being used in the below examples, but the method is available on all compatible types, not just <em>List&lt;></em>.</p>
-<h3 id=simple-type-list>Simple type list</h3>
-<div class=highlight><div class=chroma>
+</div></footer></div></header><section class=article-content>
+<h2 id=daily-knowledge-drop>Daily Knowledge Drop</h2><p>A number of enhancements have been made to LINQ as part of .NET6 - one of those is the ability to <code>set a default value to be returned from .FirstOrDefault()</code>.</p><hr>
+<h2 id=examples>Examples</h2><p><em>List&lt;></em> is being used in the below examples, but the method is available on all compatible types, not just <em>List&lt;></em>.</p><h3 id=simple-type-list>Simple type list</h3><div class=highlight><div class=chroma>
 <table class=lntable><tr><td class=lntd>
 <pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
 </span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
@@ -70,44 +54,29 @@ Exploring the FirstOfDefault improvements introduced in .NET6
 </span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
 </span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
 </span><span class=lnt id=ienumusage-12><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-12>12</a>
-</span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=c1>// list of 11 integers
-</span><span class=c1></span><span class=kt>var</span> <span class=n>intValues</span> <span class=p>=</span> <span class=k>new</span> <span class=n>List</span><span class=p>&lt;</span><span class=kt>int</span><span class=p>&gt;</span> <span class=p>{</span> <span class=m>0</span><span class=p>,</span> <span class=m>1</span><span class=p>,</span> <span class=m>2</span><span class=p>,</span> <span class=m>3</span><span class=p>,</span> <span class=m>4</span><span class=p>,</span> <span class=m>5</span><span class=p>,</span> <span class=m>6</span><span class=p>,</span> <span class=m>7</span><span class=p>,</span> <span class=m>8</span><span class=p>,</span> <span class=m>9</span><span class=p>,</span> <span class=m>10</span> <span class=p>};</span>
-
-<span class=c1>// older method, value found in list
-</span><span class=c1></span><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>intValues</span><span class=p>.</span><span class=n>FirstOrDefault</span><span class=p>(</span><span class=n>i</span> <span class=p>=&gt;</span> <span class=n>i</span> <span class=p>&gt;</span> <span class=m>4</span><span class=p>));</span>
-
-<span class=c1>// older method, value not found in list
-</span><span class=c1></span><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>intValues</span><span class=p>.</span><span class=n>FirstOrDefault</span><span class=p>(</span><span class=n>i</span> <span class=p>=&gt;</span> <span class=n>i</span> <span class=p>&gt;</span> <span class=m>20</span><span class=p>));</span>
-
-<span class=c1>// new method, value not found in list
-</span><span class=c1>// explicit default value returned
-</span><span class=c1></span><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>intValues</span><span class=p>.</span><span class=n>FirstOrDefault</span><span class=p>(</span><span class=n>i</span> <span class=p>=&gt;</span> <span class=n>i</span> <span class=p>&gt;</span> <span class=m>20</span><span class=p>,</span> <span class=p>-</span><span class=m>1</span><span class=p>));</span></code></pre></td></tr></table>
-</div>
-</div>
-<ul>
-<li><strong>Line 5</strong>: Returns the first value greater than 4. A value from the list will be returned</li>
-<li><strong>Line 8</strong>: Returns the first value greater than 20. No qualifying value exists in the list, so the default value of <em>type int</em> will be returned (0 in this case)</li>
-<li><strong>Line 12</strong>: Returns the first value greater than 20. No qualifying value exists in the list, and as the new method override is being used, the <em>explicitly supplied default value</em> will be returned (-1 in this case)</li>
-</ul>
-<p>The output:</p>
-<div class=highlight><div class=chroma>
+</span></code></pre></td><td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=c1>// list of 11 integers</span>
+</span></span><span class=line><span class=cl><span class=kt>var</span> <span class=n>intValues</span> <span class=p>=</span> <span class=k>new</span> <span class=n>List</span><span class=p>&lt;</span><span class=kt>int</span><span class=p>&gt;</span> <span class=p>{</span> <span class=m>0</span><span class=p>,</span> <span class=m>1</span><span class=p>,</span> <span class=m>2</span><span class=p>,</span> <span class=m>3</span><span class=p>,</span> <span class=m>4</span><span class=p>,</span> <span class=m>5</span><span class=p>,</span> <span class=m>6</span><span class=p>,</span> <span class=m>7</span><span class=p>,</span> <span class=m>8</span><span class=p>,</span> <span class=m>9</span><span class=p>,</span> <span class=m>10</span> <span class=p>};</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// older method, value found in list</span>
+</span></span><span class=line><span class=cl><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>intValues</span><span class=p>.</span><span class=n>FirstOrDefault</span><span class=p>(</span><span class=n>i</span> <span class=p>=&gt;</span> <span class=n>i</span> <span class=p>&gt;</span> <span class=m>4</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// older method, value not found in list</span>
+</span></span><span class=line><span class=cl><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>intValues</span><span class=p>.</span><span class=n>FirstOrDefault</span><span class=p>(</span><span class=n>i</span> <span class=p>=&gt;</span> <span class=n>i</span> <span class=p>&gt;</span> <span class=m>20</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// new method, value not found in list</span>
+</span></span><span class=line><span class=cl><span class=c1>// explicit default value returned</span>
+</span></span><span class=line><span class=cl><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>intValues</span><span class=p>.</span><span class=n>FirstOrDefault</span><span class=p>(</span><span class=n>i</span> <span class=p>=&gt;</span> <span class=n>i</span> <span class=p>&gt;</span> <span class=m>20</span><span class=p>,</span> <span class=p>-</span><span class=m>1</span><span class=p>));</span></span></span></code></pre></td></tr></table></div></div><ul>
+<li><strong>Line 5</strong>: Returns the first value greater than 4. A value from the list will be returned</li><li><strong>Line 8</strong>: Returns the first value greater than 20. No qualifying value exists in the list, so the default value of <em>type int</em> will be returned (0 in this case)</li><li><strong>Line 12</strong>: Returns the first value greater than 20. No qualifying value exists in the list, and as the new method override is being used, the <em>explicitly supplied default value</em> will be returned (-1 in this case)</li></ul><p>The output:</p><div class=highlight><div class=chroma>
 <table class=lntable><tr><td class=lntd>
 <pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
 </span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2>2</a>
 </span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3>3</a>
-</span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-posh data-lang=posh><span class=n>5</span>
-<span class=n>0</span>
-<span class=p>-</span><span class=n>1</span></code></pre></td></tr></table>
-</div>
-</div>
-<hr>
-<h3 id=complex-type-list>Complex type list</h3>
-<p>The same process can be applied to more complex type. The below example uses a <em>Person record</em> (but the same would apply to a traditional class as well)</p>
-<div class=highlight><div class=chroma>
+</span></code></pre></td><td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-posh data-lang=posh><span class=line><span class=cl><span class=n>5</span>
+</span></span><span class=line><span class=cl><span class=n>0</span>
+</span></span><span class=line><span class=cl><span class=p>-</span><span class=n>1</span></span></span></code></pre></td></tr></table></div></div><hr>
+<h3 id=complex-type-list>Complex type list</h3><p>The same process can be applied to more complex type. The below example uses a <em>Person record</em> (but the same would apply to a traditional class as well)</p><div class=highlight><div class=chroma>
 <table class=lntable><tr><td class=lntd>
 <pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
 </span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
@@ -129,52 +98,37 @@ Exploring the FirstOfDefault improvements introduced in .NET6
 </span><span class=lnt id=ienumusage-18><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-18>18</a>
 </span><span class=lnt id=ienumusage-19><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-19>19</a>
 </span><span class=lnt id=ienumusage-20><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-20>20</a>
-</span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=kt>var</span> <span class=n>personValues</span> <span class=p>=</span> <span class=k>new</span> <span class=n>List</span><span class=p>&lt;</span><span class=n>Person</span><span class=p>&gt;</span> <span class=p>{</span>
-    <span class=k>new</span> <span class=n>Person</span><span class=p>(</span><span class=s>&#34;Dave&#34;</span><span class=p>,</span><span class=m>30</span><span class=p>),</span>
-    <span class=k>new</span> <span class=n>Person</span><span class=p>(</span><span class=s>&#34;Nate&#34;</span><span class=p>,</span><span class=m>45</span><span class=p>),</span>
-    <span class=k>new</span> <span class=n>Person</span><span class=p>(</span><span class=s>&#34;Pat&#34;</span><span class=p>,</span><span class=m>60</span><span class=p>),</span>
-    <span class=k>new</span> <span class=n>Person</span><span class=p>(</span><span class=s>&#34;Taylor&#34;</span><span class=p>,</span><span class=m>25</span><span class=p>),</span>
-    <span class=k>new</span> <span class=n>Person</span><span class=p>(</span><span class=s>&#34;Chris&#34;</span><span class=p>,</span><span class=m>39</span><span class=p>)</span>
-<span class=p>};</span>
-
-<span class=c1>// old method, value found in the list
-</span><span class=c1></span><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>personValues</span><span class=p>.</span><span class=n>FirstOrDefault</span><span class=p>(</span><span class=n>p</span> <span class=p>=&gt;</span> <span class=n>p</span><span class=p>.</span><span class=n>Age</span> <span class=p>==</span> <span class=m>30</span><span class=p>));</span>
-
-<span class=c1>// old method, value not found in the list
-</span><span class=c1></span><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>personValues</span><span class=p>.</span><span class=n>FirstOrDefault</span><span class=p>(</span><span class=n>p</span> <span class=p>=&gt;</span> <span class=n>p</span><span class=p>.</span><span class=n>Name</span><span class=p>.</span><span class=n>StartsWith</span><span class=p>(</span><span class=s>&#34;J&#34;</span><span class=p>)));</span>
-
-<span class=c1>// new method, value not found in list
-</span><span class=c1>// explicit default Person value returned
-</span><span class=c1></span><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>personValues</span><span class=p>.</span><span class=n>FirstOrDefault</span><span class=p>(</span><span class=n>p</span> <span class=p>=&gt;</span> <span class=n>p</span><span class=p>.</span><span class=n>Name</span><span class=p>.</span><span class=n>StartsWith</span><span class=p>(</span><span class=s>&#34;J&#34;</span><span class=p>),</span> 
-    <span class=k>new</span> <span class=n>Person</span><span class=p>(</span><span class=s>&#34;John Doe&#34;</span><span class=p>,</span> <span class=m>0</span><span class=p>)));</span>
-
-<span class=k>public</span> <span class=n>record</span> <span class=n>Person</span><span class=p>(</span><span class=kt>string</span> <span class=n>Name</span><span class=p>,</span> <span class=kt>int</span> <span class=n>Age</span><span class=p>);</span></code></pre></td></tr></table>
-</div>
-</div>
-<ul>
-<li><strong>Line 10</strong>: Returns the first <em>Person</em> with age of 30. A value from the list will be returned</li>
-<li><strong>Line 13</strong>: Returns the first <em>Person</em> whose name starts with &ldquo;J&rdquo;. No qualifying value exists in the list, so the default value of <em>Person</em> will be returned (null in this case)</li>
-<li><strong>Line 17-18</strong>: Returns the first <em>Person</em> whose name starts with &ldquo;J&rdquo;. No qualifying value exists in the list, and as the new method override is being used, the <em>explicitly supplied default value</em> will be returned (<em>Person</em> initialized with &ldquo;John Doe&rdquo; and 0 in this case)</li>
-</ul>
-<p>The output. The blank line indicates the <em>null</em> record returned from the 2nd call to <em>FirstOrDefault()</em>:</p>
-<div class=highlight><div class=chroma>
+</span></code></pre></td><td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=kt>var</span> <span class=n>personValues</span> <span class=p>=</span> <span class=k>new</span> <span class=n>List</span><span class=p>&lt;</span><span class=n>Person</span><span class=p>&gt;</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>new</span> <span class=n>Person</span><span class=p>(</span><span class=s>&#34;Dave&#34;</span><span class=p>,</span><span class=m>30</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>    <span class=k>new</span> <span class=n>Person</span><span class=p>(</span><span class=s>&#34;Nate&#34;</span><span class=p>,</span><span class=m>45</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>    <span class=k>new</span> <span class=n>Person</span><span class=p>(</span><span class=s>&#34;Pat&#34;</span><span class=p>,</span><span class=m>60</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>    <span class=k>new</span> <span class=n>Person</span><span class=p>(</span><span class=s>&#34;Taylor&#34;</span><span class=p>,</span><span class=m>25</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>    <span class=k>new</span> <span class=n>Person</span><span class=p>(</span><span class=s>&#34;Chris&#34;</span><span class=p>,</span><span class=m>39</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>};</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// old method, value found in the list</span>
+</span></span><span class=line><span class=cl><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>personValues</span><span class=p>.</span><span class=n>FirstOrDefault</span><span class=p>(</span><span class=n>p</span> <span class=p>=&gt;</span> <span class=n>p</span><span class=p>.</span><span class=n>Age</span> <span class=p>==</span> <span class=m>30</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// old method, value not found in the list</span>
+</span></span><span class=line><span class=cl><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>personValues</span><span class=p>.</span><span class=n>FirstOrDefault</span><span class=p>(</span><span class=n>p</span> <span class=p>=&gt;</span> <span class=n>p</span><span class=p>.</span><span class=n>Name</span><span class=p>.</span><span class=n>StartsWith</span><span class=p>(</span><span class=s>&#34;J&#34;</span><span class=p>)));</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// new method, value not found in list</span>
+</span></span><span class=line><span class=cl><span class=c1>// explicit default Person value returned</span>
+</span></span><span class=line><span class=cl><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>personValues</span><span class=p>.</span><span class=n>FirstOrDefault</span><span class=p>(</span><span class=n>p</span> <span class=p>=&gt;</span> <span class=n>p</span><span class=p>.</span><span class=n>Name</span><span class=p>.</span><span class=n>StartsWith</span><span class=p>(</span><span class=s>&#34;J&#34;</span><span class=p>),</span> 
+</span></span><span class=line><span class=cl>    <span class=k>new</span> <span class=n>Person</span><span class=p>(</span><span class=s>&#34;John Doe&#34;</span><span class=p>,</span> <span class=m>0</span><span class=p>)));</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>public</span> <span class=k>record</span> <span class=nc>Person</span><span class=p>(</span><span class=kt>string</span> <span class=n>Name</span><span class=p>,</span> <span class=kt>int</span> <span class=n>Age</span><span class=p>);</span></span></span></code></pre></td></tr></table></div></div><ul>
+<li><strong>Line 10</strong>: Returns the first <em>Person</em> with age of 30. A value from the list will be returned</li><li><strong>Line 13</strong>: Returns the first <em>Person</em> whose name starts with &ldquo;J&rdquo;. No qualifying value exists in the list, so the default value of <em>Person</em> will be returned (null in this case)</li><li><strong>Line 17-18</strong>: Returns the first <em>Person</em> whose name starts with &ldquo;J&rdquo;. No qualifying value exists in the list, and as the new method override is being used, the <em>explicitly supplied default value</em> will be returned (<em>Person</em> initialized with &ldquo;John Doe&rdquo; and 0 in this case)</li></ul><p>The output. The blank line indicates the <em>null</em> record returned from the 2nd call to <em>FirstOrDefault()</em>:</p><div class=highlight><div class=chroma>
 <table class=lntable><tr><td class=lntd>
 <pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
 </span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2>2</a>
 </span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3>3</a>
-</span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-posh data-lang=posh><span class=n>Person</span> <span class=p>{</span> <span class=n>Name</span> <span class=p>=</span> <span class=n>Dave</span><span class=p>,</span> <span class=n>Age</span> <span class=p>=</span> <span class=n>30</span> <span class=p>}</span>
-
-<span class=n>Person</span> <span class=p>{</span> <span class=n>Name</span> <span class=p>=</span> <span class=n>John</span> <span class=n>Doe</span><span class=p>,</span> <span class=n>Age</span> <span class=p>=</span> <span class=n>0</span> <span class=p>}</span></code></pre></td></tr></table>
-</div>
-</div>
-<hr>
-<h3 id=empty-list>Empty list</h3>
-<p>This method can also be used to return a specific default value in the case of an empty list.</p>
-<div class=highlight><div class=chroma>
+</span></code></pre></td><td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-posh data-lang=posh><span class=line><span class=cl><span class=n>Person</span> <span class=p>{</span> <span class=n>Name</span> <span class=p>=</span> <span class=n>Dave</span><span class=p>,</span> <span class=n>Age</span> <span class=p>=</span> <span class=n>30</span> <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=n>Person</span> <span class=p>{</span> <span class=n>Name</span> <span class=p>=</span> <span class=n>John</span> <span class=n>Doe</span><span class=p>,</span> <span class=n>Age</span> <span class=p>=</span> <span class=n>0</span> <span class=p>}</span></span></span></code></pre></td></tr></table></div></div><hr>
+<h3 id=empty-list>Empty list</h3><p>This method can also be used to return a specific default value in the case of an empty list.</p><div class=highlight><div class=chroma>
 <table class=lntable><tr><td class=lntd>
 <pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
 </span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2>2</a>
@@ -183,53 +137,32 @@ Exploring the FirstOfDefault improvements introduced in .NET6
 </span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5>5</a>
 </span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6>6</a>
 </span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7>7</a>
-</span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=kt>var</span> <span class=n>stringValues</span> <span class=p>=</span> <span class=k>new</span> <span class=n>List</span><span class=p>&lt;</span><span class=kt>string</span><span class=p>&gt;();</span>
-
-<span class=c1>// no values in the list, default value returned
-</span><span class=c1></span><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>stringValues</span><span class=p>.</span><span class=n>FirstOrDefault</span><span class=p>());</span>
-
-<span class=c1>// no values in the list, explicit default value returned
-</span><span class=c1></span><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>stringValues</span><span class=p>.</span><span class=n>FirstOrDefault</span><span class=p>(</span><span class=s>&#34;empty&#34;</span><span class=p>));</span></code></pre></td></tr></table>
-</div>
-</div>
-<ul>
-<li><strong>Line 4</strong>: Returns the first value in the list. The list is empty, so the default value of <em>string</em> will be returned (empty string in this case)</li>
-<li><strong>Line 7</strong>: Returns the first value in the list. The list is empty, and as the new method override is being used, the <em>explicitly supplied default value</em> will be returned (&ldquo;empty&rdquo; in this case)</li>
-</ul>
-<p>The output is as follows, the blank line indicating the <em>empty string</em> returned from the 1st call to <em>FirstOrDefault()</em>:</p>
-<div class=highlight><div class=chroma>
+</span></code></pre></td><td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=kt>var</span> <span class=n>stringValues</span> <span class=p>=</span> <span class=k>new</span> <span class=n>List</span><span class=p>&lt;</span><span class=kt>string</span><span class=p>&gt;();</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// no values in the list, default value returned</span>
+</span></span><span class=line><span class=cl><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>stringValues</span><span class=p>.</span><span class=n>FirstOrDefault</span><span class=p>());</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// no values in the list, explicit default value returned</span>
+</span></span><span class=line><span class=cl><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>stringValues</span><span class=p>.</span><span class=n>FirstOrDefault</span><span class=p>(</span><span class=s>&#34;empty&#34;</span><span class=p>));</span></span></span></code></pre></td></tr></table></div></div><ul>
+<li><strong>Line 4</strong>: Returns the first value in the list. The list is empty, so the default value of <em>string</em> will be returned (empty string in this case)</li><li><strong>Line 7</strong>: Returns the first value in the list. The list is empty, and as the new method override is being used, the <em>explicitly supplied default value</em> will be returned (&ldquo;empty&rdquo; in this case)</li></ul><p>The output is as follows, the blank line indicating the <em>empty string</em> returned from the 1st call to <em>FirstOrDefault()</em>:</p><div class=highlight><div class=chroma>
 <table class=lntable><tr><td class=lntd>
 <pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
 </span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2>2</a>
-</span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-posh data-lang=posh>     
-    <span class=n>empty</span></code></pre></td></tr></table>
-</div>
-</div>
-<hr>
-<h2 id=conclusion>Conclusion</h2>
-<p>A small, simple update made to LINQ, but nevertheless a very useful feature which I&rsquo;m sure will get a fair amount of usage.</p>
-<hr>
+</span></code></pre></td><td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-posh data-lang=posh><span class=line><span class=cl>     
+</span></span><span class=line><span class=cl>    <span class=n>empty</span></span></span></code></pre></td></tr></table></div></div><hr>
+<h2 id=conclusion>Conclusion</h2><p>A small, simple update made to LINQ, but nevertheless a very useful feature which I&rsquo;m sure will get a fair amount of usage.</p><hr>
 <blockquote>
 <div>
 <div style=width:5%;float:left;vertical-align:middle;padding-right:60px>
 <i class=inline-svg><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffbf00" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 12h1m8-9v1m8 8h1M5.6 5.6l.7.7m12.1-.7-.7.7"/><path d="M9 16a5 5 0 116 0 3.5 3.5.0 00-1 3 2 2 0 01-4 0 3.5 3.5.0 00-1-3"/><line x1="9.7" y1="17" x2="14.3" y2="17"/></svg></i>
-</div>
-<div>
-<h3>Daily Drop 19: 25-02-2022</h3>
-</div>
-<br>
+</div><div>
+<h3>Daily Drop 19: 25-02-2022</h3></div><br>
 <div>
 At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br>It could be anything - some .NET/C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
 The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
-</div>
-</div>
-</blockquote>
-</section>
-<footer class=article-footer>
+</div></div></blockquote></section><footer class=article-footer>
 <section class=article-tags>
 <a href=/tags/c#/>c#</a>
 <a href=/tags/.net/>.net</a>
@@ -237,126 +170,67 @@ The Daily Drop is a record of these pieces of knowledge - writing about and summ
 <a href=/tags/indexer/>indexer</a>
 <a href=/tags/array/>array</a>
 <a href=/tags/extend/>extend</a>
-</section>
-</footer>
-</article>
-<aside class=related-contents--wrapper>
-<h2 class=section-title>Related contents</h2>
-<div class=related-contents>
+</section></footer></article><aside class=related-contents--wrapper>
+<h2 class=section-title>Related contents</h2><div class=related-contents>
 <div class="flex article-list--tile">
 <article>
 <a href=/dailydrop/2022/02/23-indexers/>
 <div class=article-details>
-<h2 class=article-title>Indexers - access a class as an array</h2>
-</div>
-</a>
-</article>
-<article>
+<h2 class=article-title>Indexers - access a class as an array</h2></div></a>
+</article><article>
 <a href=/dailydrop/2022/02/24-efcore-interceptors/>
 <div class=article-details>
-<h2 class=article-title>Entity Framework Core interceptors</h2>
-</div>
-</a>
-</article>
-<article>
+<h2 class=article-title>Entity Framework Core interceptors</h2></div></a>
+</article><article>
 <a href=/dailydrop/2022/02/22-emit-source-generator-files/>
 <div class=article-details>
-<h2 class=article-title>Customize source generator output location</h2>
-</div>
-</a>
-</article>
-<article>
+<h2 class=article-title>Customize source generator output location</h2></div></a>
+</article><article>
 <a href=/dailydrop/2022/02/21-ef-core6-entitytypeconfig/>
 <div class=article-details>
-<h2 class=article-title>EF Core 6 EntityTypeConfiguration Attribute</h2>
-</div>
-</a>
-</article>
-<article>
+<h2 class=article-title>EF Core 6 EntityTypeConfiguration Attribute</h2></div></a>
+</article><article>
 <a href=/dailydrop/2022/02/18-gc-variables/>
 <div class=article-details>
-<h2 class=article-title>Garbage collection configuration</h2>
-</div>
-</a>
-</article>
-</div>
-</div>
-</aside>
-<script src=https://giscus.app/client.js data-repo=always-developing/always-developing.github.io data-repo-id=R_kgDOGQJLBQ data-category=Comments data-category-id=DIC_kwDOGQJLBc4B_pUA data-mapping=pathname data-reactions-enabled=1 data-emit-metadata=0 data-theme=light crossorigin=anonymous async></script>
-<script>function setGiscusTheme(b){let a=document.querySelector('iframe.giscus-frame');a&&a.contentWindow.postMessage({giscus:{setConfig:{theme:b}}},"https://giscus.app")}(function(){addEventListener('message',b=>{if(event.origin!=='https://giscus.app')return;a()}),window.addEventListener('onColorSchemeChange',a);function a(){document.documentElement.dataset.scheme==="light"?setGiscusTheme('light'):setGiscusTheme('dark')}})()</script>
+<h2 class=article-title>Garbage collection configuration</h2></div></a>
+</article></div></div></aside><script src=https://giscus.app/client.js data-repo=always-developing/always-developing.github.io data-repo-id=R_kgDOGQJLBQ data-category=Comments data-category-id=DIC_kwDOGQJLBc4B_pUA data-mapping=pathname data-reactions-enabled=1 data-emit-metadata=0 data-theme=light crossorigin=anonymous async></script>
+<script>function setGiscusTheme(t){let e=document.querySelector("iframe.giscus-frame");e&&e.contentWindow.postMessage({giscus:{setConfig:{theme:t}}},"https://giscus.app")}(function(){addEventListener("message",t=>{if(event.origin!=="https://giscus.app")return;e()}),window.addEventListener("onColorSchemeChange",e);function e(){document.documentElement.dataset.scheme==="light"?setGiscusTheme("light"):setGiscusTheme("dark")}})()</script>
 <footer class=site-footer>
 <section class=copyright>
 &copy;
 2021 -
 2022 Always Developing
-</section>
-<section class=powerby>
+</section><section class=powerby>
 Always Developing | always learning | always growing <br>
 Built with <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a> <br>
 Theme <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.2.0>Stack</a></b> designed by <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a>
-</section>
-</footer>
-<div class=pswp tabindex=-1 role=dialog aria-hidden=true>
-<div class=pswp__bg></div>
-<div class=pswp__scroll-wrap>
+</section></footer><div class=pswp tabindex=-1 role=dialog aria-hidden=true>
+<div class=pswp__bg></div><div class=pswp__scroll-wrap>
 <div class=pswp__container>
-<div class=pswp__item></div>
-<div class=pswp__item></div>
-<div class=pswp__item></div>
-</div>
-<div class="pswp__ui pswp__ui--hidden">
+<div class=pswp__item></div><div class=pswp__item></div><div class=pswp__item></div></div><div class="pswp__ui pswp__ui--hidden">
 <div class=pswp__top-bar>
-<div class=pswp__counter></div>
-<button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+<div class=pswp__counter></div><button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
 <button class="pswp__button pswp__button--share" title=Share></button>
 <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
 <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
 <div class=pswp__preloader>
 <div class=pswp__preloader__icn>
 <div class=pswp__preloader__cut>
-<div class=pswp__preloader__donut></div>
-</div>
-</div>
-</div>
-</div>
-<div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
-<div class=pswp__share-tooltip></div>
-</div>
-<button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+<div class=pswp__preloader__donut></div></div></div></div></div><div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+<div class=pswp__share-tooltip></div></div><button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
 </button>
 <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
 </button>
 <div class=pswp__caption>
-<div class=pswp__caption__center></div>
-</div>
-</div>
-</div>
-</div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.css integrity="sha256-c0uckgykQ9v5k+IqViZOZKc47Jn7KQil4/MP3ySA3F8=" crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.css integrity="sha256-SBLU4vv6CA6lHsZ1XyTdhyjJxCjPif/TRkjnsyGAGnE=" crossorigin=anonymous>
-</main>
-<aside class="sidebar right-sidebar sticky">
+<div class=pswp__caption__center></div></div></div></div></div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.css integrity="sha256-c0uckgykQ9v5k+IqViZOZKc47Jn7KQil4/MP3ySA3F8=" crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.css integrity="sha256-SBLU4vv6CA6lHsZ1XyTdhyjJxCjPif/TRkjnsyGAGnE=" crossorigin=anonymous>
+</main><aside class="sidebar right-sidebar sticky">
 <section class="widget archives">
 <div class=widget-icon><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg>
-</div>
-<h2 class="widget-title section-title">Table of contents</h2>
-<div class=widget--toc>
+</div><h2 class="widget-title section-title">Table of contents</h2><div class=widget--toc>
 <nav id=TableOfContents>
 <ol>
-<li><a href=#daily-knowledge-drop>Daily Knowledge Drop</a></li>
-<li><a href=#examples>Examples</a>
+<li><a href=#daily-knowledge-drop>Daily Knowledge Drop</a></li><li><a href=#examples>Examples</a>
 <ol>
-<li><a href=#simple-type-list>Simple type list</a></li>
-<li><a href=#complex-type-list>Complex type list</a></li>
-<li><a href=#empty-list>Empty list</a></li>
-</ol>
-</li>
-<li><a href=#conclusion>Conclusion</a></li>
-</ol>
-</nav>
-</div>
-</section>
-</aside>
-</div>
-<script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g=" crossorigin=anonymous defer></script><script type=text/javascript src=/ts/main.js defer></script>
-<script>(function(){const a=document.createElement('link');a.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",a.type="text/css",a.rel="stylesheet",document.head.appendChild(a)})()</script>
-</body>
-</html>
+<li><a href=#simple-type-list>Simple type list</a></li><li><a href=#complex-type-list>Complex type list</a></li><li><a href=#empty-list>Empty list</a></li></ol></li><li><a href=#conclusion>Conclusion</a></li></ol></nav></div></section></aside></div><script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g=" crossorigin=anonymous defer></script><script type=text/javascript src=/ts/main.js defer></script>
+<script>(function(){const e=document.createElement("link");e.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",e.type="text/css",e.rel="stylesheet",document.head.appendChild(e)})()</script>
+</body></html>

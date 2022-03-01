@@ -1,7 +1,6 @@
 <!doctype html><html lang=en-uk>
 <head><meta charset=utf-8>
-<meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="A guide to using an Azure Devops Symbol Server"><title>Azure Devops Symbol Server - a how to guide</title>
-<link rel=canonical href=https://always-developing.github.io/p/12-2021-devops-symbol-server/>
+<meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="A guide to using an Azure Devops Symbol Server"><title>Azure Devops Symbol Server - a how to guide</title><link rel=canonical href=https://always-developing.github.io/p/12-2021-devops-symbol-server/>
 <link rel=stylesheet href=/scss/style.min.css><meta property="og:title" content="Azure Devops Symbol Server - a how to guide">
 <meta property="og:description" content="A guide to using an Azure Devops Symbol Server">
 <meta property="og:url" content="https://always-developing.github.io/p/12-2021-devops-symbol-server/">
@@ -11,18 +10,16 @@
 <meta name=twitter:description content="A guide to using an Azure Devops Symbol Server">
 <link rel="shortcut icon" href=favicon.ico>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-CXPLFS7K38"></script>
-<script>var doNotTrack=!1;if(!doNotTrack){window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date),gtag('config','G-CXPLFS7K38',{anonymize_ip:!1})}</script>
-</head>
-<body class="article-page has-toc">
-<script>(function(){const a='StackColorScheme';localStorage.getItem(a)||localStorage.setItem(a,"dark")})()</script><script>(function(){const b='StackColorScheme',a=localStorage.getItem(b),c=window.matchMedia('(prefers-color-scheme: dark)').matches===!0;a=='dark'||a==='auto'&&c?document.documentElement.dataset.scheme='dark':document.documentElement.dataset.scheme='light'})()</script>
+<script>var doNotTrack=!1;if(!doNotTrack){window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","G-CXPLFS7K38",{anonymize_ip:!1})}</script>
+</head><body class="article-page has-toc">
+<script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"dark")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script>
 <div class="container main-container flex
 extended">
 <div id=article-toolbar>
 <a href=https://always-developing.github.io/ class=back-home><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="15 6 9 12 15 18"/></svg>
 <span>Back</span>
 </a>
-</div>
-<main class="main full-width">
+</div><main class="main full-width">
 <article class=main-article>
 <header class=article-header>
 <div class=article-details>
@@ -30,208 +27,113 @@ extended">
 <a href=/categories/blog/>
 Blog
 </a>
-</header>
-<h2 class=article-title>
+</header><h2 class=article-title>
 <a href=/p/12-2021-devops-symbol-server/>Azure Devops Symbol Server - a how to guide</a>
-</h2>
-<h3 class=article-subtitle>
+</h2><h3 class=article-subtitle>
 A guide to using an Azure Devops Symbol Server
-</h3>
-<footer class=article-time>
+</h3><footer class=article-time>
 <div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
 <time class=article-time--published>Jan 04, 2022</time>
-</div>
-<div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+</div><div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
 <time class=article-time--reading>
 6 minute read
 </time>
-</div>
-</footer>
-</div>
-</header>
-<section class=article-content>
-<h2 id=symbol-server-explained>Symbol server explained</h2>
-<h3 id=what-are-symbols>What are symbols?</h3>
-<p>When building a .NET project, symbol files (generally files with the extension of .pdb) are automatically created by the compiler. These symbol files contain metadata information about the source code (indexes, function names, line numbers, etc) and are used when debugging and stepping through code, by linking the debugger (e.g. Visual Studio) to the source code.</p>
-<p>Generally, these symbol files are only available when developing locally, and building a project in debug configuration - that is, unless they are uploaded to a <code>symbol server</code>.</p>
-<h3 id=what-is-a-symbol-server>What is a symbol server?</h3>
-<p><strong>A symbol server is a central location to store symbols</strong> - having the symbols available allow for the <code>stepping into a referenced NuGet package code</code> without having the source code available locally.<br>
-The source code doesn&rsquo;t need to be part of the solution being built, or even on the local machine - the symbol file, made available by the symbol server will allow for full <em>&lsquo;step into&rsquo;</em> debugging experience.</p>
-<hr>
-<h2 id=why-use-a-symbol-server>Why use a symbol server</h2>
-<p>As mentioned above, having the symbols available via the server, allows for stepping into a referenced package&rsquo;s source code without having the source directly available locally. Why would one need or want this to be possible?</p>
-<ul>
-<li><code>Help the package author debug and assist when issues are experienced using the package</code>. This is especially useful in the corporate environment where the author of a package is potentially closer to the developers and applications using the package, and is required to assist with the usage and functioning of the package.</li>
-<li><code>Help users of the package understand in more depth what the package does and how</code>. Especially useful in an Open Source environment where the author of the package is most likely further removed from the user of the package. With the user of the package having the option of stepping into the package source code, it facilitates more easily understanding the package and allows for the user more easily <em>help themselves</em> if any issues arise.</li>
-</ul>
-<p>Even though each point above highlights the use case in a specific environment (corporate vs Open Source), both points can apply to either environment.</p>
-<blockquote>
+</div></footer></div></header><section class=article-content>
+<h2 id=symbol-server-explained>Symbol server explained</h2><h3 id=what-are-symbols>What are symbols?</h3><p>When building a .NET project, symbol files (generally files with the extension of .pdb) are automatically created by the compiler. These symbol files contain metadata information about the source code (indexes, function names, line numbers, etc) and are used when debugging and stepping through code, by linking the debugger (e.g. Visual Studio) to the source code.</p><p>Generally, these symbol files are only available when developing locally, and building a project in debug configuration - that is, unless they are uploaded to a <code>symbol server</code>.</p><h3 id=what-is-a-symbol-server>What is a symbol server?</h3><p><strong>A symbol server is a central location to store symbols</strong> - having the symbols available allow for the <code>stepping into a referenced NuGet package code</code> without having the source code available locally.<br>
+The source code doesn&rsquo;t need to be part of the solution being built, or even on the local machine - the symbol file, made available by the symbol server will allow for full <em>&lsquo;step into&rsquo;</em> debugging experience.</p><hr>
+<h2 id=why-use-a-symbol-server>Why use a symbol server</h2><p>As mentioned above, having the symbols available via the server, allows for stepping into a referenced package&rsquo;s source code without having the source directly available locally. Why would one need or want this to be possible?</p><ul>
+<li><code>Help the package author debug and assist when issues are experienced using the package</code>. This is especially useful in the corporate environment where the author of a package is potentially closer to the developers and applications using the package, and is required to assist with the usage and functioning of the package.</li><li><code>Help users of the package understand in more depth what the package does and how</code>. Especially useful in an Open Source environment where the author of the package is most likely further removed from the user of the package. With the user of the package having the option of stepping into the package source code, it facilitates more easily understanding the package and allows for the user more easily <em>help themselves</em> if any issues arise.</li></ul><p>Even though each point above highlights the use case in a specific environment (corporate vs Open Source), both points can apply to either environment.</p><blockquote>
 <div>
 <div style=width:5%;float:left;vertical-align:middle;padding-right:60px>
 <i class=inline-svg><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-info-circle" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#00abfb" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12.01" y2="8"/><polyline points="11 12 12 12 12 16 13 16"/></svg></i>
-</div>
-<div>
-<p>This post will focus on using <strong>Azure Devops</strong> as a build and symbol server, but other build and symbol servers can also be used and will <em>mostly</em> follow a similar processes to the one described in this post.</p>
-</div>
-</div>
-</blockquote>
-<hr>
-<h2 id=producing-symbols>Producing symbols</h2>
-<h3 id=configuring-code>Configuring code</h3>
-<p>The first step in the process, is to configure the project to produce symbols with the required metadata to allow for the debugging experience.<br>
-To do this, the required <code>Source Link</code> NuGet package must be added to the project. There are <a class=link href="https://www.nuget.org/packages?q=Microsoft.SourceLink." target=_blank rel=noopener>a number of different options available</a>, based on where the <code>repository is hosted</code>.</p>
-<p>For a repository hosted in a Git repository in Azure Devops, a reference to <code>Microsoft.SourceLink.AzureRepos.Git</code> is added.</p>
-<div class=highlight><div class=chroma>
+</div><div>
+<p>This post will focus on using <strong>Azure Devops</strong> as a build and symbol server, but other build and symbol servers can also be used and will <em>mostly</em> follow a similar processes to the one described in this post.</p></div></div></blockquote><hr>
+<h2 id=producing-symbols>Producing symbols</h2><h3 id=configuring-code>Configuring code</h3><p>The first step in the process, is to configure the project to produce symbols with the required metadata to allow for the debugging experience.<br>
+To do this, the required <code>Source Link</code> NuGet package must be added to the project. There are <a class=link href="https://www.nuget.org/packages?q=Microsoft.SourceLink." target=_blank rel=noopener>a number of different options available</a>, based on where the <code>repository is hosted</code>.</p><p>For a repository hosted in a Git repository in Azure Devops, a reference to <code>Microsoft.SourceLink.AzureRepos.Git</code> is added.</p><div class=highlight><div class=chroma>
 <table class=lntable><tr><td class=lntd>
 <pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
 </span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2>2</a>
 </span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3>3</a>
 </span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4>4</a>
-</span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-xml data-lang=xml><span class=nt>&lt;PackageReference</span> <span class=na>Include=</span><span class=s>&#34;Microsoft.SourceLink.AzureRepos.Git&#34;</span> <span class=na>Version=</span><span class=s>&#34;1.1.1&#34;</span><span class=nt>&gt;</span>
-    <span class=nt>&lt;PrivateAssets&gt;</span>all<span class=nt>&lt;/PrivateAssets&gt;</span>
-    <span class=nt>&lt;IncludeAssets&gt;</span>runtime; build; native; contentfiles; analyzers; buildtransitive<span class=nt>&lt;/IncludeAssets&gt;</span>
-<span class=nt>&lt;/PackageReference&gt;</span></code></pre></td></tr></table>
-</div>
-</div>
-<blockquote>
+</span></code></pre></td><td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-xml data-lang=xml><span class=line><span class=cl><span class=nt>&lt;PackageReference</span> <span class=na>Include=</span><span class=s>&#34;Microsoft.SourceLink.AzureRepos.Git&#34;</span> <span class=na>Version=</span><span class=s>&#34;1.1.1&#34;</span><span class=nt>&gt;</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&lt;PrivateAssets&gt;</span>all<span class=nt>&lt;/PrivateAssets&gt;</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&lt;IncludeAssets&gt;</span>runtime; build; native; contentfiles; analyzers; buildtransitive<span class=nt>&lt;/IncludeAssets&gt;</span>
+</span></span><span class=line><span class=cl><span class=nt>&lt;/PackageReference&gt;</span></span></span></code></pre></td></tr></table></div></div><blockquote>
 <div>
 <div style=width:5%;float:left;vertical-align:middle;padding-right:60px>
 <i class=inline-svg><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-info-circle" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#00abfb" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12.01" y2="8"/><polyline points="11 12 12 12 12 16 13 16"/></svg></i>
-</div>
-<div>
-<p>The Source Link reference added is <strong>required only as a development dependency</strong> and is only used during the build process. This is the reason the <code>PrivateAssets</code> property is set to <code>All</code> - this prevents the package consuming applications from also needing to install Source Link as a dependency.</p>
-</div>
-</div>
-</blockquote>
-<hr>
-<h3 id=configuring-cicd-pipeline>Configuring CI/CD pipeline</h3>
-<p>The next step is to have the CI/CD process produce the symbols, and then upload them to the symbol server.</p>
-<ol>
+</div><div>
+<p>The Source Link reference added is <strong>required only as a development dependency</strong> and is only used during the build process. This is the reason the <code>PrivateAssets</code> property is set to <code>All</code> - this prevents the package consuming applications from also needing to install Source Link as a dependency.</p></div></div></blockquote><hr>
+<h3 id=configuring-cicd-pipeline>Configuring CI/CD pipeline</h3><p>The next step is to have the CI/CD process produce the symbols, and then upload them to the symbol server.</p><ol>
 <li>
 <p><code>Producing the symbols</code><br>
 Usually when developing locally, .pdb files are only generated when running in <em>debug configuration</em>, when the code is un-optimized. However, When releasing a package, it should be built in <em>release configuration</em> with optimized code.<br>
-With the relevant Source Link package reference added (Microsoft.SourceLink.AzureRepos.Git), the code can be built in <em>release configuration</em> and have the symbols produced. The build can either be done using:</p>
-<ul>
+With the relevant Source Link package reference added (Microsoft.SourceLink.AzureRepos.Git), the code can be built in <em>release configuration</em> and have the symbols produced. The build can either be done using:</p><ul>
 <li><code>dotnet build</code>:<br>
 Execute the <strong>dotnet build</strong> command with a build configuration of Release
 <figure class=gallery-image style=flex-grow:622;flex-basis:1493px>
 <a href=/p/12-2021-devops-symbol-server/1.dotnettask.png data-size=554x89>
 <img src=/p/12-2021-devops-symbol-server/1.dotnettask.png width=554 height=89 srcset="/p/12-2021-devops-symbol-server/1.dotnettask_hucc6dd8f38d52629259dc1ab8d5698186_4406_480x0_resize_box_3.png 480w, /p/12-2021-devops-symbol-server/1.dotnettask_hucc6dd8f38d52629259dc1ab8d5698186_4406_1024x0_resize_box_3.png 1024w" loading=lazy alt="Azure Devops dotnet task">
 </a>
-<figcaption>Azure Devops dotnet task</figcaption>
-</figure><br>
+<figcaption>Azure Devops dotnet task</figcaption></figure><br>
 <figure class=gallery-image style=flex-grow:121;flex-basis:292px>
 <a href=/p/12-2021-devops-symbol-server/2.dotnetdetail.png data-size=675x554>
 <img src=/p/12-2021-devops-symbol-server/2.dotnetdetail.png width=675 height=554 srcset="/p/12-2021-devops-symbol-server/2.dotnetdetail_hu585440b7c55adc9cfac1a15aaf208514_8325_480x0_resize_box_3.png 480w, /p/12-2021-devops-symbol-server/2.dotnetdetail_hu585440b7c55adc9cfac1a15aaf208514_8325_1024x0_resize_box_3.png 1024w" loading=lazy alt="Azure Devops dotnet task detail">
 </a>
-<figcaption>Azure Devops dotnet task detail</figcaption>
-</figure></li>
-<li><code>Visual Studio build</code>:<br>
+<figcaption>Azure Devops dotnet task detail</figcaption></figure></li><li><code>Visual Studio build</code>:<br>
 Execute the <strong>Visual Studio build</strong> task with build configuration of Release, and with the <em>MSBuild Argument</em> of <code>/p:SourceLinkCreate=true</code>
 <figure class=gallery-image style=flex-grow:538;flex-basis:1292px>
 <a href=/p/12-2021-devops-symbol-server/3.vsbuildtask.png data-size=501x93>
 <img src=/p/12-2021-devops-symbol-server/3.vsbuildtask.png width=501 height=93 srcset="/p/12-2021-devops-symbol-server/3.vsbuildtask_hu058477031c9dc5d2fea60cfeb7d29354_5813_480x0_resize_box_3.png 480w, /p/12-2021-devops-symbol-server/3.vsbuildtask_hu058477031c9dc5d2fea60cfeb7d29354_5813_1024x0_resize_box_3.png 1024w" loading=lazy alt="Azure Devops VS build task">
 </a>
-<figcaption>Azure Devops VS build task</figcaption>
-</figure><br>
+<figcaption>Azure Devops VS build task</figcaption></figure><br>
 <figure class=gallery-image style=flex-grow:122;flex-basis:294px>
 <a href=/p/12-2021-devops-symbol-server/4.vsbuilddetail.png data-size=691x564>
 <img src=/p/12-2021-devops-symbol-server/4.vsbuilddetail.png width=691 height=564 srcset="/p/12-2021-devops-symbol-server/4.vsbuilddetail_hua2b078adb96f23a80cfe4c9c744499d3_16144_480x0_resize_box_3.png 480w, /p/12-2021-devops-symbol-server/4.vsbuilddetail_hua2b078adb96f23a80cfe4c9c744499d3_16144_1024x0_resize_box_3.png 1024w" loading=lazy alt="Azure Devops VS build task detail">
 </a>
-<figcaption>Azure Devops VS build task detail</figcaption>
-</figure></li>
-</ul>
-</li>
-<li>
+<figcaption>Azure Devops VS build task detail</figcaption></figure></li></ul></li><li>
 <p><code>Publishing the symbols</code>:<br>
 The <strong>Index sources and publish symbols</strong> task is then used to publish the symbols to either a <em>file share</em>, or the <em>Azure Devops symbol server</em>
 <figure class=gallery-image style=flex-grow:563;flex-basis:1353px>
 <a href=/p/12-2021-devops-symbol-server/5.symboltask.png data-size=592x105>
 <img src=/p/12-2021-devops-symbol-server/5.symboltask.png width=592 height=105 srcset="/p/12-2021-devops-symbol-server/5.symboltask_hu02ef02bf90de5907483a55a8344bd225_7048_480x0_resize_box_3.png 480w, /p/12-2021-devops-symbol-server/5.symboltask_hu02ef02bf90de5907483a55a8344bd225_7048_1024x0_resize_box_3.png 1024w" loading=lazy alt="Azure Devops publish symbol task">
 </a>
-<figcaption>Azure Devops publish symbol task</figcaption>
-</figure><br>
+<figcaption>Azure Devops publish symbol task</figcaption></figure><br>
 <figure class=gallery-image style=flex-grow:138;flex-basis:333px>
 <a href=/p/12-2021-devops-symbol-server/6.symboldetail.png data-size=877x631>
 <img src=/p/12-2021-devops-symbol-server/6.symboldetail.png width=877 height=631 srcset="/p/12-2021-devops-symbol-server/6.symboldetail_hu2b8d246311a0dfdbd9fd49e0e67e5d6b_23606_480x0_resize_box_3.png 480w, /p/12-2021-devops-symbol-server/6.symboldetail_hu2b8d246311a0dfdbd9fd49e0e67e5d6b_23606_1024x0_resize_box_3.png 1024w" loading=lazy alt="Azure Devops publish symbol detail">
 </a>
-<figcaption>Azure Devops publish symbol detail</figcaption>
-</figure></p>
-<p>Generally the publishing of artifacts would be part of the release pipeline, and not the build. However the <strong>Index sources and publish symbols</strong> task is <code>only available in the build pipeline</code>.</p>
-</li>
-</ol>
-<hr>
-<h2 id=consuming-symbols>Consuming symbols</h2>
-<h3 id=configuring-visual-studio>Configuring Visual Studio</h3>
-<p>The final step is to configure Visual Studio with the details on how and when to download and use the symbols. Perform the following steps in Visual Studio.</p>
-<ol>
+<figcaption>Azure Devops publish symbol detail</figcaption></figure></p><p>Generally the publishing of artifacts would be part of the release pipeline, and not the build. However the <strong>Index sources and publish symbols</strong> task is <code>only available in the build pipeline</code>.</p></li></ol><hr>
+<h2 id=consuming-symbols>Consuming symbols</h2><h3 id=configuring-visual-studio>Configuring Visual Studio</h3><p>The final step is to configure Visual Studio with the details on how and when to download and use the symbols. Perform the following steps in Visual Studio.</p><ol>
 <li>Configure the symbol server location:
 <ol>
-<li>Navigate to <code>Tools -> Options -> Debugging -> Symbols</code></li>
-<li>Click <code>New Azure Devops Symbol Server Location</code></li>
-<li>Select the account, and a list of symbol servers available to the account will be displayed. Chose the server. (in the screen shot below, none are shown as the <em>always-developing</em> Github account is not linked to Azure Devops)</li>
-<li>Click <code>Connect</code></li>
-</ol>
-</li>
-</ol>
-<p><figure class=gallery-image style=flex-grow:193;flex-basis:464px>
+<li>Navigate to <code>Tools -> Options -> Debugging -> Symbols</code></li><li>Click <code>New Azure Devops Symbol Server Location</code></li><li>Select the account, and a list of symbol servers available to the account will be displayed. Chose the server. (in the screen shot below, none are shown as the <em>always-developing</em> Github account is not linked to Azure Devops)</li><li>Click <code>Connect</code></li></ol></li></ol><p><figure class=gallery-image style=flex-grow:193;flex-basis:464px>
 <a href=/p/12-2021-devops-symbol-server/7.SymbolServerAdd.png data-size=1139x589>
 <img src=/p/12-2021-devops-symbol-server/7.SymbolServerAdd.png width=1139 height=589 srcset="/p/12-2021-devops-symbol-server/7.SymbolServerAdd_huf68925288899a63b0d5cac6ad8085773_75988_480x0_resize_box_3.png 480w, /p/12-2021-devops-symbol-server/7.SymbolServerAdd_huf68925288899a63b0d5cac6ad8085773_75988_1024x0_resize_box_3.png 1024w" loading=lazy alt="Azure Devops symbol server">
 </a>
-<figcaption>Azure Devops symbol server</figcaption>
-</figure></p>
-<ol start=2>
+<figcaption>Azure Devops symbol server</figcaption></figure></p><ol start=2>
 <li>
-<p>Configure the debugger settings:</p>
-<ol>
-<li>Navigate to <code>Tools -> Options -> Debugging</code></li>
-<li>Ensure that <code>Enable Just My Code</code> is <strong>unchecked</strong></li>
-<li>Ensure that <code>Enable source server support</code> is <strong>checked</strong></li>
-</ol>
-<p><figure class=gallery-image style=flex-grow:182;flex-basis:439px>
+<p>Configure the debugger settings:</p><ol>
+<li>Navigate to <code>Tools -> Options -> Debugging</code></li><li>Ensure that <code>Enable Just My Code</code> is <strong>unchecked</strong></li><li>Ensure that <code>Enable source server support</code> is <strong>checked</strong></li></ol><p><figure class=gallery-image style=flex-grow:182;flex-basis:439px>
 <a href=/p/12-2021-devops-symbol-server/8.DebuggerOptions.png data-size=807x441>
 <img src=/p/12-2021-devops-symbol-server/8.DebuggerOptions.png width=807 height=441 srcset="/p/12-2021-devops-symbol-server/8.DebuggerOptions_hu5e175379850f254acc0a05e471eb5313_57403_480x0_resize_box_3.png 480w, /p/12-2021-devops-symbol-server/8.DebuggerOptions_hu5e175379850f254acc0a05e471eb5313_57403_1024x0_resize_box_3.png 1024w" loading=lazy alt="Azure Devops symbol server">
 </a>
-<figcaption>Azure Devops symbol server</figcaption>
-</figure></p>
-</li>
-<li>
-<p>Configure which symbols to load automatically <strong>(optional but recommended)</strong>:</p>
-<p>By default symbols will automatically be loaded (after being downloaded) if they are available in any of the symbol servers. If an application references a number of packages where symbols are available, start-up time when running and debugging can be dramatically negatively impacted.<br>
-Visual Studio can be configured to only load the packages specified - or only load packages based on a wildcard (this is incredibly useful if all NuGet packages share a common namespace structure, as might be the case especially in a corporate environment)</p>
-<ol>
-<li>Navigate to <code>Tools -> Options -> Debugging -> Symbols</code></li>
-<li>Select <code>Load only specific modules</code></li>
-<li>Click <code>Specify included modules</code></li>
-<li>Click <code>New Module</code></li>
-<li>Add the module name, or wildcard format</li>
-</ol>
-<p><figure class=gallery-image style=flex-grow:120;flex-basis:288px>
+<figcaption>Azure Devops symbol server</figcaption></figure></p></li><li>
+<p>Configure which symbols to load automatically <strong>(optional but recommended)</strong>:</p><p>By default symbols will automatically be loaded (after being downloaded) if they are available in any of the symbol servers. If an application references a number of packages where symbols are available, start-up time when running and debugging can be dramatically negatively impacted.<br>
+Visual Studio can be configured to only load the packages specified - or only load packages based on a wildcard (this is incredibly useful if all NuGet packages share a common namespace structure, as might be the case especially in a corporate environment)</p><ol>
+<li>Navigate to <code>Tools -> Options -> Debugging -> Symbols</code></li><li>Select <code>Load only specific modules</code></li><li>Click <code>Specify included modules</code></li><li>Click <code>New Module</code></li><li>Add the module name, or wildcard format</li></ol><p><figure class=gallery-image style=flex-grow:120;flex-basis:288px>
 <a href=/p/12-2021-devops-symbol-server/9.SpecificModules.png data-size=627x521>
 <img src=/p/12-2021-devops-symbol-server/9.SpecificModules.png width=627 height=521 srcset="/p/12-2021-devops-symbol-server/9.SpecificModules_hu103063780aaa7a859e78dfefb4ba7db2_44556_480x0_resize_box_3.png 480w, /p/12-2021-devops-symbol-server/9.SpecificModules_hu103063780aaa7a859e78dfefb4ba7db2_44556_1024x0_resize_box_3.png 1024w" loading=lazy alt="Specify which modules to load">
 </a>
-<figcaption>Specify which modules to load</figcaption>
-</figure></p>
-</li>
-</ol>
-<hr>
-<h2 id=nuget-symbol-package>NuGet symbol package</h2>
-<p>This post focuses on building and hosting the symbols using Azure Devops - but just a small note publishing to NuGet.org if the package is publicly available.<br>
-The <a class=link href=http://nuget.org target=_blank rel=noopener>nuget.org</a> symbol server uses the <code>.snupkg</code> file format for symbols, which are optionally generated when the nupkg file is generated. See this this <a class=link href=https://docs.microsoft.com/en-us/nuget/create-packages/symbol-packages-snupkg target=_blank rel=noopener>document on the various ways of generating a .snupkg file</a>.</p>
-<hr>
-<h2 id=final-thoughts>Final thoughts</h2>
-<p>That&rsquo;s all there is to it!
-Whether a package author or package consumer, having the option to step into the code will prove invaluable - with practically no additional development effort.</p>
-<p>If possible (if the source code can be made public), I highly recommend making the symbols available, to everyone&rsquo;s benefit!</p>
-<hr>
-<h2 id=references>References</h2>
-<p><a class=link href="https://docs.microsoft.com/en-us/azure/devops/pipelines/artifacts/symbols?view=azure-devops" target=_blank rel=noopener>Symbol files</a><br>
+<figcaption>Specify which modules to load</figcaption></figure></p></li></ol><hr>
+<h2 id=nuget-symbol-package>NuGet symbol package</h2><p>This post focuses on building and hosting the symbols using Azure Devops - but just a small note publishing to NuGet.org if the package is publicly available.<br>
+The <a class=link href=http://nuget.org target=_blank rel=noopener>nuget.org</a> symbol server uses the <code>.snupkg</code> file format for symbols, which are optionally generated when the nupkg file is generated. See this this <a class=link href=https://docs.microsoft.com/en-us/nuget/create-packages/symbol-packages-snupkg target=_blank rel=noopener>document on the various ways of generating a .snupkg file</a>.</p><hr>
+<h2 id=final-thoughts>Final thoughts</h2><p>That&rsquo;s all there is to it!
+Whether a package author or package consumer, having the option to step into the code will prove invaluable - with practically no additional development effort.</p><p>If possible (if the source code can be made public), I highly recommend making the symbols available, to everyone&rsquo;s benefit!</p><hr>
+<h2 id=references>References</h2><p><a class=link href="https://docs.microsoft.com/en-us/azure/devops/pipelines/artifacts/symbols?view=azure-devops" target=_blank rel=noopener>Symbol files</a><br>
 <a class=link href="https://docs.microsoft.com/en-us/azure/devops/artifacts/concepts/symbols?view=azure-devops" target=_blank rel=noopener>Publishing symbols</a><br>
-<a class=link href=https://devblogs.microsoft.com/nuget/improved-package-debugging-experience-with-the-nuget-org-symbol-server/ target=_blank rel=noopener>NuGet symbols (slightly outdated, but still useful)</a></p>
-</section>
-<footer class=article-footer>
+<a class=link href=https://devblogs.microsoft.com/nuget/improved-package-debugging-experience-with-the-nuget-org-symbol-server/ target=_blank rel=noopener>NuGet symbols (slightly outdated, but still useful)</a></p></section><footer class=article-footer>
 <section class=article-tags>
 <a href=/tags/c#/>c#</a>
 <a href=/tags/.net/>.net</a>
@@ -242,138 +144,71 @@ Whether a package author or package consumer, having the option to step into the
 <a href=/tags/symbol/>symbol</a>
 <a href=/tags/symbolserver/>symbolserver</a>
 <a href=/tags/sourcelink/>sourcelink</a>
-</section>
-</footer>
-</article>
-<aside class=related-contents--wrapper>
-<h2 class=section-title>Related contents</h2>
-<div class=related-contents>
+</section></footer></article><aside class=related-contents--wrapper>
+<h2 class=section-title>Related contents</h2><div class=related-contents>
 <div class="flex article-list--tile">
 <article>
 <a href=/p/11-2020-dynamic-context/>
 <div class=article-details>
-<h2 class=article-title>Dynamic Context (for Entity Framework Core)</h2>
-</div>
-</a>
-</article>
-<article>
+<h2 class=article-title>Dynamic Context (for Entity Framework Core)</h2></div></a>
+</article><article>
 <a href=/p/analyzer-extra/>
 <div class=article-details>
-<h2 class=article-title>Roslyn Analyzer - tips and tricks (Part 5)</h2>
-</div>
-</a>
-</article>
-<article>
+<h2 class=article-title>Roslyn Analyzer - tips and tricks (Part 5)</h2></div></a>
+</article><article>
 <a href=/p/analyzer-test/>
 <div class=article-details>
-<h2 class=article-title>Roslyn Analyzer - testing an analyzer and code fix (Part 4)</h2>
-</div>
-</a>
-</article>
-<article>
+<h2 class=article-title>Roslyn Analyzer - testing an analyzer and code fix (Part 4)</h2></div></a>
+</article><article>
 <a href=/p/analyzer-code-fix/>
 <div class=article-details>
-<h2 class=article-title>Roslyn Analyzer - writing the code fix (Part 3)</h2>
-</div>
-</a>
-</article>
-<article>
+<h2 class=article-title>Roslyn Analyzer - writing the code fix (Part 3)</h2></div></a>
+</article><article>
 <a href=/p/analyzer-write/>
 <div class=article-details>
-<h2 class=article-title>Roslyn Analyzer - writing the analyzer (Part 2)</h2>
-</div>
-</a>
-</article>
-</div>
-</div>
-</aside>
-<script src=https://giscus.app/client.js data-repo=always-developing/always-developing.github.io data-repo-id=R_kgDOGQJLBQ data-category=Comments data-category-id=DIC_kwDOGQJLBc4B_pUA data-mapping=pathname data-reactions-enabled=1 data-emit-metadata=0 data-theme=light crossorigin=anonymous async></script>
-<script>function setGiscusTheme(b){let a=document.querySelector('iframe.giscus-frame');a&&a.contentWindow.postMessage({giscus:{setConfig:{theme:b}}},"https://giscus.app")}(function(){addEventListener('message',b=>{if(event.origin!=='https://giscus.app')return;a()}),window.addEventListener('onColorSchemeChange',a);function a(){document.documentElement.dataset.scheme==="light"?setGiscusTheme('light'):setGiscusTheme('dark')}})()</script>
+<h2 class=article-title>Roslyn Analyzer - writing the analyzer (Part 2)</h2></div></a>
+</article></div></div></aside><script src=https://giscus.app/client.js data-repo=always-developing/always-developing.github.io data-repo-id=R_kgDOGQJLBQ data-category=Comments data-category-id=DIC_kwDOGQJLBc4B_pUA data-mapping=pathname data-reactions-enabled=1 data-emit-metadata=0 data-theme=light crossorigin=anonymous async></script>
+<script>function setGiscusTheme(t){let e=document.querySelector("iframe.giscus-frame");e&&e.contentWindow.postMessage({giscus:{setConfig:{theme:t}}},"https://giscus.app")}(function(){addEventListener("message",t=>{if(event.origin!=="https://giscus.app")return;e()}),window.addEventListener("onColorSchemeChange",e);function e(){document.documentElement.dataset.scheme==="light"?setGiscusTheme("light"):setGiscusTheme("dark")}})()</script>
 <footer class=site-footer>
 <section class=copyright>
 &copy;
 2021 -
 2022 Always Developing
-</section>
-<section class=powerby>
+</section><section class=powerby>
 Always Developing | always learning | always growing <br>
 Built with <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a> <br>
 Theme <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.2.0>Stack</a></b> designed by <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a>
-</section>
-</footer>
-<div class=pswp tabindex=-1 role=dialog aria-hidden=true>
-<div class=pswp__bg></div>
-<div class=pswp__scroll-wrap>
+</section></footer><div class=pswp tabindex=-1 role=dialog aria-hidden=true>
+<div class=pswp__bg></div><div class=pswp__scroll-wrap>
 <div class=pswp__container>
-<div class=pswp__item></div>
-<div class=pswp__item></div>
-<div class=pswp__item></div>
-</div>
-<div class="pswp__ui pswp__ui--hidden">
+<div class=pswp__item></div><div class=pswp__item></div><div class=pswp__item></div></div><div class="pswp__ui pswp__ui--hidden">
 <div class=pswp__top-bar>
-<div class=pswp__counter></div>
-<button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+<div class=pswp__counter></div><button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
 <button class="pswp__button pswp__button--share" title=Share></button>
 <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
 <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
 <div class=pswp__preloader>
 <div class=pswp__preloader__icn>
 <div class=pswp__preloader__cut>
-<div class=pswp__preloader__donut></div>
-</div>
-</div>
-</div>
-</div>
-<div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
-<div class=pswp__share-tooltip></div>
-</div>
-<button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+<div class=pswp__preloader__donut></div></div></div></div></div><div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+<div class=pswp__share-tooltip></div></div><button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
 </button>
 <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
 </button>
 <div class=pswp__caption>
-<div class=pswp__caption__center></div>
-</div>
-</div>
-</div>
-</div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.css integrity="sha256-c0uckgykQ9v5k+IqViZOZKc47Jn7KQil4/MP3ySA3F8=" crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.css integrity="sha256-SBLU4vv6CA6lHsZ1XyTdhyjJxCjPif/TRkjnsyGAGnE=" crossorigin=anonymous>
-</main>
-<aside class="sidebar right-sidebar sticky">
+<div class=pswp__caption__center></div></div></div></div></div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.css integrity="sha256-c0uckgykQ9v5k+IqViZOZKc47Jn7KQil4/MP3ySA3F8=" crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.css integrity="sha256-SBLU4vv6CA6lHsZ1XyTdhyjJxCjPif/TRkjnsyGAGnE=" crossorigin=anonymous>
+</main><aside class="sidebar right-sidebar sticky">
 <section class="widget archives">
 <div class=widget-icon><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg>
-</div>
-<h2 class="widget-title section-title">Table of contents</h2>
-<div class=widget--toc>
+</div><h2 class="widget-title section-title">Table of contents</h2><div class=widget--toc>
 <nav id=TableOfContents>
 <ol>
 <li><a href=#symbol-server-explained>Symbol server explained</a>
 <ol>
-<li><a href=#what-are-symbols>What are symbols?</a></li>
-<li><a href=#what-is-a-symbol-server>What is a symbol server?</a></li>
-</ol>
-</li>
-<li><a href=#why-use-a-symbol-server>Why use a symbol server</a></li>
-<li><a href=#producing-symbols>Producing symbols</a>
+<li><a href=#what-are-symbols>What are symbols?</a></li><li><a href=#what-is-a-symbol-server>What is a symbol server?</a></li></ol></li><li><a href=#why-use-a-symbol-server>Why use a symbol server</a></li><li><a href=#producing-symbols>Producing symbols</a>
 <ol>
-<li><a href=#configuring-code>Configuring code</a></li>
-<li><a href=#configuring-cicd-pipeline>Configuring CI/CD pipeline</a></li>
-</ol>
-</li>
-<li><a href=#consuming-symbols>Consuming symbols</a>
+<li><a href=#configuring-code>Configuring code</a></li><li><a href=#configuring-cicd-pipeline>Configuring CI/CD pipeline</a></li></ol></li><li><a href=#consuming-symbols>Consuming symbols</a>
 <ol>
-<li><a href=#configuring-visual-studio>Configuring Visual Studio</a></li>
-</ol>
-</li>
-<li><a href=#nuget-symbol-package>NuGet symbol package</a></li>
-<li><a href=#final-thoughts>Final thoughts</a></li>
-<li><a href=#references>References</a></li>
-</ol>
-</nav>
-</div>
-</section>
-</aside>
-</div>
-<script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g=" crossorigin=anonymous defer></script><script type=text/javascript src=/ts/main.js defer></script>
-<script>(function(){const a=document.createElement('link');a.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",a.type="text/css",a.rel="stylesheet",document.head.appendChild(a)})()</script>
-</body>
-</html>
+<li><a href=#configuring-visual-studio>Configuring Visual Studio</a></li></ol></li><li><a href=#nuget-symbol-package>NuGet symbol package</a></li><li><a href=#final-thoughts>Final thoughts</a></li><li><a href=#references>References</a></li></ol></nav></div></section></aside></div><script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g=" crossorigin=anonymous defer></script><script type=text/javascript src=/ts/main.js defer></script>
+<script>(function(){const e=document.createElement("link");e.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",e.type="text/css",e.rel="stylesheet",document.head.appendChild(e)})()</script>
+</body></html>

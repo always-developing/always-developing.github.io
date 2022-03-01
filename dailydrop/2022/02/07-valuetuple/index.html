@@ -1,7 +1,6 @@
 <!doctype html><html lang=en-uk>
 <head><meta charset=utf-8>
-<meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="Exploring the C# ValueTuple type"><title>C# ValueTuple</title>
-<link rel=canonical href=https://always-developing.github.io/dailydrop/2022/02/07-valuetuple/>
+<meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="Exploring the C# ValueTuple type"><title>C# ValueTuple</title><link rel=canonical href=https://always-developing.github.io/dailydrop/2022/02/07-valuetuple/>
 <link rel=stylesheet href=/scss/style.min.css><meta property="og:title" content="C# ValueTuple">
 <meta property="og:description" content="Exploring the C# ValueTuple type">
 <meta property="og:url" content="https://always-developing.github.io/dailydrop/2022/02/07-valuetuple/">
@@ -11,18 +10,16 @@
 <meta name=twitter:description content="Exploring the C# ValueTuple type">
 <link rel="shortcut icon" href=favicon.ico>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-CXPLFS7K38"></script>
-<script>var doNotTrack=!1;if(!doNotTrack){window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date),gtag('config','G-CXPLFS7K38',{anonymize_ip:!1})}</script>
-</head>
-<body class="article-page has-toc">
-<script>(function(){const a='StackColorScheme';localStorage.getItem(a)||localStorage.setItem(a,"dark")})()</script><script>(function(){const b='StackColorScheme',a=localStorage.getItem(b),c=window.matchMedia('(prefers-color-scheme: dark)').matches===!0;a=='dark'||a==='auto'&&c?document.documentElement.dataset.scheme='dark':document.documentElement.dataset.scheme='light'})()</script>
+<script>var doNotTrack=!1;if(!doNotTrack){window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","G-CXPLFS7K38",{anonymize_ip:!1})}</script>
+</head><body class="article-page has-toc">
+<script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"dark")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script>
 <div class="container main-container flex
 extended">
 <div id=article-toolbar>
 <a href=https://always-developing.github.io/ class=back-home><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="15 6 9 12 15 18"/></svg>
 <span>Back</span>
 </a>
-</div>
-<main class="main full-width">
+</div><main class="main full-width">
 <article class=main-article>
 <header class=article-header>
 <div class=article-details>
@@ -30,39 +27,22 @@ extended">
 <a href=/categories/dailydrop/>
 DailyDrop
 </a>
-</header>
-<h2 class=article-title>
+</header><h2 class=article-title>
 <a href=/dailydrop/2022/02/07-valuetuple/>C# ValueTuple</a>
-</h2>
-<h3 class=article-subtitle>
+</h2><h3 class=article-subtitle>
 Exploring the C# ValueTuple type
-</h3>
-<footer class=article-time>
+</h3><footer class=article-time>
 <div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
 <time class=article-time--published>Feb 07, 2022</time>
-</div>
-<div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+</div><div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
 <time class=article-time--reading>
 5 minute read
 </time>
-</div>
-</footer>
-</div>
-</header>
-<section class=article-content>
-<h2 id=daily-knowledge-drop>Daily Knowledge Drop</h2>
-<p>You may have heard of C# the <code>Tuple</code> type, but there is also a <code>ValueTuple</code> type available, which has existed in C# since .NET 4.7!</p>
-<p>The post will will take a brief look at the <code>Tuple</code> type and compare its functionality to that of the <code>ValueTuple</code> type.</p>
-<hr>
-<h2 id=tuple>Tuple</h2>
-<h3 id=tuple-usage>Tuple usage</h3>
-<p>A Tuple is a <code>data structure which has a specific number and sequence of elements</code>. The data structure can contain up to 8 elements, but if more are required, nested tuple objects can be leveraged in the 8th element to extent the number of elements.</p>
-<p>It is an effective, quick and simple way to create an <em>immutable</em> data entity structure without creating an entire class entity.</p>
-<p>What do I mean by this?<br>
+</div></footer></div></header><section class=article-content>
+<h2 id=daily-knowledge-drop>Daily Knowledge Drop</h2><p>You may have heard of C# the <code>Tuple</code> type, but there is also a <code>ValueTuple</code> type available, which has existed in C# since .NET 4.7!</p><p>The post will will take a brief look at the <code>Tuple</code> type and compare its functionality to that of the <code>ValueTuple</code> type.</p><hr>
+<h2 id=tuple>Tuple</h2><h3 id=tuple-usage>Tuple usage</h3><p>A Tuple is a <code>data structure which has a specific number and sequence of elements</code>. The data structure can contain up to 8 elements, but if more are required, nested tuple objects can be leveraged in the 8th element to extent the number of elements.</p><p>It is an effective, quick and simple way to create an <em>immutable</em> data entity structure without creating an entire class entity.</p><p>What do I mean by this?<br>
 Assume you have a method which needs to return a number of details related to a <em>person</em>. The go to solution would be to create a <em>Person</em> class with the relevant properties and return an instance of the class from the method.<br>
-If this class is only going to be used in one place, it might not make sense for an entire class to be defined - in this case a <code>Tuple</code> can be used instead.</p>
-<p>The following example uses .NET6 C# console application with minimal startup:</p>
-<div class=highlight><div class=chroma>
+If this class is only going to be used in one place, it might not make sense for an entire class to be defined - in this case a <code>Tuple</code> can be used instead.</p><p>The following example uses .NET6 C# console application with minimal startup:</p><div class=highlight><div class=chroma>
 <table class=lntable><tr><td class=lntd>
 <pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
 </span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
@@ -77,74 +57,46 @@ If this class is only going to be used in one place, it might not make sense for
 </span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
 </span><span class=lnt id=ienumusage-12><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-12>12</a>
 </span><span class=lnt id=ienumusage-13><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-13>13</a>
-</span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=c1>// Invoke the method and get the tuple back
-</span><span class=c1></span><span class=kt>var</span> <span class=n>personInfo</span> <span class=p>=</span> <span class=n>GetPersonInformation</span><span class=p>();</span>
-
-<span class=c1>// Each element in the tuple can be accessed
-</span><span class=c1></span><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>personInfo</span><span class=p>.</span><span class=n>Item1</span><span class=p>);</span>
-<span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>personInfo</span><span class=p>.</span><span class=n>Item2</span><span class=p>);</span>
-<span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>personInfo</span><span class=p>.</span><span class=n>Item3</span><span class=p>);</span>
-<span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>personInfo</span><span class=p>);</span>
-
-<span class=k>static</span> <span class=n>Tuple</span><span class=p>&lt;</span><span class=kt>string</span><span class=p>,</span> <span class=kt>string</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;</span> <span class=n>GetPersonInformation</span><span class=p>()</span>
-<span class=p>{</span>
-    <span class=k>return</span> <span class=k>new</span> <span class=n>Tuple</span><span class=p>&lt;</span><span class=kt>string</span><span class=p>,</span> <span class=kt>string</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;(</span><span class=s>&#34;Dave&#34;</span><span class=p>,</span> <span class=s>&#34;Grohl&#34;</span><span class=p>,</span> <span class=m>53</span><span class=p>);</span>
-<span class=p>}</span></code></pre></td></tr></table>
-</div>
-</div>
-<ul>
-<li><strong>Line 8</strong>: The return time is defined as a <code>Tuple</code> which has 3 elements, two strings and an int</li>
-<li><strong>Line 10</strong>: The <code>Tuple</code> is initialized with the values</li>
-<li><strong>Line 3-5</strong>: The elements in the <code>Tuple</code> are accessed using the <code>ItemX</code> property, which corresponds to the element in position X</li>
-</ul>
-<p>The output is as follows:</p>
-<div class=highlight><div class=chroma>
+</span></code></pre></td><td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=c1>// Invoke the method and get the tuple back</span>
+</span></span><span class=line><span class=cl><span class=kt>var</span> <span class=n>personInfo</span> <span class=p>=</span> <span class=n>GetPersonInformation</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// Each element in the tuple can be accessed</span>
+</span></span><span class=line><span class=cl><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>personInfo</span><span class=p>.</span><span class=n>Item1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>personInfo</span><span class=p>.</span><span class=n>Item2</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>personInfo</span><span class=p>.</span><span class=n>Item3</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>personInfo</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>static</span> <span class=n>Tuple</span><span class=p>&lt;</span><span class=kt>string</span><span class=p>,</span> <span class=kt>string</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;</span> <span class=n>GetPersonInformation</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=k>new</span> <span class=n>Tuple</span><span class=p>&lt;</span><span class=kt>string</span><span class=p>,</span> <span class=kt>string</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;(</span><span class=s>&#34;Dave&#34;</span><span class=p>,</span> <span class=s>&#34;Grohl&#34;</span><span class=p>,</span> <span class=m>53</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span></span></span></code></pre></td></tr></table></div></div><ul>
+<li><strong>Line 8</strong>: The return time is defined as a <code>Tuple</code> which has 3 elements, two strings and an int</li><li><strong>Line 10</strong>: The <code>Tuple</code> is initialized with the values</li><li><strong>Line 3-5</strong>: The elements in the <code>Tuple</code> are accessed using the <code>ItemX</code> property, which corresponds to the element in position X</li></ul><p>The output is as follows:</p><div class=highlight><div class=chroma>
 <table class=lntable><tr><td class=lntd>
 <pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
 </span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2>2</a>
 </span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3>3</a>
 </span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4>4</a>
-</span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-shell data-lang=shell>Dave
-Grohl
-<span class=m>53</span>
-<span class=o>(</span>Dave, Grohl, 53<span class=o>)</span></code></pre></td></tr></table>
-</div>
-</div>
-<hr>
-<h3 id=tuple-creation>Tuple creation</h3>
-<p>In <strong>Line 10</strong> in the above example, the <code>Tuple</code> was created and returned using the constructor method. These is another way - the static <code>Tuple.Create</code> method.</p>
-<div class=highlight><div class=chroma>
+</span></code></pre></td><td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>Dave
+</span></span><span class=line><span class=cl>Grohl
+</span></span><span class=line><span class=cl><span class=m>53</span>
+</span></span><span class=line><span class=cl><span class=o>(</span>Dave, Grohl, 53<span class=o>)</span></span></span></code></pre></td></tr></table></div></div><hr>
+<h3 id=tuple-creation>Tuple creation</h3><p>In <strong>Line 10</strong> in the above example, the <code>Tuple</code> was created and returned using the constructor method. These is another way - the static <code>Tuple.Create</code> method.</p><div class=highlight><div class=chroma>
 <table class=lntable><tr><td class=lntd>
 <pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
 </span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2>2</a>
 </span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3>3</a>
 </span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4>4</a>
 </span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5>5</a>
-</span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=c1>// Using a generic constructor 
-</span><span class=c1></span><span class=kt>var</span> <span class=n>constructorTuple</span> <span class=p>=</span> <span class=k>new</span> <span class=n>Tuple</span><span class=p>&lt;</span><span class=kt>string</span><span class=p>,</span> <span class=kt>string</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;(</span><span class=s>&#34;Dave&#34;</span><span class=p>,</span> <span class=s>&#34;Grohl&#34;</span><span class=p>,</span> <span class=m>53</span><span class=p>);</span>
-
-<span class=c1>// Using the static Tuple Create method
-</span><span class=c1></span><span class=kt>var</span> <span class=n>createTuple</span> <span class=p>=</span> <span class=n>Tuple</span><span class=p>.</span><span class=n>Create</span><span class=p>(</span><span class=s>&#34;Dave&#34;</span><span class=p>,</span> <span class=s>&#34;Grohl&#34;</span><span class=p>,</span> <span class=m>53</span><span class=p>);</span></code></pre></td></tr></table>
-</div>
-</div>
-<p>Both are equivalent, however the <em>Create</em> method is easier to use when dealing with nested Tuples.</p>
-<hr>
-<h2 id=valuetuple>ValueTuple</h2>
-<h3 id=valuetuple-usage>ValueTuple usage</h3>
-<p>A <code>ValueTuple</code> operations the same as a <code>Tuple</code> on the surface, but there are a number of key differences between the two.</p>
-<ul>
-<li><strong>ValueTuple</strong> is a <em>struct</em> (a value type), while a <strong>Tuple</strong> is a <em>class</em> (a reference type)</li>
-<li><strong>ValueTuple</strong> is <em>mutable</em> (can be changed), while a <strong>Tuple</strong> is <em>immutable</em> (they are read-only)</li>
-<li><strong>ValueTuple</strong> data members are fields, while <strong>Tuple</strong> data members are properties.</li>
-</ul>
-<p>In the above example, <code>Tuple</code> can be replaced with <code>ValueTuple</code> and the code will still execute as before, with the same output:</p>
-<div class=highlight><div class=chroma>
+</span></code></pre></td><td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=c1>// Using a generic constructor </span>
+</span></span><span class=line><span class=cl><span class=kt>var</span> <span class=n>constructorTuple</span> <span class=p>=</span> <span class=k>new</span> <span class=n>Tuple</span><span class=p>&lt;</span><span class=kt>string</span><span class=p>,</span> <span class=kt>string</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;(</span><span class=s>&#34;Dave&#34;</span><span class=p>,</span> <span class=s>&#34;Grohl&#34;</span><span class=p>,</span> <span class=m>53</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// Using the static Tuple Create method</span>
+</span></span><span class=line><span class=cl><span class=kt>var</span> <span class=n>createTuple</span> <span class=p>=</span> <span class=n>Tuple</span><span class=p>.</span><span class=n>Create</span><span class=p>(</span><span class=s>&#34;Dave&#34;</span><span class=p>,</span> <span class=s>&#34;Grohl&#34;</span><span class=p>,</span> <span class=m>53</span><span class=p>);</span></span></span></code></pre></td></tr></table></div></div><p>Both are equivalent, however the <em>Create</em> method is easier to use when dealing with nested Tuples.</p><hr>
+<h2 id=valuetuple>ValueTuple</h2><h3 id=valuetuple-usage>ValueTuple usage</h3><p>A <code>ValueTuple</code> operations the same as a <code>Tuple</code> on the surface, but there are a number of key differences between the two.</p><ul>
+<li><strong>ValueTuple</strong> is a <em>struct</em> (a value type), while a <strong>Tuple</strong> is a <em>class</em> (a reference type)</li><li><strong>ValueTuple</strong> is <em>mutable</em> (can be changed), while a <strong>Tuple</strong> is <em>immutable</em> (they are read-only)</li><li><strong>ValueTuple</strong> data members are fields, while <strong>Tuple</strong> data members are properties.</li></ul><p>In the above example, <code>Tuple</code> can be replaced with <code>ValueTuple</code> and the code will still execute as before, with the same output:</p><div class=highlight><div class=chroma>
 <table class=lntable><tr><td class=lntd>
 <pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
 </span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
@@ -157,54 +109,31 @@ Grohl
 </span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
 </span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
 </span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
-</span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=kt>var</span> <span class=n>personInfo</span> <span class=p>=</span> <span class=n>GetPersonInformation</span><span class=p>();</span>
-
-<span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>personInfo</span><span class=p>.</span><span class=n>Item1</span><span class=p>);</span>
-<span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>personInfo</span><span class=p>.</span><span class=n>Item2</span><span class=p>);</span>
-<span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>personInfo</span><span class=p>.</span><span class=n>Item3</span><span class=p>);</span>
-<span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>personInfo</span><span class=p>);</span>
-
-<span class=k>static</span> <span class=n>ValueTuple</span><span class=p>&lt;</span><span class=kt>string</span><span class=p>,</span> <span class=kt>string</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;</span> <span class=n>GetPersonInformation</span><span class=p>()</span>
-<span class=p>{</span>
-    <span class=k>return</span> <span class=k>new</span> <span class=n>ValueTuple</span><span class=p>&lt;</span><span class=kt>string</span><span class=p>,</span> <span class=kt>string</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;(</span><span class=s>&#34;Dave&#34;</span><span class=p>,</span> <span class=s>&#34;Grohl&#34;</span><span class=p>,</span> <span class=m>53</span><span class=p>);</span>
-<span class=p>}</span></code></pre></td></tr></table>
-</div>
-</div>
-<p>In addition to the differences mentioned above, the<code>ValueTuple</code> also has additional ways in which it can be created, which <em>allows working with the elements much easier</em>.</p>
-<hr>
-<h3 id=valuetuple-creation>ValueTuple creation</h3>
-<p>As seen above a <code>ValueTuple</code> can be created using the constructor:</p>
-<div class=highlight><div class=chroma>
+</span></code></pre></td><td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=kt>var</span> <span class=n>personInfo</span> <span class=p>=</span> <span class=n>GetPersonInformation</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>personInfo</span><span class=p>.</span><span class=n>Item1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>personInfo</span><span class=p>.</span><span class=n>Item2</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>personInfo</span><span class=p>.</span><span class=n>Item3</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>personInfo</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>static</span> <span class=n>ValueTuple</span><span class=p>&lt;</span><span class=kt>string</span><span class=p>,</span> <span class=kt>string</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;</span> <span class=n>GetPersonInformation</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=k>new</span> <span class=n>ValueTuple</span><span class=p>&lt;</span><span class=kt>string</span><span class=p>,</span> <span class=kt>string</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;(</span><span class=s>&#34;Dave&#34;</span><span class=p>,</span> <span class=s>&#34;Grohl&#34;</span><span class=p>,</span> <span class=m>53</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span></span></span></code></pre></td></tr></table></div></div><p>In addition to the differences mentioned above, the<code>ValueTuple</code> also has additional ways in which it can be created, which <em>allows working with the elements much easier</em>.</p><hr>
+<h3 id=valuetuple-creation>ValueTuple creation</h3><p>As seen above a <code>ValueTuple</code> can be created using the constructor:</p><div class=highlight><div class=chroma>
 <table class=lntable><tr><td class=lntd>
 <pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
-</span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#>    <span class=kt>var</span> <span class=n>consValueTuple</span> <span class=p>=</span> <span class=k>new</span> <span class=n>ValueTuple</span><span class=p>&lt;</span><span class=kt>string</span><span class=p>,</span> <span class=kt>string</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;(</span><span class=s>&#34;Dave&#34;</span><span class=p>,</span> <span class=s>&#34;Grohl&#34;</span><span class=p>,</span> <span class=m>53</span><span class=p>);</span></code></pre></td></tr></table>
-</div>
-</div>
-<p>It can also be created using the static <em>Create</em> method:</p>
-<div class=highlight><div class=chroma>
+</span></code></pre></td><td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl>    <span class=kt>var</span> <span class=n>consValueTuple</span> <span class=p>=</span> <span class=k>new</span> <span class=n>ValueTuple</span><span class=p>&lt;</span><span class=kt>string</span><span class=p>,</span> <span class=kt>string</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;(</span><span class=s>&#34;Dave&#34;</span><span class=p>,</span> <span class=s>&#34;Grohl&#34;</span><span class=p>,</span> <span class=m>53</span><span class=p>);</span></span></span></code></pre></td></tr></table></div></div><p>It can also be created using the static <em>Create</em> method:</p><div class=highlight><div class=chroma>
 <table class=lntable><tr><td class=lntd>
 <pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
-</span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#>    <span class=kt>var</span> <span class=n>createValueTuple</span> <span class=p>=</span> <span class=n>ValueTuple</span><span class=p>.</span><span class=n>Create</span><span class=p>(</span><span class=s>&#34;Dave&#34;</span><span class=p>,</span> <span class=s>&#34;Grohl&#34;</span><span class=p>,</span> <span class=m>53</span><span class=p>);</span></code></pre></td></tr></table>
-</div>
-</div>
-<p>In addition it can be created as follows</p>
-<div class=highlight><div class=chroma>
+</span></code></pre></td><td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl>    <span class=kt>var</span> <span class=n>createValueTuple</span> <span class=p>=</span> <span class=n>ValueTuple</span><span class=p>.</span><span class=n>Create</span><span class=p>(</span><span class=s>&#34;Dave&#34;</span><span class=p>,</span> <span class=s>&#34;Grohl&#34;</span><span class=p>,</span> <span class=m>53</span><span class=p>);</span></span></span></code></pre></td></tr></table></div></div><p>In addition it can be created as follows</p><div class=highlight><div class=chroma>
 <table class=lntable><tr><td class=lntd>
 <pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
-</span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#>    <span class=kt>var</span> <span class=n>valueTuple</span> <span class=p>=</span> <span class=p>(</span><span class=s>&#34;Dave&#34;</span><span class=p>,</span> <span class=s>&#34;Grohl&#34;</span><span class=p>,</span> <span class=m>53</span><span class=p>);</span></code></pre></td></tr></table>
-</div>
-</div>
-<p>In all three of the above, the elements are still accessed using the <em>Item1</em>, <em>Item2</em>, etc properties. With a <code>ValueTuple</code> it is possible to <em>give each element a name and access it by name</em>.</p>
-<p>Instead of using the <em>var</em> keyword, we explicitly define the ValueTuple types, with names.</p>
-<div class=highlight><div class=chroma>
+</span></code></pre></td><td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl>    <span class=kt>var</span> <span class=n>valueTuple</span> <span class=p>=</span> <span class=p>(</span><span class=s>&#34;Dave&#34;</span><span class=p>,</span> <span class=s>&#34;Grohl&#34;</span><span class=p>,</span> <span class=m>53</span><span class=p>);</span></span></span></code></pre></td></tr></table></div></div><p>In all three of the above, the elements are still accessed using the <em>Item1</em>, <em>Item2</em>, etc properties. With a <code>ValueTuple</code> it is possible to <em>give each element a name and access it by name</em>.</p><p>Instead of using the <em>var</em> keyword, we explicitly define the ValueTuple types, with names.</p><div class=highlight><div class=chroma>
 <table class=lntable><tr><td class=lntd>
 <pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
 </span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
@@ -218,24 +147,19 @@ Grohl
 </span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
 </span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
 </span><span class=lnt id=ienumusage-12><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-12>12</a>
-</span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=p>(</span><span class=kt>string</span> <span class=n>FirstName</span><span class=p>,</span> <span class=kt>string</span> <span class=n>LastName</span><span class=p>,</span> <span class=kt>int</span> <span class=n>Age</span><span class=p>)</span> <span class=n>nameValueTuple</span> <span class=p>=</span> <span class=p>(</span><span class=s>&#34;Dave&#34;</span><span class=p>,</span> <span class=s>&#34;Grohl&#34;</span><span class=p>,</span> <span class=m>53</span><span class=p>);</span>
-
-<span class=c1>// The elements can now be accessed by name
-</span><span class=c1></span><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>nameValueTuple</span><span class=p>.</span><span class=n>FirstName</span><span class=p>);</span>
-<span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>nameValueTuple</span><span class=p>.</span><span class=n>LastName</span><span class=p>);</span>
-<span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>nameValueTuple</span><span class=p>.</span><span class=n>Age</span><span class=p>);</span>
-<span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>nameValueTuple</span><span class=p>);</span>
-
-<span class=c1>// This will also still also work
-</span><span class=c1></span><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>nameValueTuple</span><span class=p>.</span><span class=n>Item1</span><span class=p>);</span>
-<span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>nameValueTuple</span><span class=p>.</span><span class=n>Item2</span><span class=p>);</span>
-<span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>nameValueTuple</span><span class=p>.</span><span class=n>Item3</span><span class=p>);</span></code></pre></td></tr></table>
-</div>
-</div>
-<p>Any of the three initialization methods can be used to create the a <code>ValueTuple</code> with names.</p>
-<div class=highlight><div class=chroma>
+</span></code></pre></td><td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=p>(</span><span class=kt>string</span> <span class=n>FirstName</span><span class=p>,</span> <span class=kt>string</span> <span class=n>LastName</span><span class=p>,</span> <span class=kt>int</span> <span class=n>Age</span><span class=p>)</span> <span class=n>nameValueTuple</span> <span class=p>=</span> <span class=p>(</span><span class=s>&#34;Dave&#34;</span><span class=p>,</span> <span class=s>&#34;Grohl&#34;</span><span class=p>,</span> <span class=m>53</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// The elements can now be accessed by name</span>
+</span></span><span class=line><span class=cl><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>nameValueTuple</span><span class=p>.</span><span class=n>FirstName</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>nameValueTuple</span><span class=p>.</span><span class=n>LastName</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>nameValueTuple</span><span class=p>.</span><span class=n>Age</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>nameValueTuple</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// This will also still also work</span>
+</span></span><span class=line><span class=cl><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>nameValueTuple</span><span class=p>.</span><span class=n>Item1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>nameValueTuple</span><span class=p>.</span><span class=n>Item2</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>nameValueTuple</span><span class=p>.</span><span class=n>Item3</span><span class=p>);</span></span></span></code></pre></td></tr></table></div></div><p>Any of the three initialization methods can be used to create the a <code>ValueTuple</code> with names.</p><div class=highlight><div class=chroma>
 <table class=lntable><tr><td class=lntd>
 <pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
 </span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
@@ -247,22 +171,17 @@ Grohl
 </span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
 </span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
 </span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
-</span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=c1>/// Create using the constructor
-</span><span class=c1></span><span class=p>(</span><span class=kt>string</span> <span class=n>FirstName</span><span class=p>,</span> <span class=kt>string</span> <span class=n>LastName</span><span class=p>,</span> <span class=kt>int</span> <span class=n>Age</span><span class=p>)</span> <span class=n>consValueTuple</span> <span class=p>=</span> 
-    <span class=k>new</span> <span class=n>ValueTuple</span><span class=p>&lt;</span><span class=kt>string</span><span class=p>,</span> <span class=kt>string</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;(</span><span class=s>&#34;Dave&#34;</span><span class=p>,</span> <span class=s>&#34;Grohl&#34;</span><span class=p>,</span> <span class=m>53</span><span class=p>);</span>
-
-<span class=c1>// Create using the static method
-</span><span class=c1></span><span class=p>(</span><span class=kt>string</span> <span class=n>FirstName</span><span class=p>,</span> <span class=kt>string</span> <span class=n>LastName</span><span class=p>,</span> <span class=kt>int</span> <span class=n>Age</span><span class=p>)</span> <span class=n>createValueTuple</span> <span class=p>=</span> 
-    <span class=n>ValueTuple</span><span class=p>.</span><span class=n>Create</span><span class=p>(</span><span class=s>&#34;Dave&#34;</span><span class=p>,</span> <span class=s>&#34;Grohl&#34;</span><span class=p>,</span> <span class=m>53</span><span class=p>);</span>
-
-<span class=c1>// Create using the abbreviated syntax
-</span><span class=c1></span><span class=p>(</span><span class=kt>string</span> <span class=n>FirstName</span><span class=p>,</span> <span class=kt>string</span> <span class=n>LastName</span><span class=p>,</span> <span class=kt>int</span> <span class=n>Age</span><span class=p>)</span> <span class=n>valueTuple</span> <span class=p>=</span> <span class=p>(</span><span class=s>&#34;Dave&#34;</span><span class=p>,</span> <span class=s>&#34;Grohl&#34;</span><span class=p>,</span> <span class=m>53</span><span class=p>);</span></code></pre></td></tr></table>
-</div>
-</div>
-<p>A named ValueTuple can also be returned from a method:</p>
-<div class=highlight><div class=chroma>
+</span></code></pre></td><td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=cs>/// Create using the constructor</span>
+</span></span><span class=line><span class=cl><span class=p>(</span><span class=kt>string</span> <span class=n>FirstName</span><span class=p>,</span> <span class=kt>string</span> <span class=n>LastName</span><span class=p>,</span> <span class=kt>int</span> <span class=n>Age</span><span class=p>)</span> <span class=n>consValueTuple</span> <span class=p>=</span> 
+</span></span><span class=line><span class=cl>    <span class=k>new</span> <span class=n>ValueTuple</span><span class=p>&lt;</span><span class=kt>string</span><span class=p>,</span> <span class=kt>string</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;(</span><span class=s>&#34;Dave&#34;</span><span class=p>,</span> <span class=s>&#34;Grohl&#34;</span><span class=p>,</span> <span class=m>53</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// Create using the static method</span>
+</span></span><span class=line><span class=cl><span class=p>(</span><span class=kt>string</span> <span class=n>FirstName</span><span class=p>,</span> <span class=kt>string</span> <span class=n>LastName</span><span class=p>,</span> <span class=kt>int</span> <span class=n>Age</span><span class=p>)</span> <span class=n>createValueTuple</span> <span class=p>=</span> 
+</span></span><span class=line><span class=cl>    <span class=n>ValueTuple</span><span class=p>.</span><span class=n>Create</span><span class=p>(</span><span class=s>&#34;Dave&#34;</span><span class=p>,</span> <span class=s>&#34;Grohl&#34;</span><span class=p>,</span> <span class=m>53</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// Create using the abbreviated syntax</span>
+</span></span><span class=line><span class=cl><span class=p>(</span><span class=kt>string</span> <span class=n>FirstName</span><span class=p>,</span> <span class=kt>string</span> <span class=n>LastName</span><span class=p>,</span> <span class=kt>int</span> <span class=n>Age</span><span class=p>)</span> <span class=n>valueTuple</span> <span class=p>=</span> <span class=p>(</span><span class=s>&#34;Dave&#34;</span><span class=p>,</span> <span class=s>&#34;Grohl&#34;</span><span class=p>,</span> <span class=m>53</span><span class=p>);</span></span></span></code></pre></td></tr></table></div></div><p>A named ValueTuple can also be returned from a method:</p><div class=highlight><div class=chroma>
 <table class=lntable><tr><td class=lntd>
 <pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
 </span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
@@ -276,48 +195,32 @@ Grohl
 </span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
 </span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
 </span><span class=lnt id=ienumusage-12><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-12>12</a>
-</span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=kt>var</span> <span class=n>personInfo</span> <span class=p>=</span> <span class=n>GetPersonInformation</span><span class=p>();</span>
-
-<span class=c1>// now accessed by name
-</span><span class=c1></span><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>personInfo</span><span class=p>.</span><span class=n>FirstName</span><span class=p>);</span>
-<span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>personInfo</span><span class=p>.</span><span class=n>LastName</span><span class=p>);</span>
-<span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>personInfo</span><span class=p>.</span><span class=n>Age</span><span class=p>);</span>
-<span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>personInfo</span><span class=p>);</span>
-
-<span class=k>static</span> <span class=p>(</span><span class=kt>string</span> <span class=n>FirstName</span><span class=p>,</span> <span class=kt>string</span> <span class=n>LastName</span><span class=p>,</span> <span class=kt>int</span> <span class=n>Age</span><span class=p>)</span> <span class=n>GetPersonInformation</span><span class=p>()</span>
-<span class=p>{</span>
-    <span class=k>return</span> <span class=p>(</span><span class=s>&#34;Dave&#34;</span><span class=p>,</span> <span class=s>&#34;Grohl&#34;</span><span class=p>,</span> <span class=m>53</span><span class=p>);</span>
-<span class=p>}</span></code></pre></td></tr></table>
-</div>
-</div>
-<hr>
-<h2 id=notes>Notes</h2>
-<p>Today we looked at the <code>Tuple</code> and <code>ValueTuple</code> structures, how they are different and the various ways they can be initialized.</p>
-<p>For additional reading, see the references below.</p>
-<hr>
-<h2 id=references>References</h2>
-<p><a class=link href="https://docs.microsoft.com/en-gb/dotnet/api/system.tuple?view=net-6.0" target=_blank rel=noopener>Tuple Class</a><br>
+</span></code></pre></td><td class=lntd>
+<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=kt>var</span> <span class=n>personInfo</span> <span class=p>=</span> <span class=n>GetPersonInformation</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// now accessed by name</span>
+</span></span><span class=line><span class=cl><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>personInfo</span><span class=p>.</span><span class=n>FirstName</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>personInfo</span><span class=p>.</span><span class=n>LastName</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>personInfo</span><span class=p>.</span><span class=n>Age</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>personInfo</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>static</span> <span class=p>(</span><span class=kt>string</span> <span class=n>FirstName</span><span class=p>,</span> <span class=kt>string</span> <span class=n>LastName</span><span class=p>,</span> <span class=kt>int</span> <span class=n>Age</span><span class=p>)</span> <span class=n>GetPersonInformation</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=p>(</span><span class=s>&#34;Dave&#34;</span><span class=p>,</span> <span class=s>&#34;Grohl&#34;</span><span class=p>,</span> <span class=m>53</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span></span></span></code></pre></td></tr></table></div></div><hr>
+<h2 id=notes>Notes</h2><p>Today we looked at the <code>Tuple</code> and <code>ValueTuple</code> structures, how they are different and the various ways they can be initialized.</p><p>For additional reading, see the references below.</p><hr>
+<h2 id=references>References</h2><p><a class=link href="https://docs.microsoft.com/en-gb/dotnet/api/system.tuple?view=net-6.0" target=_blank rel=noopener>Tuple Class</a><br>
 <a class=link href="https://docs.microsoft.com/en-us/dotnet/api/system.valuetuple?view=net-6.0" target=_blank rel=noopener>ValueTuple Class</a><br>
-<a class=link href=https://code-maze.com/csharp-tuple/ target=_blank rel=noopener>Tuple in C#</a></p>
-<blockquote>
+<a class=link href=https://code-maze.com/csharp-tuple/ target=_blank rel=noopener>Tuple in C#</a></p><blockquote>
 <div>
 <div style=width:5%;float:left;vertical-align:middle;padding-right:60px>
 <i class=inline-svg><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffbf00" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 12h1m8-9v1m8 8h1M5.6 5.6l.7.7m12.1-.7-.7.7"/><path d="M9 16a5 5 0 116 0 3.5 3.5.0 00-1 3 2 2 0 01-4 0 3.5 3.5.0 00-1-3"/><line x1="9.7" y1="17" x2="14.3" y2="17"/></svg></i>
-</div>
-<div>
-<h3>Daily Drop 5: 07-02-2022</h3>
-</div>
-<br>
+</div><div>
+<h3>Daily Drop 5: 07-02-2022</h3></div><br>
 <div>
 At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br>It could be anything - some .NET/C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
 The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
-</div>
-</div>
-</blockquote>
-</section>
-<footer class=article-footer>
+</div></div></blockquote></section><footer class=article-footer>
 <section class=article-tags>
 <a href=/tags/c#/>c#</a>
 <a href=/tags/.net/>.net</a>
@@ -325,132 +228,69 @@ The Daily Drop is a record of these pieces of knowledge - writing about and summ
 <a href=/tags/tuple/>tuple</a>
 <a href=/tags/valuetuple/>valuetuple</a>
 <a href=/tags/.net6/>.net6</a>
-</section>
-</footer>
-</article>
-<aside class=related-contents--wrapper>
-<h2 class=section-title>Related contents</h2>
-<div class=related-contents>
+</section></footer></article><aside class=related-contents--wrapper>
+<h2 class=section-title>Related contents</h2><div class=related-contents>
 <div class="flex article-list--tile">
 <article>
 <a href=/dailydrop/2022/02/04-ef-core6-groupby/>
 <div class=article-details>
-<h2 class=article-title>EF Core 6: GroupBy enhancements</h2>
-</div>
-</a>
-</article>
-<article>
+<h2 class=article-title>EF Core 6: GroupBy enhancements</h2></div></a>
+</article><article>
 <a href=/dailydrop/2022/02/03-ioptions/>
 <div class=article-details>
-<h2 class=article-title>Use IOptions&lt;> for application configuration</h2>
-</div>
-</a>
-</article>
-<article>
+<h2 class=article-title>Use IOptions&lt;> for application configuration</h2></div></a>
+</article><article>
 <a href=/dailydrop/2022/02/02-record-intro/>
 <div class=article-details>
-<h2 class=article-title>C# Records - the rundown</h2>
-</div>
-</a>
-</article>
-<article>
+<h2 class=article-title>C# Records - the rundown</h2></div></a>
+</article><article>
 <a href=/dailydrop/2022/02/01-ilogger-isenabled/>
 <div class=article-details>
-<h2 class=article-title>Use the ILogger IsEnabled method</h2>
-</div>
-</a>
-</article>
-<article>
+<h2 class=article-title>Use the ILogger IsEnabled method</h2></div></a>
+</article><article>
 <a href=/p/01-2022-structured-logging/>
 <div class=article-details>
-<h2 class=article-title>Structured logging - an introduction</h2>
-</div>
-</a>
-</article>
-</div>
-</div>
-</aside>
-<script src=https://giscus.app/client.js data-repo=always-developing/always-developing.github.io data-repo-id=R_kgDOGQJLBQ data-category=Comments data-category-id=DIC_kwDOGQJLBc4B_pUA data-mapping=pathname data-reactions-enabled=1 data-emit-metadata=0 data-theme=light crossorigin=anonymous async></script>
-<script>function setGiscusTheme(b){let a=document.querySelector('iframe.giscus-frame');a&&a.contentWindow.postMessage({giscus:{setConfig:{theme:b}}},"https://giscus.app")}(function(){addEventListener('message',b=>{if(event.origin!=='https://giscus.app')return;a()}),window.addEventListener('onColorSchemeChange',a);function a(){document.documentElement.dataset.scheme==="light"?setGiscusTheme('light'):setGiscusTheme('dark')}})()</script>
+<h2 class=article-title>Structured logging - an introduction</h2></div></a>
+</article></div></div></aside><script src=https://giscus.app/client.js data-repo=always-developing/always-developing.github.io data-repo-id=R_kgDOGQJLBQ data-category=Comments data-category-id=DIC_kwDOGQJLBc4B_pUA data-mapping=pathname data-reactions-enabled=1 data-emit-metadata=0 data-theme=light crossorigin=anonymous async></script>
+<script>function setGiscusTheme(t){let e=document.querySelector("iframe.giscus-frame");e&&e.contentWindow.postMessage({giscus:{setConfig:{theme:t}}},"https://giscus.app")}(function(){addEventListener("message",t=>{if(event.origin!=="https://giscus.app")return;e()}),window.addEventListener("onColorSchemeChange",e);function e(){document.documentElement.dataset.scheme==="light"?setGiscusTheme("light"):setGiscusTheme("dark")}})()</script>
 <footer class=site-footer>
 <section class=copyright>
 &copy;
 2021 -
 2022 Always Developing
-</section>
-<section class=powerby>
+</section><section class=powerby>
 Always Developing | always learning | always growing <br>
 Built with <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a> <br>
 Theme <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.2.0>Stack</a></b> designed by <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a>
-</section>
-</footer>
-<div class=pswp tabindex=-1 role=dialog aria-hidden=true>
-<div class=pswp__bg></div>
-<div class=pswp__scroll-wrap>
+</section></footer><div class=pswp tabindex=-1 role=dialog aria-hidden=true>
+<div class=pswp__bg></div><div class=pswp__scroll-wrap>
 <div class=pswp__container>
-<div class=pswp__item></div>
-<div class=pswp__item></div>
-<div class=pswp__item></div>
-</div>
-<div class="pswp__ui pswp__ui--hidden">
+<div class=pswp__item></div><div class=pswp__item></div><div class=pswp__item></div></div><div class="pswp__ui pswp__ui--hidden">
 <div class=pswp__top-bar>
-<div class=pswp__counter></div>
-<button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+<div class=pswp__counter></div><button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
 <button class="pswp__button pswp__button--share" title=Share></button>
 <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
 <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
 <div class=pswp__preloader>
 <div class=pswp__preloader__icn>
 <div class=pswp__preloader__cut>
-<div class=pswp__preloader__donut></div>
-</div>
-</div>
-</div>
-</div>
-<div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
-<div class=pswp__share-tooltip></div>
-</div>
-<button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+<div class=pswp__preloader__donut></div></div></div></div></div><div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+<div class=pswp__share-tooltip></div></div><button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
 </button>
 <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
 </button>
 <div class=pswp__caption>
-<div class=pswp__caption__center></div>
-</div>
-</div>
-</div>
-</div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.css integrity="sha256-c0uckgykQ9v5k+IqViZOZKc47Jn7KQil4/MP3ySA3F8=" crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.css integrity="sha256-SBLU4vv6CA6lHsZ1XyTdhyjJxCjPif/TRkjnsyGAGnE=" crossorigin=anonymous>
-</main>
-<aside class="sidebar right-sidebar sticky">
+<div class=pswp__caption__center></div></div></div></div></div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.css integrity="sha256-c0uckgykQ9v5k+IqViZOZKc47Jn7KQil4/MP3ySA3F8=" crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.css integrity="sha256-SBLU4vv6CA6lHsZ1XyTdhyjJxCjPif/TRkjnsyGAGnE=" crossorigin=anonymous>
+</main><aside class="sidebar right-sidebar sticky">
 <section class="widget archives">
 <div class=widget-icon><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg>
-</div>
-<h2 class="widget-title section-title">Table of contents</h2>
-<div class=widget--toc>
+</div><h2 class="widget-title section-title">Table of contents</h2><div class=widget--toc>
 <nav id=TableOfContents>
 <ol>
-<li><a href=#daily-knowledge-drop>Daily Knowledge Drop</a></li>
-<li><a href=#tuple>Tuple</a>
+<li><a href=#daily-knowledge-drop>Daily Knowledge Drop</a></li><li><a href=#tuple>Tuple</a>
 <ol>
-<li><a href=#tuple-usage>Tuple usage</a></li>
-<li><a href=#tuple-creation>Tuple creation</a></li>
-</ol>
-</li>
-<li><a href=#valuetuple>ValueTuple</a>
+<li><a href=#tuple-usage>Tuple usage</a></li><li><a href=#tuple-creation>Tuple creation</a></li></ol></li><li><a href=#valuetuple>ValueTuple</a>
 <ol>
-<li><a href=#valuetuple-usage>ValueTuple usage</a></li>
-<li><a href=#valuetuple-creation>ValueTuple creation</a></li>
-</ol>
-</li>
-<li><a href=#notes>Notes</a></li>
-<li><a href=#references>References</a></li>
-</ol>
-</nav>
-</div>
-</section>
-</aside>
-</div>
-<script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g=" crossorigin=anonymous defer></script><script type=text/javascript src=/ts/main.js defer></script>
-<script>(function(){const a=document.createElement('link');a.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",a.type="text/css",a.rel="stylesheet",document.head.appendChild(a)})()</script>
-</body>
-</html>
+<li><a href=#valuetuple-usage>ValueTuple usage</a></li><li><a href=#valuetuple-creation>ValueTuple creation</a></li></ol></li><li><a href=#notes>Notes</a></li><li><a href=#references>References</a></li></ol></nav></div></section></aside></div><script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g=" crossorigin=anonymous defer></script><script type=text/javascript src=/ts/main.js defer></script>
+<script>(function(){const e=document.createElement("link");e.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",e.type="text/css",e.rel="stylesheet",document.head.appendChild(e)})()</script>
+</body></html>
