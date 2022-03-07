@@ -1,4 +1,259 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Fri, 04 Mar 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Incremental source generators</title><link>https://always-developing.github.io/dailydrop/2022/03/04-incremental-generator/</link><pubDate>Fri, 04 Mar 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/03/04-incremental-generator/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Mon, 07 Mar 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Dependency Injection with Func and delegates</title><link>https://always-developing.github.io/dailydrop/2022/03/07-di-func-delegate/</link><pubDate>Mon, 07 Mar 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/03/07-di-func-delegate/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+&lt;p>When requiring to abstract and inject a simple single method interface using dependency injection (DI), its possible to instead use a &lt;code>Func&amp;lt;&amp;gt;&lt;/code> or a &lt;code>Delegate&lt;/code> instead.&lt;/p>
+&lt;hr>
+&lt;h2 id="examples">Examples&lt;/h2>
+&lt;p>Suppose we want to inject the date time using dependency injection, instead of using &lt;em>DateTime.Now&lt;/em> or &lt;em>DateTimeOffSet.Now&lt;/em>.&lt;/p>
+&lt;p>There are a few reasons to do this:&lt;/p>
+&lt;ul>
+&lt;li>&lt;em>DateTime.Now&lt;/em> returns the current system datetime. This does not account for users in different regions, daylight savings etc (this is a complex subject, see the NodaTime reference below for additional information)&lt;/li>
+&lt;li>The current datetime is an external dependency - best practice is for all external dependencies to be abstracted, so that they can be mocked and successfully unit tested&lt;/li>
+&lt;/ul>
+&lt;p>There are a number of ways to tackle this requirement. In the below examples, we&amp;rsquo;ll take a look at the various approaches using &lt;em>System clock&lt;/em> as well as a 3rd party library, &lt;em>NodaTime&lt;/em>&lt;/p>
+&lt;h3 id="interface">Interface&lt;/h3>
+&lt;p>The first approach is using an interface and implementation(s). This is the more &lt;em>traditional&lt;/em> approach:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-16">16&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-17">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-17">17&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-18">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-18">18&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-19">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-19">19&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-20">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-20">20&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-21">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-21">21&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-22">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-22">22&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-23">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-23">23&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-24">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-24">24&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// define the base interface&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">public&lt;/span> &lt;span class="k">interface&lt;/span> &lt;span class="nc">IClock&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">DateTimeOffset&lt;/span> &lt;span class="n">GetNow&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// implementation using system clock&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">SystemClock&lt;/span> &lt;span class="p">:&lt;/span> &lt;span class="n">IClock&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="n">DateTimeOffset&lt;/span> &lt;span class="n">GetNow&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="n">DateTimeOffset&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Now&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// implementation using 3rd party NodaTime library&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">NodaTimeClock&lt;/span> &lt;span class="p">:&lt;/span> &lt;span class="n">IClock&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="n">DateTimeOffset&lt;/span> &lt;span class="n">GetNow&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="n">NodaTime&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">SystemClock&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Instance&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">.&lt;/span>&lt;span class="n">InUtc&lt;/span>&lt;span class="p">().&lt;/span>&lt;span class="n">GetCurrentOffsetDateTime&lt;/span>&lt;span class="p">().&lt;/span>&lt;span class="n">ToDateTimeOffset&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>This can then be added to the DI container and injected into the relevant constructor:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="line">&lt;span class="cl">&lt;span class="kt">var&lt;/span> &lt;span class="n">builder&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">WebApplication&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">CreateBuilder&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">args&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">builder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Services&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">IClock&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">NodaTimeClock&lt;/span>&lt;span class="p">&amp;gt;();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// OR&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// builder.Services.AddTransient&amp;lt;IClock, SystemClock&amp;gt;();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kt">var&lt;/span> &lt;span class="n">app&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">builder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Build&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">app&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">MapGet&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;/currentdatetime&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">IClock&lt;/span> &lt;span class="n">clock&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="n">clock&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetNow&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">app&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Run&lt;/span>&lt;span class="p">();&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;ul>
+&lt;li>&lt;strong>Line 3-5&lt;/strong>: The relevant IClock implementation is added to the DI container.&lt;/li>
+&lt;li>&lt;strong>Line 9&lt;/strong>: The interface is injected into the constructor&lt;/li>
+&lt;li>&lt;strong>Line 1&lt;/strong>: The &lt;em>GetNow()&lt;/em> method is called. The implementation can be switched out between &lt;em>NodaTimeClock&lt;/em> and &lt;em>SystemClock&lt;/em> without changing the endpoint method.&lt;/li>
+&lt;/ul>
+&lt;p>This will certainly work, and perhaps is even the &amp;ldquo;best&amp;rdquo; approach - but it does seem like overkill to create an interface and implementation for something as simple as &lt;em>getting the datetime&lt;/em>.&lt;/p>
+&lt;hr>
+&lt;h3 id="func">Func&lt;/h3>
+&lt;p>The next approach is injecting a &lt;code>Func&amp;lt;&amp;gt;&lt;/code> into the DI container. A &lt;code>Func&amp;lt;&amp;gt;&lt;/code> is a pointer to a method, which accepts zero or many parameters and has a return value.&lt;/p>
+&lt;p>We don&amp;rsquo;t need to interface and implementation, it can all be done while adding to the DI container (although you can certainly create a method separately and use that when adding to the DI container)&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-16">16&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-17">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-17">17&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-18">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-18">18&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-19">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-19">19&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-20">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-20">20&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-21">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-21">21&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="line">&lt;span class="cl">&lt;span class="kt">var&lt;/span> &lt;span class="n">builder&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">WebApplication&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">CreateBuilder&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">args&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// Add a Func which returns a DateTimeOffset&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// and define it as a lambda expression&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">builder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Services&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">Func&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">DateTimeOffset&lt;/span>&lt;span class="p">&amp;gt;&amp;gt;(&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">dt&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="p">()&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">return&lt;/span> &lt;span class="n">DateTimeOffset&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Now&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// OR&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// builder.Services.AddTransient&amp;lt;Func&amp;lt;DateTimeOffset&amp;gt;&amp;gt;(dt =&amp;gt; &lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// () =&amp;gt; { return NodaTime.SystemClock.Instance&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// .InUtc().GetCurrentOffsetDateTime().ToDateTimeOffset(); });&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kt">var&lt;/span> &lt;span class="n">app&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">builder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Build&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// the Func can be injected&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">app&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">MapGet&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;/currentdatetime&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">Func&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">DateTimeOffset&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="n">now&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1">// call the Func like a method&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="n">now&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">app&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Run&lt;/span>&lt;span class="p">();&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;ul>
+&lt;li>&lt;strong>Line 5-6&lt;/strong>: The &lt;code>Func&lt;/code> (pointer to a method) is added to the DI container, with the method being declared as well as a lambda expression&lt;/li>
+&lt;li>&lt;strong>Line 8-10&lt;/strong>: The same &lt;code>Func&lt;/code> as above, just using NodaTime instead of the system clock&lt;/li>
+&lt;li>&lt;strong>Line 15&lt;/strong>: The &lt;code>Func&lt;/code> is injected into the constructor&lt;/li>
+&lt;li>&lt;strong>Line 18&lt;/strong>: The &lt;code>Func&lt;/code> is called like a method (as it is one)&lt;/li>
+&lt;/ul>
+&lt;p>Again , this approach will work - one drawback of this though, is the &lt;code>Func&lt;/code> doesn&amp;rsquo;t give any context as to what the method actually does. &lt;code>Func&amp;lt;DateTimeOffset&amp;gt;&lt;/code> doesn&amp;rsquo;t convey that when called, the &lt;em>current date time is being returned&lt;/em>.&lt;/p>
+&lt;hr>
+&lt;h2 id="delegate">Delegate&lt;/h2>
+&lt;p>The final approach is to use a &lt;code>delegate&lt;/code>. A &lt;code>delegate&lt;/code> is a type, which can be &amp;ldquo;instantiated&amp;rdquo; (just like other types), but points to a method not a value as such.&lt;/p>
+&lt;p>First the &lt;code>delegate&lt;/code> is defined:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="line">&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="k">delegate&lt;/span> &lt;span class="n">DateTimeOffset&lt;/span> &lt;span class="n">GetCurrentDateTime&lt;/span>&lt;span class="p">();&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>Next we inject into the DI container and tell it how to &amp;ldquo;instantiate&amp;rdquo; the type &lt;em>GetCurrentDateTime&lt;/em>:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-16">16&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-17">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-17">17&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="line">&lt;span class="cl">&lt;span class="kt">var&lt;/span> &lt;span class="n">builder&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">WebApplication&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">CreateBuilder&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">args&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">builder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Services&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">AddTransient&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">GetCurrentDateTime&lt;/span>&lt;span class="p">&amp;gt;(&lt;/span>&lt;span class="n">dt&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">()&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">return&lt;/span> &lt;span class="n">NodaTime&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">SystemClock&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Instance&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">.&lt;/span>&lt;span class="n">InUtc&lt;/span>&lt;span class="p">().&lt;/span>&lt;span class="n">GetCurrentOffsetDateTime&lt;/span>&lt;span class="p">().&lt;/span>&lt;span class="n">ToDateTimeOffset&lt;/span>&lt;span class="p">();&lt;/span> &lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// OR&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">//builder.Services.AddTransient&amp;lt;GetCurrentDateTime&amp;gt;(dt =&amp;gt; &lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// () =&amp;gt; { return DateTimeOffset.Now; });&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kt">var&lt;/span> &lt;span class="n">app&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">builder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Build&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">app&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">MapGet&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;/currentdatetime&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">GetCurrentDateTime&lt;/span> &lt;span class="n">now&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="n">now&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">app&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Run&lt;/span>&lt;span class="p">();&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;ul>
+&lt;li>&lt;strong>Line 3-5&lt;/strong>: GetCurrentDateTime is defined using the lambda expression, and injected into the DI container&lt;/li>
+&lt;li>&lt;strong>Line 7-8&lt;/strong>: The same as above, but using system clock&lt;/li>
+&lt;li>&lt;strong>Line 12&lt;/strong>: The &lt;code>delegate&lt;/code> type is injected into the constructor&lt;/li>
+&lt;li>&lt;strong>Line 14&lt;/strong>: The &lt;code>delegate&lt;/code> is called like a method (as it is one)&lt;/li>
+&lt;/ul>
+&lt;p>This approach has the benefit of the &lt;code>delegate&lt;/code> being a type with a name which conveys what the method is doing -&lt;code>GetCurrentDateTime&lt;/code> is informative.&lt;/p>
+&lt;hr>
+&lt;h2 id="notes">Notes&lt;/h2>
+&lt;p>Three different approaches to solving the same problem - there is no &amp;ldquo;right or wrong&amp;rdquo; (perhaps some are consider better best practice when compared with others). Each has their own pros and cons, which need to be evaluated and an informed decision made for each use case.&lt;/p>
+&lt;hr>
+&lt;h2 id="references">References&lt;/h2>
+&lt;p>&lt;a class="link" href="https://twitter.com/dustinmoris/status/1488609307621044230" target="_blank" rel="noopener"
+>Dustin Moris Gorski tweet&lt;/a>&lt;br>
+&lt;a class="link" href="https://nodatime.org/3.0.x/userguide/rationale" target="_blank" rel="noopener"
+>Why does NodaTime exist?&lt;/a>&lt;/p>
+&lt;blockquote>
+&lt;div>
+&lt;div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px;">
+&lt;i class="inline-svg" >&lt;svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffbf00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+&lt;path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+&lt;path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+&lt;path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+&lt;line x1="9.7" y1="17" x2="14.3" y2="17" />
+&lt;/svg>&lt;/i>
+&lt;/div>
+&lt;div>
+&lt;h3>Daily Drop 25: 07-03-2022&lt;/h3>
+&lt;/div>
+&lt;br>
+&lt;div>
+At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.&lt;br>It could be anything - some .NET/C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.&lt;br>&lt;br>
+The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+&lt;/div>
+&lt;/div>
+&lt;/blockquote></description></item><item><title>Incremental source generators</title><link>https://always-developing.github.io/dailydrop/2022/03/04-incremental-generator/</link><pubDate>Fri, 04 Mar 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/03/04-incremental-generator/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
 &lt;p>&lt;code>Incremental source generators&lt;/code> can be used to generated fixed code, which can be used in user code, which can then be used by the source generator to generate additional code.&lt;/p>
 &lt;p>This is done through the usage of &lt;code>RegisterPostInitializationOutput&lt;/code> available to &lt;code>incremental generators&lt;/code>.&lt;/p>
 &lt;p>This will make more sense as we look at an example. This example below is an extension of the example in last week&amp;rsquo;s &lt;a class="link" href="../../02/22-emit-source-generator-files/" >&amp;ldquo;emitting source generated files&amp;rdquo;&lt;/a> post.&lt;/p>
