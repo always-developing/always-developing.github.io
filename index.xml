@@ -1,4 +1,246 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Tue, 08 Mar 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Customize debugger class display</title><link>https://always-developing.github.io/dailydrop/2022/03/08-debug-ouput/</link><pubDate>Tue, 08 Mar 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/03/08-debug-ouput/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Wed, 09 Mar 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Lazy loading objects with Lazy&lt;></title><link>https://always-developing.github.io/dailydrop/2022/03/09-lazy-class/</link><pubDate>Wed, 09 Mar 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/03/09-lazy-class/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+&lt;p>The &lt;code>loading of (large) objects can be deferred&lt;/code> until they are actually &lt;code>used and required&lt;/code> using the &lt;code>Lazy&amp;lt;&amp;gt;&lt;/code> class&lt;/p>
+&lt;hr>
+&lt;h2 id="sample">Sample&lt;/h2>
+&lt;h3 id="use-case">Use case&lt;/h3>
+&lt;p>In our use case, we have a &lt;code>FileEntity&lt;/code> which contains details about a file in a specific location. There are two child entities which are properties to &lt;code>FileEntity&lt;/code>:&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>FileSize&lt;/code>: stores the file size in bytes (and just stores a double value, so is small)&lt;/li>
+&lt;li>&lt;code>FileContents&lt;/code>: stores the contents of the file as a string (depending on the size of the file, this can obviously be very large)&lt;/li>
+&lt;/ul>
+&lt;p>The &lt;code>contents of the file will not always be used&lt;/code> and are potentially &lt;code>very large&lt;/code> - so let&amp;rsquo;s look at how we can &lt;em>defer loading the data until it is actually used and required&lt;/em>.&lt;/p>
+&lt;hr>
+&lt;h3 id="the-setup">The setup&lt;/h3>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-16">16&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-17">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-17">17&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-18">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-18">18&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-19">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-19">19&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-20">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-20">20&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-21">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-21">21&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-22">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-22">22&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-23">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-23">23&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-24">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-24">24&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-25">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-25">25&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-26">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-26">26&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-27">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-27">27&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-28">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-28">28&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-29">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-29">29&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-30">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-30">30&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-31">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-31">31&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-32">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-32">32&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-33">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-33">33&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-34">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-34">34&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-35">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-35">35&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-36">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-36">36&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-37">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-37">37&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-38">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-38">38&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-39">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-39">39&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-40">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-40">40&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-41">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-41">41&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-42">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-42">42&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-43">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-43">43&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-44">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-44">44&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-45">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-45">45&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-46">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-46">46&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-47">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-47">47&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-48">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-48">48&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-49">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-49">49&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-50">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-50">50&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-51">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-51">51&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-52">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-52">52&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-53">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-53">53&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-54">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-54">54&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-55">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-55">55&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-56">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-56">56&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-57">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-57">57&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-58">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-58">58&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-59">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-59">59&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-60">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-60">60&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-61">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-61">61&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// the main file entity class&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">FileEntity&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1">// a normal FileContentsEntity private variable,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1">// just wrapped in Lazy&amp;lt;&amp;gt; &lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">private&lt;/span> &lt;span class="k">readonly&lt;/span> &lt;span class="n">Lazy&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">FileContentsEntity&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="m">_f&lt;/span>&lt;span class="n">ileContents&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="n">Guid&lt;/span> &lt;span class="n">Id&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">get&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">FileLocation&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">get&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="n">FileSizeEntity&lt;/span> &lt;span class="n">FileSize&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">get&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1">// when accessed, return Lazy&amp;lt;FileContentsEntity&amp;gt;.Value&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="n">FileContentsEntity&lt;/span> &lt;span class="n">FileContents&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="m">_f&lt;/span>&lt;span class="n">ileContents&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Value&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="n">FileEntity&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">Guid&lt;/span> &lt;span class="n">id&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">fileLocation&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="kt">double&lt;/span> &lt;span class="n">fileSizeInBytes&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;FileEntity constructed&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">Id&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">id&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">FileLocation&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">fileLocation&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">FileSize&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">FileSizeEntity&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">fileSizeInBytes&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1">// instead of instantiating the fileContents,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1">// instantiate Lazy&amp;lt;&amp;gt; with an startup method&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="m">_f&lt;/span>&lt;span class="n">ileContents&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">Lazy&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">FileContentsEntity&lt;/span>&lt;span class="p">&amp;gt;(&lt;/span>&lt;span class="n">LoadFileContents&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1">// method to load the large data volume&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">private&lt;/span> &lt;span class="n">FileContentsEntity&lt;/span> &lt;span class="n">LoadFileContents&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">FileContentsEntity&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">FileLocation&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// simple entity to store the file size&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">FileSizeEntity&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="kt">double&lt;/span> &lt;span class="n">FileSizeInBytes&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">get&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="k">set&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="n">FileSizeEntity&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="kt">double&lt;/span> &lt;span class="n">fileSizeInBytes&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;FileSizeEntity constructed&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">FileSizeInBytes&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">fileSizeInBytes&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// simple entity to store the file contents&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">FileContentsEntity&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="n">LargeStringValue&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">get&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="k">set&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="n">FileContentsEntity&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="kt">string&lt;/span> &lt;span class="n">fileLocation&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$&amp;#34;FileContentsEntity loaded from &amp;#39;{fileLocation}&amp;#39;&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">LargeStringValue&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="s">&amp;#34;LargeStringValue&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>To use &lt;code>Lazy&amp;lt;&amp;gt;&lt;/code>, the setup is almost &lt;em>exactly the same&lt;/em> as without using &lt;code>Lazy&amp;lt;&amp;gt;&lt;/code>.&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>Line 6&lt;/strong>: The object we want to load lazily, &lt;em>FileContentsEntity&lt;/em> is wrapped in &lt;em>Lazy&amp;lt;&amp;gt;&lt;/em>&lt;/li>
+&lt;li>&lt;strong>Line 17&lt;/strong>: Instead of instantiating &lt;em>FileContentsEntity&lt;/em> directly, its instantiated to &lt;em>Lazy&amp;lt;&amp;gt;&lt;/em> with a load method&lt;/li>
+&lt;li>&lt;strong>Line 31-34&lt;/strong>: Method which loads the (potentially large) file contents&lt;/li>
+&lt;/ul>
+&lt;h3 id="output">Output&lt;/h3>
+&lt;p>So what does the &lt;code>Lazy&amp;lt;&amp;gt;&lt;/code> actually enable, and how does it effect execution?&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="line">&lt;span class="cl">&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;== pre initialization ==&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kt">var&lt;/span> &lt;span class="n">file1&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">FileEntity&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">Guid&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">NewGuid&lt;/span>&lt;span class="p">(),&lt;/span> &lt;span class="s">@&amp;#34;C:\small-file.txt&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="m">100&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kt">var&lt;/span> &lt;span class="n">file2&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">FileEntity&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">Guid&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">NewGuid&lt;/span>&lt;span class="p">(),&lt;/span> &lt;span class="s">@&amp;#34;C:\large-file.txt&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="m">1073741824&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;== post initialization ==&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;Accessing file1 contents&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kt">var&lt;/span> &lt;span class="n">file1Location&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">file1&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">FileContents&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;Accessing file2 location&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kt">var&lt;/span> &lt;span class="n">fileContents&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">file2&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">FileLocation&lt;/span>&lt;span class="p">;&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;ul>
+&lt;li>&lt;strong>Line 3-4&lt;/strong>: Two &lt;em>FileEntity&lt;/em> instances are created, one with a small file and one with a large file&lt;/li>
+&lt;li>&lt;strong>Line 10&lt;/strong>: With &lt;em>file1&lt;/em> the large &lt;em>FileContents&lt;/em> is accessed&lt;/li>
+&lt;li>&lt;strong>Line 10&lt;/strong>: With &lt;em>file2&lt;/em> only the &lt;em>FileLocation&lt;/em> is accessed&lt;/li>
+&lt;/ul>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-posh" data-lang="posh">&lt;span class="line">&lt;span class="cl">&lt;span class="p">==&lt;/span> &lt;span class="n">pre&lt;/span> &lt;span class="n">initialization&lt;/span> &lt;span class="p">==&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">FileEntity&lt;/span> &lt;span class="n">constructed&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">FileSizeEntity&lt;/span> &lt;span class="n">constructed&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">FileEntity&lt;/span> &lt;span class="n">constructed&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">FileSizeEntity&lt;/span> &lt;span class="n">constructed&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">==&lt;/span> &lt;span class="n">post&lt;/span> &lt;span class="n">initialization&lt;/span> &lt;span class="p">==&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Accessing&lt;/span> &lt;span class="n">file1&lt;/span> &lt;span class="n">contents&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">FileContentsEntity&lt;/span> &lt;span class="n">loaded&lt;/span> &lt;span class="n">from&lt;/span> &lt;span class="s1">&amp;#39;C:\small-file.txt&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Accessing&lt;/span> &lt;span class="n">file2&lt;/span> &lt;span class="n">location&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>The key take-away from the output, is that the &lt;code>large contents of file2 are never loaded&lt;/code>, as they are never used.&lt;/p>
+&lt;hr>
+&lt;h2 id="thread-safety">Thread safety&lt;/h2>
+&lt;p>There are additional considerations regarding thread safety and Lazy&amp;lt;&amp;gt;. These are not addressed in this post, but can be read in details in the reference below.&lt;/p>
+&lt;hr>
+&lt;h2 id="notes">Notes&lt;/h2>
+&lt;p>&lt;code>Lazy&amp;lt;&amp;gt;&lt;/code> provides a simple and easy to use way to load objects &lt;em>only when they are uses&lt;/em> - this is especially useful when the large object is not loaded on every code path. This can lead to better performance and memory usage.&lt;/p>
+&lt;hr>
+&lt;h2 id="references">References&lt;/h2>
+&lt;p>&lt;a class="link" href="https://docs.microsoft.com/en-us/dotnet/api/system.lazy-1?view=net-6.0" target="_blank" rel="noopener"
+>Lazy&lt;!-- raw HTML omitted --> Class&lt;/a>&lt;/p>
+&lt;blockquote>
+&lt;div>
+&lt;div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px;">
+&lt;i class="inline-svg" >&lt;svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffbf00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+&lt;path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+&lt;path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+&lt;path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+&lt;line x1="9.7" y1="17" x2="14.3" y2="17" />
+&lt;/svg>&lt;/i>
+&lt;/div>
+&lt;div>
+&lt;h3>Daily Drop 27: 09-03-2022&lt;/h3>
+&lt;/div>
+&lt;br>
+&lt;div>
+At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.&lt;br>It could be anything - some .NET/C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.&lt;br>&lt;br>
+The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+&lt;/div>
+&lt;/div>
+&lt;/blockquote></description></item><item><title>Customize debugger class display</title><link>https://always-developing.github.io/dailydrop/2022/03/08-debug-ouput/</link><pubDate>Tue, 08 Mar 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/03/08-debug-ouput/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
 &lt;p>The &lt;code>format of how classes are displayed in the debugger can be customized&lt;/code>, using a couple of methods.&lt;/p>
 &lt;hr>
 &lt;h2 id="sample">Sample&lt;/h2>
