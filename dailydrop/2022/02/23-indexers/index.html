@@ -1,48 +1,6 @@
-<!doctype html><html lang=en-uk>
-<head><meta charset=utf-8>
-<meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="How to extend a class so that it can be accessed as an array"><title>Indexers - access a class as an array</title><link rel=canonical href=https://always-developing.github.io/dailydrop/2022/02/23-indexers/>
-<link rel=stylesheet href=/scss/style.min.css><meta property="og:title" content="Indexers - access a class as an array">
-<meta property="og:description" content="How to extend a class so that it can be accessed as an array">
-<meta property="og:url" content="https://always-developing.github.io/dailydrop/2022/02/23-indexers/">
-<meta property="og:site_name" content="Always Developing">
-<meta property="og:type" content="article"><meta property="article:section" content="Dailydrop"><meta property="article:tag" content="c#"><meta property="article:tag" content=".net"><meta property="article:tag" content="dailydrop"><meta property="article:tag" content="indexer"><meta property="article:tag" content="array"><meta property="article:tag" content="extend"><meta property="article:published_time" content="2022-02-23T01:00:00+02:00"><meta property="article:modified_time" content="2022-02-23T01:00:00+02:00">
-<meta name=twitter:title content="Indexers - access a class as an array">
-<meta name=twitter:description content="How to extend a class so that it can be accessed as an array">
-<link rel="shortcut icon" href=favicon.ico>
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-CXPLFS7K38"></script>
-<script>var doNotTrack=!1;if(!doNotTrack){window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","G-CXPLFS7K38",{anonymize_ip:!1})}</script>
-</head><body class="article-page has-toc">
-<script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"dark")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script>
-<div class="container main-container flex
-extended">
-<div id=article-toolbar>
-<a href=https://always-developing.github.io/ class=back-home><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="15 6 9 12 15 18"/></svg>
-<span>Back</span>
-</a>
-</div><main class="main full-width">
-<article class=main-article>
-<header class=article-header>
-<div class=article-details>
-<header class=article-category>
-<a href=/categories/dailydrop/>
-DailyDrop
-</a>
-</header><h2 class=article-title>
-<a href=/dailydrop/2022/02/23-indexers/>Indexers - access a class as an array</a>
-</h2><h3 class=article-subtitle>
-How to extend a class so that it can be accessed as an array
-</h3><footer class=article-time>
-<div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
-<time class=article-time--published>Feb 23, 2022</time>
-</div><div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
-<time class=article-time--reading>
-5 minute read
-</time>
-</div></footer></div></header><section class=article-content>
-<h2 id=daily-knowledge-drop>Daily Knowledge Drop</h2><p>Any (relevant) class can be extended so that it can be accessed as an array, using <code>Indexers</code>, just by adding a property to the class.</p><hr>
-<h2 id=without-indexers>Without indexers</h2><p>In the examples below, we are using a <code>ProductPrice</code> entity. This class keeps some basic details of a product, as well as an array of prices, one price for each month of the year. So <em>Prices[0]</em> is the price for January, <em>Prices[1]</em> is the price for February and so on.</p><div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+<!doctype html><html lang=en-uk><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="How to extend a class so that it can be accessed as an array"><title>Indexers - access a class as an array</title><link rel=canonical href=https://always-developing.github.io/dailydrop/2022/02/23-indexers/><link rel=stylesheet href=/scss/style.min.css><meta property="og:title" content="Indexers - access a class as an array"><meta property="og:description" content="How to extend a class so that it can be accessed as an array"><meta property="og:url" content="https://always-developing.github.io/dailydrop/2022/02/23-indexers/"><meta property="og:site_name" content="Always Developing"><meta property="og:type" content="article"><meta property="article:section" content="Dailydrop"><meta property="article:tag" content="c#"><meta property="article:tag" content=".net"><meta property="article:tag" content="dailydrop"><meta property="article:tag" content="indexer"><meta property="article:tag" content="array"><meta property="article:tag" content="extend"><meta property="article:published_time" content="2022-02-23T01:00:00+02:00"><meta property="article:modified_time" content="2022-02-23T01:00:00+02:00"><meta name=twitter:title content="Indexers - access a class as an array"><meta name=twitter:description content="How to extend a class so that it can be accessed as an array"><link rel="shortcut icon" href=favicon.ico><script async src="https://www.googletagmanager.com/gtag/js?id=G-CXPLFS7K38"></script>
+<script>var doNotTrack=!1;if(!doNotTrack){window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","G-CXPLFS7K38",{anonymize_ip:!1})}</script></head><body class="article-page has-toc"><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"dark")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex
+extended"><div id=article-toolbar><a href=https://always-developing.github.io/ class=back-home><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="15 6 9 12 15 18"/></svg><span>Back</span></a></div><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><header class=article-category><a href=/categories/dailydrop/>DailyDrop</a></header><h2 class=article-title><a href=/dailydrop/2022/02/23-indexers/>Indexers - access a class as an array</a></h2><h3 class=article-subtitle>How to extend a class so that it can be accessed as an array</h3><footer class=article-time><div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg><time class=article-time--published>Feb 23, 2022</time></div><div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg><time class=article-time--reading>5 minute read</time></div></footer></div></header><section class=article-content><h2 id=daily-knowledge-drop>Daily Knowledge Drop</h2><p>Any (relevant) class can be extended so that it can be accessed as an array, using <code>Indexers</code>, just by adding a property to the class.</p><hr><h2 id=without-indexers>Without indexers</h2><p>In the examples below, we are using a <code>ProductPrice</code> entity. This class keeps some basic details of a product, as well as an array of prices, one price for each month of the year. So <em>Prices[0]</em> is the price for January, <em>Prices[1]</em> is the price for February and so on.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
 </span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
 </span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
 </span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
@@ -57,8 +15,7 @@ How to extend a class so that it can be accessed as an array
 </span><span class=lnt id=ienumusage-13><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-13>13</a>
 </span><span class=lnt id=ienumusage-14><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-14>14</a>
 </span><span class=lnt id=ienumusage-15><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-15>15</a>
-</span></code></pre></td><td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=k>public</span> <span class=k>class</span> <span class=nc>ProductPrice</span>
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=k>public</span> <span class=k>class</span> <span class=nc>ProductPrice</span>
 </span></span><span class=line><span class=cl><span class=p>{</span>
 </span></span><span class=line><span class=cl>    <span class=k>public</span> <span class=kt>int</span> <span class=n>ProductId</span> <span class=p>{</span> <span class=k>get</span><span class=p>;</span> <span class=k>set</span><span class=p>;</span> <span class=p>}</span>
 </span></span><span class=line><span class=cl>
@@ -72,9 +29,7 @@ How to extend a class so that it can be accessed as an array
 </span></span><span class=line><span class=cl>        <span class=n>ProductName</span> <span class=p>=</span> <span class=n>productName</span><span class=p>;</span>
 </span></span><span class=line><span class=cl>        <span class=n>Prices</span> <span class=p>=</span> <span class=n>prices</span><span class=p>;</span>
 </span></span><span class=line><span class=cl>    <span class=p>}</span>
-</span></span><span class=line><span class=cl><span class=p>}</span></span></span></code></pre></td></tr></table></div></div><p>To access a price for a specific month, we can do this via the <em>Prices</em> property exposed on the class</p><div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
+</span></span><span class=line><span class=cl><span class=p>}</span></span></span></code></pre></td></tr></table></div></div><p>To access a price for a specific month, we can do this via the <em>Prices</em> property exposed on the class</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
 </span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2>2</a>
 </span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3>3</a>
 </span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4>4</a>
@@ -82,18 +37,14 @@ How to extend a class so that it can be accessed as an array
 </span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6>6</a>
 </span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7>7</a>
 </span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8>8</a>
-</span></code></pre></td><td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=kt>var</span> <span class=n>pp</span> <span class=p>=</span> <span class=k>new</span> <span class=n>ProductPrice</span><span class=p>(</span><span class=m>112</span><span class=p>,</span> <span class=s>&#34;Green t-shirt&#34;</span><span class=p>,</span> 
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=kt>var</span> <span class=n>pp</span> <span class=p>=</span> <span class=k>new</span> <span class=n>ProductPrice</span><span class=p>(</span><span class=m>112</span><span class=p>,</span> <span class=s>&#34;Green t-shirt&#34;</span><span class=p>,</span> 
 </span></span><span class=line><span class=cl>    <span class=k>new</span> <span class=kt>decimal</span><span class=p>[]</span> <span class=p>{</span> <span class=m>0</span><span class=p>,</span> <span class=m>0</span><span class=p>,</span> <span class=m>0</span><span class=p>,</span> <span class=m>100</span><span class=p>,</span> <span class=m>100</span><span class=p>,</span> <span class=m>80</span><span class=p>,</span> <span class=m>80</span><span class=p>,</span> <span class=m>50</span><span class=p>,</span> <span class=m>50</span><span class=p>,</span> <span class=m>100</span><span class=p>,</span> <span class=m>100</span><span class=p>,</span> <span class=m>60</span> <span class=p>});</span>
 </span></span><span class=line><span class=cl><span class=kt>int</span> <span class=n>month</span> <span class=p>=</span> <span class=m>5</span><span class=p>;</span>
 </span></span><span class=line><span class=cl>
 </span></span><span class=line><span class=cl><span class=k>if</span> <span class=p>(</span><span class=n>pp</span><span class=p>.</span><span class=n>Prices</span><span class=p>.</span><span class=n>Length</span> <span class=p>&gt;=</span> <span class=n>month</span><span class=p>)</span>
 </span></span><span class=line><span class=cl><span class=p>{</span>
 </span></span><span class=line><span class=cl>    <span class=n>Console</span><span class=p>.</span><span class=n>Write</span><span class=p>(</span><span class=n>pp</span><span class=p>.</span><span class=n>Prices</span><span class=p>[</span><span class=n>month</span><span class=p>]);</span>
-</span></span><span class=line><span class=cl><span class=p>}</span></span></span></code></pre></td></tr></table></div></div><p>This code will function just fine - however the <code>ProductPrice</code> class can be extended to make it more intuitive and easier to work with.</p><hr>
-<h2 id=with-indexers>With indexers</h2><p>The main purpose of the <code>ProductPrice</code> class is to store price information related to a product. So let&rsquo;s update the class so that we can access a price directly, without going via the <em>Price</em> property.</p><p><code>ProductPrice</code> class update:</p><div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span></span><span class=line><span class=cl><span class=p>}</span></span></span></code></pre></td></tr></table></div></div><p>This code will function just fine - however the <code>ProductPrice</code> class can be extended to make it more intuitive and easier to work with.</p><hr><h2 id=with-indexers>With indexers</h2><p>The main purpose of the <code>ProductPrice</code> class is to store price information related to a product. So let&rsquo;s update the class so that we can access a price directly, without going via the <em>Price</em> property.</p><p><code>ProductPrice</code> class update:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
 </span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
 </span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
 </span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
@@ -123,8 +74,7 @@ How to extend a class so that it can be accessed as an array
 </span><span class=lnt id=ienumusage-28><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-28>28</a>
 </span><span class=lnt id=ienumusage-29><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-29>29</a>
 </span><span class=lnt id=ienumusage-30><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-30>30</a>
-</span></code></pre></td><td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=k>public</span> <span class=k>class</span> <span class=nc>ProductPrice</span>
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=k>public</span> <span class=k>class</span> <span class=nc>ProductPrice</span>
 </span></span><span class=line><span class=cl><span class=p>{</span>
 </span></span><span class=line><span class=cl>    <span class=k>public</span> <span class=kt>int</span> <span class=n>ProductId</span> <span class=p>{</span> <span class=k>get</span><span class=p>;</span> <span class=k>set</span><span class=p>;</span> <span class=p>}</span>
 </span></span><span class=line><span class=cl>
@@ -153,34 +103,23 @@ How to extend a class so that it can be accessed as an array
 </span></span><span class=line><span class=cl>
 </span></span><span class=line><span class=cl>    <span class=c1>// ability to confirm the length of the class</span>
 </span></span><span class=line><span class=cl>    <span class=k>public</span> <span class=kt>int</span> <span class=n>Length</span> <span class=p>=&gt;</span> <span class=n>Prices</span><span class=p>.</span><span class=n>Length</span><span class=p>;</span>
-</span></span><span class=line><span class=cl><span class=p>}</span></span></span></code></pre></td></tr></table></div></div><ul>
-<li><strong>Line 8</strong>: The <em>Prices</em> property is now private</li><li><strong>Line 18-26</strong>: The indexer has been added. It uses the <em>this[int index]</em> format</li><li><strong>Line 23-24</strong>: Custom logic to check if trying to access an out of bound index, then return 0 (instead of throwing an exception)</li><li><strong>Line 29</strong>: Expose a <em>Length</em> property which will return the number of prices</li></ul><p>The <code>ProductPrice</code> class can now be used as follows:</p><div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
+</span></span><span class=line><span class=cl><span class=p>}</span></span></span></code></pre></td></tr></table></div></div><ul><li><strong>Line 8</strong>: The <em>Prices</em> property is now private</li><li><strong>Line 18-26</strong>: The indexer has been added. It uses the <em>this[int index]</em> format</li><li><strong>Line 23-24</strong>: Custom logic to check if trying to access an out of bound index, then return 0 (instead of throwing an exception)</li><li><strong>Line 29</strong>: Expose a <em>Length</em> property which will return the number of prices</li></ul><p>The <code>ProductPrice</code> class can now be used as follows:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
 </span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2>2</a>
 </span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3>3</a>
 </span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4>4</a>
 </span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5>5</a>
 </span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6>6</a>
 </span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7>7</a>
-</span></code></pre></td><td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=kt>var</span> <span class=n>pp</span> <span class=p>=</span> <span class=k>new</span> <span class=n>ProductPrice</span><span class=p>(</span><span class=m>112</span><span class=p>,</span> <span class=s>&#34;Green t-shirt&#34;</span><span class=p>,</span> 
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=kt>var</span> <span class=n>pp</span> <span class=p>=</span> <span class=k>new</span> <span class=n>ProductPrice</span><span class=p>(</span><span class=m>112</span><span class=p>,</span> <span class=s>&#34;Green t-shirt&#34;</span><span class=p>,</span> 
 </span></span><span class=line><span class=cl>    <span class=k>new</span> <span class=kt>decimal</span><span class=p>[]</span> <span class=p>{</span> <span class=m>0</span><span class=p>,</span> <span class=m>0</span><span class=p>,</span> <span class=m>0</span><span class=p>,</span> <span class=m>100</span><span class=p>,</span> <span class=m>100</span><span class=p>,</span> <span class=m>80</span><span class=p>,</span> <span class=m>80</span><span class=p>,</span> <span class=m>50</span><span class=p>,</span> <span class=m>50</span><span class=p>,</span> <span class=m>100</span><span class=p>,</span> <span class=m>100</span><span class=p>,</span> <span class=m>60</span> <span class=p>});</span>
 </span></span><span class=line><span class=cl><span class=kt>int</span> <span class=n>month</span> <span class=p>=</span> <span class=m>5</span><span class=p>;</span>
 </span></span><span class=line><span class=cl><span class=kt>int</span> <span class=n>invalidMonth</span> <span class=p>=</span> <span class=m>100</span><span class=p>;</span>
 </span></span><span class=line><span class=cl>
 </span></span><span class=line><span class=cl><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>pp</span><span class=p>[</span><span class=n>month</span><span class=p>]);</span>
-</span></span><span class=line><span class=cl><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>pp</span><span class=p>[</span><span class=n>invalidMonth</span><span class=p>]);</span></span></span></code></pre></td></tr></table></div></div><ul>
-<li><strong>Line 6</strong>: The price can now be accessed directly on the class using [], no need to go via <em>Prices</em> as before</li><li><strong>Line 7</strong>: An invalid month can be sent without bounds checking, as the class will perform the check internally</li></ul><p>The output for the above is</p><div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
+</span></span><span class=line><span class=cl><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>pp</span><span class=p>[</span><span class=n>invalidMonth</span><span class=p>]);</span></span></span></code></pre></td></tr></table></div></div><ul><li><strong>Line 6</strong>: The price can now be accessed directly on the class using [], no need to go via <em>Prices</em> as before</li><li><strong>Line 7</strong>: An invalid month can be sent without bounds checking, as the class will perform the check internally</li></ul><p>The output for the above is</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
 </span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2>2</a>
-</span></code></pre></td><td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-posh data-lang=posh><span class=line><span class=cl><span class=n>80</span>
-</span></span><span class=line><span class=cl><span class=n>0</span></span></span></code></pre></td></tr></table></div></div><hr>
-<h2 id=field-indexer>Field indexer</h2><p>Another use for <code>indexers</code> is to index the fields/properties on a class.</p><p>In the below example, we have an <code>Address</code> class which has a number of string fields:</p><div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-posh data-lang=posh><span class=line><span class=cl><span class=n>80</span>
+</span></span><span class=line><span class=cl><span class=n>0</span></span></span></code></pre></td></tr></table></div></div><hr><h2 id=field-indexer>Field indexer</h2><p>Another use for <code>indexers</code> is to index the fields/properties on a class.</p><p>In the below example, we have an <code>Address</code> class which has a number of string fields:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
 </span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
 </span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
 </span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
@@ -215,8 +154,7 @@ How to extend a class so that it can be accessed as an array
 </span><span class=lnt id=ienumusage-33><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-33>33</a>
 </span><span class=lnt id=ienumusage-34><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-34>34</a>
 </span><span class=lnt id=ienumusage-35><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-35>35</a>
-</span></code></pre></td><td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=k>public</span> <span class=k>class</span> <span class=nc>Address</span>
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=k>public</span> <span class=k>class</span> <span class=nc>Address</span>
 </span></span><span class=line><span class=cl><span class=p>{</span>
 </span></span><span class=line><span class=cl>    <span class=k>public</span> <span class=kt>string</span> <span class=n>Number</span> <span class=p>{</span> <span class=k>get</span><span class=p>;</span> <span class=k>set</span><span class=p>;</span> <span class=p>}</span>
 </span></span><span class=line><span class=cl>
@@ -250,115 +188,41 @@ How to extend a class so that it can be accessed as an array
 </span></span><span class=line><span class=cl>    <span class=p>}</span>
 </span></span><span class=line><span class=cl>
 </span></span><span class=line><span class=cl>    <span class=k>public</span> <span class=kt>int</span> <span class=n>Length</span> <span class=p>=&gt;</span> <span class=m>6</span><span class=p>;</span>
-</span></span><span class=line><span class=cl><span class=p>}</span></span></span></code></pre></td></tr></table></div></div><p>The indexer functionality has been added, but the class <code>contains no arrays to index</code>.</p><ul>
-<li><strong>Line 31</strong>: An array is built up of all the properties on the class, and then accessed via the index</li></ul><p>This allows for accessing a property via an index. This can be leveraged to iteration through the properties on the class:</p><div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
+</span></span><span class=line><span class=cl><span class=p>}</span></span></span></code></pre></td></tr></table></div></div><p>The indexer functionality has been added, but the class <code>contains no arrays to index</code>.</p><ul><li><strong>Line 31</strong>: An array is built up of all the properties on the class, and then accessed via the index</li></ul><p>This allows for accessing a property via an index. This can be leveraged to iteration through the properties on the class:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
 </span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2>2</a>
 </span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3>3</a>
 </span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4>4</a>
 </span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5>5</a>
 </span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6>6</a>
 </span><span class=lnt id=ienumusage-7><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-7>7</a>
-</span></code></pre></td><td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=kt>var</span> <span class=n>address</span> <span class=p>=</span> <span class=k>new</span> <span class=n>Address</span><span class=p>(</span><span class=s>&#34;11&#34;</span><span class=p>,</span> <span class=s>&#34;Main Road&#34;</span><span class=p>,</span> <span class=s>&#34;XYZ Estate&#34;</span><span class=p>,</span> 
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=kt>var</span> <span class=n>address</span> <span class=p>=</span> <span class=k>new</span> <span class=n>Address</span><span class=p>(</span><span class=s>&#34;11&#34;</span><span class=p>,</span> <span class=s>&#34;Main Road&#34;</span><span class=p>,</span> <span class=s>&#34;XYZ Estate&#34;</span><span class=p>,</span> 
 </span></span><span class=line><span class=cl>    <span class=s>&#34;Suburb1&#34;</span><span class=p>,</span> <span class=s>&#34;Town2&#34;</span><span class=p>,</span> <span class=s>&#34;Province3&#34;</span><span class=p>);</span>
 </span></span><span class=line><span class=cl>
 </span></span><span class=line><span class=cl><span class=k>for</span> <span class=p>(</span><span class=kt>int</span> <span class=n>i</span> <span class=p>=</span> <span class=m>0</span><span class=p>;</span> <span class=n>i</span> <span class=p>&lt;</span> <span class=n>address</span><span class=p>.</span><span class=n>Length</span><span class=p>;</span> <span class=n>i</span><span class=p>++)</span>
 </span></span><span class=line><span class=cl><span class=p>{</span>
 </span></span><span class=line><span class=cl>    <span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>address</span><span class=p>[</span><span class=n>i</span><span class=p>]);</span>
-</span></span><span class=line><span class=cl><span class=p>}</span></span></span></code></pre></td></tr></table></div></div><p>The output:</p><div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
+</span></span><span class=line><span class=cl><span class=p>}</span></span></span></code></pre></td></tr></table></div></div><p>The output:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1>1</a>
 </span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2>2</a>
 </span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3>3</a>
 </span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4>4</a>
 </span><span class=lnt id=ienumusage-5><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-5>5</a>
 </span><span class=lnt id=ienumusage-6><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-6>6</a>
-</span></code></pre></td><td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-posh data-lang=posh><span class=line><span class=cl><span class=n>11</span>
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-posh data-lang=posh><span class=line><span class=cl><span class=n>11</span>
 </span></span><span class=line><span class=cl><span class=n>Main</span> <span class=n>Road</span>
 </span></span><span class=line><span class=cl><span class=n>XYZ</span> <span class=n>Estate</span>
 </span></span><span class=line><span class=cl><span class=n>Suburb1</span>
 </span></span><span class=line><span class=cl><span class=n>Town2</span>
-</span></span><span class=line><span class=cl><span class=n>Province3</span></span></span></code></pre></td></tr></table></div></div><hr>
-<h2 id=notes>Notes</h2><p>While extending a class to use <code>indexers</code> will generally not be required for everyday use, its advantageous to know that <code>indexers</code> exist and are available for the use cases where they will make working with the class a lot easier and intuitive.</p><hr>
-<h2 id=references>References</h2><p><a class=link href=https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/indexers/using-indexers target=_blank rel=noopener>Using indexers (C# Programming Guide)</a></p><blockquote>
-<div>
-<div style=width:5%;float:left;vertical-align:middle;padding-right:60px>
-<i class=inline-svg><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffbf00" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 12h1m8-9v1m8 8h1M5.6 5.6l.7.7m12.1-.7-.7.7"/><path d="M9 16a5 5 0 116 0 3.5 3.5.0 00-1 3 2 2 0 01-4 0 3.5 3.5.0 00-1-3"/><line x1="9.7" y1="17" x2="14.3" y2="17"/></svg></i>
-</div><div>
-<h3>Daily Drop 17: 23-02-2022</h3></div><br>
-<div>
-At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br>It could be anything - some .NET/C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
-The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
-</div></div></blockquote></section><footer class=article-footer>
-<section class=article-tags>
-<a href=/tags/c#/>c#</a>
+</span></span><span class=line><span class=cl><span class=n>Province3</span></span></span></code></pre></td></tr></table></div></div><hr><h2 id=notes>Notes</h2><p>While extending a class to use <code>indexers</code> will generally not be required for everyday use, its advantageous to know that <code>indexers</code> exist and are available for the use cases where they will make working with the class a lot easier and intuitive.</p><hr><h2 id=references>References</h2><p><a class=link href=https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/indexers/using-indexers target=_blank rel=noopener>Using indexers (C# Programming Guide)</a></p><blockquote><div><div style=width:5%;float:left;vertical-align:middle;padding-right:60px><i class=inline-svg><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffbf00" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 12h1m8-9v1m8 8h1M5.6 5.6l.7.7m12.1-.7-.7.7"/><path d="M9 16a5 5 0 116 0 3.5 3.5.0 00-1 3 2 2 0 01-4 0 3.5 3.5.0 00-1-3"/><line x1="9.7" y1="17" x2="14.3" y2="17"/></svg></i></div><div><h3>Daily Drop 17: 23-02-2022</h3></div><br><div>At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br>It could be anything - some .NET/C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.</div></div></blockquote></section><footer class=article-footer><section class=article-tags><a href=/tags/c#/>c#</a>
 <a href=/tags/.net/>.net</a>
 <a href=/tags/dailydrop/>dailydrop</a>
 <a href=/tags/indexer/>indexer</a>
 <a href=/tags/array/>array</a>
-<a href=/tags/extend/>extend</a>
-</section></footer></article><aside class=related-contents--wrapper>
-<h2 class=section-title>Related contents</h2><div class=related-contents>
-<div class="flex article-list--tile">
-<article>
-<a href=/dailydrop/2022/02/22-emit-source-generator-files/>
-<div class=article-details>
-<h2 class=article-title>Customize source generator output location</h2></div></a>
-</article><article>
-<a href=/dailydrop/2022/02/21-ef-core6-entitytypeconfig/>
-<div class=article-details>
-<h2 class=article-title>EF Core 6 EntityTypeConfiguration Attribute</h2></div></a>
-</article><article>
-<a href=/dailydrop/2022/02/18-gc-variables/>
-<div class=article-details>
-<h2 class=article-title>Garbage collection configuration</h2></div></a>
-</article><article>
-<a href=/dailydrop/2022/02/17-using-idisposable/>
-<div class=article-details>
-<h2 class=article-title>Using with IDisposable</h2></div></a>
-</article><article>
-<a href=/dailydrop/2022/02/16-task-wait-async/>
-<div class=article-details>
-<h2 class=article-title>Task.WaitAsync in .NET6</h2></div></a>
-</article></div></div></aside><script src=https://giscus.app/client.js data-repo=always-developing/always-developing.github.io data-repo-id=R_kgDOGQJLBQ data-category=Comments data-category-id=DIC_kwDOGQJLBc4B_pUA data-mapping=pathname data-reactions-enabled=1 data-emit-metadata=0 data-theme=light crossorigin=anonymous async></script>
-<script>function setGiscusTheme(t){let e=document.querySelector("iframe.giscus-frame");e&&e.contentWindow.postMessage({giscus:{setConfig:{theme:t}}},"https://giscus.app")}(function(){addEventListener("message",t=>{if(event.origin!=="https://giscus.app")return;e()}),window.addEventListener("onColorSchemeChange",e);function e(){document.documentElement.dataset.scheme==="light"?setGiscusTheme("light"):setGiscusTheme("dark")}})()</script>
-<footer class=site-footer>
-<section class=copyright>
-&copy;
+<a href=/tags/extend/>extend</a></section></footer></article><aside class=related-contents--wrapper><h2 class=section-title>Related contents</h2><div class=related-contents><div class="flex article-list--tile"><article><a href=/dailydrop/2022/02/22-emit-source-generator-files/><div class=article-details><h2 class=article-title>Customize source generator output location</h2></div></a></article><article><a href=/dailydrop/2022/02/21-ef-core6-entitytypeconfig/><div class=article-details><h2 class=article-title>EF Core 6 EntityTypeConfiguration Attribute</h2></div></a></article><article><a href=/dailydrop/2022/02/18-gc-variables/><div class=article-details><h2 class=article-title>Garbage collection configuration</h2></div></a></article><article><a href=/dailydrop/2022/02/17-using-idisposable/><div class=article-details><h2 class=article-title>Using with IDisposable</h2></div></a></article><article><a href=/dailydrop/2022/02/16-task-wait-async/><div class=article-details><h2 class=article-title>Task.WaitAsync in .NET6</h2></div></a></article></div></div></aside><script src=https://giscus.app/client.js data-repo=always-developing/always-developing.github.io data-repo-id=R_kgDOGQJLBQ data-category=Comments data-category-id=DIC_kwDOGQJLBc4B_pUA data-mapping=pathname data-reactions-enabled=1 data-emit-metadata=0 data-theme=light crossorigin=anonymous async></script>
+<script>function setGiscusTheme(t){let e=document.querySelector("iframe.giscus-frame");e&&e.contentWindow.postMessage({giscus:{setConfig:{theme:t}}},"https://giscus.app")}(function(){addEventListener("message",t=>{if(event.origin!=="https://giscus.app")return;e()}),window.addEventListener("onColorSchemeChange",e);function e(){document.documentElement.dataset.scheme==="light"?setGiscusTheme("light"):setGiscusTheme("dark")}})()</script><footer class=site-footer><section class=copyright>&copy;
 2021 -
-2022 Always Developing
-</section><section class=powerby>
-Always Developing | always learning | always growing <br>
-Built with <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a> <br>
-Theme <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.2.0>Stack</a></b> designed by <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a>
-</section></footer><div class=pswp tabindex=-1 role=dialog aria-hidden=true>
-<div class=pswp__bg></div><div class=pswp__scroll-wrap>
-<div class=pswp__container>
-<div class=pswp__item></div><div class=pswp__item></div><div class=pswp__item></div></div><div class="pswp__ui pswp__ui--hidden">
-<div class=pswp__top-bar>
-<div class=pswp__counter></div><button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+2022 Always Developing</section><section class=powerby>Always Developing | always learning | always growing<br>Built with <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a><br>Theme <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.2.0>Stack</a></b> designed by <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a></section></footer><div class=pswp tabindex=-1 role=dialog aria-hidden=true><div class=pswp__bg></div><div class=pswp__scroll-wrap><div class=pswp__container><div class=pswp__item></div><div class=pswp__item></div><div class=pswp__item></div></div><div class="pswp__ui pswp__ui--hidden"><div class=pswp__top-bar><div class=pswp__counter></div><button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
 <button class="pswp__button pswp__button--share" title=Share></button>
 <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
-<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
-<div class=pswp__preloader>
-<div class=pswp__preloader__icn>
-<div class=pswp__preloader__cut>
-<div class=pswp__preloader__donut></div></div></div></div></div><div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
-<div class=pswp__share-tooltip></div></div><button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
-</button>
-<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
-</button>
-<div class=pswp__caption>
-<div class=pswp__caption__center></div></div></div></div></div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.css integrity="sha256-c0uckgykQ9v5k+IqViZOZKc47Jn7KQil4/MP3ySA3F8=" crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.css integrity="sha256-SBLU4vv6CA6lHsZ1XyTdhyjJxCjPif/TRkjnsyGAGnE=" crossorigin=anonymous>
-</main><aside class="sidebar right-sidebar sticky">
-<section class="widget archives">
-<div class=widget-icon><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg>
-</div><h2 class="widget-title section-title">Table of contents</h2><div class=widget--toc>
-<nav id=TableOfContents>
-<ol>
-<li><a href=#daily-knowledge-drop>Daily Knowledge Drop</a></li><li><a href=#without-indexers>Without indexers</a></li><li><a href=#with-indexers>With indexers</a></li><li><a href=#field-indexer>Field indexer</a></li><li><a href=#notes>Notes</a></li><li><a href=#references>References</a></li></ol></nav></div></section></aside></div><script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g=" crossorigin=anonymous defer></script><script type=text/javascript src=/ts/main.js defer></script>
-<script>(function(){const e=document.createElement("link");e.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",e.type="text/css",e.rel="stylesheet",document.head.appendChild(e)})()</script>
-</body></html>
+<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button><div class=pswp__preloader><div class=pswp__preloader__icn><div class=pswp__preloader__cut><div class=pswp__preloader__donut></div></div></div></div></div><div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap"><div class=pswp__share-tooltip></div></div><button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)"></button>
+<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button><div class=pswp__caption><div class=pswp__caption__center></div></div></div></div></div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.css integrity="sha256-c0uckgykQ9v5k+IqViZOZKc47Jn7KQil4/MP3ySA3F8=" crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.css integrity="sha256-SBLU4vv6CA6lHsZ1XyTdhyjJxCjPif/TRkjnsyGAGnE=" crossorigin=anonymous></main><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">Table of contents</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#daily-knowledge-drop>Daily Knowledge Drop</a></li><li><a href=#without-indexers>Without indexers</a></li><li><a href=#with-indexers>With indexers</a></li><li><a href=#field-indexer>Field indexer</a></li><li><a href=#notes>Notes</a></li><li><a href=#references>References</a></li></ol></nav></div></section></aside></div><script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g=" crossorigin=anonymous defer></script><script type=text/javascript src=/ts/main.js defer></script>
+<script>(function(){const e=document.createElement("link");e.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",e.type="text/css",e.rel="stylesheet",document.head.appendChild(e)})()</script></body></html>

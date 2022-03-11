@@ -1,48 +1,6 @@
-<!doctype html><html lang=en-uk>
-<head><meta charset=utf-8>
-<meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="Customize how classes are displayed when debugger"><title>Customize debugger class display</title><link rel=canonical href=https://always-developing.github.io/dailydrop/2022/03/08-debug-ouput/>
-<link rel=stylesheet href=/scss/style.min.css><meta property="og:title" content="Customize debugger class display">
-<meta property="og:description" content="Customize how classes are displayed when debugger">
-<meta property="og:url" content="https://always-developing.github.io/dailydrop/2022/03/08-debug-ouput/">
-<meta property="og:site_name" content="Always Developing">
-<meta property="og:type" content="article"><meta property="article:section" content="Dailydrop"><meta property="article:tag" content="c#"><meta property="article:tag" content=".net"><meta property="article:tag" content="dailydrop"><meta property="article:tag" content="debugger"><meta property="article:tag" content="display"><meta property="article:tag" content="debuggerdisplay"><meta property="article:tag" content="tostring"><meta property="article:published_time" content="2022-03-08T01:00:00+02:00"><meta property="article:modified_time" content="2022-03-08T01:00:00+02:00">
-<meta name=twitter:title content="Customize debugger class display">
-<meta name=twitter:description content="Customize how classes are displayed when debugger">
-<link rel="shortcut icon" href=favicon.ico>
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-CXPLFS7K38"></script>
-<script>var doNotTrack=!1;if(!doNotTrack){window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","G-CXPLFS7K38",{anonymize_ip:!1})}</script>
-</head><body class="article-page has-toc">
-<script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"dark")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script>
-<div class="container main-container flex
-extended">
-<div id=article-toolbar>
-<a href=https://always-developing.github.io/ class=back-home><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="15 6 9 12 15 18"/></svg>
-<span>Back</span>
-</a>
-</div><main class="main full-width">
-<article class=main-article>
-<header class=article-header>
-<div class=article-details>
-<header class=article-category>
-<a href=/categories/dailydrop/>
-DailyDrop
-</a>
-</header><h2 class=article-title>
-<a href=/dailydrop/2022/03/08-debug-ouput/>Customize debugger class display</a>
-</h2><h3 class=article-subtitle>
-Customize how classes are displayed when debugger
-</h3><footer class=article-time>
-<div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
-<time class=article-time--published>Mar 08, 2022</time>
-</div><div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
-<time class=article-time--reading>
-4 minute read
-</time>
-</div></footer></div></header><section class=article-content>
-<h2 id=daily-knowledge-drop>Daily Knowledge Drop</h2><p>The <code>format of how classes are displayed in the debugger can be customized</code>, using a couple of methods.</p><hr>
-<h2 id=sample>Sample</h2><p>All the samples below use an instance of the following simple entity class:</p><div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+<!doctype html><html lang=en-uk><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="Customize how classes are displayed when debugger"><title>Customize debugger class display</title><link rel=canonical href=https://always-developing.github.io/dailydrop/2022/03/08-debug-ouput/><link rel=stylesheet href=/scss/style.min.css><meta property="og:title" content="Customize debugger class display"><meta property="og:description" content="Customize how classes are displayed when debugger"><meta property="og:url" content="https://always-developing.github.io/dailydrop/2022/03/08-debug-ouput/"><meta property="og:site_name" content="Always Developing"><meta property="og:type" content="article"><meta property="article:section" content="Dailydrop"><meta property="article:tag" content="c#"><meta property="article:tag" content=".net"><meta property="article:tag" content="dailydrop"><meta property="article:tag" content="debugger"><meta property="article:tag" content="display"><meta property="article:tag" content="debuggerdisplay"><meta property="article:tag" content="tostring"><meta property="article:published_time" content="2022-03-08T01:00:00+02:00"><meta property="article:modified_time" content="2022-03-08T01:00:00+02:00"><meta name=twitter:title content="Customize debugger class display"><meta name=twitter:description content="Customize how classes are displayed when debugger"><link rel="shortcut icon" href=favicon.ico><script async src="https://www.googletagmanager.com/gtag/js?id=G-CXPLFS7K38"></script>
+<script>var doNotTrack=!1;if(!doNotTrack){window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","G-CXPLFS7K38",{anonymize_ip:!1})}</script></head><body class="article-page has-toc"><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"dark")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex
+extended"><div id=article-toolbar><a href=https://always-developing.github.io/ class=back-home><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="15 6 9 12 15 18"/></svg><span>Back</span></a></div><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><header class=article-category><a href=/categories/dailydrop/>DailyDrop</a></header><h2 class=article-title><a href=/dailydrop/2022/03/08-debug-ouput/>Customize debugger class display</a></h2><h3 class=article-subtitle>Customize how classes are displayed when debugger</h3><footer class=article-time><div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg><time class=article-time--published>Mar 08, 2022</time></div><div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg><time class=article-time--reading>4 minute read</time></div></footer></div></header><section class=article-content><h2 id=daily-knowledge-drop>Daily Knowledge Drop</h2><p>The <code>format of how classes are displayed in the debugger can be customized</code>, using a couple of methods.</p><hr><h2 id=sample>Sample</h2><p>All the samples below use an instance of the following simple entity class:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
 </span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
 </span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
 </span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
@@ -65,8 +23,7 @@ Customize how classes are displayed when debugger
 </span><span class=lnt id=ienumusage-21><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-21>21</a>
 </span><span class=lnt id=ienumusage-22><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-22>22</a>
 </span><span class=lnt id=ienumusage-23><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-23>23</a>
-</span></code></pre></td><td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=c1>// class definition</span>
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=c1>// class definition</span>
 </span></span><span class=line><span class=cl><span class=k>public</span> <span class=k>class</span> <span class=nc>Song</span>
 </span></span><span class=line><span class=cl><span class=p>{</span>
 </span></span><span class=line><span class=cl>    <span class=k>public</span> <span class=kt>int</span> <span class=n>Id</span> <span class=p>{</span> <span class=k>get</span><span class=p>;</span> <span class=k>set</span><span class=p>;</span> <span class=p>}</span> 
@@ -88,13 +45,7 @@ Customize how classes are displayed when debugger
 </span></span><span class=line><span class=cl>    <span class=n>Artist</span> <span class=p>=</span> <span class=s>&#34;Foo Fighters&#34;</span><span class=p>,</span>
 </span></span><span class=line><span class=cl>    <span class=n>LengthInSeconds</span> <span class=p>=</span> <span class=m>250</span><span class=p>,</span>
 </span></span><span class=line><span class=cl>    <span class=n>YearReleased</span> <span class=p>=</span> <span class=m>1997</span>
-</span></span><span class=line><span class=cl><span class=p>};</span></span></span></code></pre></td></tr></table></div></div><h2 id=default-display>Default Display</h2><p>By default, the output of a class in the debugger uses the <em>ToString</em> method on a class. The default for this method on a class is the <em>class namespace and name</em>.</p><p>The output in the <em>Watch Window</em> as well as when hovering the cursor over the instance:</p><p><figure class=gallery-image style=flex-grow:272;flex-basis:653px>
-<a href=/dailydrop/2022/03/08-debug-ouput/1.default.png data-size=534x196>
-<img src=/dailydrop/2022/03/08-debug-ouput/1.default.png width=534 height=196 srcset="/dailydrop/2022/03/08-debug-ouput/1.default_hu753feb0c9549d0096d03ea207f3b190c_16826_480x0_resize_box_3.png 480w, /dailydrop/2022/03/08-debug-ouput/1.default_hu753feb0c9549d0096d03ea207f3b190c_16826_1024x0_resize_box_3.png 1024w" loading=lazy alt="Default output">
-</a>
-<figcaption>Default output</figcaption></figure></p><h2 id=tostring-override>ToString override</h2><p>The first approach in customizing the output is to <code>override the ToString</code> method on the class:</p><div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span></span><span class=line><span class=cl><span class=p>};</span></span></span></code></pre></td></tr></table></div></div><h2 id=default-display>Default Display</h2><p>By default, the output of a class in the debugger uses the <em>ToString</em> method on a class. The default for this method on a class is the <em>class namespace and name</em>.</p><p>The output in the <em>Watch Window</em> as well as when hovering the cursor over the instance:</p><p><figure class=gallery-image style=flex-grow:272;flex-basis:653px><a href=/dailydrop/2022/03/08-debug-ouput/1.default.png data-size=534x196><img src=/dailydrop/2022/03/08-debug-ouput/1.default.png width=534 height=196 srcset="/dailydrop/2022/03/08-debug-ouput/1.default_hu753feb0c9549d0096d03ea207f3b190c_16826_480x0_resize_box_3.png 480w, /dailydrop/2022/03/08-debug-ouput/1.default_hu753feb0c9549d0096d03ea207f3b190c_16826_1024x0_resize_box_3.png 1024w" loading=lazy alt="Default output"></a><figcaption>Default output</figcaption></figure></p><h2 id=tostring-override>ToString override</h2><p>The first approach in customizing the output is to <code>override the ToString</code> method on the class:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
 </span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
 </span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
 </span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
@@ -105,8 +56,7 @@ Customize how classes are displayed when debugger
 </span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
 </span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
 </span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
-</span></code></pre></td><td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=k>public</span> <span class=k>class</span> <span class=nc>Song</span>
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=k>public</span> <span class=k>class</span> <span class=nc>Song</span>
 </span></span><span class=line><span class=cl><span class=p>{</span>
 </span></span><span class=line><span class=cl>    <span class=c1>//... existing class properties omitted</span>
 </span></span><span class=line><span class=cl>
@@ -116,14 +66,7 @@ Customize how classes are displayed when debugger
 </span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=s>$&#34;Song `{Name}` by &#39;{Artist} released &#34;</span> <span class=p>+</span>
 </span></span><span class=line><span class=cl>            <span class=s>$&#34;in &#39;{YearReleased}&#39; and is &#39;{LengthInSeconds}&#39; seconds long&#34;</span><span class=p>;</span>
 </span></span><span class=line><span class=cl>    <span class=p>}</span>
-</span></span><span class=line><span class=cl><span class=p>}</span></span></span></code></pre></td></tr></table></div></div><p>This overridden <em>ToString</em> method is now used:</p><p><figure class=gallery-image style=flex-grow:432;flex-basis:1037px>
-<a href=/dailydrop/2022/03/08-debug-ouput/2.tostring.png data-size=735x170>
-<img src=/dailydrop/2022/03/08-debug-ouput/2.tostring.png width=735 height=170 srcset="/dailydrop/2022/03/08-debug-ouput/2.tostring_hud42f5c1851cc54cdd7f4ec95adb4b8de_18481_480x0_resize_box_3.png 480w, /dailydrop/2022/03/08-debug-ouput/2.tostring_hud42f5c1851cc54cdd7f4ec95adb4b8de_18481_1024x0_resize_box_3.png 1024w" loading=lazy alt="ToString output">
-</a>
-<figcaption>ToString output</figcaption></figure></p><hr>
-<h2 id=debuggerdisplay-attribute>DebuggerDisplay attribute</h2><p>In some use-cases, it might not be possible to use the <em>ToString</em> method, as it might be used in the functionality of the application in a specific format, and a different format is required for the debugger.</p><p>The next approach uses the <code>DebuggerDisplay</code> attribute - this is used to decorate the class with the format of the debugger display.</p><div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span></span><span class=line><span class=cl><span class=p>}</span></span></span></code></pre></td></tr></table></div></div><p>This overridden <em>ToString</em> method is now used:</p><p><figure class=gallery-image style=flex-grow:432;flex-basis:1037px><a href=/dailydrop/2022/03/08-debug-ouput/2.tostring.png data-size=735x170><img src=/dailydrop/2022/03/08-debug-ouput/2.tostring.png width=735 height=170 srcset="/dailydrop/2022/03/08-debug-ouput/2.tostring_hud42f5c1851cc54cdd7f4ec95adb4b8de_18481_480x0_resize_box_3.png 480w, /dailydrop/2022/03/08-debug-ouput/2.tostring_hud42f5c1851cc54cdd7f4ec95adb4b8de_18481_1024x0_resize_box_3.png 1024w" loading=lazy alt="ToString output"></a><figcaption>ToString output</figcaption></figure></p><hr><h2 id=debuggerdisplay-attribute>DebuggerDisplay attribute</h2><p>In some use-cases, it might not be possible to use the <em>ToString</em> method, as it might be used in the functionality of the application in a specific format, and a different format is required for the debugger.</p><p>The next approach uses the <code>DebuggerDisplay</code> attribute - this is used to decorate the class with the format of the debugger display.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
 </span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
 </span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
 </span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
@@ -134,8 +77,7 @@ Customize how classes are displayed when debugger
 </span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
 </span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
 </span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
-</span></code></pre></td><td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=na>[DebuggerDisplay(&#34;{Name} by {Artist}&#34;)]</span>
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=na>[DebuggerDisplay(&#34;{Name} by {Artist}&#34;)]</span>
 </span></span><span class=line><span class=cl><span class=k>public</span> <span class=k>class</span> <span class=nc>Song</span>
 </span></span><span class=line><span class=cl><span class=p>{</span>
 </span></span><span class=line><span class=cl>    <span class=c1>//... existing class properties omitted</span>
@@ -145,14 +87,7 @@ Customize how classes are displayed when debugger
 </span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=s>$&#34;Song `{Name}` by &#39;{Artist} released &#34;</span> <span class=p>+</span>
 </span></span><span class=line><span class=cl>            <span class=s>$&#34;in &#39;{YearReleased}&#39; and is &#39;{LengthInSeconds}&#39; seconds long&#34;</span><span class=p>;</span>
 </span></span><span class=line><span class=cl>    <span class=p>}</span>
-</span></span><span class=line><span class=cl><span class=p>}</span></span></span></code></pre></td></tr></table></div></div><p>The display in the debugger now uses the <em>DebuggerDisplay</em> format, while explicitly using the <em>ToString</em> method will return the <em>ToString</em> method format.</p><p><figure class=gallery-image style=flex-grow:310;flex-basis:745px>
-<a href=/dailydrop/2022/03/08-debug-ouput/3.debuggerdisplay.png data-size=643x207>
-<img src=/dailydrop/2022/03/08-debug-ouput/3.debuggerdisplay.png width=643 height=207 srcset="/dailydrop/2022/03/08-debug-ouput/3.debuggerdisplay_huc3d1d8d71f99d2daf582dae02f9572ce_19337_480x0_resize_box_3.png 480w, /dailydrop/2022/03/08-debug-ouput/3.debuggerdisplay_huc3d1d8d71f99d2daf582dae02f9572ce_19337_1024x0_resize_box_3.png 1024w" loading=lazy alt="DebuggerDisplay output">
-</a>
-<figcaption>DebuggerDisplay output</figcaption></figure></p><hr>
-<h2 id=external-classes>External classes</h2><p>A 3rd party external class can also be targeted by the attribute.</p><p>Assume <em>Song</em> is now a external 3rd party class (which cannot be modified), and has no <code>DebuggerDisplay</code> attribute:</p><div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span></span><span class=line><span class=cl><span class=p>}</span></span></span></code></pre></td></tr></table></div></div><p>The display in the debugger now uses the <em>DebuggerDisplay</em> format, while explicitly using the <em>ToString</em> method will return the <em>ToString</em> method format.</p><p><figure class=gallery-image style=flex-grow:310;flex-basis:745px><a href=/dailydrop/2022/03/08-debug-ouput/3.debuggerdisplay.png data-size=643x207><img src=/dailydrop/2022/03/08-debug-ouput/3.debuggerdisplay.png width=643 height=207 srcset="/dailydrop/2022/03/08-debug-ouput/3.debuggerdisplay_huc3d1d8d71f99d2daf582dae02f9572ce_19337_480x0_resize_box_3.png 480w, /dailydrop/2022/03/08-debug-ouput/3.debuggerdisplay_huc3d1d8d71f99d2daf582dae02f9572ce_19337_1024x0_resize_box_3.png 1024w" loading=lazy alt="DebuggerDisplay output"></a><figcaption>DebuggerDisplay output</figcaption></figure></p><hr><h2 id=external-classes>External classes</h2><p>A 3rd party external class can also be targeted by the attribute.</p><p>Assume <em>Song</em> is now a external 3rd party class (which cannot be modified), and has no <code>DebuggerDisplay</code> attribute:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
 </span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
 </span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
 </span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
@@ -162,8 +97,7 @@ Customize how classes are displayed when debugger
 </span><span class=lnt id=ienumusage-8><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-8> 8</a>
 </span><span class=lnt id=ienumusage-9><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-9> 9</a>
 </span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
-</span></code></pre></td><td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=k>public</span> <span class=k>class</span> <span class=nc>Song</span>
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=k>public</span> <span class=k>class</span> <span class=nc>Song</span>
 </span></span><span class=line><span class=cl><span class=p>{</span>
 </span></span><span class=line><span class=cl>    <span class=c1>//... existing class properties omitted</span>
 </span></span><span class=line><span class=cl>
@@ -172,9 +106,7 @@ Customize how classes are displayed when debugger
 </span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=s>$&#34;Song `{Name}` by &#39;{Artist} released &#34;</span> <span class=p>+</span>
 </span></span><span class=line><span class=cl>            <span class=s>$&#34;in &#39;{YearReleased}&#39; and is &#39;{LengthInSeconds}&#39; seconds long&#34;</span><span class=p>;</span>
 </span></span><span class=line><span class=cl>    <span class=p>}</span>
-</span></span><span class=line><span class=cl><span class=p>}</span></span></span></code></pre></td></tr></table></div></div><p>In the <em>Program.cs</em> startup file, the &lsquo;DebuggerDisplay` attribute is added with a specified <em>Target</em>:</p><div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
+</span></span><span class=line><span class=cl><span class=p>}</span></span></span></code></pre></td></tr></table></div></div><p>In the <em>Program.cs</em> startup file, the &lsquo;DebuggerDisplay` attribute is added with a specified <em>Target</em>:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt id=ienumusage-1><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-1> 1</a>
 </span><span class=lnt id=ienumusage-2><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-2> 2</a>
 </span><span class=lnt id=ienumusage-3><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-3> 3</a>
 </span><span class=lnt id=ienumusage-4><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-4> 4</a>
@@ -186,8 +118,7 @@ Customize how classes are displayed when debugger
 </span><span class=lnt id=ienumusage-10><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-10>10</a>
 </span><span class=lnt id=ienumusage-11><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-11>11</a>
 </span><span class=lnt id=ienumusage-12><a style=outline:none;text-decoration:none;color:inherit href=#ienumusage-12>12</a>
-</span></code></pre></td><td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=na>[assembly: DebuggerDisplay(&#34;External: {Name} by {Artist}&#34;, Target = typeof(Song))]</span>
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-C# data-lang=C#><span class=line><span class=cl><span class=na>[assembly: DebuggerDisplay(&#34;External: {Name} by {Artist}&#34;, Target = typeof(Song))]</span>
 </span></span><span class=line><span class=cl>
 </span></span><span class=line><span class=cl><span class=kt>var</span> <span class=n>song</span> <span class=p>=</span> <span class=k>new</span> <span class=n>Song</span>
 </span></span><span class=line><span class=cl><span class=p>{</span>
@@ -198,89 +129,18 @@ Customize how classes are displayed when debugger
 </span></span><span class=line><span class=cl>    <span class=n>YearReleased</span> <span class=p>=</span> <span class=m>1997</span>
 </span></span><span class=line><span class=cl><span class=p>};</span>
 </span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>song</span><span class=p>);</span></span></span></code></pre></td></tr></table></div></div><p>The format specified by the <code>DebuggerDisplay</code> outside the class, is now used:</p><p><figure class=gallery-image style=flex-grow:310;flex-basis:745px>
-<a href=/dailydrop/2022/03/08-debug-ouput/4.external.png data-size=680x219>
-<img src=/dailydrop/2022/03/08-debug-ouput/4.external.png width=680 height=219 srcset="/dailydrop/2022/03/08-debug-ouput/4.external_hu90c3d1f78e0ce7bcd95fdbec488d827d_20108_480x0_resize_box_3.png 480w, /dailydrop/2022/03/08-debug-ouput/4.external_hu90c3d1f78e0ce7bcd95fdbec488d827d_20108_1024x0_resize_box_3.png 1024w" loading=lazy alt="External DebuggerDisplay output">
-</a>
-<figcaption>External DebuggerDisplay output</figcaption></figure></p><hr>
-<h2 id=notes>Notes</h2><p>We&rsquo;ve looked at a few useful ways in which the Visual Studio developer experience can be enhanced to improve the quality of life and productivity while working with a solution.</p><p>(The same might be experienced in Visual Studio Code and Rider, but it was not tested as part of this post)</p><hr>
-<h2 id=references>References</h2><p><a class=link href=https://dunnhq.com/posts/2022/debugger-attributes/ target=_blank rel=noopener>Debug attributes in .NET</a></p><blockquote>
-<div>
-<div style=width:5%;float:left;vertical-align:middle;padding-right:60px>
-<i class=inline-svg><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffbf00" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 12h1m8-9v1m8 8h1M5.6 5.6l.7.7m12.1-.7-.7.7"/><path d="M9 16a5 5 0 116 0 3.5 3.5.0 00-1 3 2 2 0 01-4 0 3.5 3.5.0 00-1-3"/><line x1="9.7" y1="17" x2="14.3" y2="17"/></svg></i>
-</div><div>
-<h3>Daily Drop 26: 08-03-2022</h3></div><br>
-<div>
-At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br>It could be anything - some .NET/C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
-The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
-</div></div></blockquote></section><footer class=article-footer>
-<section class=article-tags>
-<a href=/tags/c#/>c#</a>
+</span></span><span class=line><span class=cl><span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>song</span><span class=p>);</span></span></span></code></pre></td></tr></table></div></div><p>The format specified by the <code>DebuggerDisplay</code> outside the class, is now used:</p><p><figure class=gallery-image style=flex-grow:310;flex-basis:745px><a href=/dailydrop/2022/03/08-debug-ouput/4.external.png data-size=680x219><img src=/dailydrop/2022/03/08-debug-ouput/4.external.png width=680 height=219 srcset="/dailydrop/2022/03/08-debug-ouput/4.external_hu90c3d1f78e0ce7bcd95fdbec488d827d_20108_480x0_resize_box_3.png 480w, /dailydrop/2022/03/08-debug-ouput/4.external_hu90c3d1f78e0ce7bcd95fdbec488d827d_20108_1024x0_resize_box_3.png 1024w" loading=lazy alt="External DebuggerDisplay output"></a><figcaption>External DebuggerDisplay output</figcaption></figure></p><hr><h2 id=notes>Notes</h2><p>We&rsquo;ve looked at a few useful ways in which the Visual Studio developer experience can be enhanced to improve the quality of life and productivity while working with a solution.</p><p>(The same might be experienced in Visual Studio Code and Rider, but it was not tested as part of this post)</p><hr><h2 id=references>References</h2><p><a class=link href=https://dunnhq.com/posts/2022/debugger-attributes/ target=_blank rel=noopener>Debug attributes in .NET</a></p><blockquote><div><div style=width:5%;float:left;vertical-align:middle;padding-right:60px><i class=inline-svg><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffbf00" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 12h1m8-9v1m8 8h1M5.6 5.6l.7.7m12.1-.7-.7.7"/><path d="M9 16a5 5 0 116 0 3.5 3.5.0 00-1 3 2 2 0 01-4 0 3.5 3.5.0 00-1-3"/><line x1="9.7" y1="17" x2="14.3" y2="17"/></svg></i></div><div><h3>Daily Drop 26: 08-03-2022</h3></div><br><div>At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br>It could be anything - some .NET/C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.</div></div></blockquote></section><footer class=article-footer><section class=article-tags><a href=/tags/c#/>c#</a>
 <a href=/tags/.net/>.net</a>
 <a href=/tags/dailydrop/>dailydrop</a>
 <a href=/tags/debugger/>debugger</a>
 <a href=/tags/display/>display</a>
 <a href=/tags/debuggerdisplay/>debuggerdisplay</a>
-<a href=/tags/tostring/>tostring</a>
-</section></footer></article><aside class=related-contents--wrapper>
-<h2 class=section-title>Related contents</h2><div class=related-contents>
-<div class="flex article-list--tile">
-<article>
-<a href=/dailydrop/2022/03/07-di-func-delegate/>
-<div class=article-details>
-<h2 class=article-title>Dependency Injection with Func and delegates</h2></div></a>
-</article><article>
-<a href=/dailydrop/2022/03/04-incremental-generator/>
-<div class=article-details>
-<h2 class=article-title>Incremental source generators</h2></div></a>
-</article><article>
-<a href=/dailydrop/2022/03/03-getenumerator/>
-<div class=article-details>
-<h2 class=article-title>Enumeration on a custom class</h2></div></a>
-</article><article>
-<a href=/dailydrop/2022/03/02-optional-param-attribute/>
-<div class=article-details>
-<h2 class=article-title>Optional method parameters</h2></div></a>
-</article><article>
-<a href=/dailydrop/2022/03/01-json-notifications/>
-<div class=article-details>
-<h2 class=article-title>System.Text.Json notifications</h2></div></a>
-</article></div></div></aside><script src=https://giscus.app/client.js data-repo=always-developing/always-developing.github.io data-repo-id=R_kgDOGQJLBQ data-category=Comments data-category-id=DIC_kwDOGQJLBc4B_pUA data-mapping=pathname data-reactions-enabled=1 data-emit-metadata=0 data-theme=light crossorigin=anonymous async></script>
-<script>function setGiscusTheme(t){let e=document.querySelector("iframe.giscus-frame");e&&e.contentWindow.postMessage({giscus:{setConfig:{theme:t}}},"https://giscus.app")}(function(){addEventListener("message",t=>{if(event.origin!=="https://giscus.app")return;e()}),window.addEventListener("onColorSchemeChange",e);function e(){document.documentElement.dataset.scheme==="light"?setGiscusTheme("light"):setGiscusTheme("dark")}})()</script>
-<footer class=site-footer>
-<section class=copyright>
-&copy;
+<a href=/tags/tostring/>tostring</a></section></footer></article><aside class=related-contents--wrapper><h2 class=section-title>Related contents</h2><div class=related-contents><div class="flex article-list--tile"><article><a href=/dailydrop/2022/03/07-di-func-delegate/><div class=article-details><h2 class=article-title>Dependency Injection with Func and delegates</h2></div></a></article><article><a href=/dailydrop/2022/03/04-incremental-generator/><div class=article-details><h2 class=article-title>Incremental source generators</h2></div></a></article><article><a href=/dailydrop/2022/03/03-getenumerator/><div class=article-details><h2 class=article-title>Enumeration on a custom class</h2></div></a></article><article><a href=/dailydrop/2022/03/02-optional-param-attribute/><div class=article-details><h2 class=article-title>Optional method parameters</h2></div></a></article><article><a href=/dailydrop/2022/03/01-json-notifications/><div class=article-details><h2 class=article-title>System.Text.Json notifications</h2></div></a></article></div></div></aside><script src=https://giscus.app/client.js data-repo=always-developing/always-developing.github.io data-repo-id=R_kgDOGQJLBQ data-category=Comments data-category-id=DIC_kwDOGQJLBc4B_pUA data-mapping=pathname data-reactions-enabled=1 data-emit-metadata=0 data-theme=light crossorigin=anonymous async></script>
+<script>function setGiscusTheme(t){let e=document.querySelector("iframe.giscus-frame");e&&e.contentWindow.postMessage({giscus:{setConfig:{theme:t}}},"https://giscus.app")}(function(){addEventListener("message",t=>{if(event.origin!=="https://giscus.app")return;e()}),window.addEventListener("onColorSchemeChange",e);function e(){document.documentElement.dataset.scheme==="light"?setGiscusTheme("light"):setGiscusTheme("dark")}})()</script><footer class=site-footer><section class=copyright>&copy;
 2021 -
-2022 Always Developing
-</section><section class=powerby>
-Always Developing | always learning | always growing <br>
-Built with <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a> <br>
-Theme <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.2.0>Stack</a></b> designed by <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a>
-</section></footer><div class=pswp tabindex=-1 role=dialog aria-hidden=true>
-<div class=pswp__bg></div><div class=pswp__scroll-wrap>
-<div class=pswp__container>
-<div class=pswp__item></div><div class=pswp__item></div><div class=pswp__item></div></div><div class="pswp__ui pswp__ui--hidden">
-<div class=pswp__top-bar>
-<div class=pswp__counter></div><button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+2022 Always Developing</section><section class=powerby>Always Developing | always learning | always growing<br>Built with <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a><br>Theme <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.2.0>Stack</a></b> designed by <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a></section></footer><div class=pswp tabindex=-1 role=dialog aria-hidden=true><div class=pswp__bg></div><div class=pswp__scroll-wrap><div class=pswp__container><div class=pswp__item></div><div class=pswp__item></div><div class=pswp__item></div></div><div class="pswp__ui pswp__ui--hidden"><div class=pswp__top-bar><div class=pswp__counter></div><button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
 <button class="pswp__button pswp__button--share" title=Share></button>
 <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
-<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
-<div class=pswp__preloader>
-<div class=pswp__preloader__icn>
-<div class=pswp__preloader__cut>
-<div class=pswp__preloader__donut></div></div></div></div></div><div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
-<div class=pswp__share-tooltip></div></div><button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
-</button>
-<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
-</button>
-<div class=pswp__caption>
-<div class=pswp__caption__center></div></div></div></div></div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.css integrity="sha256-c0uckgykQ9v5k+IqViZOZKc47Jn7KQil4/MP3ySA3F8=" crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.css integrity="sha256-SBLU4vv6CA6lHsZ1XyTdhyjJxCjPif/TRkjnsyGAGnE=" crossorigin=anonymous>
-</main><aside class="sidebar right-sidebar sticky">
-<section class="widget archives">
-<div class=widget-icon><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg>
-</div><h2 class="widget-title section-title">Table of contents</h2><div class=widget--toc>
-<nav id=TableOfContents>
-<ol>
-<li><a href=#daily-knowledge-drop>Daily Knowledge Drop</a></li><li><a href=#sample>Sample</a></li><li><a href=#default-display>Default Display</a></li><li><a href=#tostring-override>ToString override</a></li><li><a href=#debuggerdisplay-attribute>DebuggerDisplay attribute</a></li><li><a href=#external-classes>External classes</a></li><li><a href=#notes>Notes</a></li><li><a href=#references>References</a></li></ol></nav></div></section></aside></div><script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g=" crossorigin=anonymous defer></script><script type=text/javascript src=/ts/main.js defer></script>
-<script>(function(){const e=document.createElement("link");e.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",e.type="text/css",e.rel="stylesheet",document.head.appendChild(e)})()</script>
-</body></html>
+<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button><div class=pswp__preloader><div class=pswp__preloader__icn><div class=pswp__preloader__cut><div class=pswp__preloader__donut></div></div></div></div></div><div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap"><div class=pswp__share-tooltip></div></div><button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)"></button>
+<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button><div class=pswp__caption><div class=pswp__caption__center></div></div></div></div></div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.css integrity="sha256-c0uckgykQ9v5k+IqViZOZKc47Jn7KQil4/MP3ySA3F8=" crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.css integrity="sha256-SBLU4vv6CA6lHsZ1XyTdhyjJxCjPif/TRkjnsyGAGnE=" crossorigin=anonymous></main><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">Table of contents</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#daily-knowledge-drop>Daily Knowledge Drop</a></li><li><a href=#sample>Sample</a></li><li><a href=#default-display>Default Display</a></li><li><a href=#tostring-override>ToString override</a></li><li><a href=#debuggerdisplay-attribute>DebuggerDisplay attribute</a></li><li><a href=#external-classes>External classes</a></li><li><a href=#notes>Notes</a></li><li><a href=#references>References</a></li></ol></nav></div></section></aside></div><script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g=" crossorigin=anonymous defer></script><script type=text/javascript src=/ts/main.js defer></script>
+<script>(function(){const e=document.createElement("link");e.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",e.type="text/css",e.rel="stylesheet",document.head.appendChild(e)})()</script></body></html>
