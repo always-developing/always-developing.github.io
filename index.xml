@@ -1,4 +1,264 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Tue, 15 Mar 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Private variables prefixed with underscore?</title><link>https://always-developing.github.io/dailydrop/2022/03/15-private-underscore/</link><pubDate>Tue, 15 Mar 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/03/15-private-underscore/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Wed, 16 Mar 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Closures explained</title><link>https://always-developing.github.io/dailydrop/2022/03/16-closures/</link><pubDate>Wed, 16 Mar 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/03/16-closures/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+&lt;p>A &lt;strong>closure&lt;/strong> is a particular type of &lt;code>first class function&lt;/code>, which is &lt;code>linked to the environment&lt;/code> in which it was declared, and as such can &lt;code>reference variables in this environment, even if outside the scope&lt;/code> of the function.&lt;/p>
+&lt;hr>
+&lt;h2 id="first-class-function">First class function&lt;/h2>
+&lt;p>A closure is a &lt;code>first class function&lt;/code> - this basically means C# treats the function as a data type, and as such can be used as if it were a data type. It can be assigned to a variable, passed as a parameter etc.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5">5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6">6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7">7&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="line">&lt;span class="cl">&lt;span class="kt">var&lt;/span> &lt;span class="n">func1&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">GetFunction&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">func1&lt;/span>&lt;span class="p">());&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Func&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="kt">string&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="n">GetFunction&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="p">()&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="s">&amp;#34;String created by GetFunction&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;ul>
+&lt;li>&lt;strong>Line 4&lt;/strong>: A method is defined, which returns a &lt;em>Func&amp;lt;string&amp;gt;&lt;/em>. &lt;em>Func&amp;lt;string&amp;gt;&lt;/em> is a shortcut for a method, which takes no parameters and returns a string. So the &lt;em>GetFunction&lt;/em> method, will return another method (as a variable), which takes no parameters and returns as string&lt;/li>
+&lt;li>&lt;strong>Line 6&lt;/strong>: The &lt;em>Func&amp;lt;string&amp;gt;&lt;/em> is defined, an anonymous method, which takes no parameters and returns a string&lt;/li>
+&lt;li>&lt;strong>Line 1&lt;/strong>: &lt;em>GetFunction&lt;/em> is called and the returned function is assigned to variable &lt;em>func1&lt;/em>&lt;/li>
+&lt;li>&lt;strong>Line 2&lt;/strong>: &lt;em>func1&lt;/em> is invoked, and the returning string output to the console&lt;/li>
+&lt;/ul>
+&lt;p>The output is as follows:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-posh" data-lang="posh">&lt;span class="line">&lt;span class="cl"> &lt;span class="n">String&lt;/span> &lt;span class="n">created&lt;/span> &lt;span class="n">by&lt;/span> &lt;span class="n">GetFunction&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;hr>
+&lt;h2 id="variables-outside-scope">Variables outside scope&lt;/h2>
+&lt;p>Looks look at some more examples, this time where the function &lt;code>uses a variable outside of its scope&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-16">16&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-17">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-17">17&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="line">&lt;span class="cl">&lt;span class="kt">var&lt;/span> &lt;span class="n">func2&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">GetFunction2&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">func2&lt;/span>&lt;span class="p">());&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kt">var&lt;/span> &lt;span class="n">func3&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">GetFunction3&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="m">17&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">func3&lt;/span>&lt;span class="p">());&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Func&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="kt">string&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="n">GetFunction2&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kt">int&lt;/span> &lt;span class="n">intValue&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="m">12&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="p">()&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="s">$&amp;#34;String created by GetFunction, value of {intValue}&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Func&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="kt">string&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="n">GetFunction3&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="kt">int&lt;/span> &lt;span class="n">intValue&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="p">()&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="s">$&amp;#34;String created by GetFunction, value of {intValue}&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>Both of the methods, &lt;em>GetFunction2&lt;/em> and &lt;em>GetFunction3&lt;/em> return a &lt;em>Func&amp;lt;string&amp;gt;&lt;/em> which makes use of the intValue variable.&lt;br>
+When the &lt;em>Func&lt;/em> is finally invoked, the variable &lt;em>intValue&lt;/em> is no longer in scope of the Func (it was defined inside the scope of &lt;em>GetFunction2&lt;/em> and &lt;em>GetFunction3&lt;/em>, which are both now out of scope) - however the value is accessed and output correctly - this is &lt;code>a closure&lt;/code>.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-posh" data-lang="posh">&lt;span class="line">&lt;span class="cl"> &lt;span class="n">String&lt;/span> &lt;span class="n">created&lt;/span> &lt;span class="n">by&lt;/span> &lt;span class="n">GetFunction&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">value&lt;/span> &lt;span class="n">of&lt;/span> &lt;span class="n">12&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">String&lt;/span> &lt;span class="n">created&lt;/span> &lt;span class="n">by&lt;/span> &lt;span class="n">GetFunction&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">value&lt;/span> &lt;span class="n">of&lt;/span> &lt;span class="n">17&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>As mention in the intro, the &lt;code>Closure&lt;/code> is &lt;code>linked to the environment&lt;/code> in which it was declared, and as such has access to variables in that environment (intValue), even if outside of its direct scope.&lt;/p>
+&lt;hr>
+&lt;h2 id="how-it-works">How it works&lt;/h2>
+&lt;p>So what does the compiler do to make this work?&lt;br>
+We can use &lt;a class="link" href="https://sharplab.io" target="_blank" rel="noopener"
+>sharplab.io&lt;/a> to see exactly how this code is lowered:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5">5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6">6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7">7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8">8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9">9&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="line">&lt;span class="cl">&lt;span class="kt">var&lt;/span> &lt;span class="n">func2&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">GetFunction2&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">func2&lt;/span>&lt;span class="p">());&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Func&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="kt">string&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="n">GetFunction2&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kt">int&lt;/span> &lt;span class="n">intValue&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="m">12&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="p">()&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="s">$&amp;#34;String created by GetFunction, value of {intValue}&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>The lowered code is as follows:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-16">16&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-17">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-17">17&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-18">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-18">18&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-19">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-19">19&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-20">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-20">20&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-21">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-21">21&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-22">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-22">22&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-23">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-23">23&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-24">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-24">24&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-25">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-25">25&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-26">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-26">26&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-27">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-27">27&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-28">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-28">28&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-29">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-29">29&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-30">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-30">30&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-31">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-31">31&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="line">&lt;span class="cl">&lt;span class="na">[assembly: CompilationRelaxations(8)]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="na">[assembly: RuntimeCompatibility(WrapNonExceptionThrows = true)]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="na">[assembly: Debuggable(DebuggableAttribute.DebuggingModes.IgnoreSymbolStoreSequencePoints)]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="na">[assembly: SecurityPermission(SecurityAction.RequestMinimum, SkipVerification = true)]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="na">[assembly: AssemblyVersion(&amp;#34;0.0.0.0&amp;#34;)]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="na">[module: UnverifiableCode]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="na">[CompilerGenerated]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">internal&lt;/span> &lt;span class="k">static&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">Program&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>&lt;span class="err">$&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">private&lt;/span> &lt;span class="k">sealed&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="p">&amp;lt;&amp;gt;&lt;/span>&lt;span class="n">c__DisplayClass0_0&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="kt">int&lt;/span> &lt;span class="n">intValue&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">internal&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="p">&amp;lt;&amp;lt;&lt;/span>&lt;span class="n">Main&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>&lt;span class="err">$&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>&lt;span class="n">b__1&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="kt">string&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Format&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;String created by GetFunction, value of {0}&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">intValue&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">private&lt;/span> &lt;span class="k">static&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="p">&amp;lt;&lt;/span>&lt;span class="n">Main&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>&lt;span class="err">$&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="kt">string&lt;/span>&lt;span class="p">[]&lt;/span> &lt;span class="n">args&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&amp;lt;&amp;lt;&lt;/span>&lt;span class="n">Main&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>&lt;span class="err">$&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>&lt;span class="n">g__GetFunction2&lt;/span>&lt;span class="p">|&lt;/span>&lt;span class="m">0_0&lt;/span>&lt;span class="p">()());&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">internal&lt;/span> &lt;span class="k">static&lt;/span> &lt;span class="n">Func&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="kt">string&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="p">&amp;lt;&amp;lt;&lt;/span>&lt;span class="n">Main&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>&lt;span class="err">$&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>&lt;span class="n">g__GetFunction2&lt;/span>&lt;span class="p">|&lt;/span>&lt;span class="m">0_0&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">&amp;lt;&amp;gt;&lt;/span>&lt;span class="n">c__DisplayClass0_0&lt;/span> &lt;span class="p">&amp;lt;&amp;gt;&lt;/span>&lt;span class="n">c__DisplayClass0_&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="p">&amp;lt;&amp;gt;&lt;/span>&lt;span class="n">c__DisplayClass0_0&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">&amp;lt;&amp;gt;&lt;/span>&lt;span class="n">c__DisplayClass0_&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">intValue&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="m">12&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">Func&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="kt">string&lt;/span>&lt;span class="p">&amp;gt;(&amp;lt;&amp;gt;&lt;/span>&lt;span class="n">c__DisplayClass0_&lt;/span>&lt;span class="p">.&amp;lt;&amp;lt;&lt;/span>&lt;span class="n">Main&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>&lt;span class="err">$&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>&lt;span class="n">b__1&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>Obviously this can get more complicated and complex depending on the use case, but essentially what the compiler is doing is as follows:&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>Lines 10-18&lt;/strong>: A &amp;ldquo;dummy&amp;rdquo; class (&amp;lt;&amp;gt;c__DisplayClass0_0) is created which contains the variable required, and the &lt;em>Func&lt;/em> is converted to a method on the class&lt;/li>
+&lt;li>&lt;strong>Lines 25-29&lt;/strong>: A method is created which instantiates the above class, sets the variable value and then invokes the method (which was the &lt;em>Func&lt;/em>)&lt;/li>
+&lt;li>&lt;strong>Lines 22&lt;/strong>: The above method is invoked, creating the class, setting the value and outputting the result&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h2 id="variable-not-value">Variable not value&lt;/h2>
+&lt;p>One final example, show that the &lt;code>closure uses the variable, not the value&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="line">&lt;span class="cl">&lt;span class="kt">int&lt;/span> &lt;span class="n">localInt&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="m">100&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Func&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="kt">string&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="n">localFunc&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="p">()&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="s">$&amp;#34;The value of localInt is: {localInt}&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">localInt&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="m">150&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">localFunc&lt;/span>&lt;span class="p">());&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;ul>
+&lt;li>&lt;strong>Lines 2&lt;/strong>: A &lt;em>Func&lt;/em> is defined, which outputs the value of &lt;em>localInt&lt;/em>. At the time the function is created, the &lt;code>localInt value is 100&lt;/code>&lt;/li>
+&lt;li>&lt;strong>Lines 3&lt;/strong>: &lt;em>localInt&lt;/em> value is increased to 150&lt;/li>
+&lt;li>&lt;strong>Lines 4&lt;/strong>: The &lt;em>Func&lt;/em> is invoked, with the &lt;code>localInt value at 150&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;p>The output:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="line">&lt;span class="cl"> &lt;span class="n">The&lt;/span> &lt;span class="k">value&lt;/span> &lt;span class="n">of&lt;/span> &lt;span class="n">x&lt;/span> &lt;span class="k">is&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="m">150&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>As mentioned, the closure uses the variable (which can change value) and not the value when it was created.&lt;/p>
+&lt;hr>
+&lt;h2 id="notes">Notes&lt;/h2>
+&lt;p>&lt;code>Closures&lt;/code> are easy to use and implement, but this is enabled by the compiler doing lots of work behind the scenes. They are another useful tool to be aware of when coding and thinking through how the code might fit together.&lt;/p>
+&lt;hr>
+&lt;h2 id="references">References&lt;/h2>
+&lt;p>&lt;a class="link" href="https://www.simplethread.com/c-closures-explained/" target="_blank" rel="noopener"
+>A Simple Explanation of C# Closures&lt;/a>&lt;br>
+&lt;a class="link" href="https://www.infoworld.com/article/3620248/how-to-use-closures-in-csharp.html" target="_blank" rel="noopener"
+>How to use closures in C#&lt;/a>&lt;/p>
+&lt;blockquote>
+&lt;div>
+&lt;div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px;">
+&lt;i class="inline-svg" >&lt;svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffbf00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+&lt;path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+&lt;path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+&lt;path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+&lt;line x1="9.7" y1="17" x2="14.3" y2="17" />
+&lt;/svg>&lt;/i>
+&lt;/div>
+&lt;div>
+&lt;h3>Daily Drop 32: 16-03-2022&lt;/h3>
+&lt;/div>
+&lt;br>
+&lt;div>
+At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.&lt;br>It could be anything - some .NET/C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.&lt;br>&lt;br>
+The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+&lt;/div>
+&lt;/div>
+&lt;/blockquote></description></item><item><title>Private variables prefixed with underscore?</title><link>https://always-developing.github.io/dailydrop/2022/03/15-private-underscore/</link><pubDate>Tue, 15 Mar 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/03/15-private-underscore/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
 &lt;p>The current convention/standard/best practice when it comes to naming private fields on a class, is to prefix the name with an underscore. Turns out, that this &lt;code>convention is all due to a misunderstanding&lt;/code>!&lt;/p>
 &lt;hr>
 &lt;h2 id="explained">Explained&lt;/h2>
