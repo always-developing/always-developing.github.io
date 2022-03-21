@@ -1,4 +1,309 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Fri, 18 Mar 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Covariance and Contravariance in C#</title><link>https://always-developing.github.io/dailydrop/2022/03/18-co-contravariance/</link><pubDate>Fri, 18 Mar 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/03/18-co-contravariance/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Mon, 21 Mar 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Downcasting automatically with dynamic keyword</title><link>https://always-developing.github.io/dailydrop/2022/03/21-dynamic-downcast/</link><pubDate>Mon, 21 Mar 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/03/21-dynamic-downcast/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+&lt;p>The &lt;code>dynamic&lt;/code> keyword can be used to to automatically downcast a variable to the correct type when calling a method.&lt;/p>
+&lt;p>This technique is useful when having a variable of a &lt;code>base type&lt;/code>, and a method needs to be called using a &lt;code>derived type&lt;/code>.&lt;/p>
+&lt;p>Lets look at a few examples, which will help make things a bit clearer.&lt;/p>
+&lt;hr>
+&lt;h2 id="base-setup">Base setup&lt;/h2>
+&lt;p>In the examples below, the following hierarchy of classes is used:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-16">16&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-17">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-17">17&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-18">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-18">18&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-19">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-19">19&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-20">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-20">20&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-21">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-21">21&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-22">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-22">22&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-23">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-23">23&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-24">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-24">24&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-25">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-25">25&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-26">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-26">26&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-27">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-27">27&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-28">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-28">28&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-29">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-29">29&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="line">&lt;span class="cl">&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">Vehicle&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">PrintVehicle&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$&amp;#34;I am a {typeof(Vehicle).Name}&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">LandVehicle&lt;/span> &lt;span class="p">:&lt;/span> &lt;span class="n">Vehicle&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">PrintLandVehicle&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$&amp;#34;I am a {typeof(LandVehicle).Name}&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">Car&lt;/span> &lt;span class="p">:&lt;/span> &lt;span class="n">LandVehicle&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">PrintCar&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$&amp;#34;I am a {typeof(Car).Name}&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">SeaVehicle&lt;/span> &lt;span class="p">:&lt;/span> &lt;span class="n">Vehicle&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">PrintSeaVehicle&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$&amp;#34;I am a {typeof(SeaVehicle).Name}&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">Boat&lt;/span> &lt;span class="p">:&lt;/span> &lt;span class="n">SeaVehicle&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">PrintBoat&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$&amp;#34;I am a {typeof(Boat).Name}&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>The hierarchy looks as follows. Each level has a &lt;em>print&lt;/em> method which prints out which type it is:&lt;/p>
+&lt;ul>
+&lt;li>Vehicle:
+&lt;ul>
+&lt;li>Land Vehicle
+&lt;ul>
+&lt;li>Car&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>Sea Vehicle
+&lt;ul>
+&lt;li>Boat&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;p>We also have a &lt;em>VehicleHelper&lt;/em> class, which will assist in dealing with &lt;em>Vehicles&lt;/em>:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="line">&lt;span class="cl">&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">VehicleHelper&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">PrintVehicle&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">Car&lt;/span> &lt;span class="n">c&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">c&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">PrintCar&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">PrintVehicle&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">Boat&lt;/span> &lt;span class="n">b&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">b&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">PrintBoat&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>This class can print a vehicle, but only if its a &lt;em>Car or a Boat&lt;/em>.&lt;/p>
+&lt;hr>
+&lt;h2 id="working-example">Working example&lt;/h2>
+&lt;p>Using the &lt;em>VehicleHelper&lt;/em>, we can print out a &lt;em>Car&lt;/em> or &lt;em>Boat&lt;/em> as follows:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5">5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6">6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7">7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8">8&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="line">&lt;span class="cl">&lt;span class="kt">var&lt;/span> &lt;span class="n">helper&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">VehicleHelper&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Car&lt;/span> &lt;span class="n">car&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">Car&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Boat&lt;/span> &lt;span class="n">boat&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">Boat&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">helper&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">PrintVehicle&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">car&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;=====&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">helper&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">PrintVehicle&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">boat&lt;/span>&lt;span class="p">);&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>As one might expect, the output is as follows:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-posh" data-lang="posh">&lt;span class="line">&lt;span class="cl">&lt;span class="n">I&lt;/span> &lt;span class="n">am&lt;/span> &lt;span class="n">a&lt;/span> &lt;span class="n">Car&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">=====&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">I&lt;/span> &lt;span class="n">am&lt;/span> &lt;span class="n">a&lt;/span> &lt;span class="n">Boat&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;hr>
+&lt;h2 id="the-problem">The problem&lt;/h2>
+&lt;p>Assume the &lt;em>VehicleHelper&lt;/em> class was extended to include a factory method to return a &lt;em>Vehicle&lt;/em>. We can ask it for a &lt;em>Vehicle&lt;/em> of a particular type by using a string, and it will return that type.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-16">16&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-17">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-17">17&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-18">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-18">18&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-19">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-19">19&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-20">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-20">20&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-21">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-21">21&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-22">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-22">22&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-c#" data-lang="c#">&lt;span class="line">&lt;span class="cl">&lt;span class="k">public&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">VehicleHelper&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">PrintVehicle&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">Car&lt;/span> &lt;span class="n">c&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">c&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">PrintCar&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="k">void&lt;/span> &lt;span class="n">PrintVehicle&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">Boat&lt;/span> &lt;span class="n">b&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">b&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">PrintBoat&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="n">Vehicle&lt;/span> &lt;span class="n">GetVehicle&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="kt">string&lt;/span> &lt;span class="n">type&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">type&lt;/span> &lt;span class="k">switch&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="s">&amp;#34;vehicle&amp;#34;&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">Vehicle&lt;/span>&lt;span class="p">(),&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="s">&amp;#34;land&amp;#34;&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">LandVehicle&lt;/span>&lt;span class="p">(),&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="s">&amp;#34;car&amp;#34;&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">Car&lt;/span>&lt;span class="p">(),&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="s">&amp;#34;sea&amp;#34;&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">SeaVehicle&lt;/span>&lt;span class="p">(),&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="s">&amp;#34;boat&amp;#34;&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">Boat&lt;/span>&lt;span class="p">(),&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="m">_&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">Vehicle&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">};&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>This method can now be used to get new &lt;em>Vehicles&lt;/em>:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-c#" data-lang="c#">&lt;span class="line">&lt;span class="cl">&lt;span class="n">Vehicle&lt;/span> &lt;span class="n">vehCar&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">helper&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetVehicle&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;car&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Vehicle&lt;/span> &lt;span class="n">vehBoat&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">helper&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetVehicle&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;boat&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>The problem here, is that even though we are &lt;code>asking for a Car and the method instantiates and returns a Car&lt;/code>, the return type is &lt;code>Vehicle&lt;/code> - the Car (or boat, or any other type) gets upcast to type &lt;em>Vehicle&lt;/em>.&lt;/p>
+&lt;p>This means the following &lt;strong>will NOT compile:&lt;/strong>&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5">5&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-c#" data-lang="c#">&lt;span class="line">&lt;span class="cl">&lt;span class="kt">var&lt;/span> &lt;span class="n">helper&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">VehicleHelper&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Vehicle&lt;/span> &lt;span class="n">vehCar&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">helper&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetVehicle&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;car&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">helper&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">PrintVehicle&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">vehCar&lt;/span>&lt;span class="p">);&lt;/span> &lt;span class="c1">// ERROR on this line&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>The error on line 5 is &lt;code>cannot convert from 'Vehicle' to 'Car'&lt;/code>.&lt;/p>
+&lt;p>Even though &lt;em>vehCar&lt;/em> was &lt;code>instantiated as a Car&lt;/code> is was &lt;code>upcast to a Vehicle&lt;/code> and there is &lt;code>no PrintVehicle method which accepts type Vehicle&lt;/code>.&lt;/p>
+&lt;hr>
+&lt;h2 id="the-fix">The fix&lt;/h2>
+&lt;p>The &lt;code>dynamic&lt;/code> keyword can be used to automatically downcast the &lt;em>Vehicle&lt;/em> to the correct type, and have the correct method invoked.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5">5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6">6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7">7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8">8&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-c#" data-lang="c#">&lt;span class="line">&lt;span class="cl">&lt;span class="kt">var&lt;/span> &lt;span class="n">helper&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">VehicleHelper&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Vehicle&lt;/span> &lt;span class="n">vehCar&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">helper&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetVehicle&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;car&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Vehicle&lt;/span> &lt;span class="n">vehBoat&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">helper&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetVehicle&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;boat&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">helper&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">PrintVehicle&lt;/span>&lt;span class="p">((&lt;/span>&lt;span class="kt">dynamic&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="n">vehCar&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;=====&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">helper&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">PrintVehicle&lt;/span>&lt;span class="p">((&lt;/span>&lt;span class="kt">dynamic&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="n">vehBoat&lt;/span>&lt;span class="p">);&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>On &lt;strong>lines 6 and 7&lt;/strong>, the &lt;em>Vehicle&lt;/em> is cast to dynamic - the result is that the &lt;code>vehCar will be cast to Car, and the correct PrintVehicle method called&lt;/code>, with the same pattern applying to &lt;em>vehBoat&lt;/em>.&lt;/p>
+&lt;p>The output is as follows:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-posh" data-lang="posh">&lt;span class="line">&lt;span class="cl">&lt;span class="n">I&lt;/span> &lt;span class="n">am&lt;/span> &lt;span class="n">a&lt;/span> &lt;span class="n">Car&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">=====&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">I&lt;/span> &lt;span class="n">am&lt;/span> &lt;span class="n">a&lt;/span> &lt;span class="n">Boat&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>This is incredible useful - just by casting it to &lt;code>dynamic&lt;/code>, the compiled will cast to the correct type and invoke the correct method!&lt;/p>
+&lt;hr>
+&lt;h2 id="notes">Notes&lt;/h2>
+&lt;p>&lt;code>dynamic&lt;/code> has a bit of a negative reputation, but in this case it proves to be very useful. As always though, especially if this is used in a critical hot path, the performance should be benchmarked against other methods to determine if using &lt;code>dynamic&lt;/code> makes sense. It might make more sense, for example, to manually check and cast the type (using the &lt;code>is&lt;/code> keyword) and calling the appropriate method.&lt;/p>
+&lt;hr>
+&lt;blockquote>
+&lt;div>
+&lt;div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px;">
+&lt;i class="inline-svg" >&lt;svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffbf00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+&lt;path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+&lt;path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+&lt;path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+&lt;line x1="9.7" y1="17" x2="14.3" y2="17" />
+&lt;/svg>&lt;/i>
+&lt;/div>
+&lt;div>
+&lt;h3>Daily Drop 34: 21-03-2022&lt;/h3>
+&lt;/div>
+&lt;br>
+&lt;div>
+At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.&lt;br>It could be anything - some .NET/C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.&lt;br>&lt;br>
+The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+&lt;/div>
+&lt;/div>
+&lt;/blockquote></description></item><item><title>Covariance and Contravariance in C#</title><link>https://always-developing.github.io/dailydrop/2022/03/18-co-contravariance/</link><pubDate>Fri, 18 Mar 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/03/18-co-contravariance/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
 &lt;p>The way in which base and inherited classes can automatically be cast up or down the hierarchy (depending on the situation) is referred to &lt;code>covariance&lt;/code> and &lt;code>contravariance&lt;/code>.&lt;/p>
 &lt;p>Most developers have probably used the concepts of &lt;code>covariance&lt;/code> and &lt;code>contravariance&lt;/code> in their code, perhaps without even realising it. Looking at a some examples, will help explain in a bit more detail.&lt;/p>
 &lt;hr>
