@@ -1,4 +1,162 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Fri, 25 Mar 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Null checking with the is keyword</title><link>https://always-developing.github.io/dailydrop/2022/03/25-is-instead-of-equals/</link><pubDate>Fri, 25 Mar 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/03/25-is-instead-of-equals/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Mon, 28 Mar 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>StringSyntaxAttribute for syntax highlighting</title><link>https://always-developing.github.io/dailydrop/2022/03/28-stringsyntaxattribute/</link><pubDate>Mon, 28 Mar 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/03/28-stringsyntaxattribute/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+&lt;p>A new attribute &lt;code>StringSyntaxAttribute&lt;/code>, being introduced in .NET7, allows for marking a C# string as containing a specific type of value. This results in:&lt;/p>
+&lt;ul>
+&lt;li>Syntax highlighting for the specific type&lt;/li>
+&lt;li>Basic validation for the specific type.&lt;/li>
+&lt;/ul>
+&lt;p>At the time of this post, this feature is only available in .NET7 preview 1, and when using Visual Studio 2022 17.2.0 Preview 1.0. This may change between now and .NET7 release.&lt;/p>
+&lt;hr>
+&lt;h2 id="core-libraries">Core libraries&lt;/h2>
+&lt;p>As part of .NET7, the core .NET libraries have been updated, where relevant, to make use of the new attribute.&lt;/p>
+&lt;p>Currently there are 3 supported types/languages, but the framework is extensible so more languages can be added:&lt;/p>
+&lt;ul>
+&lt;li>Regex&lt;/li>
+&lt;li>Json&lt;/li>
+&lt;li>DateTime&lt;/li>
+&lt;/ul>
+&lt;p>Most, if not all, methods in the core libraries which accept a string parameter of one of these types, now makes use of the attribute.&lt;/p>
+&lt;p>This allows for full syntax highlighting:&lt;/p>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 915;
+flex-basis: 2196px"
+>
+&lt;a href="https://always-developing.github.io/dailydrop/2022/03/28-stringsyntaxattribute/1.core-libraries.png" data-size="851x93">
+&lt;img src="https://always-developing.github.io/dailydrop/2022/03/28-stringsyntaxattribute/1.core-libraries.png"
+width="851"
+height="93"
+srcset="https://always-developing.github.io/dailydrop/2022/03/28-stringsyntaxattribute/1.core-libraries_hufb3fbd85ac6a89c56bbce04610a47ce3_34262_480x0_resize_box_3.png 480w, https://always-developing.github.io/dailydrop/2022/03/28-stringsyntaxattribute/1.core-libraries_hufb3fbd85ac6a89c56bbce04610a47ce3_34262_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Regex and Json example">
+&lt;/a>
+&lt;figcaption>Regex and Json example&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;p>In the above example, you can see how:&lt;/p>
+&lt;ul>
+&lt;li>A string being passes to the &lt;code>Regex&lt;/code> constructor has syntax highlighting&lt;/li>
+&lt;li>A bit more subtle, but the string representing a &lt;code>json&lt;/code> value being passed to JsonSerializer.Deserialize also has syntax highlighting&lt;/li>
+&lt;li>A string representing a json value being passed to a normal method does not have any syntax highlighting&lt;/li>
+&lt;/ul>
+&lt;p>In the case of &lt;code>DateTime&lt;/code>, the attribute provides additional intellisense assistance:&lt;/p>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 336;
+flex-basis: 806px"
+>
+&lt;a href="https://always-developing.github.io/dailydrop/2022/03/28-stringsyntaxattribute/2.core-datetime.png" data-size="679x202">
+&lt;img src="https://always-developing.github.io/dailydrop/2022/03/28-stringsyntaxattribute/2.core-datetime.png"
+width="679"
+height="202"
+srcset="https://always-developing.github.io/dailydrop/2022/03/28-stringsyntaxattribute/2.core-datetime_hue1f0377fba8ac4e751a215aa8eec3e58_19374_480x0_resize_box_3.png 480w, https://always-developing.github.io/dailydrop/2022/03/28-stringsyntaxattribute/2.core-datetime_hue1f0377fba8ac4e751a215aa8eec3e58_19374_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="DateTime information">
+&lt;/a>
+&lt;figcaption>DateTime information&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;p>By marking a string with the attribute, basic validation is also applied, based on the language type:&lt;/p>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 517;
+flex-basis: 1241px"
+>
+&lt;a href="https://always-developing.github.io/dailydrop/2022/03/28-stringsyntaxattribute/4.syntax-error.png" data-size="750x145">
+&lt;img src="https://always-developing.github.io/dailydrop/2022/03/28-stringsyntaxattribute/4.syntax-error.png"
+width="750"
+height="145"
+srcset="https://always-developing.github.io/dailydrop/2022/03/28-stringsyntaxattribute/4.syntax-error_huf2a6e70c87f40a7f7e0e143af280f190_20131_480x0_resize_box_3.png 480w, https://always-developing.github.io/dailydrop/2022/03/28-stringsyntaxattribute/4.syntax-error_huf2a6e70c87f40a7f7e0e143af280f190_20131_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="JSON syntax error/warning">
+&lt;/a>
+&lt;figcaption>JSON syntax error/warning&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;p>The above string has malformed json (missing quote), but has been marked as containing a json value - Roslyn flags this with a warning to highlight the string has an invalid value according to the specific type.&lt;/p>
+&lt;hr>
+&lt;h2 id="non-attribute-highlighting">Non-attribute highlighting&lt;/h2>
+&lt;p>It is also possible to mark a &lt;code>normal string&lt;/code> with syntax highlighting, outside of using the attribute. This is done by prefixing the string with &lt;code>/*lang=xxx*/&lt;/code> (where xxx is the language)&lt;/p>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 314;
+flex-basis: 754px"
+>
+&lt;a href="https://always-developing.github.io/dailydrop/2022/03/28-stringsyntaxattribute/3.non-attribute.png" data-size="569x181">
+&lt;img src="https://always-developing.github.io/dailydrop/2022/03/28-stringsyntaxattribute/3.non-attribute.png"
+width="569"
+height="181"
+srcset="https://always-developing.github.io/dailydrop/2022/03/28-stringsyntaxattribute/3.non-attribute_hu4bc58bc763729c190f64e5abaff5b264_51223_480x0_resize_box_3.png 480w, https://always-developing.github.io/dailydrop/2022/03/28-stringsyntaxattribute/3.non-attribute_hu4bc58bc763729c190f64e5abaff5b264_51223_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Non-attribute usage">
+&lt;/a>
+&lt;figcaption>Non-attribute usage&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;p>Here, a &lt;code>normal string&lt;/code> declaration has been marked as containing &lt;em>regex formatting&lt;/em> and the string has been highlighted accordingly.&lt;/p>
+&lt;p>A &lt;code>string parameter&lt;/code> (not marked with StringSyntaxAttribute) has also had the syntax highlighting applied by using the &lt;code>/*lang=regex*/&lt;/code> method.&lt;/p>
+&lt;hr>
+&lt;h2 id="own-libraries">Own libraries&lt;/h2>
+&lt;p>It is also possible to make use of the attribute in our own code, and mark string parameters as being of a certain type. This allows for a better developer experience for users of the libraries/methods:&lt;/p>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 487;
+flex-basis: 1170px"
+>
+&lt;a href="https://always-developing.github.io/dailydrop/2022/03/28-stringsyntaxattribute/5.own-method.png" data-size="712x146">
+&lt;img src="https://always-developing.github.io/dailydrop/2022/03/28-stringsyntaxattribute/5.own-method.png"
+width="712"
+height="146"
+srcset="https://always-developing.github.io/dailydrop/2022/03/28-stringsyntaxattribute/5.own-method_hu9f2f0d4b57fd06dde6aefc0a02927e2e_31525_480x0_resize_box_3.png 480w, https://always-developing.github.io/dailydrop/2022/03/28-stringsyntaxattribute/5.own-method_hu9f2f0d4b57fd06dde6aefc0a02927e2e_31525_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Attribute usage in own method">
+&lt;/a>
+&lt;figcaption>Attribute usage in own method&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;p>And an example with json&lt;/p>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 387;
+flex-basis: 931px"
+>
+&lt;a href="https://always-developing.github.io/dailydrop/2022/03/28-stringsyntaxattribute/6.own-json.png" data-size="613x158">
+&lt;img src="https://always-developing.github.io/dailydrop/2022/03/28-stringsyntaxattribute/6.own-json.png"
+width="613"
+height="158"
+srcset="https://always-developing.github.io/dailydrop/2022/03/28-stringsyntaxattribute/6.own-json_hu7e3701bb25ee7f77d260dc933192a7b6_20083_480x0_resize_box_3.png 480w, https://always-developing.github.io/dailydrop/2022/03/28-stringsyntaxattribute/6.own-json_hu7e3701bb25ee7f77d260dc933192a7b6_20083_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Attribute usage with json string">
+&lt;/a>
+&lt;figcaption>Attribute usage with json string&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;hr>
+&lt;h2 id="notes">Notes&lt;/h2>
+&lt;p>This is an amazing and incredibly useful feature, especially for the developers who work with the supported languages/types (Regex, JSON and DateTime at present). With this being extensible, I am excited to see where this goes and the supported languages increase!&lt;/p>
+&lt;hr>
+&lt;h2 id="references">References&lt;/h2>
+&lt;p>&lt;a class="link" href="https://www.youtube.com/watch?v=rwfNDyBBgks" target="_blank" rel="noopener"
+>.NET Tooling Community Standup - .NET Performance sneak peek!&lt;/a>&lt;/p>
+&lt;blockquote>
+&lt;div>
+&lt;div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px;">
+&lt;i class="inline-svg" >&lt;svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffbf00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+&lt;path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+&lt;path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+&lt;path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+&lt;line x1="9.7" y1="17" x2="14.3" y2="17" />
+&lt;/svg>&lt;/i>
+&lt;/div>
+&lt;div>
+&lt;h3>Daily Drop 39: 28-03-2022&lt;/h3>
+&lt;/div>
+&lt;br>
+&lt;div>
+At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.&lt;br>It could be anything - some .NET/C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.&lt;br>&lt;br>
+The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+&lt;/div>
+&lt;/div>
+&lt;/blockquote></description></item><item><title>Null checking with the is keyword</title><link>https://always-developing.github.io/dailydrop/2022/03/25-is-instead-of-equals/</link><pubDate>Fri, 25 Mar 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/03/25-is-instead-of-equals/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
 &lt;p>When checking if an instances of a object is null, the &lt;code>is&lt;/code> keyword should be used instead of the double equals &lt;code>==&lt;/code> operator.&lt;/p>
 &lt;p>This is because the &lt;code>==&lt;/code> operator can be overloaded to change its meaning, while the &lt;code>is&lt;/code> keyword cannot.&lt;/p>
 &lt;hr>
