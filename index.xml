@@ -1,4 +1,94 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Tue, 26 Apr 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Soft deletes with EF global filters</title><link>https://always-developing.github.io/dailydrop/2022/04/26-ef-soft-delete/</link><pubDate>Tue, 26 Apr 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/04/26-ef-soft-delete/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Wed, 27 Apr 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Separating pinned documents</title><link>https://always-developing.github.io/dailydrop/2022/04/27-vs-pinned-tab/</link><pubDate>Wed, 27 Apr 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/04/27-vs-pinned-tab/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+&lt;p>Visual Studio has the ability to &lt;code>pin documents&lt;/code> which will ensure, by default, that the documents are always on the left side of the open documents tabs.&lt;/p>
+&lt;p>However it is also possible to pin the documents so they appear in their &lt;code>own separate row&lt;/code> - where they are easier to find at a glance.&lt;/p>
+&lt;hr>
+&lt;h2 id="default-pinning">Default pinning&lt;/h2>
+&lt;p>Below is a screen shot of what the default pinning looks like, with &lt;em>appsettings.json&lt;/em> and &lt;em>appsettings.Test.json&lt;/em> having been pinned:&lt;/p>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 748;
+flex-basis: 1795px"
+>
+&lt;a href="https://always-developing.github.io/dailydrop/2022/04/27-vs-pinned-tab/default.png" data-size="763x102">
+&lt;img src="https://always-developing.github.io/dailydrop/2022/04/27-vs-pinned-tab/default.png"
+width="763"
+height="102"
+srcset="https://always-developing.github.io/dailydrop/2022/04/27-vs-pinned-tab/default_hud80f723e633a4cc187e8ab4c737c25ab_33429_480x0_resize_box_3.png 480w, https://always-developing.github.io/dailydrop/2022/04/27-vs-pinned-tab/default_hud80f723e633a4cc187e8ab4c737c25ab_33429_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Default pinning">
+&lt;/a>
+&lt;figcaption>Default pinning&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;p>The issue with this I find, is that &lt;em>at a glance its not easy to see which documents are actually pinned&lt;/em>.&lt;/p>
+&lt;p>The icon indicating a document is pinned, the vertical pin shown by the &lt;code>red arrow&lt;/code> and the horizontal pin icon indicating the active, unpinned document, shown by the &lt;code>green arrow&lt;/code> are very similar at a glace. This similarity is even more prevalent at higher resolutions.&lt;/p>
+&lt;hr>
+&lt;h2 id="tabs-and-windows-options">Tabs and Windows options&lt;/h2>
+&lt;p>There is an option in Visual Studio to &lt;code>Show pinned tabs on separate row&lt;/code>. This can be found by going to &lt;em>Tools -&amp;gt; Options -&amp;gt; Environment -&amp;gt; Tabs and Windows -&amp;gt; Show pinned tabs in separate row&lt;/em>.&lt;/p>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 119;
+flex-basis: 286px"
+>
+&lt;a href="https://always-developing.github.io/dailydrop/2022/04/27-vs-pinned-tab/Options.png" data-size="746x625">
+&lt;img src="https://always-developing.github.io/dailydrop/2022/04/27-vs-pinned-tab/Options.png"
+width="746"
+height="625"
+srcset="https://always-developing.github.io/dailydrop/2022/04/27-vs-pinned-tab/Options_hu443e4dac38f26e6d9a18c1b57068e929_70768_480x0_resize_box_3.png 480w, https://always-developing.github.io/dailydrop/2022/04/27-vs-pinned-tab/Options_hu443e4dac38f26e6d9a18c1b57068e929_70768_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Separate row option">
+&lt;/a>
+&lt;figcaption>Separate row option&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;hr>
+&lt;h2 id="separate-row-pinning">Separate row pinning&lt;/h2>
+&lt;p>With the &lt;em>separate row&lt;/em> option enabled, the pinned documents now (as described), are shown on their own separate row:&lt;/p>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 557;
+flex-basis: 1338px"
+>
+&lt;a href="https://always-developing.github.io/dailydrop/2022/04/27-vs-pinned-tab/separaterow.png" data-size="714x128">
+&lt;img src="https://always-developing.github.io/dailydrop/2022/04/27-vs-pinned-tab/separaterow.png"
+width="714"
+height="128"
+srcset="https://always-developing.github.io/dailydrop/2022/04/27-vs-pinned-tab/separaterow_hu19c6f928f67f663fa9b0aab778b3c43f_19217_480x0_resize_box_3.png 480w, https://always-developing.github.io/dailydrop/2022/04/27-vs-pinned-tab/separaterow_hu19c6f928f67f663fa9b0aab778b3c43f_19217_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Separate row pinned documents">
+&lt;/a>
+&lt;figcaption>Separate row pinned documents&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;p>At a glace, much easier to see which documents are pinned and which are not.&lt;/p>
+&lt;hr>
+&lt;h2 id="notes">Notes&lt;/h2>
+&lt;p>A very small tweak to the default Visual Studio settings, but I find this can have a minor positive impact on developer experience when working with pinned documents.&lt;/p>
+&lt;p>A worthwhile improvement to this feature, would be the ability to drag a document from the unpinned row to the pinned row to automatically pin it, and visa-versa.&lt;/p>
+&lt;hr>
+&lt;h2 id="references">References&lt;/h2>
+&lt;p>&lt;a class="link" href="https://www.c-sharpcorner.com/article/hidden-features-of-visual-studio-that-developer-should-know/" target="_blank" rel="noopener"
+>Hidden Features Of Visual Studio That Developer Should Know&lt;/a>&lt;/p>
+&lt;blockquote>
+&lt;div>
+&lt;div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px;">
+&lt;i class="inline-svg" >&lt;svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffbf00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+&lt;path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+&lt;path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+&lt;path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+&lt;line x1="9.7" y1="17" x2="14.3" y2="17" />
+&lt;/svg>&lt;/i>
+&lt;/div>
+&lt;div>
+&lt;h3>Daily Drop 61: 27-04-2022&lt;/h3>
+&lt;/div>
+&lt;br>
+&lt;div>
+At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.&lt;br>It could be anything - some .NET/C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.&lt;br>&lt;br>
+The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+&lt;/div>
+&lt;/div>
+&lt;/blockquote></description></item><item><title>Soft deletes with EF global filters</title><link>https://always-developing.github.io/dailydrop/2022/04/26-ef-soft-delete/</link><pubDate>Tue, 26 Apr 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/04/26-ef-soft-delete/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
 &lt;p>Entity Framework Core&amp;rsquo;s &lt;code>global filter&lt;/code> functionality can be used to a apply a filter automatically to all queries on a dbSet.&lt;/p>
 &lt;p>This is especially useful when dealing with &lt;code>soft delete&lt;/code> functionality, where the data is not removed from the database table, but instead just marked as deleted (or archived or retired etc)&lt;/p>
 &lt;hr>
