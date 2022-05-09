@@ -1,4 +1,146 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Fri, 06 May 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Multi-statement line breakpoints</title><link>https://always-developing.github.io/dailydrop/2022/05/06-breakpoint-shortcut/</link><pubDate>Fri, 06 May 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/05/06-breakpoint-shortcut/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Mon, 09 May 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Error and warning preprocessor directives</title><link>https://always-developing.github.io/dailydrop/2022/05/09-preprocessor-directives/</link><pubDate>Mon, 09 May 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/05/09-preprocessor-directives/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+&lt;p>There are a number of C# directives which can be used to instruct the compiler to generate user-defined errors and warnings as well as control line information:&lt;/p>
+&lt;ul>
+&lt;li>#error&lt;/li>
+&lt;li>#warning&lt;/li>
+&lt;li>#line&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h2 id="error">#error&lt;/h2>
+&lt;p>The &lt;code>#error&lt;/code> directive can be used to generate a compiler error with a specific message.&lt;/p>
+&lt;p>Suppose (for no good reason I can think of), the below code should only be executed when in &lt;em>Release&lt;/em> build configuration:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="line">&lt;span class="cl">&lt;span class="k">void&lt;/span> &lt;span class="n">MethodToOnlyRunInRelease&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="cp">#if DEBUG&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="cp">#error Method MethodToOnlyRunInRelease should only be run in release mode&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="err">#&lt;/span>&lt;span class="n">endif&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1">// Execute production only logic&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>
+&lt;p>The &lt;code>#error&lt;/code> directive is used to raise an error with the compiler when the code is built in &lt;em>DEBUG&lt;/em> configuration.&lt;/p>
+&lt;p>In Visual Studio, this will reflect in the &lt;strong>Error List&lt;/strong> (as well as in the build output) as follows:&lt;/p>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 1675;
+flex-basis: 4021px"
+>
+&lt;a href="https://always-developing.github.io/dailydrop/2022/05/09-preprocessor-directives/error.png" data-size="821x49">
+&lt;img src="https://always-developing.github.io/dailydrop/2022/05/09-preprocessor-directives/error.png"
+width="821"
+height="49"
+srcset="https://always-developing.github.io/dailydrop/2022/05/09-preprocessor-directives/error_hu8b12897d21eb44d475816ae68ea40122_5234_480x0_resize_box_3.png 480w, https://always-developing.github.io/dailydrop/2022/05/09-preprocessor-directives/error_hu8b12897d21eb44d475816ae68ea40122_5234_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="#error directive">
+&lt;/a>
+&lt;figcaption>#error directive&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;h2 id="warning">#warning&lt;/h2>
+&lt;p>The &lt;code>#warning&lt;/code> directive can be used to generate a compiler warning with a specific message.&lt;/p>
+&lt;p>Suppose while coding you notice a method is using a deprecated portion of code. A warning note can be left to have it investigated further in future:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="line">&lt;span class="cl">&lt;span class="k">void&lt;/span> &lt;span class="n">MethodToDoSomething&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="cp">#warning this method looks to be using deprecated code. Needs investigating&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1">// Code which does something&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>
+&lt;p>This will raise a warning on the specified line, which will reflect in Visual Studio, in the &lt;strong>Error List&lt;/strong> as a warning (as well as in the build output) as follows:&lt;/p>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 1598;
+flex-basis: 3835px"
+>
+&lt;a href="https://always-developing.github.io/dailydrop/2022/05/09-preprocessor-directives/warning.png" data-size="831x52">
+&lt;img src="https://always-developing.github.io/dailydrop/2022/05/09-preprocessor-directives/warning.png"
+width="831"
+height="52"
+srcset="https://always-developing.github.io/dailydrop/2022/05/09-preprocessor-directives/warning_huf48eddef9a51f3cbc94c730a21e9ae77_5469_480x0_resize_box_3.png 480w, https://always-developing.github.io/dailydrop/2022/05/09-preprocessor-directives/warning_huf48eddef9a51f3cbc94c730a21e9ae77_5469_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="#warning directive">
+&lt;/a>
+&lt;figcaption>#warning directive&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;h2 id="line">#line&lt;/h2>
+&lt;p>The &lt;code>#line&lt;/code> directive can be used to change the line number printed with the compiler message&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="line">&lt;span class="cl">&lt;span class="cp">#line 1201 &lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">void&lt;/span> &lt;span class="n">AnotherMethodNeverCalled&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>
+&lt;p>In Visual Studio, this will reflect in the &lt;strong>Error List&lt;/strong> as a warning (as well as in the build output) as follows, notice the &lt;code>line number column&lt;/code> value.&lt;/p>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 1635;
+flex-basis: 3924px"
+>
+&lt;a href="https://always-developing.github.io/dailydrop/2022/05/09-preprocessor-directives/line1.png" data-size="834x51">
+&lt;img src="https://always-developing.github.io/dailydrop/2022/05/09-preprocessor-directives/line1.png"
+width="834"
+height="51"
+srcset="https://always-developing.github.io/dailydrop/2022/05/09-preprocessor-directives/line1_hue73e79d0d05e1f1cb8cb85399c9fe6fa_5128_480x0_resize_box_3.png 480w, https://always-developing.github.io/dailydrop/2022/05/09-preprocessor-directives/line1_hue73e79d0d05e1f1cb8cb85399c9fe6fa_5128_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="#line directive">
+&lt;/a>
+&lt;figcaption>#line directive&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;p>Instead of the actual file line number, the error will appear on the line relative to the specified line number. In this case, the warning appears on the first line after &lt;code>#line 1201&lt;/code>, hence it is shown as line 1201.&lt;/p>
+&lt;p>When using the &lt;code>#line&lt;/code> directive, the &lt;code>filename&lt;/code> can also be overwritten:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5">5&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="line">&lt;span class="cl">&lt;span class="cp">#line 1 &amp;#34;High performance methods&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">void&lt;/span> &lt;span class="n">MethodNeverCalled&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>In Visual Studio, when a warning or error originates from this area of code, it will reflect in the &lt;strong>Error List&lt;/strong> (as well as in the build output) as follows, notice the &lt;code>line number column&lt;/code> value and the &lt;code>File column&lt;/code> value:&lt;/p>
+&lt;p>&lt;figure
+class="gallery-image"
+style="
+flex-grow: 1765;
+flex-basis: 4238px"
+>
+&lt;a href="https://always-developing.github.io/dailydrop/2022/05/09-preprocessor-directives/line2.png" data-size="830x47">
+&lt;img src="https://always-developing.github.io/dailydrop/2022/05/09-preprocessor-directives/line2.png"
+width="830"
+height="47"
+srcset="https://always-developing.github.io/dailydrop/2022/05/09-preprocessor-directives/line2_hu7838bab908ca81748b7e2706fdaab8cc_5010_480x0_resize_box_3.png 480w, https://always-developing.github.io/dailydrop/2022/05/09-preprocessor-directives/line2_hu7838bab908ca81748b7e2706fdaab8cc_5010_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="#line and filename directive">
+&lt;/a>
+&lt;figcaption>#line and filename directive&lt;/figcaption>
+&lt;/figure>&lt;/p>
+&lt;hr>
+&lt;blockquote>
+&lt;div>
+&lt;div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px;">
+&lt;i class="inline-svg" >&lt;svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffbf00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+&lt;path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+&lt;path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+&lt;path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+&lt;line x1="9.7" y1="17" x2="14.3" y2="17" />
+&lt;/svg>&lt;/i>
+&lt;/div>
+&lt;div>
+&lt;h3>Daily Drop 69: 09-05-2022&lt;/h3>
+&lt;/div>
+&lt;br>
+&lt;div>
+At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.&lt;br>It could be anything - some .NET/C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.&lt;br>&lt;br>
+The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+&lt;/div>
+&lt;/div>
+&lt;/blockquote></description></item><item><title>Multi-statement line breakpoints</title><link>https://always-developing.github.io/dailydrop/2022/05/06-breakpoint-shortcut/</link><pubDate>Fri, 06 May 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/05/06-breakpoint-shortcut/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
 &lt;p>When a line of code contains multiple statements, the &lt;em>Toggle Breakpoint&lt;/em> shortcut &lt;code>F9&lt;/code>, in combination with the I-beam position, can be used to create a breakpoint on a single statement in the line.&lt;/p>
 &lt;p>This post refers to Visual Studio functionality - the experience might differ with other IDEs.&lt;/p>
 &lt;hr>
