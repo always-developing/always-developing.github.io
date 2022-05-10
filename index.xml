@@ -1,4 +1,154 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Mon, 09 May 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Error and warning preprocessor directives</title><link>https://always-developing.github.io/dailydrop/2022/05/09-preprocessor-directives/</link><pubDate>Mon, 09 May 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/05/09-preprocessor-directives/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Tue, 10 May 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Creating a deterministic guid</title><link>https://always-developing.github.io/dailydrop/2022/05/10-deterministic-guid/</link><pubDate>Tue, 10 May 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/05/10-deterministic-guid/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+&lt;p>The &lt;code>MD5&lt;/code> algorithm implementation in conjunction with &lt;code>string encoding&lt;/code> can be used to create a &lt;code>deterministic guid&lt;/code> based on string value.&lt;/p>
+&lt;hr>
+&lt;h2 id="use-case">Use case&lt;/h2>
+&lt;p>Assume you are writing a system, and are using guids as primary keys for all of your data. You are required to consume employee data supplied by a third party - however this data doesn&amp;rsquo;t have a primary key as such, but uses a string &lt;code>employee number&lt;/code> to unique identify an employee.&lt;/p>
+&lt;p>The requirement is to repeatedly and consistently be able to convert a specific &lt;code>employee number&lt;/code> to the &lt;code>same guid&lt;/code> each time the specific employee record is received (so it can either be created or updated in a database).&lt;/p>
+&lt;p>A &lt;code>deterministic guid&lt;/code> is required - the output Guid will always be the same, as long as the input value remains the same.&lt;/p>
+&lt;hr>
+&lt;h2 id="sample-code">Sample Code&lt;/h2>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-16">16&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="line">&lt;span class="cl">&lt;span class="k">using&lt;/span> &lt;span class="nn">System.Security.Cryptography&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">using&lt;/span> &lt;span class="nn">System.Text&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kt">var&lt;/span> &lt;span class="n">employeeId&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="s">&amp;#34;EMP001&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// create an instance of the cryptography MD5 algorithm implementation&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">using&lt;/span> &lt;span class="nn">var&lt;/span> &lt;span class="n">md5Provider&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">MD5&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Create&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// convert the string to a byte[]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kt">var&lt;/span> &lt;span class="n">inputByteArray&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">Encoding&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Unicode&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetBytes&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">employeeId&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// hash the byte array&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kt">var&lt;/span> &lt;span class="n">hashArray&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">md5Provider&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">ComputeHash&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">inputByteArray&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// create a guid from the hash array&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kt">var&lt;/span> &lt;span class="n">guid&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">Guid&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">hashArray&lt;/span>&lt;span class="p">);&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;ul>
+&lt;li>&lt;strong>Line 4&lt;/strong>: The string employee number is declared&lt;/li>
+&lt;li>&lt;strong>Line 7&lt;/strong>: An instance of the MD5 algorithm implementation is created&lt;/li>
+&lt;li>&lt;strong>Line 10&lt;/strong>: The string employee number is converted to a byte array&lt;/li>
+&lt;li>&lt;strong>Line 13&lt;/strong>: The employee number byte array is hashed using the MD5 algorithm&lt;/li>
+&lt;li>&lt;strong>Line 16&lt;/strong>: The guid is created using the hash&lt;/li>
+&lt;/ul>
+&lt;p>The initial employee number byte array (created on line 10) needs to be run through the MD5 algorithm for two main reasons:&lt;/p>
+&lt;ol>
+&lt;li>&lt;code>The Guid constructor expects a byte array with length of 16&lt;/code>. The string byte array will be of variable length, depending on the initial string length.&lt;br>
+The &lt;em>md5Provider.ComputeHash&lt;/em> method call will always produce a byte array of length 16, which can then be passed to the Guid constructor&lt;/li>
+&lt;li>The &lt;em>md5Provider.ComputeHash&lt;/em> method is &lt;code>irreversible&lt;/code> - this means someone will not be able to take the Guid and reverse the process to find the employee number&lt;/li>
+&lt;/ol>
+&lt;hr>
+&lt;h2 id="in-action">In action&lt;/h2>
+&lt;p>Lets simplify the code, and run some employee numbers through the method:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-16">16&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-17">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-17">17&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-18">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-18">18&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-19">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-19">19&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-20">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-20">20&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-21">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-21">21&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-C#" data-lang="C#">&lt;span class="line">&lt;span class="cl">&lt;span class="kt">var&lt;/span> &lt;span class="n">emp1&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="s">&amp;#34;EMP001&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$&amp;#34;Employee Number: &amp;#39;{emp1}&amp;#39; &amp;#34;&lt;/span> &lt;span class="p">+&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="s">$&amp;#34;results in a Guid of: &amp;#39;{GetDeterministicGuid(emp1)}&amp;#39;&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kt">var&lt;/span> &lt;span class="n">emp2&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="s">&amp;#34;EMP002&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$&amp;#34;Employee Number: &amp;#39;{emp2}&amp;#39; &amp;#34;&lt;/span> &lt;span class="p">+&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="s">$&amp;#34;results in a Guid of: &amp;#39;{GetDeterministicGuid(emp2)}&amp;#39;&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kt">var&lt;/span> &lt;span class="n">emp3&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="s">&amp;#34;EMP003&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$&amp;#34;Employee Number: &amp;#39;{emp3}&amp;#39; &amp;#34;&lt;/span> &lt;span class="p">+&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="s">$&amp;#34;results in a Guid of: &amp;#39;{GetDeterministicGuid(emp3)}&amp;#39;&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kt">var&lt;/span> &lt;span class="n">emp4&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="s">&amp;#34;EMP001&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">$&amp;#34;Employee Number: &amp;#39;{emp4}&amp;#39; &amp;#34;&lt;/span> &lt;span class="p">+&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="s">$&amp;#34;results in a Guid of: &amp;#39;{GetDeterministicGuid(emp4)}&amp;#39;&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Guid&lt;/span> &lt;span class="n">GetDeterministicGuid&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="kt">string&lt;/span> &lt;span class="n">input&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">using&lt;/span> &lt;span class="nn">var&lt;/span> &lt;span class="n">cryptoServiceProvider&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">MD5&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Create&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="n">Guid&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">cryptoServiceProvider&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">ComputeHash&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">Encoding&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Unicode&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetBytes&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">input&lt;/span>&lt;span class="p">)));&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>&lt;code>emp1&lt;/code> and &lt;code>emp4&lt;/code> have the same employee number (they are the same employee), so we expect the output to be the same Guid.&lt;/p>
+&lt;p>This is confirmed by executing the sample:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4">4&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-posh" data-lang="posh">&lt;span class="line">&lt;span class="cl">&lt;span class="n">Employee&lt;/span> &lt;span class="n">Number&lt;/span>&lt;span class="err">:&lt;/span> &lt;span class="s1">&amp;#39;EMP001&amp;#39;&lt;/span> &lt;span class="n">results&lt;/span> &lt;span class="k">in&lt;/span> &lt;span class="n">a&lt;/span> &lt;span class="n">Guid&lt;/span> &lt;span class="n">of&lt;/span>&lt;span class="err">:&lt;/span> &lt;span class="s1">&amp;#39;7f6edb35-5271-ae41-2b70-4af2c61e721c&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Employee&lt;/span> &lt;span class="n">Number&lt;/span>&lt;span class="err">:&lt;/span> &lt;span class="s1">&amp;#39;EMP002&amp;#39;&lt;/span> &lt;span class="n">results&lt;/span> &lt;span class="k">in&lt;/span> &lt;span class="n">a&lt;/span> &lt;span class="n">Guid&lt;/span> &lt;span class="n">of&lt;/span>&lt;span class="err">:&lt;/span> &lt;span class="s1">&amp;#39;ee912e6e-5106-9c37-b81b-45fc3ace9eeb&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Employee&lt;/span> &lt;span class="n">Number&lt;/span>&lt;span class="err">:&lt;/span> &lt;span class="s1">&amp;#39;EMP003&amp;#39;&lt;/span> &lt;span class="n">results&lt;/span> &lt;span class="k">in&lt;/span> &lt;span class="n">a&lt;/span> &lt;span class="n">Guid&lt;/span> &lt;span class="n">of&lt;/span>&lt;span class="err">:&lt;/span> &lt;span class="s1">&amp;#39;e7fb42eb-3825-d0a2-f14d-dec8f5766fbf&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Employee&lt;/span> &lt;span class="n">Number&lt;/span>&lt;span class="err">:&lt;/span> &lt;span class="s1">&amp;#39;EMP001&amp;#39;&lt;/span> &lt;span class="n">results&lt;/span> &lt;span class="k">in&lt;/span> &lt;span class="n">a&lt;/span> &lt;span class="n">Guid&lt;/span> &lt;span class="n">of&lt;/span>&lt;span class="err">:&lt;/span> &lt;span class="s1">&amp;#39;7f6edb35-5271-ae41-2b70-4af2c61e721c&amp;#39;&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;hr>
+&lt;h2 id="notes">Notes&lt;/h2>
+&lt;p>Very simple, but incredibly useful technique for creating a non-string unique identifier for a record. If the 3rd party record doesn&amp;rsquo;t have a specific field to use a input to the &lt;em>GetDeterministicGuid&lt;/em> method, then multiple fields could be concatenated together to unique value for the record.&lt;/p>
+&lt;hr>
+&lt;blockquote>
+&lt;div>
+&lt;div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px;">
+&lt;i class="inline-svg" >&lt;svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffbf00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+&lt;path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+&lt;path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+&lt;path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+&lt;line x1="9.7" y1="17" x2="14.3" y2="17" />
+&lt;/svg>&lt;/i>
+&lt;/div>
+&lt;div>
+&lt;h3>Daily Drop 70: 10-05-2022&lt;/h3>
+&lt;/div>
+&lt;br>
+&lt;div>
+At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.&lt;br>It could be anything - some .NET/C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.&lt;br>&lt;br>
+The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+&lt;/div>
+&lt;/div>
+&lt;/blockquote></description></item><item><title>Error and warning preprocessor directives</title><link>https://always-developing.github.io/dailydrop/2022/05/09-preprocessor-directives/</link><pubDate>Mon, 09 May 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/05/09-preprocessor-directives/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
 &lt;p>There are a number of C# directives which can be used to instruct the compiler to generate user-defined errors and warnings as well as control line information:&lt;/p>
 &lt;ul>
 &lt;li>#error&lt;/li>
