@@ -1,4 +1,90 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Wed, 18 May 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Anonymous type property name inference</title><link>https://always-developing.github.io/dailydrop/2022/05/18-anon-type-infer/</link><pubDate>Wed, 18 May 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/05/18-anon-type-infer/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Thu, 19 May 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Creating temporary files in .NET</title><link>https://always-developing.github.io/dailydrop/2022/05/19-temp-file-name/</link><pubDate>Thu, 19 May 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/05/19-temp-file-name/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+&lt;p>Sometimes an application needs to create a temporary file to store some data - .NET has built-in functionality to create temporary files, using the &lt;code>Path.GetTempFileName&lt;/code> method.&lt;/p>
+&lt;p>This method will create a uniquely named, zero-byte temporary file on disk and returns the full path of that file.&lt;/p>
+&lt;hr>
+&lt;h2 id="gettempfilename">GetTempFileName&lt;/h2>
+&lt;p>Creating a temporary file is incredibly simple using the &lt;code>GetTempFileName&lt;/code> method:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-c#" data-lang="c#">&lt;span class="line">&lt;span class="cl">&lt;span class="kt">var&lt;/span> &lt;span class="n">temporaryFile&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">Path&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetTempFileName&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">temporaryFile&lt;/span>&lt;span class="p">);&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>This creates a temporary file in the users temporary folder - below is the output on Windows and on a Linux container respectively:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-posh" data-lang="posh">&lt;span class="line">&lt;span class="cl">&lt;span class="n">C:&lt;/span>&lt;span class="p">\&lt;/span>&lt;span class="n">Users&lt;/span>&lt;span class="p">\&lt;/span>&lt;span class="n">username&lt;/span>&lt;span class="p">\&lt;/span>&lt;span class="n">AppData&lt;/span>&lt;span class="p">\&lt;/span>&lt;span class="n">Local&lt;/span>&lt;span class="p">\&lt;/span>&lt;span class="n">Temp&lt;/span>&lt;span class="p">\&lt;/span>&lt;span class="n">tmp6F69&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">tmp&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">/&lt;/span>&lt;span class="n">tmp&lt;/span>&lt;span class="p">/&lt;/span>&lt;span class="n">tmpZZGMrL&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">tmp&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;hr>
+&lt;h2 id="gettemppath">GetTempPath&lt;/h2>
+&lt;p>If you would like to specify the name and extension of the temporary file explicitly, the &lt;code>GetTempPath&lt;/code> method can be used to get the temporary folder location, then have the name and extension specified:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-c#" data-lang="c#">&lt;span class="line">&lt;span class="cl">&lt;span class="kt">string&lt;/span> &lt;span class="n">tempTxtFile&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">Path&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">GetTempPath&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="p">+&lt;/span> &lt;span class="n">Guid&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">NewGuid&lt;/span>&lt;span class="p">().&lt;/span>&lt;span class="n">ToString&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="p">+&lt;/span> &lt;span class="s">&amp;#34;.txt&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">WriteLine&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">tempTxtFile&lt;/span>&lt;span class="p">);&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>This creates a temporary file in the users temporary folder with the given name and extension - below is the output on Windows and on a Linux container respectively:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1">1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2">2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3">3&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-posh" data-lang="posh">&lt;span class="line">&lt;span class="cl">&lt;span class="n">C:&lt;/span>&lt;span class="p">\&lt;/span>&lt;span class="n">Users&lt;/span>&lt;span class="p">\&lt;/span>&lt;span class="n">username&lt;/span>&lt;span class="p">\&lt;/span>&lt;span class="n">AppData&lt;/span>&lt;span class="p">\&lt;/span>&lt;span class="n">Local&lt;/span>&lt;span class="p">\&lt;/span>&lt;span class="n">Temp&lt;/span>&lt;span class="p">\&lt;/span>&lt;span class="nb">b3eeca7e-e965&lt;/span>&lt;span class="p">-&lt;/span>&lt;span class="n">4794&lt;/span>&lt;span class="p">-&lt;/span>&lt;span class="n">9ffe&lt;/span>&lt;span class="p">-&lt;/span>&lt;span class="n">1fada639689d&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">txt&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">/&lt;/span>&lt;span class="n">tmp&lt;/span>&lt;span class="p">/&lt;/span>&lt;span class="n">c79a3579&lt;/span>&lt;span class="p">-&lt;/span>&lt;span class="n">42fc&lt;/span>&lt;span class="p">-&lt;/span>&lt;span class="n">49e7-a329&lt;/span>&lt;span class="p">-&lt;/span>&lt;span class="n">42d6bc053ada&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">txt&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;hr>
+&lt;h2 id="deletion">Deletion&lt;/h2>
+&lt;p>Even though the files are called &lt;code>temporary files&lt;/code>, they are not temporary in existence: they are not automatically deleted or cleaned up. The &lt;em>temporary&lt;/em> naming refers to the type of data it is designed to contain.&lt;/p>
+&lt;p>If the files are not manually cleaned up and deleted, it is possible that no unique name is available and a new temporary file could not be created - in which case an &lt;code>IOException&lt;/code> is thrown.&lt;/p>
+&lt;p>The recommendation would be to have the application delete the file either after use, or when the application shuts down.&lt;/p>
+&lt;hr>
+&lt;h2 id="notes">Notes&lt;/h2>
+&lt;p>Using the built in &lt;code>GetTempFileName&lt;/code> is definitely easier, quicker and simpler than trying to manually manage creating temporary files and the complications regarding file and folder permissions. The &lt;code>GetTempFileName&lt;/code> functionality should be the default go-to method for creating temporary files.&lt;/p>
+&lt;hr>
+&lt;h2 id="references">References&lt;/h2>
+&lt;p>&lt;a class="link" href="https://docs.microsoft.com/en-us/dotnet/api/system.io.path.gettempfilename?view=net-6.0" target="_blank" rel="noopener"
+>Path.GetTempFileName Method&lt;/a>&lt;/p>
+&lt;blockquote>
+&lt;div>
+&lt;div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px;">
+&lt;i class="inline-svg" >&lt;svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffbf00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+&lt;path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+&lt;path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+&lt;path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+&lt;line x1="9.7" y1="17" x2="14.3" y2="17" />
+&lt;/svg>&lt;/i>
+&lt;/div>
+&lt;div>
+&lt;h3>Daily Drop 77: 19-05-2022&lt;/h3>
+&lt;/div>
+&lt;br>
+&lt;div>
+At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.&lt;br>It could be anything - some .NET/C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.&lt;br>&lt;br>
+The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+&lt;/div>
+&lt;/div>
+&lt;/blockquote></description></item><item><title>Anonymous type property name inference</title><link>https://always-developing.github.io/dailydrop/2022/05/18-anon-type-infer/</link><pubDate>Wed, 18 May 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/05/18-anon-type-infer/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
 &lt;p>When creating an anonymous type and setting properties based on other variables, the &lt;code>name of the property can be inferred from the name of the variable&lt;/code> setting the property.&lt;/p>
 &lt;hr>
 &lt;h2 id="example">Example&lt;/h2>
