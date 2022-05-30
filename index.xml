@@ -1,4 +1,247 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Fri, 27 May 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Raw string literals in .NET7</title><link>https://always-developing.github.io/dailydrop/2022/05/27-raw-string-literals/</link><pubDate>Fri, 27 May 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/05/27-raw-string-literals/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Always Developing</title><link>https://always-developing.github.io/</link><description>Recent content on Always Developing</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Mon, 30 May 2022 01:00:00 +0200</lastBuildDate><atom:link href="https://always-developing.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>LINQ First and Single performance</title><link>https://always-developing.github.io/dailydrop/2022/05/30-linq-first-performance/</link><pubDate>Mon, 30 May 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/05/30-linq-first-performance/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
+&lt;p>When using LINQ to retrieve a value from a collection, there are a number of different techniques - however not all are equal in terms of performance.&lt;/p>
+&lt;p>Today we&amp;rsquo;ll explore the various methods and their comparative performance.&lt;/p>
+&lt;hr>
+&lt;h2 id="first-performance">First performance&lt;/h2>
+&lt;p>First, we&amp;rsquo;ll look at the various ways to retrieve a single value using variations of &lt;code>First&lt;/code>, when &lt;strong>multiple&lt;/strong> values match the condition:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-c#" data-lang="c#">&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// populate with 10000 values&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kt">int&lt;/span>&lt;span class="p">[]&lt;/span> &lt;span class="n">values&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">values&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">Enumerable&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Range&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="m">0&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="m">10000&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="n">ToArray&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// Only using First&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kt">var&lt;/span> &lt;span class="n">firstValue&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">values&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">First&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">v&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">v&lt;/span> &lt;span class="p">&amp;gt;&lt;/span> &lt;span class="m">400&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// Only FirstOrDefault&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kt">var&lt;/span> &lt;span class="n">firstDefaultValue&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">values&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">FirstOrDefault&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">v&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">v&lt;/span> &lt;span class="p">&amp;gt;&lt;/span> &lt;span class="m">400&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// Where and then First&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kt">var&lt;/span> &lt;span class="n">whereFirstValue&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">values&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Where&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">v&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">v&lt;/span> &lt;span class="p">&amp;gt;&lt;/span> &lt;span class="m">400&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="n">First&lt;/span>&lt;span class="p">();&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>In the above example, an array of 10000 items is populated, and when we look at three ways to find the &lt;em>First&lt;/em> value greater than 400.&lt;/p>
+&lt;p>Benchmarking the above scenario using BenchmarkDotNet, the results are as follows (using .NET6):&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>Method&lt;/th>
+&lt;th style="text-align:right">Mean&lt;/th>
+&lt;th style="text-align:right">Error&lt;/th>
+&lt;th style="text-align:right">StdDev&lt;/th>
+&lt;th style="text-align:right">Ratio&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>First&lt;/td>
+&lt;td style="text-align:right">2,330.2 ns&lt;/td>
+&lt;td style="text-align:right">20.03 ns&lt;/td>
+&lt;td style="text-align:right">18.74 ns&lt;/td>
+&lt;td style="text-align:right">1.00&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>FirstOrDefault&lt;/td>
+&lt;td style="text-align:right">2,330.7 ns&lt;/td>
+&lt;td style="text-align:right">19.28 ns&lt;/td>
+&lt;td style="text-align:right">18.04 ns&lt;/td>
+&lt;td style="text-align:right">1.00&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>WhereFirst&lt;/td>
+&lt;td style="text-align:right">722.3 ns&lt;/td>
+&lt;td style="text-align:right">8.27 ns&lt;/td>
+&lt;td style="text-align:right">7.73 ns&lt;/td>
+&lt;td style="text-align:right">0.31&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>Interestingly, the &lt;code>Where().First()&lt;/code> approach is 3 times faster than &lt;code>First&lt;/code> or &lt;code>FirstOrDefault&lt;/code>.&lt;/p>
+&lt;p>The benchmarks were also performed using a &lt;code>List&amp;lt;int&amp;gt;&lt;/code> as well as an &lt;code>Array[100]&lt;/code> (with the condition being &amp;gt; 40). The results were roughly the same, with the &lt;code>WhereFirst&lt;/code> approach &lt;code>2-3 times&lt;/code> faster than &lt;em>First&lt;/em> or &lt;em>FirstOrDefault&lt;/em>.&lt;/p>
+&lt;hr>
+&lt;h2 id="single-performance">Single performance&lt;/h2>
+&lt;p>Next, we&amp;rsquo;ll look at the various ways to retrieve a single value using variations of &lt;code>First/Single&lt;/code>, when a &lt;strong>single&lt;/strong> value matches the condition:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt" id="ienumusage-1">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-1"> 1&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-2">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-2"> 2&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-3">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-3"> 3&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-4">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-4"> 4&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-5">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-5"> 5&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-6">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-6"> 6&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-7">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-7"> 7&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-8">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-8"> 8&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-9">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-9"> 9&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-10">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-10">10&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-11">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-11">11&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-12">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-12">12&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-13">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-13">13&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-14">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-14">14&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-15">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-15">15&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-16">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-16">16&lt;/a>
+&lt;/span>&lt;span class="lnt" id="ienumusage-17">&lt;a style="outline: none; text-decoration:none; color:inherit" href="#ienumusage-17">17&lt;/a>
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-c#" data-lang="c#">&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// populate with 10000 values&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kt">int&lt;/span>&lt;span class="p">[]&lt;/span> &lt;span class="n">values&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">values&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">Enumerable&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Range&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="m">0&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="m">10000&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="n">ToArray&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// Only using First&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kt">var&lt;/span> &lt;span class="n">firstValue&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">values&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">First&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">v&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">v&lt;/span> &lt;span class="p">==&lt;/span> &lt;span class="m">450&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// Only FirstOrDefault&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kt">var&lt;/span> &lt;span class="n">firstDefaultValue&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">values&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">FirstOrDefault&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">v&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">v&lt;/span> &lt;span class="p">==&lt;/span> &lt;span class="m">450&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// Only Single&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kt">var&lt;/span> &lt;span class="n">singleValue&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">values&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Single&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">v&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">v&lt;/span> &lt;span class="p">==&lt;/span> &lt;span class="m">450&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// Only SingleOrDefault&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kt">var&lt;/span> &lt;span class="n">singleOrDefaultValue&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">values&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">SingleOrDefault&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">v&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">v&lt;/span> &lt;span class="p">==&lt;/span> &lt;span class="m">450&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// Where and then First&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kt">var&lt;/span> &lt;span class="n">whereFirstValue&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="n">values&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">Where&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">v&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="n">v&lt;/span> &lt;span class="p">==&lt;/span> &lt;span class="m">450&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="n">First&lt;/span>&lt;span class="p">();&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>
+&lt;p>In the above example, an array of 10000 items is populated, and when we look at five ways to find the &lt;em>First&lt;/em> or &lt;em>Single&lt;/em> value equal to 450.&lt;/p>
+&lt;p>Benchmarking the above scenario using BenchmarkDotNet, the results are as follows (using .NET6):&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>Method&lt;/th>
+&lt;th style="text-align:right">Mean&lt;/th>
+&lt;th style="text-align:right">Error&lt;/th>
+&lt;th style="text-align:right">StdDev&lt;/th>
+&lt;th style="text-align:right">Ratio&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>FirstOneValue&lt;/td>
+&lt;td style="text-align:right">2,342.4 ns&lt;/td>
+&lt;td style="text-align:right">28.89 ns&lt;/td>
+&lt;td style="text-align:right">25.61 ns&lt;/td>
+&lt;td style="text-align:right">1.00&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>FirstOrDefaultOneValue&lt;/td>
+&lt;td style="text-align:right">2,341.8 ns&lt;/td>
+&lt;td style="text-align:right">21.82 ns&lt;/td>
+&lt;td style="text-align:right">19.34 ns&lt;/td>
+&lt;td style="text-align:right">1.00&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SingleOneValue&lt;/td>
+&lt;td style="text-align:right">53,322.5 ns&lt;/td>
+&lt;td style="text-align:right">403.26 ns&lt;/td>
+&lt;td style="text-align:right">357.48 ns&lt;/td>
+&lt;td style="text-align:right">22.77&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SingleOrDefaultOneValue&lt;/td>
+&lt;td style="text-align:right">55,948.0 ns&lt;/td>
+&lt;td style="text-align:right">463.01 ns&lt;/td>
+&lt;td style="text-align:right">433.10 ns&lt;/td>
+&lt;td style="text-align:right">23.87&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>WhereFirstOneValue&lt;/td>
+&lt;td style="text-align:right">698.9 ns&lt;/td>
+&lt;td style="text-align:right">5.24 ns&lt;/td>
+&lt;td style="text-align:right">4.90 ns&lt;/td>
+&lt;td style="text-align:right">0.30&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>As before, &lt;code>Where().First()&lt;/code> is the quickest approach being 3 times faster than &lt;em>First&lt;/em> or &lt;em>FirstOrDefault&lt;/em>, while using &lt;em>Single&lt;/em> is &lt;code>22 times slower&lt;/code> than &lt;em>First&lt;/em> and approximately &lt;code>75 times slower&lt;/code> than &lt;em>Where().First()&lt;/em>&lt;/p>
+&lt;p>The benchmarks were also performed using a &lt;code>List&amp;lt;int&amp;gt;&lt;/code> with 10000 items - the results were roughly the same, with the &lt;code>WhereFirst&lt;/code> approach &lt;code>2-3 times&lt;/code> faster than &lt;em>First&lt;/em> or &lt;em>FirstOrDefault&lt;/em> and &lt;code>65 times faster&lt;/code> than &lt;em>Single&lt;/em>.&lt;/p>
+&lt;p>However, when performed with &lt;code>Array[100]&lt;/code> (with the condition being = 45) the differences between the various methods is not as drastic:&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>Method&lt;/th>
+&lt;th style="text-align:right">Mean&lt;/th>
+&lt;th style="text-align:right">Error&lt;/th>
+&lt;th style="text-align:right">StdDev&lt;/th>
+&lt;th style="text-align:right">Ratio&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>FirstOneValue&lt;/td>
+&lt;td style="text-align:right">256.0 ns&lt;/td>
+&lt;td style="text-align:right">1.19 ns&lt;/td>
+&lt;td style="text-align:right">1.05 ns&lt;/td>
+&lt;td style="text-align:right">1.00&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>FirstOrDefaultOneValue&lt;/td>
+&lt;td style="text-align:right">258.0 ns&lt;/td>
+&lt;td style="text-align:right">2.02 ns&lt;/td>
+&lt;td style="text-align:right">1.89 ns&lt;/td>
+&lt;td style="text-align:right">1.01&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SingleOneValue&lt;/td>
+&lt;td style="text-align:right">574.3 ns&lt;/td>
+&lt;td style="text-align:right">11.07 ns&lt;/td>
+&lt;td style="text-align:right">9.24 ns&lt;/td>
+&lt;td style="text-align:right">2.24&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SingleOrDefaultOneValue&lt;/td>
+&lt;td style="text-align:right">529.4 ns&lt;/td>
+&lt;td style="text-align:right">3.23 ns&lt;/td>
+&lt;td style="text-align:right">3.02 ns&lt;/td>
+&lt;td style="text-align:right">2.07&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>WhereFirstOneValue&lt;/td>
+&lt;td style="text-align:right">107.5 ns&lt;/td>
+&lt;td style="text-align:right">0.30 ns&lt;/td>
+&lt;td style="text-align:right">0.25 ns&lt;/td>
+&lt;td style="text-align:right">0.42&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;hr>
+&lt;h2 id="notes">Notes&lt;/h2>
+&lt;p>We&amp;rsquo;ve looked at various techniques to get a value from an enumeration of varying sizes - in all use cases performed for this post &lt;code>Where().First()&lt;/code> was the fastest approach. but this might not always be the same for all possible use cases.&lt;/p>
+&lt;p>Keep in mind that the size of the collection, and the method used &lt;em>does&lt;/em> have a performance impact (admittedly nanoseconds, but in the right hot path it could make a material difference) and the various methods should be benchmarked with your specific use case to determine the correct method.&lt;/p>
+&lt;hr>
+&lt;h2 id="references">References&lt;/h2>
+&lt;p>&lt;a class="link" href="https://leveluppp.ghost.io/content/images/size/w1000/2021/12/linq.png" target="_blank" rel="noopener"
+>LINQ optimizations in .NET can be surprising&lt;/a>&lt;/p>
+&lt;blockquote>
+&lt;div>
+&lt;div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px;">
+&lt;i class="inline-svg" >&lt;svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffbf00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+&lt;path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+&lt;path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+&lt;path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+&lt;line x1="9.7" y1="17" x2="14.3" y2="17" />
+&lt;/svg>&lt;/i>
+&lt;/div>
+&lt;div>
+&lt;h3>Daily Drop 84: 30-05-2022&lt;/h3>
+&lt;/div>
+&lt;br>
+&lt;div>
+At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.&lt;br>It could be anything - some .NET/C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.&lt;br>&lt;br>
+The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+&lt;/div>
+&lt;/div>
+&lt;/blockquote></description></item><item><title>Raw string literals in .NET7</title><link>https://always-developing.github.io/dailydrop/2022/05/27-raw-string-literals/</link><pubDate>Fri, 27 May 2022 01:00:00 +0200</pubDate><guid>https://always-developing.github.io/dailydrop/2022/05/27-raw-string-literals/</guid><description>&lt;h2 id="daily-knowledge-drop">Daily Knowledge Drop&lt;/h2>
 &lt;p>The new &lt;code>raw string literals&lt;/code> feature coming as part of .NET7 (now available through the .NET7 preview) is a new format for dealing with strings, which allows for literals to contain whitespace, new lines, embedded quotes and other special characters &lt;code>without escape sequences&lt;/code>.&lt;/p>
 &lt;p>This new feature is especially useful when working with embedded language strings JSON, XML, HTML etc.&lt;/p>
 &lt;hr>
@@ -1792,7 +2035,7 @@ The Daily Drop is a record of these pieces of knowledge - writing about and summ
 &lt;hr>
 &lt;h3 id="caution">Caution&lt;/h3>
 &lt;p>As mentioned, &lt;code>BigInteger&lt;/code> is immutable, and also has no upper or lower bounds. If an operation causes it&amp;rsquo;s value grows too large, it is possible that an &lt;code>OutOfMemoryException&lt;/code>.&lt;/p>
-&lt;p>Just be aware that if dealing with a number of &lt;code>BigInteger&lt;/code> instances, storing large values, the usage might need to be considered and thought through more than if working woth an &lt;code>int&lt;/code>, for example.&lt;/p>
+&lt;p>Just be aware that if dealing with a number of &lt;code>BigInteger&lt;/code> instances, storing large values, the usage might need to be considered and thought through more than if working with an &lt;code>int&lt;/code>, for example.&lt;/p>
 &lt;hr>
 &lt;h2 id="notes">Notes&lt;/h2>
 &lt;p>For most use cases &lt;code>BigInteger&lt;/code> will probably not be required - however in the rare cases when a value needs to exceed the limits of an &lt;code>int&lt;/code>, the &lt;code>BigInteger&lt;/code> type can prove to be very useful.&lt;/p>
