@@ -4,195 +4,13 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-06-05T04:55:48Z</updated>
+	<updated>2022-06-05T05:15:39Z</updated>
 	<subtitle>always learning | always growing</subtitle>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/06/06-ienumerable-performance</id>
-		<title>IEnumerable performance cost</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/06/06-ienumerable-performance" />
-		<updated>2022-06-05T23:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;Using &lt;code&gt;IEnumerable&amp;lt;&amp;gt;&lt;/code&gt; instead of a concrete implementation (List or an array for example) can make the code more usable and concise, but comes with a performance cost.&lt;/p&gt;
-&lt;p&gt;If performance is critical, it will be worth performing a &lt;code&gt;type check&lt;/code&gt; and handling accordingly.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="generic-method"&gt;Generic method&lt;/h2&gt;
-&lt;p&gt;We want to create a method which takes a collection of integers, sums them up and returns the result. We are not entirely sure what this collection will be (a list, an array) so we want to make the method generic.&lt;/p&gt;
-&lt;p&gt;We might end up with something like this:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public int SumItems(IEnumerable&amp;lt;int&amp;gt; enumerable)
-{
-    var runningSum = 0;
-
-    foreach(var item in enumerable)
-    {
-        runningSum += item;
-    }
-
-    return runningSum;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This is fairly straightforward - the method takes an &lt;code&gt;IEnumerable&amp;lt;int&amp;gt;&lt;/code&gt; as a parameter, will iterate through each item keeping a running total, and then return the total at the end.&lt;/p&gt;
-&lt;p&gt;Lets look at the performance of this method using various implementations of &lt;code&gt;IEnumerable&amp;lt;int&amp;gt;&lt;/code&gt;.&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;IEnumerable&amp;lt;int&amp;gt; enumerableData = Enumerable.Range(0, 10000);
-IEnumerable&amp;lt;int&amp;gt; listData = new List&amp;lt;int&amp;gt;(Enumerable.Range(0, 10000));
-IEnumerable&amp;lt;int&amp;gt; arrayData = Enumerable.Range(0, 10000).ToArray();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Here three different implementations are declared and &lt;code&gt;populated with 10000 items&lt;/code&gt;. We have:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;an IEnumerable&amp;lt;int&amp;gt;&lt;/li&gt;
-&lt;li&gt;a List&amp;lt;int&amp;gt;&lt;/li&gt;
-&lt;li&gt;an int array&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;As all three of these implement IEnumerable, they can all be passed to the &lt;em&gt;SumItems&lt;/em&gt; method as a parameter.&lt;/p&gt;
-&lt;p&gt;Using &lt;code&gt;BenchmarkDotNet&lt;/code&gt; our method is called using each of the IEnumerable types:&lt;/p&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;Method&lt;/th&gt;
-&lt;th&gt;IEnumerable&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;SumItems&lt;/td&gt;
-&lt;td&gt;IEnumerable&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;37.400 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.4611 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.4313 us&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;SumItems&lt;/td&gt;
-&lt;td&gt;List&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;57.201 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.4353 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.3635 us&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;SumItems&lt;/td&gt;
-&lt;td&gt;int[]&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;37.226 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.3353 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.2972 us&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;As one can see, the &lt;code&gt;IEnumerable and the int array are comparable&lt;/code&gt;, with the &lt;code&gt;List considerably slower&lt;/code&gt; (relatively).&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="type-checking"&gt;Type checking&lt;/h2&gt;
-&lt;p&gt;Next, let's modify the &lt;em&gt;SumItems&lt;/em&gt; method to check the type of IEnumerable, cast to that type, and then iterate on the specific type instead of IEnumerable.&lt;/p&gt;
-&lt;p&gt;This could have also been done with method overloading, but with this approach all the code is kept in a single method:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public int SumListChecked(IEnumerable&amp;lt;int&amp;gt; enumerable)
-{
-    var runningSum = 0;
-
-    // check for List
-    if(enumerable is List&amp;lt;int&amp;gt; list)
-    {
-        foreach (var item in list)
-        {
-            runningSum += item;
-        }
-        return runningSum;
-    }
-
-    // check for array
-    if (enumerable is int[] array)
-    {
-        foreach (var item in array)
-        {
-            runningSum += item;
-        }
-        return runningSum;
-    }
-
-    // all others
-    foreach (var item in enumerable)
-    {
-        runningSum += item;
-    }
-
-    return runningSum;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Here, the type of IEnumerable parameter &lt;em&gt;enumerable&lt;/em&gt; is checked, if its a &lt;code&gt;List&lt;/code&gt; or &lt;code&gt;Array&lt;/code&gt;, then the IEnumerable is cast to that type, and the foreach loop is done on the &lt;code&gt;cast type&lt;/code&gt; not on the original IEnumerable.&lt;/p&gt;
-&lt;p&gt;Running the benchmarks for both methods, yields the following results:&lt;/p&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;Method&lt;/th&gt;
-&lt;th&gt;IEnumerable&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;SumItems&lt;/td&gt;
-&lt;td&gt;IEnumerable&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;37.400 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.4611 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.4313 us&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;SumListChecked&lt;/td&gt;
-&lt;td&gt;IEnumerable&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;34.846 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.3551 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.3148 us&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;SumItems&lt;/td&gt;
-&lt;td&gt;List&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;57.201 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.4353 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.3635 us&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;SumListChecked&lt;/td&gt;
-&lt;td&gt;List&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;7.523 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0806 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0754 us&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;SumItems&lt;/td&gt;
-&lt;td&gt;int[]&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;37.226 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.3353 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.2972 us&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;SumListChecked&lt;/td&gt;
-&lt;td&gt;int[]&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;3.580 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0213 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0189 us&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;&lt;code&gt;IEnumerable is effectively the same&lt;/code&gt;, as the code is the same between the two method, however &lt;code&gt;List and Array are considerably quicker&lt;/code&gt; when performing the iterating on the concrete type and not IEnumerable.&lt;/p&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;While this type of micro-optimization will probably not be required or noticeable in most use cases, its worth knowing about the trade-offs which come with each approach.&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;Just using IEnumerable&lt;/code&gt;: simplest, most maintainable code, but slowest in most cases&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;Type checking&lt;/code&gt;: less maintainable, but better performance in some cases&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;Method overloading&lt;/code&gt;: even less maintainable, as the same/similar code will be in multiple methods but better performance in some cases&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://leveluppp.ghost.io/content/images/size/w1000/2021/07/net_virt1.png"&gt;The cost of virtualization in .NET can be surprising&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;89: 06-06-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/06/03-api-optional-param</id>
 		<title>Optional parameters in minimal apis</title>
 		<link href="https://alwaysdeveloping.net/dailydrop/2022/06/03-api-optional-param" />
-		<updated>2022-06-02T23:00:00Z</updated>
+		<updated>2022-06-03T01:00:00Z</updated>
 		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
 &lt;p&gt;When using minimal apis in C#, while query string values will automatically be extracted and send to the lambda expression, they are by &amp;quot;default&amp;quot;, required values. Defaults can also not be supplied, as lambda expressions do not allow default values.&lt;/p&gt;
 &lt;p&gt;Either the minimal api needs to use a method (as opposed to a lambda expression) or the parameter needs to be nullable, with the default value being set in the lambda body if not passed in.&lt;/p&gt;
@@ -281,7 +99,7 @@ app.MapGet(&amp;quot;/getdata/extmethod&amp;quot;, ExtMethod);
 		<id>https://alwaysdeveloping.net/dailydrop/2022/06/02-ef-bulk-insert</id>
 		<title>EF Core INSERT vs MERGE</title>
 		<link href="https://alwaysdeveloping.net/dailydrop/2022/06/02-ef-bulk-insert" />
-		<updated>2022-06-01T23:00:00Z</updated>
+		<updated>2022-06-02T01:00:00Z</updated>
 		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
 &lt;p&gt;When inserting data into a table using Entity Framework Core (EF Core), by default, if three or less records are being inserted, &lt;code&gt;separate SQL INSERT&lt;/code&gt; statements will be used.&lt;br /&gt;
 However if four or more records are being inserted, EF Core will batch up the records and perform a &lt;code&gt;single SQL MERGE&lt;/code&gt; statement.&lt;/p&gt;
@@ -428,7 +246,7 @@ ORDER BY [i].[_Position];
 		<id>https://alwaysdeveloping.net/dailydrop/2022/06/01-endpoint-data-source</id>
 		<title>Listing all ASP.NET Core routes</title>
 		<link href="https://alwaysdeveloping.net/dailydrop/2022/06/01-endpoint-data-source" />
-		<updated>2022-05-31T23:00:00Z</updated>
+		<updated>2022-06-01T01:00:00Z</updated>
 		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
 &lt;p&gt;ASP.NET Core has a build in class, &lt;code&gt;EndpointDataSource&lt;/code&gt;, which contains information about a route, while the &lt;code&gt;IEnumerable&amp;lt;EndpointDataSource&amp;gt;&lt;/code&gt; collection, available through dependency injection contains information about all endpoints of an application.&lt;/p&gt;
 &lt;p&gt;Information about a specific endpoint can also be retrieved from the &lt;code&gt;HttpContext&lt;/code&gt; for a specific request.&lt;/p&gt;
@@ -556,7 +374,7 @@ ORDER BY [i].[_Position];
 		<id>https://alwaysdeveloping.net/dailydrop/2022/05/31-generic-attribute</id>
 		<title>Generic attributes with C#11</title>
 		<link href="https://alwaysdeveloping.net/dailydrop/2022/05/31-generic-attribute" />
-		<updated>2022-05-30T23:00:00Z</updated>
+		<updated>2022-05-31T01:00:00Z</updated>
 		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
 &lt;p&gt;Coming in C# 11 (later this year with .NET 7) is the &lt;code&gt;generic attributes&lt;/code&gt; feature - the ability to define an attribute which takes a generic parameter. This is a more convenient style for attributes which require a &lt;code&gt;Type&lt;/code&gt; parameter.&lt;/p&gt;
 &lt;p&gt;Generic attribute code samples below were written using the .NET 7 preview release.&lt;/p&gt;
@@ -633,7 +451,7 @@ public class UsingGenericAttribute
 		<id>https://alwaysdeveloping.net/dailydrop/2022/05/30-linq-first-performance</id>
 		<title>LINQ First and Single performance</title>
 		<link href="https://alwaysdeveloping.net/dailydrop/2022/05/30-linq-first-performance" />
-		<updated>2022-05-29T23:00:00Z</updated>
+		<updated>2022-05-30T01:00:00Z</updated>
 		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
 &lt;p&gt;When using LINQ to retrieve a value from a collection, there are a number of different techniques - however not all are equal in terms of performance.&lt;/p&gt;
 &lt;p&gt;Today we'll explore the various methods and their comparative performance.&lt;/p&gt;
@@ -827,7 +645,7 @@ var whereFirstValue = values.Where(v =&amp;gt; v == 450).First();
 		<id>https://alwaysdeveloping.net/dailydrop/2022/05/27-raw-string-literals</id>
 		<title>Raw string literals in .NET7</title>
 		<link href="https://alwaysdeveloping.net/dailydrop/2022/05/27-raw-string-literals" />
-		<updated>2022-05-26T23:00:00Z</updated>
+		<updated>2022-05-27T01:00:00Z</updated>
 		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
 &lt;p&gt;The new &lt;code&gt;raw string literals&lt;/code&gt; feature coming as part of .NET7 (now available through the .NET7 preview) is a new format for dealing with strings, which allows for literals to contain  whitespace, new lines, embedded quotes and other special characters &lt;code&gt;without escape sequences&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;This new feature is especially useful when working with embedded language strings JSON, XML, HTML etc.&lt;/p&gt;
@@ -1217,6 +1035,126 @@ Where there:&lt;/p&gt;
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://www.toptal.com/c-sharp/top-10-mistakes-that-c-sharp-programmers-make"&gt;Common C# Programming Mistake #2: Misunderstanding default values for uninitialized variables&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;80: 24-05-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/05/23-flags-attribute</id>
+		<title>Flags attribute for enums</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/05/23-flags-attribute" />
+		<updated>2022-05-23T00:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;Flags&lt;/code&gt; attribute can be used to automatically treat an enum as a set of flags (a bit field) - flags are useful when elements in the enum might occur in combinations.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="bitwise-operations"&gt;Bitwise operations&lt;/h2&gt;
+&lt;p&gt;Often an enum will have values of &lt;code&gt;0, 1, 2, 4, 8, 16 ..&lt;/code&gt; instead of &lt;code&gt;0, 1, 2, 3, 4, 5 ..&lt;/code&gt; - this is because it allows bitwise operations to be performed on the enum. Consider the following example enum used to indicate which destination(s) data should be published to:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;enum PublishDestination : short
+{
+    None = 0,
+    File = 1,
+    Api = 2,
+    Database = 4,
+    Console = 8
+};
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;To indicated that data should be published to multiple destinations, multiple values can be combined together - for example: &lt;code&gt;7 = 1 + 2 + 4 = File &amp;amp; Api &amp;amp; Database&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;If &lt;strong&gt;0, 1, 2, 3, 4, 5, 6 ..&lt;/strong&gt; had been used, then &lt;strong&gt;7 could be one of a few combinations&lt;/strong&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;7 = 1 + 2 + 4&lt;/li&gt;
+&lt;li&gt;7 = 1 + 6&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Using &lt;code&gt;0, 1, 2, 4, 8, 16, ..&lt;/code&gt; allows for each number and each sum of numbers to &lt;strong&gt;uniquely identity a combination of values&lt;/strong&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="non-flags-example"&gt;Non Flags example&lt;/h2&gt;
+&lt;p&gt;Consider the following enum, used to indicate which destinations data should be published to:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;enum PublishDestination : short
+{
+    None = 0,
+    File = 1,
+    Api = 2,
+    Database = 4,
+    Console = 8
+};
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Iterating through each possible combination of values as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;for (int pd = 0; pd &amp;lt; 16; pd++)
+    Console.WriteLine(&amp;quot;{0,3} - {1:G}&amp;quot;, pd, (PublishDestination)pd);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Results in the following output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-powershell"&gt;0 - None
+1 - File
+2 - Api
+3 - 3
+4 - Database
+5 - 5
+6 - 6
+7 - 7
+8 - Console
+9 - 9
+10 - 10
+11 - 11
+12 - 12
+13 - 13
+14 - 14
+15 - 15
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As you can see, only the values represented in the enum (0, 1, 2, 4, 8) are converted. The runtime doesn't know, for instance, that &lt;code&gt;3  = 1 + 2 = File + Api&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Introducing the &lt;code&gt;Flags&lt;/code&gt; attributes indicates that the enum can be treated as a set of flags.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="flags-example"&gt;Flags example&lt;/h2&gt;
+&lt;p&gt;Consider the same enum example from above, except now the &lt;code&gt;Flags&lt;/code&gt; attribute has been introduced:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;[Flags]
+enum PublishDestination : short
+{
+    None = 0,
+    File = 1,
+    Api = 2,
+    Database = 4,
+    Console = 8
+};
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Iterating through each possible combination of values as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;for (int pd = 0; pd &amp;lt; 16; pd++)
+    Console.WriteLine(&amp;quot;{0,3} - {1:G}&amp;quot;, pd, (PublishDestination)pd);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now results in the following output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-powershell"&gt;0 - None
+1 - File
+2 - Api
+3 - File, Api
+4 - Database
+5 - File, Database
+6 - Api, Database
+7 - File, Api, Database
+8 - Console
+9 - File, Console
+10 - Api, Console
+11 - File, Api, Console
+12 - Database, Console
+13 - File, Database, Console
+14 - Api, Database, Console
+15 - File, Api, Database, Console
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;All values are now accurately interpreted, either as a single enum value, or as a combination of enum values.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;Adding the &lt;code&gt;Flags&lt;/code&gt; attribute doesn't effect the behavior drastically, but it does make slight differences. With and without &lt;code&gt;Flags&lt;/code&gt; the following behavior is the same:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;A variable can still contain a combination of enum values&lt;/li&gt;
+&lt;li&gt;&lt;em&gt;Enum.Parse&lt;/em&gt; operates the same in both cases&lt;/li&gt;
+&lt;li&gt;The &lt;em&gt;HasFlag&lt;/em&gt; method on the enum operates the same in both cases&lt;/li&gt;
+&lt;li&gt;Bitwise operations behavior is the same in both cases&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Adding the &lt;code&gt;Flags&lt;/code&gt; attribute:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Changes the &lt;em&gt;ToString()&lt;/em&gt; result&lt;/li&gt;
+&lt;li&gt;Indicates to readers of the code, that the enum is used as a flag and an enum variable could contain a combination of values&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;So while not drastic, it is best practice and a good idea to add the &lt;code&gt;Flags&lt;/code&gt; attribute if the enum is intended to be used as flags.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/api/system.flagsattribute?view=net-6.0"&gt;FlagsAttribute Class&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;79: 23-05-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
