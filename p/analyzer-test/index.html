@@ -1,0 +1,523 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="always learning | always growing">
+
+    <title>Always Developing - Roslyn Analyzer - testing an analyzer and code fix (Part 4)</title>
+
+    <link rel="canonical" href="https://alwaysdeveloping.net/p/analyzer-test">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
+
+    <meta name="application-name" content="Always Developing" />
+    <meta name="msapplication-tooltip" content="Always Developing" />
+    <meta name="msapplication-starturl" content="/" />
+
+    <meta property="og:title" content="Always Developing - Roslyn Analyzer - testing an analyzer and code fix (Part 4)" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/p/analyzer-test" />
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Bootstrap core CSS -->
+    <link href="/vendor/bootstrap/scss/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom fonts for this template -->
+    <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="/vendor/fontawesome-free/css/brands.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css' data-no-mirror>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css' data-no-mirror>
+
+    <!-- Custom styles for this template -->
+    <link href="/scss/always-developing-blog.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/plugins/autoloader/prism-autoloader.min.js" data-no-mirror></script>
+    <script src="https://cdn.jsdelivr.net/npm/quicklink@2.0.0/dist/quicklink.umd.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/themes/prism.css">
+
+    <!-- Lunr search -->
+        <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/pako@2.0.3/dist/pako_inflate.min.js"></script>
+        <script src="/search.js"></script>
+
+    
+
+
+    
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand"  href="/">
+            <img src="/images/ad_logo.png" alt="" width="25" height="25" class="d-inline-block align-text-top">
+            Always Developing
+        </a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            Menu
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/software">Software</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/tags">Tags</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/posts">Posts</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/about">About</a>
+            </li>
+</ul>
+                <form class="form-inline my-2 my-lg-0" action="/search" method="GET">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="query">
+                    <input type="submit" hidden />
+                </form>
+        </div>
+    </div>
+</nav>
+
+    <!-- Page Header -->
+    <header class="masthead">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 align-middle">
+                <div class="post-header-image">
+                    <a href="/">
+                        <img src="/images/ad_logo.png" class="header-image">
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="post-heading">
+                    <h1>
+                        Roslyn Analyzer - testing an analyzer and code fix (Part 4)
+                    </h1>
+                            <h2 class="subheading">A step by step guide to testing an analyzer and code fix</h2>
+                        <p class="post-meta">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
+                                <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
+                            </svg> Published on Saturday, 27 November 2021
+                        </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <!-- Main Content -->
+    <div class="container">
+            <div class="row ">
+                    <div id="content" class="col-md-9 post-with-toc post-block">
+                        
+<div class="post-header-category">
+    <a class="btn btn-primary btn-sm btn-default btn-home" href="\" role="button"><i class="fas fa-angle-double-left"></i> Home</a>
+            <a class="btn btn-primary btn-sm category-btn" href="/categories/blog" role="button">Blog</a>
+            <a class="btn btn-primary btn-sm category-btn" href="/categories/series" role="button">Series</a>
+</div>
+
+                        <p>All posts in the series:<br />
+<strong>Part 1:</strong> <a href="../analyzer-explained">Roslyn Analyzer - explained</a><br />
+<strong>Part 2:</strong> <a href="../analyzer-write">Roslyn Analyzer - writing an analyzer</a><br />
+<strong>Part 3:</strong> <a href="../analyzer-code-fix">Roslyn Analyzer - writing a code fix</a><br />
+<strong>Part 4:</strong> Roslyn Analyzer - testing an analyzer and code fix (this post)<br />
+<strong>Part 5:</strong> <a href="../analyzer-extra">Roslyn Analyzer - tips and tricks</a></p>
+<p>All code in the posts, including the sample project and working <code>analyzer</code> and <code>code fix</code> are <a href="https://github.com/always-developing/CodeAnalysis.EntityFrameworkCore.Sample">available on Github</a>.</p>
+<h2 id="analyzer-unit-test-introduction">Analyzer unit test introduction</h2>
+<p>The previous posts in the series detail how to <a href="../analyzer-write">write an analyzer</a> and <a href="../analyzer-code-fix">code fix</a>.</p>
+<p>This post details writing unit tests to help ensure the stability of the code, but also aid in the development process by providing a quick and easy way to debug and test the <code>analyzer</code> and <code>code fix</code>.</p>
+<hr />
+<h2 id="why-write-unit-tests">Why write unit tests?</h2>
+<p><code>Analyzers</code> are not simple to test - to &quot;run&quot; an analyzer, a new instance of Visual Studio starts up with the <code>analyzer</code> installed as an extension. An application (which has the code needed to test the <code>analyzer</code>) then needs to be opened to cause the <code>analyzer</code> trigger.<br />
+While this definitely has a place when testing (hence the suggestion of <a href="../analyzer-write#a-sample-application">creating a sample application for the analyzer</a>), this process to often be inconsistent, with the updated <code>analyzer</code> not always being installed in the new instance of Visual Studio, or the breakpoints in the <code>analyzer</code> not being hit.</p>
+<p>Unit tests provide a convenient and comparatively quick way to debug and iterate while coding the <code>analyzer</code> and <code>code fix</code>.</p>
+<p>Luckily, writing unit tests are fairly straight forward. In addition a test framework is available for the testing of <code>analyzers</code> and <code>code fixes</code>.</p>
+<hr />
+<h2 id="default-unit-tests">Default unit tests</h2>
+<h3 id="wrapper-classes">Wrapper classes</h3>
+<p>As part of the <code>analyzer</code> template, a unit test project is automatically created.<br />
+This template has:</p>
+<ul>
+<li>A sample <code>analyzer</code> test, using the a VerifyCS.<em>VerifyAnalyzerAsync</em> method</li>
+<li>A sample verify <code>code fix</code> test, using a VerifyCS.<em>VerifyCodeFixAsync</em> method</li>
+</ul>
+<p>The <em>VerifyCS</em> class is an auto-generated class, which wraps a lot of the complexity of the underlying testing framework classes - while this is great when first working with <code>analyzers</code> and is easy to use for simple use cases, more complex use cases require more configuration and its generally easier to just use the underlying wrapped classes directly.</p>
+<p>Using the <em>VerifyCS</em> class to test an <code>analyzer</code> is straightforward though:</p>
+<ol>
+<li>Define a block of code as a string</li>
+<li>Define the list of diagnostic result the code should produce (and the location in the code)</li>
+<li>Call <em>VerifyCS.VerifyAnalyzerAsync()</em></li>
+</ol>
+<pre><code class="language-csharp">//No diagnostics expected to show up
+[TestMethod]
+public async Task TestMethod1()
+{
+    var test = &#64;&quot;&quot;;
+
+    // No code, so no diagnostic will be triggered
+    await VerifyCS.VerifyAnalyzerAsync(test);
+}
+</code></pre>
+<p>Using the <em>VerifyCS</em> class to test a <code>code fix</code>:</p>
+<ol>
+<li>Define a initial state block of code as a string</li>
+<li>Define the list of diagnostic result the code should produce (and the location in the code)</li>
+<li>Define a final state block of code as a string (what the code would look like after the code fix has been applied)</li>
+<li>Call <em>VerifyCS.VerifyCodeFixAsync()</em></li>
+</ol>
+<pre><code class="language-csharp">//Diagnostic and CodeFix both triggered and checked for
+    [TestMethod]
+    public async Task TestMethod2()
+    {
+        // define the initial code block
+        var test = &#64;&quot;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Diagnostics;
+
+namespace ConsoleApplication1
+{
+    class {|#0:TypeName|}
+    {   
+    }
+}&quot;;
+
+        // define the final state code block
+        var fixtest = &#64;&quot;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Diagnostics;
+
+namespace ConsoleApplication1
+{
+    class TYPENAME
+    {   
+    }
+}&quot;;
+        // Expected diagnostics to be triggered
+        var expected = VerifyCS.Diagnostic(&quot;Analyzer1&quot;)
+            .WithLocation(0).WithArguments(&quot;TypeName&quot;);
+
+        // Verify the diagnostic will be triggered, 
+        // and that the code fix applies successfully
+        await VerifyCS.VerifyCodeFixAsync(test, expected, fixtest);
+    }
+</code></pre>
+<hr />
+<h3 id="complex-use-cases">Complex use cases</h3>
+<p>There are a few use cases where I've found <strong>NOT</strong> using <em>VerifyCS</em> easier (although it is still possible to use it):</p>
+<ul>
+<li>If the code block requires external dependencies to compile (such as a NuGet package)</li>
+<li>If the code block is using some of the .NET 6 features (such as the minimal startup with the implicit main method)</li>
+<li>If the <code>analyzer</code> requires additional files, such as an appsettings.json file.</li>
+<li>If the build config (or any preprocessor symbol) makes a different to the analyzer</li>
+</ul>
+<p>For these reasons, I generally <code>do not use VerifyCS</code>, but use the underlying framework classes directly instead.</p>
+<hr />
+<h2 id="enhanced-unit-tests">Enhanced unit tests</h2>
+<p>The steps for using the framework classes directly (<em>CSharpAnalyzerTest</em>) are similar to using the wrapper class:</p>
+<p>Using the <em>CSharpAnalyzerTest</em> class to test an analyzer:</p>
+<ol>
+<li>Define a block of code as a string</li>
+<li>Define the list of diagnostic result the code should produce (and the location in the code)</li>
+<li>Define any additional configuration</li>
+<li>Call <em>RunAsync()</em></li>
+</ol>
+<p>To test a code fix using <em>CSharpCodeFixTest</em>:</p>
+<ol>
+<li>Define a initial state block of code as a string</li>
+<li>Define the list of diagnostic result the code should produce (and the location in the code)</li>
+<li>Define a final state block of code as a string (what the code would look like after the code fix has been applied)</li>
+<li>Define any additional configuration for both the initial and final state</li>
+<li>Call <em>RunAsync()</em></li>
+</ol>
+<p>Lets go through these steps in details in the next sections.</p>
+<hr />
+<h3 id="defining-the-code">Defining the code</h3>
+<h4 id="analyzer-test-code">Analyzer test code</h4>
+<p>Although the analyzer and code fix test use different test classes, the setup is very similar.</p>
+<p>With the configuration for an <code>analyzer</code>, the <em>TestState</em> is set - the <strong>sourceCode</strong> variable is a string with C# code as text.</p>
+<pre><code class="language-csharp">var analyzerTest =  new CSharpAnalyzerTest&lt;DevOnlyMigrateAnalyzer, MSTestVerifier&gt;
+{
+    TestState =
+    {
+        Sources = { sourceCode }
+    }
+};
+</code></pre>
+<h4 id="code-fix-test-code">Code fix test code</h4>
+<p>With the configuration for a <code>code fix</code>, the <em>TestState</em> is set, as well as the source code for the expected <em>FinalState</em>. The final state is the expected code after the code fix has been applied. Again, both <strong>sourceCode</strong> and <strong>fixedCode</strong> are C# code as text.</p>
+<pre><code class="language-csharp">var analyzerFix = new CSharpCodeFixTest&lt;DevOnlyMigrateAnalyzer, 
+    DevOnlyMigrateCodeFixProvider, MSTestVerifier&gt;
+{
+    TestState =
+    {
+        Sources = { sourceCode }
+    },
+    FixedState =
+    {
+        Sources = { fixCode }
+    }
+};
+</code></pre>
+<hr />
+<h3 id="defining-the-diagnostics">Defining the diagnostics</h3>
+<p>Next up is to define the diagnostics we expect the code to trigger.</p>
+<h4 id="analyzer-diagnostics">Analyzer diagnostics</h4>
+<p>With an <code>analyzer</code> test, the diagnostic id, severity and location of the expected diagnostics is specified:</p>
+<pre><code class="language-csharp">analyzerTest.ExpectedDiagnostics.Add(
+    new DiagnosticResult(
+        &quot;ADEF001&quot;, 
+        Microsoft.CodeAnalysis.DiagnosticSeverity.Warning
+    ).WithLocation(18, 27));
+</code></pre>
+<h4 id="code-fix-diagnostics">Code fix diagnostics</h4>
+<p>With a <code>code fix</code>, if the expectation is that there will still be diagnostics after the code fix has been applied, the ExpectedDiagnostics is set on the <strong>FixedState</strong>:</p>
+<pre><code class="language-csharp">analyzerFix.FixedState.ExpectedDiagnostics.Add(
+    new DiagnosticResult(
+        &quot;ADEF001&quot;, 
+        Microsoft.CodeAnalysis.DiagnosticSeverity.Warning
+    ).WithLocation(18, 27));
+</code></pre>
+<p>No or multiple expected diagnostics can be specified.</p>
+<hr />
+<h3 id="additional-configuration">Additional configuration</h3>
+<h4 id="net6.0-support">.NET6.0 support</h4>
+<p>If the <strong>sourceCode</strong> (a string representation of C# code) contains any features specific to .NET6.0 (such as the no longer required Main method), the setup below needs to be done.</p>
+<p>This specifies to the testing framework to include the additional package as part of the code when executing the analyzer:</p>
+<pre><code class="language-csharp">var analyzerTest =  new CSharpAnalyzerTest&lt;ConfigConnectionStringAnalyzer, 
+    MSTestVerifier&gt;
+{
+    TestState =
+    {
+        Sources = { sourceCode },
+        ReferenceAssemblies = new ReferenceAssemblies(
+            &quot;net6.0&quot;, 
+            new PackageIdentity(
+                &quot;Microsoft.NETCore.App.Ref&quot;, &quot;6.0.0&quot;), 
+                Path.Combine(&quot;ref&quot;, &quot;net6.0&quot;))
+    }
+};
+</code></pre>
+<p>For a <code>code fix</code> test, the same needs to be applied to the <strong>FinalState</strong> if it makes use of the same .NET6.0 specific functionality.</p>
+<h4 id="nuget-packages">Nuget Packages</h4>
+<p>Sometimes additional packages are required for the <em>sourceCode</em> to successfully compile. In the sample code, for example, the EntityFramework Core references.</p>
+<p>The required package names and version are specified and then added to the <em>TestState</em>.</p>
+<pre><code class="language-csharp">
+// include any nuget packages to reduce the number of errors
+var packages = new[] {
+    new PackageIdentity(&quot;Microsoft.Extensions.Hosting&quot;, &quot;6.0.0&quot;),
+    new PackageIdentity(&quot;Microsoft.Extensions.Configuration&quot;, &quot;6.0.0&quot;),
+    new PackageIdentity(&quot;Microsoft.EntityFrameworkCore&quot;, &quot;6.0.0&quot;),
+    new PackageIdentity(&quot;Microsoft.EntityFrameworkCore.Sqlite&quot;, &quot;6.0.0&quot;)
+}
+.ToImmutableArray();
+
+var analyzerTest =  new CSharpAnalyzerTest&lt;DevOnlyMigrateAnalyzer, MSTestVerifier&gt;
+{
+    TestState =
+    {
+        Sources = { sourceCode },
+        ReferenceAssemblies = new ReferenceAssemblies(
+            &quot;net6.0&quot;, 
+            new PackageIdentity(
+                &quot;Microsoft.NETCore.App.Ref&quot;, &quot;6.0.0&quot;), 
+                Path.Combine(&quot;ref&quot;, &quot;net6.0&quot;))
+            .AddPackages(packages)
+    }
+};
+
+</code></pre>
+
+<blockquote class="info-block">
+    <div>
+        <div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px; ">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-info-circle" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#00abfb" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                <circle cx="12" cy="12" r="9" />
+                <line x1="12" y1="8" x2="12.01" y2="8" />
+                <polyline points="11 12 12 12 12 16 13 16" />
+            </svg >
+        </div >
+        <div>
+            <p>
+<p>Adding the packages to the tests is NOT required - if not added, the code simply wont compile, with the error: <strong><em>The type or namespace name 'XXX' does not exist in the namespace</em></strong> ...<br />
+These errors could be added to the <em>ExpectedDiagnostics</em> collection and as the test now expects these to occur, the test will pass.</p>
+<p>However the easier and more complete solution, is to rather just add the required packages instead of trying to cater for diagnostics not related to the <code>analyzer</code> or <code>code fix</code> being tested.</p>
+</p>
+        </div>
+    </div>
+</blockquote >
+
+<h4 id="additional-files">Additional files</h4>
+<p>Sometimes an analyzer will require additional files to successfully perform its function - such as checking the contents of the appsettings.json. To successfully be able to test this, additional files (names, and content) can be configured as part of the test.</p>
+<p>This is done on the <em>TestState</em> or <em>FixedState</em>:</p>
+<p>In the below sample, an additional file called <code>appsettings.json</code>, with <code>empty json</code> contents, is added to the test state.</p>
+<pre><code class="language-csharp">analyzerTest.TestState
+    .AdditionalFiles.Add((&quot;appsettings.json&quot;, &quot;{}&quot;));
+</code></pre>
+<h4 id="build-configuration">Build configuration</h4>
+<p>In some use cases, such as one in the sample, the build configuration of the project makes a difference to how the analyzer performs.</p>
+<p>To specify the build configuration, or any preprocessor symbols, the following is used:</p>
+<pre><code class="language-csharp">analyzerTest.SolutionTransforms.Add((s, p) =&gt;
+{
+    return s.WithProjectParseOptions(p, 
+        new CSharpParseOptions()
+            .WithPreprocessorSymbols(&quot;DEBUG&quot;));
+});
+</code></pre>
+<hr />
+<h2 id="next-steps-tips-and-tricks">Next steps: Tips and tricks</h2>
+<p>The next and final <a href="../analyzer-extra">part in the series</a> will provider some collection of tips and tricks collected while working with <code>analyzers</code>.</p>
+<h2 id="useful-links">Useful links</h2>
+<p><a href="https://github.com/dotnet/roslyn">Roslyn repository</a><br />
+<a href="https://github.com/always-developing/CodeAnalysis.EntityFrameworkCore.Sample">Sample analyzer and code fix repository</a></p>
+
+                        
+<div>
+            <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
+            <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
+            <a role="button" href="/tags/roslyn" class="badge badge-light"> roslyn</a>
+            <a role="button" href="/tags/codefix" class="badge badge-light"> codefix</a>
+            <a role="button" href="/tags/code-fix" class="badge badge-light"> code fix</a>
+            <a role="button" href="/tags/analyser" class="badge badge-light"> analyser</a>
+            <a role="button" href="/tags/analyzer" class="badge badge-light"> analyzer</a>
+            <a role="button" href="/tags/guide" class="badge badge-light"> guide</a>
+            <a role="button" href="/tags/entity-framework" class="badge badge-light"> entity framework</a>
+            <a role="button" href="/tags/entityframework" class="badge badge-light"> entityframework</a>
+            <a role="button" href="/tags/ef" class="badge badge-light"> ef</a>
+            <a role="button" href="/tags/analyzer-series" class="badge badge-light"> analyzer-series</a>
+</div>
+                    </div>
+                    <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
+                        
+
+        <div class="box sticky-top toc-block">
+            <h3 class="no-anchor">On This Page</h3>
+            <ul>
+        <li><a href="#analyzer-unit-test-introduction">Analyzer unit test introduction</a></li>
+        <li><a href="#why-write-unit-tests">Why write unit tests?</a></li>
+        <li><a href="#default-unit-tests">Default unit tests</a></li>
+            <ul>
+        <li><a href="#wrapper-classes">Wrapper classes</a></li>
+        <li><a href="#complex-use-cases">Complex use cases</a></li>
+            </ul>
+        <li><a href="#enhanced-unit-tests">Enhanced unit tests</a></li>
+            <ul>
+        <li><a href="#defining-the-code">Defining the code</a></li>
+        <li><a href="#defining-the-diagnostics">Defining the diagnostics</a></li>
+        <li><a href="#additional-configuration">Additional configuration</a></li>
+            </ul>
+        <li><a href="#next-steps-tips-and-tricks">Next steps: Tips and tricks</a></li>
+        <li><a href="#useful-links">Useful links</a></li>
+            </ul>
+        </div>
+
+                    </div>
+            </div>
+            <div class="row ">
+                    <div id="content" class="col-md-9">
+                        <div>
+    <script src="https://giscus.app/client.js"
+            data-repo="always-developing/always-developing.github.io"
+            data-repo-id="R_kgDOGQJLBQ"
+            data-category="Comments"
+            data-category-id="DIC_kwDOGQJLBc4B_pUA"
+            data-mapping="pathname"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="bottom"
+            data-theme="transparent_dark"
+            data-lang="en"
+            crossorigin="anonymous"
+            async>
+    </script>
+</div>
+                    </div>
+            </div>
+    </div>
+
+    <hr class="horizontal-rule" />
+
+    <!-- Footer -->
+    <footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <ul class="list-inline text-center">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://www.linkedin.com/in/jean-pierre-seini">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-linkedin fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                <div>
+                    <p class="copyright text-footer">
+                        Copyright © 2022 Always Developing</a>.
+                    </p>
+                </div>
+                <ul class="list-inline text-center small text-feeds">
+                        <li class="list-inline-item">
+                            <a href="/feed.rss"><i class="fa fa-rss"></i> RSS Feed</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="/feed.atom"><i class="fa fa-rss"></i> Atom Feed</a>
+                        </li>
+                </ul>
+                <div class="small text-footer">
+                    <a href="https://github.com/always-developing/alwaysdeveloping-website-src"><i class="fab fa-github"></i> This site on GitHub</a>
+                </div>
+                <div class="small text-footer">
+                    <a href="https://statiq.dev">Generated by Statiq</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="/vendor/jquery/jquery.min.js"></script>
+    <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    
+
+
+    
+
+    <!-- Custom scripts for this template -->
+    <script src="/js/always-developing-blog.js"></script>
+
+</body>
+
+</html>

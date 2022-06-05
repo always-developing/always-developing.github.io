@@ -1,0 +1,396 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="always learning | always growing">
+
+    <title>Always Developing - Interlocked vs using the lock keyword</title>
+
+    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/04/05-interlocked">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
+
+    <meta name="application-name" content="Always Developing" />
+    <meta name="msapplication-tooltip" content="Always Developing" />
+    <meta name="msapplication-starturl" content="/" />
+
+    <meta property="og:title" content="Always Developing - Interlocked vs using the lock keyword" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/04/05-interlocked" />
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Bootstrap core CSS -->
+    <link href="/vendor/bootstrap/scss/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom fonts for this template -->
+    <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="/vendor/fontawesome-free/css/brands.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css' data-no-mirror>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css' data-no-mirror>
+
+    <!-- Custom styles for this template -->
+    <link href="/scss/always-developing-blog.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/plugins/autoloader/prism-autoloader.min.js" data-no-mirror></script>
+    <script src="https://cdn.jsdelivr.net/npm/quicklink@2.0.0/dist/quicklink.umd.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/themes/prism.css">
+
+    <!-- Lunr search -->
+        <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/pako@2.0.3/dist/pako_inflate.min.js"></script>
+        <script src="/search.js"></script>
+
+    
+
+
+    
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand"  href="/">
+            <img src="/images/ad_logo.png" alt="" width="25" height="25" class="d-inline-block align-text-top">
+            Always Developing
+        </a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            Menu
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/software">Software</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/tags">Tags</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/posts">Posts</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/about">About</a>
+            </li>
+</ul>
+                <form class="form-inline my-2 my-lg-0" action="/search" method="GET">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="query">
+                    <input type="submit" hidden />
+                </form>
+        </div>
+    </div>
+</nav>
+
+    <!-- Page Header -->
+    <header class="masthead">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 align-middle">
+                <div class="post-header-image">
+                    <a href="/">
+                        <img src="/images/ad_logo.png" class="header-image">
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="post-heading">
+                    <h1>
+                        Interlocked vs using the lock keyword
+                    </h1>
+                            <h2 class="subheading">How InterLocked can simplify the lock process in certain cases</h2>
+                        <p class="post-meta">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
+                                <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
+                            </svg> Published on Tuesday, 05 April 2022
+                        </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <!-- Main Content -->
+    <div class="container">
+            <div class="row ">
+                    <div id="content" class="col-md-9 post-with-toc post-block">
+                        
+<div class="post-header-category">
+    <a class="btn btn-primary btn-sm btn-default btn-home" href="\" role="button"><i class="fas fa-angle-double-left"></i> Home</a>
+            <a class="btn btn-primary btn-sm category-btn" href="/categories/dailydrop" role="button">DailyDrop</a>
+</div>
+
+                        <h2 id="daily-knowledge-drop">Daily Knowledge Drop</h2>
+<p>Instead of using the <code>lock</code> keyword to block a portion of code from negative effects of multi-threading, the <code>Interlocked</code> class can be used instead to simplify the code.</p>
+<hr />
+<h2 id="why-even-lock">Why even lock?</h2>
+<p>So why would we need to even lock? consider the following example, regarding a <em>bank account</em>.</p>
+<p>The bank account has a balance, and two methods to <em>Deposit</em> and <em>Withdraw</em> money from the account.</p>
+<pre><code class="language-csharp">class Account
+{
+    public int Balance { get; set; }
+
+    public void Deposit(int depositAmount)
+    {
+        Balance += depositAmount;
+    }
+
+    public void Withdraw(int withdrawAmount)
+    {
+        Balance -= withdrawAmount;
+    }
+}
+</code></pre>
+<p>The following code simulates a high volume number of transactions on the bank account - it loops for 10000 iterations in total, creating tasks to deposit $5 and to withdraw $5. These tasks are created to run in parallel, and then at the end the application waits for all the tasks to complete, before printing out the balance.</p>
+<pre><code class="language-csharp">var account = new Account();
+var taskList = new List&lt;Task&gt;();
+
+for (var x = 0; x &lt; 100; x++)
+{
+    taskList.Add(Task.Factory.StartNew(() =&gt;
+    {
+        for (var y = 0; y &lt; 100; y++)
+        {
+            account.Deposit(5);
+        }
+    }));
+
+    taskList.Add(Task.Factory.StartNew(() =&gt;
+    {
+        for (var y = 0; y &lt; 100; y++)
+        {
+            account.Withdraw(5);
+        }
+    }));
+}
+Task.WhenAll(taskList);
+Console.WriteLine(account.Balance);
+</code></pre>
+<p>As the code is depositing and withdrawing $5, 10000 each, one would expect the final balance to be $0. However this is not the case</p>
+<p>The results will vary wildly, but we I executed the code I got the following output:</p>
+<pre><code class="language-powershell">    -625
+</code></pre>
+<p>So why is the balance not 0? This occurs because the += and =- operations are <code>not atomic</code>.</p>
+<hr />
+<h2 id="atomic-process">Atomic Process</h2>
+<p>For something to be <code>atomic</code>, it needs to be a single operations which  cannot be influenced by another thread.<br />
+When doing the += for example, the sequence of events <em>internally</em> are:</p>
+<ol>
+<li>Set temporary variable to the <em>Balance</em> + the deposit amount</li>
+<li>Set the <em>Balance</em> value to that of the temporary variable.</li>
+</ol>
+<p>The issue here is that this is a two step process, where another thread could come in between steps 1 and 2 and complete its += or -= operation altering the value of <em>Balance</em> from the expected value.</p>
+<p>To mitigate this, we need to make this operation <code>atomic</code>, or use another <code>atomic</code> process to prevent the unwanted interference.</p>
+<hr />
+<h2 id="lock-keyword">lock keyword</h2>
+<p>The process can be made <code>atomic</code> by using the <code>lock</code> keyword - this keyword is used to acquire an mutual exclusive lock on an given object, effectively preventing any other code from acquiring a lock executing the code until the lock is released.</p>
+<p>Below is the updated <em>Account</em> class:</p>
+<pre><code class="language-csharp">class Account
+{
+    // A new object is introduced to the class, the sole 
+    // purpose of which is to operate as the lock.
+    private object &#64;lock = new object();
+    public int Balance { get; set; }
+
+    public void Deposit(int depositAmount)
+    {
+        // Whenever an operation needs to occur which modifies the Balance amount, 
+        // the lock variable is now used in conjunction with the `lock` keyword.   
+        lock (&#64;lock)
+        {
+            Balance += depositAmount;
+        }
+    }
+
+    public void Withdraw(int withdrawAmount)
+    {
+        // Whenever an operation needs to occur which modifies the Balance amount, 
+        // the lock variable is now used in conjunction with the `lock` keyword.   
+        lock (&#64;lock)
+        {
+            Balance -= withdrawAmount;
+        }
+    }
+}
+</code></pre>
+<p>For the duration of the <code>lock</code> statement, no other thread can acquire a lock, and as such is forced to wait before acquiring the lock, and performing its operation.</p>
+<p>Executing the same sample 10000 iterations and updates, yields the expected result, a final balance of:</p>
+<pre><code class="language-powershell">    0
+</code></pre>
+<hr />
+<h2 id="interlocked">Interlocked</h2>
+<p>While the above process works as expected and gives us the expected result, there is an easier and cleaner way to do it, using the <code>Interlocked</code> class.</p>
+<p>Below is the updated <em>Account</em> class:</p>
+<pre><code class="language-csharp">class Account
+{
+    // The Balance_property has been changed to use a 
+    // private variable and an explicit getter. 
+    private int balance;
+
+    public int Balance { get =&gt; balance; }
+
+    // When increasing or decreasing the balance amount, the Interlocked.Add 
+    // method is now used. This takes in a reference to the value to update
+    public void Deposit(int depositAmount)
+    {
+        Interlocked.Add(ref balance, depositAmount);
+    }
+
+    public void Withdraw(int withdrawAmount)
+    {
+        Interlocked.Add(ref balance, -withdrawAmount);
+    }
+}
+</code></pre>
+<p><code>Interlocked.Add</code> is atomic and will ensure that no other threads operation on <em>balance</em> while another operation is taking place. The result is exactly the same as when using the <code>lock</code> keyword, just with less code clutter and less manual work needing to be done by the developer.</p>
+<hr />
+<p>Using the <code>Interlocked</code> class is a small, but useful update which can be made to code to keep it as clean as possible, without polluting the classes with <em>lock</em> objects. However it is not the only way to create an atomic operation, and other methods should be explored if <code>Interlocked</code> is not suitable.</p>
+<hr />
+<h2 id="references">References</h2>
+<p><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/lock">lock statement</a><br />
+<a href="https://docs.microsoft.com/en-us/dotnet/api/system.threading.interlocked?view=net-6.0">Interlocked Class</a><br />
+<a href="https://tfginfotec.udemy.com/course/parallel-dotnet/learn/lecture/5650624">.NET Parallel Programming with C#</a></p>
+
+<blockquote class="daily-drop">
+    <div>
+        <div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px; ">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="50" height="50" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffec00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+              <path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+              <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+              <line x1="9.7" y1="17" x2="14.3" y2="17" />
+            </svg>
+        </div>
+        <div class="drop-header">
+            Daily Drop 45: 05-04-2022
+        </div>
+        <div>
+            <br>At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br> It could be anything - some.NET / C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
+            The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+        <div>
+    </div>
+</blockquote>
+
+
+                        
+<div>
+            <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
+            <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
+            <a role="button" href="/tags/task" class="badge badge-light"> task</a>
+            <a role="button" href="/tags/atomic" class="badge badge-light"> atomic</a>
+            <a role="button" href="/tags/interlocked" class="badge badge-light"> interlocked</a>
+            <a role="button" href="/tags/lock" class="badge badge-light"> lock</a>
+</div>
+                    </div>
+                    <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
+                        
+
+        <div class="box sticky-top toc-block">
+            <h3 class="no-anchor">On This Page</h3>
+            <ul>
+        <li><a href="#daily-knowledge-drop">Daily Knowledge Drop</a></li>
+        <li><a href="#why-even-lock">Why even lock?</a></li>
+        <li><a href="#atomic-process">Atomic Process</a></li>
+        <li><a href="#lock-keyword">lock keyword</a></li>
+        <li><a href="#interlocked">Interlocked</a></li>
+        <li><a href="#references">References</a></li>
+            </ul>
+        </div>
+
+                    </div>
+            </div>
+            <div class="row ">
+                    <div id="content" class="col-md-9">
+                        <div>
+    <script src="https://giscus.app/client.js"
+            data-repo="always-developing/always-developing.github.io"
+            data-repo-id="R_kgDOGQJLBQ"
+            data-category="Comments"
+            data-category-id="DIC_kwDOGQJLBc4B_pUA"
+            data-mapping="pathname"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="bottom"
+            data-theme="transparent_dark"
+            data-lang="en"
+            crossorigin="anonymous"
+            async>
+    </script>
+</div>
+                    </div>
+            </div>
+    </div>
+
+    <hr class="horizontal-rule" />
+
+    <!-- Footer -->
+    <footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <ul class="list-inline text-center">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://www.linkedin.com/in/jean-pierre-seini">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-linkedin fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                <div>
+                    <p class="copyright text-footer">
+                        Copyright © 2022 Always Developing</a>.
+                    </p>
+                </div>
+                <ul class="list-inline text-center small text-feeds">
+                        <li class="list-inline-item">
+                            <a href="/feed.rss"><i class="fa fa-rss"></i> RSS Feed</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="/feed.atom"><i class="fa fa-rss"></i> Atom Feed</a>
+                        </li>
+                </ul>
+                <div class="small text-footer">
+                    <a href="https://github.com/always-developing/alwaysdeveloping-website-src"><i class="fab fa-github"></i> This site on GitHub</a>
+                </div>
+                <div class="small text-footer">
+                    <a href="https://statiq.dev">Generated by Statiq</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="/vendor/jquery/jquery.min.js"></script>
+    <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    
+
+
+    
+
+    <!-- Custom scripts for this template -->
+    <script src="/js/always-developing-blog.js"></script>
+
+</body>
+
+</html>

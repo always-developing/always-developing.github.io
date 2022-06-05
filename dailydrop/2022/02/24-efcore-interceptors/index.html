@@ -1,0 +1,619 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="always learning | always growing">
+
+    <title>Always Developing - Entity Framework Core interceptors</title>
+
+    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/02/24-efcore-interceptors">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
+
+    <meta name="application-name" content="Always Developing" />
+    <meta name="msapplication-tooltip" content="Always Developing" />
+    <meta name="msapplication-starturl" content="/" />
+
+    <meta property="og:title" content="Always Developing - Entity Framework Core interceptors" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/02/24-efcore-interceptors" />
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Bootstrap core CSS -->
+    <link href="/vendor/bootstrap/scss/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom fonts for this template -->
+    <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="/vendor/fontawesome-free/css/brands.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css' data-no-mirror>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css' data-no-mirror>
+
+    <!-- Custom styles for this template -->
+    <link href="/scss/always-developing-blog.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/plugins/autoloader/prism-autoloader.min.js" data-no-mirror></script>
+    <script src="https://cdn.jsdelivr.net/npm/quicklink@2.0.0/dist/quicklink.umd.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/themes/prism.css">
+
+    <!-- Lunr search -->
+        <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/pako@2.0.3/dist/pako_inflate.min.js"></script>
+        <script src="/search.js"></script>
+
+    
+
+
+    
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand"  href="/">
+            <img src="/images/ad_logo.png" alt="" width="25" height="25" class="d-inline-block align-text-top">
+            Always Developing
+        </a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            Menu
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/software">Software</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/tags">Tags</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/posts">Posts</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/about">About</a>
+            </li>
+</ul>
+                <form class="form-inline my-2 my-lg-0" action="/search" method="GET">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="query">
+                    <input type="submit" hidden />
+                </form>
+        </div>
+    </div>
+</nav>
+
+    <!-- Page Header -->
+    <header class="masthead">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 align-middle">
+                <div class="post-header-image">
+                    <a href="/">
+                        <img src="/images/ad_logo.png" class="header-image">
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="post-heading">
+                    <h1>
+                        Entity Framework Core interceptors
+                    </h1>
+                            <h2 class="subheading">Query interception with Entity Framework Core interceptors</h2>
+                        <p class="post-meta">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
+                                <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
+                            </svg> Published on Thursday, 24 February 2022
+                        </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <!-- Main Content -->
+    <div class="container">
+            <div class="row ">
+                    <div id="content" class="col-md-9 post-with-toc post-block">
+                        
+<div class="post-header-category">
+    <a class="btn btn-primary btn-sm btn-default btn-home" href="\" role="button"><i class="fas fa-angle-double-left"></i> Home</a>
+            <a class="btn btn-primary btn-sm category-btn" href="/categories/dailydrop" role="button">DailyDrop</a>
+</div>
+
+                        <h2 id="daily-knowledge-drop">Daily Knowledge Drop</h2>
+<p>Entity Framework Core has the concept of <code>interceptors</code> which allow for the <code>insertion of custom logic during the query execution process</code>.</p>
+<p>There a number of real world applications for the functionality, for example:</p>
+<ul>
+<li>Caching and retrieval of data</li>
+<li>Logging query or diagnostics information under certain conditions</li>
+<li>Modifying the query parameters, such as the timeout under certain conditions</li>
+</ul>
+<hr />
+<h2 id="interceptor-structure">Interceptor structure</h2>
+<p>Creating an <code>interceptor</code> is straight forward - a class is created which <em>implements the abstract class DbCommandInterceptor</em>, and then <em>overrides the required relevant method(s)</em>.</p>
+<pre><code class="language-csharp">// Implement from DbCommandInterceptor
+public class ExecutionThresholdInterceptor : DbCommandInterceptor
+{
+    // declare const message string
+    private const string executionRangeExceededMessage = 
+            &quot;Query ran longer than expected. Milliseconds: {0}, Query: {1}&quot;;
+
+    // override the method executed when the datareader has been executed
+    public override DbDataReader ReaderExecuted(DbCommand command, 
+        CommandExecutedEventData eventData, DbDataReader result)
+    {
+        // check how long the query took to execute
+        // if its longer than the threshold
+        if( eventData.Duration.TotalMilliseconds &gt; 10)
+        {
+            // Log a rudimentary error message
+            Console.WriteLine(executionRangeExceededMessage, 
+                eventData.Duration.TotalMilliseconds, command.CommandText);
+        }
+
+        return result;
+    }
+}
+</code></pre>
+<p>There are a number of methods available for overriding, where custom logic can be executed. Each are called at a different stage of the query creation and execution process:</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Information</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CommandCreated</td>
+<td>Called immediately after EF calls CreateCommand()</td>
+</tr>
+<tr>
+<td>CommandCreating</td>
+<td>Called just before EF intends to call CreateCommand()</td>
+</tr>
+<tr>
+<td>CommandFailed</td>
+<td>Called when execution of a command has failed with an exception</td>
+</tr>
+<tr>
+<td>CommandFailedAsync</td>
+<td>Called when execution of a command has failed with an exception</td>
+</tr>
+<tr>
+<td>DataReaderDisposing</td>
+<td>Called when execution of a DbDataReader is about to be disposed</td>
+</tr>
+<tr>
+<td>NonQueryExecuted</td>
+<td>Called immediately after EF calls ExecuteNonQuery()</td>
+</tr>
+<tr>
+<td>NonQueryExecutedAsync</td>
+<td>Called immediately after EF calls ExecuteNonQueryAsync()</td>
+</tr>
+<tr>
+<td>NonQueryExecuting</td>
+<td>Called just before EF intends to call ExecuteNonQuery()</td>
+</tr>
+<tr>
+<td>NonQueryExecutingAsync</td>
+<td>Called just before EF intends to call ExecuteNonQueryAsync()</td>
+</tr>
+<tr>
+<td>ReaderExecuted</td>
+<td>Called immediately after EF calls ExecuteReader()</td>
+</tr>
+<tr>
+<td>ReaderExecutedAsync</td>
+<td>Called immediately after EF calls ExecuteReaderAsync()</td>
+</tr>
+<tr>
+<td>ReaderExecuting</td>
+<td>Called just before EF intends to call ExecuteReader()</td>
+</tr>
+<tr>
+<td>ReaderExecutingAsync</td>
+<td>Called just before EF intends to call ExecuteReaderAsync()</td>
+</tr>
+<tr>
+<td>ScalarExecuted</td>
+<td>Called immediately after EF calls ExecuteScalar()</td>
+</tr>
+<tr>
+<td>ScalarExecutedAsync</td>
+<td>Called immediately after EF calls ExecuteScalarAsync()</td>
+</tr>
+<tr>
+<td>ScalarExecuting</td>
+<td>Called just before EF intends to call ExecuteScalar()</td>
+</tr>
+<tr>
+<td>ScalarExecutingAsync</td>
+<td>Called just before EF intends to call ExecuteScalarAsync()</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="interceptor-configuration">Interceptor configuration</h2>
+<p>Once we have an <code>interceptor</code> defined (implementing <em>DbCommandInterceptor</em>), the next step is to make EF Core aware of it. This is done on the <em>DbContext</em>:</p>
+<pre><code class="language-csharp">public class EFInterceptorsContext : DbContext
+{
+    public DbSet&lt;Song&gt; Songs { get; set; }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseSqlServer(
+            &#64;&quot;Server=.\SQLEXPRESS;Database=EFInterceptors;Integrated Security=True&quot;)
+               // add the interceptor(s)
+                .AddInterceptors(thresholdInterceptor); 
+        }
+
+        // Interceptors are often stateless, so a single interceptor 
+        // instance can be used for all DbContext instances
+        private static readonly ExecutionThresholdInterceptor thresholdInterceptor = 
+            new ExecutionThresholdInterceptor();
+}
+</code></pre>
+<p>Executing a query using the <em>DbContext</em>, we get the following output to the console window from the interceptor:</p>
+<pre><code class="language-powershell">Query ran longer than expected. Milliseconds: 25,089, Query: 
+SELECT [t].[Artist], [t0].[YearReleased], [t0].[Id]
+FROM (
+    SELECT [s].[Artist]
+    FROM [Song] AS [s]
+    GROUP BY [s].[Artist]
+) AS [t]
+OUTER APPLY (
+    SELECT DISTINCT [s0].[Id], [s0].[Artist], [s0].[LengthInSeconds], 
+        [s0].[Name], [s0].[YearReleased]
+    FROM [Song] AS [s0]
+    WHERE [t].[Artist] = [s0].[Artist]
+) AS [t0]
+ORDER BY [t].[Artist]
+</code></pre>
+<hr />
+<h2 id="suppress-execution">Suppress Execution</h2>
+<p>It is possible to <em>suppress the execution</em> of a query from an <code>interceptor</code> - however other installed <code>interceptors</code> will still be executed, so they will each need to check if the exception has been suppressed by a previous <code>interceptor</code>.</p>
+<p>In this example below, we'll configure two <code>interceptors</code> to be run <em>before the query is executed</em>:</p>
+<pre><code class="language-csharp">// This interceptor will suppress the execution of the query if the
+// query is looking at the &quot;Song&quot; table
+public class TableDownInterceptor : DbCommandInterceptor
+{
+    private const string suppressMessage = &quot;Table '{0}'is not currently &quot; +
+        &quot;available for querying. Query being suppressed: {1}&quot;;
+
+    public override InterceptionResult&lt;DbDataReader&gt; ReaderExecuting(DbCommand command, 
+        CommandEventData eventData, InterceptionResult&lt;DbDataReader&gt; result)
+    {
+        // Simple check to see if the command text contains the &quot;Song&quot; table
+        if (eventData.Command.CommandText.Contains(&quot;[Song]&quot;))
+        {
+            // Output a message indicating the query is being suppressed
+            Console.WriteLine(suppressMessage, &quot;Song&quot;, eventData.Command.CommandText);
+            // Suppress the results with a custom empty data reader
+            result = InterceptionResult&lt;DbDataReader&gt;
+                .SuppressWithResult(new TableDownDataReader());
+        }
+        return result;
+    }
+}
+</code></pre>
+<p>The custom <em>DataReader</em> looks as follows. It does nothing by return an empty dataset:</p>
+<pre><code class="language-csharp">internal class TableDownDataReader : DbDataReader
+{
+    public override int FieldCount
+        =&gt; throw new NotImplementedException();
+
+    public override int RecordsAffected =&gt; 0;
+
+    public override bool HasRows =&gt; false;
+
+    public override bool IsClosed
+        =&gt; throw new NotImplementedException();
+
+    public override int Depth =&gt; 0;
+
+    public override bool Read() =&gt; false;
+
+    public override int GetInt32(int ordinal) =&gt; 0;
+
+    public override bool IsDBNull(int ordinal) =&gt; false;
+
+    public override string GetString(int ordinal) =&gt; string.Empty;
+
+    public override bool GetBoolean(int ordinal)
+        =&gt; throw new NotImplementedException();
+
+    public override byte GetByte(int ordinal)
+        =&gt; throw new NotImplementedException();
+
+    public override long GetBytes(int ordinal, long dataOffset, 
+        byte[] buffer, int bufferOffset, int length)
+        =&gt; throw new NotImplementedException();
+
+    public override char GetChar(int ordinal)
+        =&gt; throw new NotImplementedException();
+
+    public override long GetChars(int ordinal, long dataOffset, 
+        char[] buffer, int bufferOffset, int length)
+        =&gt; throw new NotImplementedException();
+
+    public override string GetDataTypeName(int ordinal)
+        =&gt; throw new NotImplementedException();
+
+    public override DateTime GetDateTime(int ordinal)
+        =&gt; throw new NotImplementedException();
+
+    public override decimal GetDecimal(int ordinal)
+        =&gt; throw new NotImplementedException();
+
+    public override double GetDouble(int ordinal)
+        =&gt; throw new NotImplementedException();
+
+    public override Type GetFieldType(int ordinal)
+        =&gt; throw new NotImplementedException();
+
+    public override float GetFloat(int ordinal)
+        =&gt; throw new NotImplementedException();
+
+    public override Guid GetGuid(int ordinal)
+        =&gt; throw new NotImplementedException();
+
+    public override short GetInt16(int ordinal)
+        =&gt; throw new NotImplementedException();
+
+    public override long GetInt64(int ordinal)
+        =&gt; throw new NotImplementedException();
+
+    public override string GetName(int ordinal)
+        =&gt; throw new NotImplementedException();
+
+    public override int GetOrdinal(string name)
+        =&gt; throw new NotImplementedException();
+
+    public override object GetValue(int ordinal)
+        =&gt; throw new NotImplementedException();
+
+    public override int GetValues(object[] values)
+        =&gt; throw new NotImplementedException();
+
+    public override object this[int ordinal]
+        =&gt; throw new NotImplementedException();
+
+    public override object this[string name]
+        =&gt; throw new NotImplementedException();
+
+    public override bool NextResult()
+        =&gt; throw new NotImplementedException();
+
+    public override IEnumerator GetEnumerator()
+    {
+        throw new NotImplementedException();
+    }
+}
+</code></pre>
+<p>Now we configure a second interceptor which will check if the first interceptor has suppressed the result, before executing it's own logic:</p>
+<pre><code class="language-csharp">public class LoggingInterceptor : DbCommandInterceptor
+{
+    public override InterceptionResult&lt;DbDataReader&gt; ReaderExecuting(
+        DbCommand command, CommandEventData eventData, 
+        InterceptionResult&lt;DbDataReader&gt; result)
+    {
+
+        // Check if the result entity already has a value (supplied by the 
+        // previous interceptor) and if so, then don't execute the 
+        // `interceptor` logic, as the result has already been handled.
+        if (!result.HasResult)
+        {
+            Console.WriteLine(eventData.Command.CommandText);
+        }
+        return result;
+    }
+}
+</code></pre>
+<p>Multiple <code>interceptors</code> can be added to EF Core:</p>
+<pre><code class="language-csharp">public class EFInterceptorsContext : DbContext
+{
+    public DbSet&lt;Song&gt; Songs { get; set; }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseSqlServer(
+            &#64;&quot;Server=.\SQLEXPRESS;Database=EFInterceptors;Integrated Security=True&quot;)
+            // add the interceptor(s)
+            .AddInterceptors(tableDownInterceptor, loggingInterceptor); 
+    }
+
+    private static readonly LoggingInterceptor loggingInterceptor 
+        = new LoggingInterceptor();
+
+    private static readonly TableDownInterceptor tableDownInterceptor 
+        = new TableDownInterceptor();
+}
+</code></pre>
+<p>Running the same query as before we get the following output:</p>
+<pre><code class="language-powershell">Table 'Song' is not currently available for querying. Query being suppressed: 
+SELECT [t].[Artist], [t0].[YearReleased], [t0].[Id]
+FROM (
+    SELECT [s].[Artist]
+    FROM [Song] AS [s]
+    GROUP BY [s].[Artist]
+) AS [t]
+OUTER APPLY (
+    SELECT DISTINCT [s0].[Id], [s0].[Artist], [s0].[LengthInSeconds], 
+        [s0].[Name], [s0].[YearReleased]
+    FROM [Song] AS [s0]
+    WHERE [t].[Artist] = [s0].[Artist]
+) AS [t0]
+ORDER BY [t].[Artist]
+</code></pre>
+<p>Only the output logic from <code>TableDownDataReader</code> is executed, and not the output logic from <code>LoggingInterceptor</code>.</p>
+<hr />
+<h2 id="additional-example">Additional example</h2>
+<p>Another <code>interceptor</code> example which wil log the query executed when an exception occurs. Generally the exception will be surfaced, but without the actual query being executed - knowing this can assist in narrowing down the root cause of the exception:</p>
+<pre><code class="language-csharp">public class ExceptionInterceptor : DbCommandInterceptor
+{
+    private const string exceptionMessage = 
+        &quot;Exception occurred running the following command: {0}&quot;;
+
+    public override void CommandFailed(DbCommand command, CommandErrorEventData eventData)
+    {
+        Console.WriteLine(exceptionMessage, eventData.Command.CommandText);
+    }
+}
+</code></pre>
+<hr />
+<h2 id="notes">Notes</h2>
+<p><code>Interceptors</code> are very easy to setup, and can offer a wide range of real world applications. There are potential performance overheads intercepting every single query (and logging it, for example) - but as with most features, there is always a tradeoff (in this case between performance and usefulness), and these would need to be evaluated for each specific use case.</p>
+<hr />
+<h2 id="references">References</h2>
+<p><a href="https://docs.microsoft.com/en-us/ef/core/logging-events-diagnostics/interceptors">Interceptors</a><br />
+<a href="https://docs.microsoft.com/en-us/dotnet/api/microsoft.entityframeworkcore.diagnostics.dbcommandinterceptor?view=efcore-6.0">DbCommandInterceptor Class</a></p>
+
+<blockquote class="daily-drop">
+    <div>
+        <div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px; ">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="50" height="50" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffec00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+              <path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+              <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+              <line x1="9.7" y1="17" x2="14.3" y2="17" />
+            </svg>
+        </div>
+        <div class="drop-header">
+            Daily Drop 18: 24-02-2022
+        </div>
+        <div>
+            <br>At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br> It could be anything - some.NET / C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
+            The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+        <div>
+    </div>
+</blockquote>
+
+
+                        
+<div>
+            <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
+            <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
+            <a role="button" href="/tags/dailydrop" class="badge badge-light"> dailydrop</a>
+            <a role="button" href="/tags/efcore" class="badge badge-light"> efcore</a>
+            <a role="button" href="/tags/ef" class="badge badge-light"> ef</a>
+            <a role="button" href="/tags/entityframework" class="badge badge-light"> entityframework</a>
+            <a role="button" href="/tags/entityframeworkcore" class="badge badge-light"> entityframeworkcore</a>
+            <a role="button" href="/tags/interceptor" class="badge badge-light"> interceptor</a>
+            <a role="button" href="/tags/interceptors" class="badge badge-light"> interceptors</a>
+</div>
+                    </div>
+                    <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
+                        
+
+        <div class="box sticky-top toc-block">
+            <h3 class="no-anchor">On This Page</h3>
+            <ul>
+        <li><a href="#daily-knowledge-drop">Daily Knowledge Drop</a></li>
+        <li><a href="#interceptor-structure">Interceptor structure</a></li>
+        <li><a href="#interceptor-configuration">Interceptor configuration</a></li>
+        <li><a href="#suppress-execution">Suppress Execution</a></li>
+        <li><a href="#additional-example">Additional example</a></li>
+        <li><a href="#notes">Notes</a></li>
+        <li><a href="#references">References</a></li>
+            </ul>
+        </div>
+
+                    </div>
+            </div>
+            <div class="row ">
+                    <div id="content" class="col-md-9">
+                        <div>
+    <script src="https://giscus.app/client.js"
+            data-repo="always-developing/always-developing.github.io"
+            data-repo-id="R_kgDOGQJLBQ"
+            data-category="Comments"
+            data-category-id="DIC_kwDOGQJLBc4B_pUA"
+            data-mapping="pathname"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="bottom"
+            data-theme="transparent_dark"
+            data-lang="en"
+            crossorigin="anonymous"
+            async>
+    </script>
+</div>
+                    </div>
+            </div>
+    </div>
+
+    <hr class="horizontal-rule" />
+
+    <!-- Footer -->
+    <footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <ul class="list-inline text-center">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://www.linkedin.com/in/jean-pierre-seini">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-linkedin fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                <div>
+                    <p class="copyright text-footer">
+                        Copyright © 2022 Always Developing</a>.
+                    </p>
+                </div>
+                <ul class="list-inline text-center small text-feeds">
+                        <li class="list-inline-item">
+                            <a href="/feed.rss"><i class="fa fa-rss"></i> RSS Feed</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="/feed.atom"><i class="fa fa-rss"></i> Atom Feed</a>
+                        </li>
+                </ul>
+                <div class="small text-footer">
+                    <a href="https://github.com/always-developing/alwaysdeveloping-website-src"><i class="fab fa-github"></i> This site on GitHub</a>
+                </div>
+                <div class="small text-footer">
+                    <a href="https://statiq.dev">Generated by Statiq</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="/vendor/jquery/jquery.min.js"></script>
+    <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    
+
+
+    
+
+    <!-- Custom scripts for this template -->
+    <script src="/js/always-developing-blog.js"></script>
+
+</body>
+
+</html>

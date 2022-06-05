@@ -1,0 +1,517 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="always learning | always growing">
+
+    <title>Always Developing - Structured logging - an introduction</title>
+
+    <link rel="canonical" href="https://alwaysdeveloping.net/p/01-2022-structured-logging">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
+
+    <meta name="application-name" content="Always Developing" />
+    <meta name="msapplication-tooltip" content="Always Developing" />
+    <meta name="msapplication-starturl" content="/" />
+
+    <meta property="og:title" content="Always Developing - Structured logging - an introduction" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/p/01-2022-structured-logging" />
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Bootstrap core CSS -->
+    <link href="/vendor/bootstrap/scss/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom fonts for this template -->
+    <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="/vendor/fontawesome-free/css/brands.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css' data-no-mirror>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css' data-no-mirror>
+
+    <!-- Custom styles for this template -->
+    <link href="/scss/always-developing-blog.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/plugins/autoloader/prism-autoloader.min.js" data-no-mirror></script>
+    <script src="https://cdn.jsdelivr.net/npm/quicklink@2.0.0/dist/quicklink.umd.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/themes/prism.css">
+
+    <!-- Lunr search -->
+        <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/pako@2.0.3/dist/pako_inflate.min.js"></script>
+        <script src="/search.js"></script>
+
+    
+
+
+    
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand"  href="/">
+            <img src="/images/ad_logo.png" alt="" width="25" height="25" class="d-inline-block align-text-top">
+            Always Developing
+        </a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            Menu
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/software">Software</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/tags">Tags</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/posts">Posts</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/about">About</a>
+            </li>
+</ul>
+                <form class="form-inline my-2 my-lg-0" action="/search" method="GET">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="query">
+                    <input type="submit" hidden />
+                </form>
+        </div>
+    </div>
+</nav>
+
+    <!-- Page Header -->
+    <header class="masthead">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 align-middle">
+                <div class="post-header-image">
+                    <a href="/">
+                        <img src="/images/ad_logo.png" class="header-image">
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="post-heading">
+                    <h1>
+                        Structured logging - an introduction
+                    </h1>
+                            <h2 class="subheading">An introduction to what, why and how of structured logging using Serilog</h2>
+                        <p class="post-meta">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
+                                <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
+                            </svg> Published on Monday, 31 January 2022
+                        </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <!-- Main Content -->
+    <div class="container">
+            <div class="row ">
+                    <div id="content" class="col-md-9 post-with-toc post-block">
+                        
+<div class="post-header-category">
+    <a class="btn btn-primary btn-sm btn-default btn-home" href="\" role="button"><i class="fas fa-angle-double-left"></i> Home</a>
+            <a class="btn btn-primary btn-sm category-btn" href="/categories/blog" role="button">Blog</a>
+</div>
+
+                        <h2 id="introduction">Introduction</h2>
+<p>This post will give an introduction to <code>structured logging</code>, why its needed and should be used. It will also go into detail how to implement and customize the output using Serilog.</p>
+<hr />
+<h2 id="default.net-logging">Default .NET Logging</h2>
+<p>Before looking at structured logging, we'll take a look at the default .NET logging implementation.</p>
+<p>The default logger can be utilized by injecting <code>ILogger&lt;CategoryName&gt;</code> into the relevant constructor. The <em>ILogger&lt;&gt;</em> interface and its implementation are registered automatically with the .NET dependency injection container on startup.</p>
+<p>Let's look at an example using the default minimal API project template (using .NET6). This is not representative of a real production scenario, and is used only for demo purposes (e.g. an exception generally should not be caught, logged and ignored)</p>
+<p>Below is a <strong>modified</strong> version of the default <em>GET</em> endpoint which is included as part of the template.</p>
+<pre><code class="language-csharp">// ILogger&lt;&gt; is injected. The same can be done 
+// using the constructor of any class.
+app.MapGet(&quot;/weatherforecast&quot;, (ILogger&lt;Program&gt; logger) =&gt;
+{
+    // A debug message is logged when the method is entered and exited.
+    logger.LogDebug(&quot;weatherforecast: Entered&quot;);
+
+    var forecast = Enumerable.Range(1, 5).Select(index =&gt;
+        new WeatherForecast
+          (
+              DateTime.Now.AddDays(index),
+              Random.Shared.Next(-20, 55),
+              summaries[Random.Shared.Next(summaries.Length)]
+          )).ToArray();
+    
+    // An informational message is logged to give some
+    // context as to what the method output.
+    logger.LogInformation($&quot;Number of forecasts: '{forecast.Count()}'.&quot; +
+        $&quot; Max temperature of: '{forecast.Max(x =&gt; x.TemperatureC)}'&quot;);
+
+    try
+    {
+        // If any of the temperature values about to be returned 
+        // are greater than 50C, throw a exception.
+        if(forecast.Any(x =&gt; x.TemperatureC &gt; 50))
+        {
+            throw new Exception(&quot;Temperature is too high&quot;);
+        }
+    }
+    catch (Exception ex)
+    {
+        // Catch any exceptions, and log the error message.
+        logger.LogError(ex.Message);
+    }
+    finally
+    {
+        logger.LogDebug(&quot;weatherforecast: Exit&quot;);
+    }
+
+    return forecast;
+})
+.WithName(&quot;GetWeatherForecast&quot;);
+</code></pre>
+<p>The output when the application is run, and the above method is invoked, is as follows:</p>
+<p><img src="1.DefaultOutput.png" alt="Default logger output" /></p>
+<ul>
+<li>The <strong>log level</strong> (e.g. debug, information, error) is reflected on the left hand side, in the various colours.</li>
+<li>The <strong>Program [0]</strong> shown refers to the <em>CategoryName</em> of the ILogger instance. This is determine by the full name (namespace + class name) of the generic parameter used when injecting <em>ILogger&lt;&gt;</em>.
+<ul>
+<li>In the above example, <code>ILogger&lt;Program&gt;</code> is injected, so the category is the full name of <code>Program</code>, which in this example is just <em>Program</em>.</li>
+<li>The <strong>[0]</strong> refers to an <strong>EventId</strong> (in this case, this has not been set)</li>
+</ul>
+</li>
+</ul>
+<p>The <strong>Logging</strong> section in the appsettings.json file can be used to determine the minimum log level for a specific category name, or for all categories.
+Below is a sample the appsettings.json <strong>Logging</strong> section:</p>
+<pre><code class="language-json">&quot;Logging&quot;: {
+    &quot;LogLevel&quot;: {
+        &quot;Default&quot;: &quot;Information&quot;,
+        &quot;Microsoft.AspNetCore&quot;: &quot;Error&quot;
+    }
+}
+</code></pre>
+<p>In the above example, as the default log level is <strong>&quot;Information&quot;</strong>, invoking <em>logger.LogDebug</em> would not output any data as <em>debug has a lower log level than information</em>.<br />
+In additional, any log calls which have a category name of <strong>&quot;Microsoft.AspNetCore&quot;</strong> will not be logged unless <em>error or above</em> is being logged.</p>
+<p>This mechanism can be used to log different types of data, based on the category of the data.</p>
+<p>There is more to the default .NET logging infrastructure, not covered in this post - see the references below which contain a link to the official .NET logging documentation.</p>
+<hr />
+<h2 id="the-issue-with-default-logging">The issue with default logging</h2>
+<p>The default logging described above works well, and there is <code>nothing inherently &quot;wrong&quot; with it</code>.</p>
+<p>However, the big problem is that there is <code>no consistency with the structure of the information being output</code>.</p>
+<ul>
+<li><strong>What time was the message output?</strong></li>
+<li><strong>What application logged the message?</strong> Especially important if multiple application are logging to a central location</li>
+<li><strong>How to identity if multiple message are related or linked to each other?</strong> How can we tell which messages are all related to a single http request, especially if multiple requests are being served at the same time?</li>
+</ul>
+<p>There is also the question of how a collection of messages in various different formats can easily be indexed and searched.</p>
+<p>These could all be addressed by manually making sure that each and every time any message is logged that it:</p>
+<ul>
+<li>Contains the date and time</li>
+<li>Contains the application name</li>
+<li>Contains a context/request id</li>
+</ul>
+<p>However, there is still no guaranteed message structure and format - this is where structured logging steps in.<br />
+<code>Structured logging ensures that any information which is output, is always done so in a consistent, structured, well-defined format</code>.</p>
+<hr />
+<h2 id="structured-logging">Structured logging</h2>
+<p>.NET doesn't perform structured logging out the box, so a 3rd party library will be used - <a href="https://serilog.net/"><code>Serilog</code></a>. Serilog has become the defacto standard for doing structured logging due to its ease of use, and configurability.</p>
+<p>Serilog works by replacing the default <em>ILogger&lt;&gt;</em> implementation with its own implementation - so no changes are required to any part of the code which use any  <em>ILogger</em> methods. The application only needs to be configured on startup to use the Serilog implementation instead of the default one.</p>
+
+<blockquote class="info-block">
+    <div>
+        <div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px; ">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-info-circle" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#00abfb" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                <circle cx="12" cy="12" r="9" />
+                <line x1="12" y1="8" x2="12.01" y2="8" />
+                <polyline points="11 12 12 12 12 16 13 16" />
+            </svg >
+        </div >
+        <div>
+            <p>
+<p><strong>Serilog</strong> can be configured to send the log messages to one or multiple <em>sink(s)</em>, which are data destinations. In the samples below only the console sink will be configured</p>
+</p>
+        </div>
+    </div>
+</blockquote >
+
+<p>In the below example. the <code>Serilog</code>, <code>Serilog.AspNetCore</code> and <code>Serilog.Sinks.Console</code> NuGet packages have been added to the project.</p>
+<pre><code class="language-csharp">using Serilog;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+// Only change made to the application
+builder.Host.UseSerilog((context, loggerConfig) =&gt;
+{
+    loggerConfig.WriteTo.Console();
+});
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+</code></pre>
+<p>The code is configuring the builder host (an IHostBuilder implementation) to <em>Use Serilog</em>, and then configures which sinks to <em>Write To</em>.<br />
+As <code>Serilog.Sinks.Console</code> is the only Serilog sink package added to the project, only &quot;WriteTo.<em>Console</em>&quot; is available.</p>
+<p>By adding just these few lines, Serilog now takes over the implementation of <em>ILogger&lt;&gt;</em>, and the output now looks as follows:</p>
+<p><img src="2.DefaultSerilog.png" alt="Default Serilog output" /></p>
+<p>The format of the output is <code>now always in a standard format</code>, the Serilog <em>default output template</em> which is <code>{Timestamp:HH:mm:ss} [{EventType:x8} {Level:u3}] {Message:lj}{NewLine}{Exception}</code></p>
+<p>However, the <em>output template</em> can be updated and customized, which will be explored in the next section.</p>
+<hr />
+<h2 id="refine-and-customize">Refine and customize</h2>
+<h3 id="object-parameters">Object parameters</h3>
+<p>One important aspect of Serilog, is that it will <code>automatically serialize object parameters to JSON and reflect that in the output</code>, while the default .NET ILogger implementation will <code>call the ToString() method on the object</code>.</p>
+<p>In our sample, this actually results in the same output, as <code>WeatherForecast is a record</code> and it's <em>ToString()</em> implementation will return a JSON representation of the record.</p>
+<p>If the ILogger is used to log a <em>record of type WeatherForecast</em>:</p>
+<pre><code class="language-csharp">    logger.LogInformation(&quot;Forecast[0]: {&#64;WeatherForecast}&quot;, forecasts[0]);
+</code></pre>
+<p>The output message is the same, just in different output formats:</p>
+<p>Default .NET ILogger:
+<img src="3.RecordDefault.png" alt="Default logger record output" /></p>
+<p>Serilog:<br />
+<img src="4.RecordSerilog.png" alt="Serilog record output" /></p>
+<p>However, <code>if WeatherForecast was a class, instead of a record, the output would be vastly different</code>.</p>
+<p>Assume that WeatherForecast is now a class with the same fields as the record, and that forecasts[0] is an instance of <code>class WeatherForecast</code>:</p>
+<p>Default .NET ILogger:
+<img src="5.ClassDefault.png" alt="Default logger class output" /></p>
+<p>Serilog:<br />
+<img src="6.ClassSerilog.png" alt="Serilog class output" /></p>
+<p>The default <code>.NET ILogger outputs the ToString() result</code>, while Serilog <code>outputs a the result of serializing the object</code> (as well as including the object type).</p>
+<hr />
+<h3 id="output-customization">Output customization</h3>
+<p>There are a couple of ways to change the output format:</p>
+<h4 id="output-format">Output Format</h4>
+<p>When specifying which sinks to write to, it is possible to <em>overwrite the default output template for that sink</em>.  In the below example,</p>
+<ol>
+<li>The log level has been moved to the start of the template</li>
+<li>A constant application name (&quot;StructuredLoggingDemo&quot;) has been included</li>
+<li>Milliseconds now included in the time stamp</li>
+</ol>
+<pre><code class="language-csharp">builder.Host.UseSerilog((context, loggerConfig) =&gt;
+{
+     loggerConfig.WriteTo.Console(outputTemplate: &quot;[{EventType:x8} {Level:u3}] =&gt; &quot; +
+        &quot;StructuredLoggingDemo: {Timestamp:HH:mm:ss:ms} {Message:lj}{NewLine}{Exception}&quot;);
+});
+</code></pre>
+<p>This results in the output looking as follows, with the updates mentioned above included:</p>
+<p><img src="7.CustomTemplate.png" alt="Custom output template" /></p>
+<p>Serilog, and by extension the template, can also be enriched with additional properties at runtime.</p>
+<p>Below Serilog is enriched with:</p>
+<ul>
+<li>The application name, using reflection</li>
+<li>The application start up date (admittedly, not the most useful thing to include on <em>every</em> log message, but acceptable for a demo application)</li>
+</ul>
+<p ApplicationName="" StartupDate="">These additional properties are then being utilized in the output template with the format <code>{Enrich_Property_Name}</code> ( and  in the below example)</p>
+<pre><code class="language-csharp">builder.Host.UseSerilog((context, loggerConfig) =&gt;
+{
+    loggerConfig
+        .Enrich.WithProperty(&quot;ApplicationName&quot;, 
+            Assembly.GetExecutingAssembly().GetName().Name)
+        .Enrich.WithProperty(&quot;StartupDate&quot;, 
+            DateTime.Now.ToShortDateString())
+        .WriteTo.Console(outputTemplate: 
+        &quot;[{EventType:x8} {Level:u3}] =&gt; {ApplicationName} &quot; +
+        &quot;({StartupDate}): {Timestamp:HH:mm:ss:ms}&quot; +
+        &quot; {Message:lj}{NewLine}{Exception}&quot;);
+});
+</code></pre>
+<p>This results in the output looking as follows, with the updates mentioned above:</p>
+<p><img src="8.RevisedCustomTemplate.png" alt="Enriched output template" /></p>
+<p>Custom enrichers can also be written to automatically enrich the logger with specific set of properties. There are also a number of <a href="https://www.nuget.org/packages?q=serilog.enrichers">enrichers available &quot;out the box&quot; as NuGet packages</a>, which when included make the values available for use in the output template.</p>
+<p>For example, the <a href="https://www.nuget.org/packages/Serilog.Enrichers.Environment/2.2.0">Serilog.Enrichers.Environment</a> package will enrich the logger with System Environment properties.</p>
+<h4 id="formatters">Formatters</h4>
+<p>Serilog also the concept of <code>formatters</code> - which are used to <code>change and customize the format of the output</code>. In the preceding examples, the output has been in plain text - a formatter can be used to output the <em>entire output message</em> in JSON, for example.</p>
+<p>There are a number <a href="https://www.nuget.org/packages?q=Serilog.Formatting">formatters available &quot;out the box&quot; as NuGet packages</a>.</p>
+<p>In the below example, the <code>Serilog.Formatting.Compact</code> NuGet package has been referenced, and the <code>CompactJsonFormatter</code> added to the Serilog configuration.</p>
+<pre><code class="language-csharp">builder.Host.UseSerilog((context, loggerConfig) =&gt;
+{
+    loggerConfig
+        .Enrich.WithProperty(&quot;ApplicationName&quot;, 
+            Assembly.GetExecutingAssembly().GetName().Name)
+        .Enrich.WithProperty(&quot;StartupDate&quot;, 
+            DateTime.Now.ToShortDateString())
+        .WriteTo.Console(new CompactJsonFormatter());
+});
+</code></pre>
+<p>This results in the output as follows:</p>
+<p><img src="9.CompactOutput.png" alt="Compact JSON output" /></p>
+<p>At first glance, <code>this is harder to read - so why would we want to output the messages in this format?</code></p>
+<hr />
+<h2 id="benefits-of-structured-output">Benefits of structured output</h2>
+<p>While the output above is definitely harder to read as is, in a production environment its not often that output would be written directly to the console. Its more often that the data would be sent to a log analyzing system (such as <a href="https://www.elastic.co/what-is/elk-stack">The ELK Stack</a>, <a href="https://www.datadoghq.com/">Datadog</a> or one of the many alternatives) for consumption.</p>
+<p>These systems allow for:</p>
+<ul>
+<li>The consumption of log data</li>
+<li>The analysis of log data</li>
+<li>Visualization of log data</li>
+</ul>
+<p>With the <code>entire output being structured as JSON</code> (not just the message portion as in earlier examples), the entire output can now be easily indexed, searched, analyzed and visualized.</p>
+<pre><code class="language-json">{
+    &quot;&#64;t&quot;: &quot;2022-01-22T04:44:31.8254123Z&quot;,
+    &quot;&#64;mt&quot;: &quot;Number of forecasts: '5'. Max temperature of: '43'&quot;,
+    &quot;SourceContext&quot;: &quot;Program&quot;,
+    &quot;RequestId&quot;: &quot;0HMETC7FHFGLL:00000003&quot;,
+    &quot;RequestPath&quot;: &quot;/weatherforecast&quot;,
+    &quot;ConnectionId&quot;: &quot;0HMETC7FHFGLL&quot;,
+    &quot;ApplicationName&quot;: &quot;StructuredLoggingDemo&quot;,
+    &quot;StartupDate&quot;: &quot;2022/01/22&quot;
+}
+</code></pre>
+<p>In addition to the above benefits, there is also the performance aspect. The <code>volume</code> of output data as well as the <code>output format</code> and <code>template format</code> all have an impact on  performance. This should be taken into account and benchmarked for each use case.</p>
+<p>In my experience, the <code>CompactJsonFormatter</code> output was faster and had a better memory impact when compared with default .NET and default Serilog functionality.</p>
+<hr />
+<h2 id="log-levels">Log levels</h2>
+<p>A note on log levels - Serilog provides the same functionality as the default .NET ILogger implementation, with regards to setting the minimum log level at a <code>default global level</code>, at a <code>category name level</code> and at a <code>storage/sink level</code>.</p>
+<p>The configuration of Serilog is different to that of the default ILogger, but they both essentially provide the same capabilities.</p>
+<p>See the references for additional documentation with more details.</p>
+<hr />
+<h2 id="conclusion">Conclusion</h2>
+<p>There is a log more detail and functionality provided by both the default .NET ILogger implementation as well as the Serilog implementation. Additional resources are provided below should you want to dive deeper into the capabilities of either of the implementations.<br />
+However after reading this post, you should now have an understanding of the <em>basic functionality</em> of each, how to refine and customize the output to suite your applications needs, as well as why structured logging can be beneficial to performance and data visibility.</p>
+<hr />
+<h2 id="references">References</h2>
+<p><a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging/?view=aspnetcore-6.0">Logging in .NET Core and ASP.NET Core - official documentation</a><br />
+<a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging/?view=aspnetcore-6.0#log-level">.NET Core and ASP.NET Core log levels</a><br />
+<a href="https://github.com/serilog/serilog/wiki/">Serilog Wiki</a><br />
+<a href="https://github.com/serilog/serilog/wiki/Configuration-Basics#minimum-level">Serilog log levels</a><br />
+<a href="https://www.nuget.org/packages?q=serilog.enrichers">Serilog enrichers</a><br />
+<a href="https://www.nuget.org/packages?q=Serilog.Formatting">Serilog formatters</a></p>
+
+                        
+<div>
+            <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
+            <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
+            <a role="button" href="/tags/logging" class="badge badge-light"> logging</a>
+            <a role="button" href="/tags/structuredlogging" class="badge badge-light"> structuredlogging</a>
+            <a role="button" href="/tags/serilog" class="badge badge-light"> serilog</a>
+            <a role="button" href="/tags/structured" class="badge badge-light"> structured</a>
+            <a role="button" href="/tags/logger" class="badge badge-light"> logger</a>
+</div>
+                    </div>
+                    <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
+                        
+
+        <div class="box sticky-top toc-block">
+            <h3 class="no-anchor">On This Page</h3>
+            <ul>
+        <li><a href="#introduction">Introduction</a></li>
+        <li><a href="#default.net-logging">Default .NET Logging</a></li>
+        <li><a href="#the-issue-with-default-logging">The issue with default logging</a></li>
+        <li><a href="#structured-logging">Structured logging</a></li>
+        <li><a href="#refine-and-customize">Refine and customize</a></li>
+            <ul>
+        <li><a href="#object-parameters">Object parameters</a></li>
+        <li><a href="#output-customization">Output customization</a></li>
+            </ul>
+        <li><a href="#benefits-of-structured-output">Benefits of structured output</a></li>
+        <li><a href="#log-levels">Log levels</a></li>
+        <li><a href="#conclusion">Conclusion</a></li>
+        <li><a href="#references">References</a></li>
+            </ul>
+        </div>
+
+                    </div>
+            </div>
+            <div class="row ">
+                    <div id="content" class="col-md-9">
+                        <div>
+    <script src="https://giscus.app/client.js"
+            data-repo="always-developing/always-developing.github.io"
+            data-repo-id="R_kgDOGQJLBQ"
+            data-category="Comments"
+            data-category-id="DIC_kwDOGQJLBc4B_pUA"
+            data-mapping="pathname"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="bottom"
+            data-theme="transparent_dark"
+            data-lang="en"
+            crossorigin="anonymous"
+            async>
+    </script>
+</div>
+                    </div>
+            </div>
+    </div>
+
+    <hr class="horizontal-rule" />
+
+    <!-- Footer -->
+    <footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <ul class="list-inline text-center">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://www.linkedin.com/in/jean-pierre-seini">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-linkedin fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                <div>
+                    <p class="copyright text-footer">
+                        Copyright © 2022 Always Developing</a>.
+                    </p>
+                </div>
+                <ul class="list-inline text-center small text-feeds">
+                        <li class="list-inline-item">
+                            <a href="/feed.rss"><i class="fa fa-rss"></i> RSS Feed</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="/feed.atom"><i class="fa fa-rss"></i> Atom Feed</a>
+                        </li>
+                </ul>
+                <div class="small text-footer">
+                    <a href="https://github.com/always-developing/alwaysdeveloping-website-src"><i class="fab fa-github"></i> This site on GitHub</a>
+                </div>
+                <div class="small text-footer">
+                    <a href="https://statiq.dev">Generated by Statiq</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="/vendor/jquery/jquery.min.js"></script>
+    <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    
+
+
+    
+
+    <!-- Custom scripts for this template -->
+    <script src="/js/always-developing-blog.js"></script>
+
+</body>
+
+</html>

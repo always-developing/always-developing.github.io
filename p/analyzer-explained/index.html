@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="always learning | always growing">
+
+    <title>Always Developing - Roslyn Analyzer - explained (Part 1)</title>
+
+    <link rel="canonical" href="https://alwaysdeveloping.net/p/analyzer-explained">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
+
+    <meta name="application-name" content="Always Developing" />
+    <meta name="msapplication-tooltip" content="Always Developing" />
+    <meta name="msapplication-starturl" content="/" />
+
+    <meta property="og:title" content="Always Developing - Roslyn Analyzer - explained (Part 1)" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/p/analyzer-explained" />
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Bootstrap core CSS -->
+    <link href="/vendor/bootstrap/scss/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom fonts for this template -->
+    <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="/vendor/fontawesome-free/css/brands.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css' data-no-mirror>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css' data-no-mirror>
+
+    <!-- Custom styles for this template -->
+    <link href="/scss/always-developing-blog.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/plugins/autoloader/prism-autoloader.min.js" data-no-mirror></script>
+    <script src="https://cdn.jsdelivr.net/npm/quicklink@2.0.0/dist/quicklink.umd.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/themes/prism.css">
+
+    <!-- Lunr search -->
+        <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/pako@2.0.3/dist/pako_inflate.min.js"></script>
+        <script src="/search.js"></script>
+
+    
+
+
+    
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand"  href="/">
+            <img src="/images/ad_logo.png" alt="" width="25" height="25" class="d-inline-block align-text-top">
+            Always Developing
+        </a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            Menu
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/software">Software</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/tags">Tags</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/posts">Posts</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/about">About</a>
+            </li>
+</ul>
+                <form class="form-inline my-2 my-lg-0" action="/search" method="GET">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="query">
+                    <input type="submit" hidden />
+                </form>
+        </div>
+    </div>
+</nav>
+
+    <!-- Page Header -->
+    <header class="masthead">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 align-middle">
+                <div class="post-header-image">
+                    <a href="/">
+                        <img src="/images/ad_logo.png" class="header-image">
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="post-heading">
+                    <h1>
+                        Roslyn Analyzer - explained (Part 1)
+                    </h1>
+                            <h2 class="subheading">An introduction to Roslyn Analyzers, what they are and how they are useful</h2>
+                        <p class="post-meta">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
+                                <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
+                            </svg> Published on Wednesday, 24 November 2021
+                        </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <!-- Main Content -->
+    <div class="container">
+            <div class="row ">
+                    <div id="content" class="col-md-9 post-with-toc post-block">
+                        
+<div class="post-header-category">
+    <a class="btn btn-primary btn-sm btn-default btn-home" href="\" role="button"><i class="fas fa-angle-double-left"></i> Home</a>
+            <a class="btn btn-primary btn-sm category-btn" href="/categories/blog" role="button">Blog</a>
+            <a class="btn btn-primary btn-sm category-btn" href="/categories/series" role="button">Series</a>
+</div>
+
+                        <h2 id="series-introduction">Series introduction</h2>
+<p>This is a a five part series exploring the Roslyn analyzer and code fix functionality, how to successfully write and test a custom analyzer, as well as some useful tips and tricks for writing analyzers.</p>
+<p>All posts in the series:<br />
+<strong>Part 1:</strong> Roslyn Analyzer - explained (this post)<br />
+<strong>Part 2:</strong> <a href="../analyzer-write">Roslyn Analyzer - writing an analyzer</a><br />
+<strong>Part 3:</strong> <a href="../analyzer-code-fix">Roslyn Analyzer - writing a code fix</a><br />
+<strong>Part 4:</strong> <a href="../analyzer-test">Roslyn Analyzer - testing an analyzer and code fix</a><br />
+<strong>Part 5:</strong> <a href="../analyzer-extra">Roslyn Analyzer - tips and tricks</a></p>
+<p>All code in the posts, including the sample project and working <code>analyzer</code> and <code>code fix</code> are <a href="https://github.com/always-developing/CodeAnalysis.EntityFrameworkCore.Sample">available on Github</a>.</p>
+<h2 id="what-is-roslyn">What is Roslyn?</h2>
+<p>In short, <code>Roslyn</code> is the .NET compiler - it consists of the compilers for C# and Visual Basic, as well as an api layer which can be leveraged to gather information about the code (<code>analyse</code>), and then perform actions based on this information (<code>code fix</code>).</p>
+<hr />
+<h2 id="what-is-a-roslyn-analyzer">What is a Roslyn analyzer?</h2>
+<p>An <code>analyzer</code> is a piece of code which inspects code (C# or Visual Basic) during design and compile time, and based on the results of the inspection, can raise a <strong>diagnostic result</strong> as an <strong>Error, Warning</strong> or as <strong>Information</strong>.</p>
+<p>All installed and built-in <code>analyzer(s)</code> are run at design time (and compile time) automatically, with the diagnostic results reflecting:</p>
+<ul>
+<li>As coloured &quot;squiggles&quot; in code</li>
+<li>In the <strong>Error List</strong> (Ctrl+W, E) in Visual Studio</li>
+<li>In the build output</li>
+</ul>
+<p><img src="1.Warning.png" alt="Warning highlighted in code by the green squiggle, and also appearing in the Error List" /></p>
+<p><img src="2.BuildWarning2.png" alt="Warning also reflecting during a build" /></p>
+<p>An <code>analyzer</code> can be leveraged to inspect code for a number of issues related to (but not limited to):</p>
+<ul>
+<li>Style</li>
+<li>Quality</li>
+<li>Design</li>
+<li>Maintainability</li>
+</ul>
+<p>As <code>Roslyn</code> exposes an API layer on top of the compiler, this layer can be used to write a custom <code>analyzer</code>.</p>
+<p><a href="../analyzer-write">See part 2 for more in depth details regarding writing a custom analyzer.</a></p>
+<hr />
+<h2 id="what-is-a-roslyn-analyzer-code-fix">What is a Roslyn analyzer code fix?</h2>
+<p>Once an <code>analyzer</code> has inspected the code and returned an diagnostic result, the next step is apply a code change to resolve the source of the alert - <code>a code fix</code>.</p>
+<p>An <code>analyzer</code> does not require a <code>code fix</code>, but if no <code>code fix</code> is provided then it is up to the developer to resolve the issue manually based on the <strong>error, warning or information</strong> message.</p>
+<p>If the <code>analyzer</code> does have an associated <code>code fix</code>, it can be accessed using these steps:</p>
+<ol>
+<li>Hover or place the cursor over the squiggle, a <em>light bulb</em> will appear</li>
+<li>Select the small arrow next to the <em>light bulb</em>, or (Ctrl+.) to see available fix suggestions</li>
+<li>Hover the cursor over one of the suggestions in the list</li>
+<li>A preview of how the code will be changed when the <code>code fix</code> is applied is displayed</li>
+<li>Select one of the suggestions to apply the <code>code fix</code></li>
+</ol>
+<p><img src="3.CodeFix.png" alt="Code fix for the analyzer" /></p>
+<p><a href="../analyzer-code-fix">See part 3 for more in depth details regarding writing a code fix for a custom analyzer.</a></p>
+<hr />
+<h2 id="why-write-an-analyzer">Why write an analyzer?</h2>
+<p>A few reasons or use cases for writing a <code>custom analyzer</code>:</p>
+<ol>
+<li>To monitor and diagnose more niche coding patterns you, as a developer, constantly gets wrong or have to look up (<code>analyzers</code> already exist for most common best practices)</li>
+<li>As a library author (publishing a library to NuGet, for example) an <code>analyzer</code> can be packaged with the library (see the section below) to ensure that it is used correctly by the developer.</li>
+<li>To ensure common coding practices and styles are shared across all development teams in an organization.</li>
+</ol>
+<hr />
+<h2 id="sharing-a-custom-analyzer">Sharing a custom analyzer</h2>
+<p>There are two ways to share a <code>custom analyzer</code> once it has been written:</p>
+<ol>
+<li><strong>VSIX</strong>: The <code>analyzer</code> can be packaged as a vsix, a Visual Studio Extension. This is an executable file which can be either be shared and manually installed by the developer, or can be downloaded <a href="https://marketplace.visualstudio.com/vs">Visual Studio Marketplace.</a>.</li>
+<li><strong>NuGet package</strong>: An <code>analyzer</code> can be package into a NuGet package and installed into a project via a NuGet store (such as <a href="https://www.nuget.org/">nuget.org</a> or an internal NuGet store in the case of a company specific <code>analyzer</code>)</li>
+</ol>
+<hr />
+<h2 id="analyzers-are-tricky">Analyzers are tricky!</h2>
+<p>It can be very tricky getting the <code>analyzer</code> to accurately detect the relevant scenarios in code, and just as hard to fix it accurately with a <code>code fix</code> - syntax trees are complex. (more on this later in the series: <a href="../analyzer-write">part 2</a>, <a href="../analyzer-code-fix">part 3</a> and <a href="../analyzer-test">part 4</a>)</p>
+<p>On top of that, the developer experience for <code>analyzers</code> are not as slick and friendly as with other tooling. The debugging experience for <code>analyzers</code> are inconsistent and not always responsive, while the apis exposed to assist with testing an analyzer can be complicated and difficult to configure.</p>
+<p>But all is not lost - it is possible to work with and around the above constraints (with tips from this series of posts) and still successfully create your own custom <code>analyzer</code>.</p>
+<hr />
+<h2 id="a-working-sample-analyzer">A working sample analyzer</h2>
+<p>The guides in <a href="../analyzer-write">part 2</a> and <a href="../analyzer-write">part 3</a> will detail how to write an <code>analyzer</code> package which inspects the code, and applies a <code>code fix</code> for the following two scenarios related to Entity Framework Core (an understanding of Entity Framework Core is not required to understand the analyzers):</p>
+<ol>
+<li>Ensure code migrations are not automatically applied in the Test or Production environment</li>
+<li>Ensure the correct appsettings.json section has been added an Entity Framework Core database connection is configured in code</li>
+</ol>
+<h3 id="scenario-1-auto-migrations">Scenario 1: auto-migrations</h3>
+<p>Entity Framework Core (EF) is an ORM which provides build in data-access functionality to perform operations on a database. What is important for these posts, is to know that EF provides functionality to scaffold and update the schema of the database (the tables etc) at runtime, usually at startup.</p>
+<p>However it is recommended to only run this migration on development environments, and not in test or production environments. Usually CI/CD pipeline executes the database migration in these environments (which also allows for review of the migration script before it being applied to the database)</p>
+<p>The custom <code>analyzer</code> will look for the presence of the migration code (a <em>.Database.Migrate</em> method call), and ensure it is only executed when the code is run in DEBUG configuration.</p>
+<h3 id="scenario-2-connection-string">Scenario 2: connection string</h3>
+<p>When configuring EF, a database connection name is specified, with the actual connection string stored in the appsettings.json settings file.</p>
+<pre><code class="language-csharp">.AddDbContext&lt;SampleContext&gt;(x =&gt; x
+    .UseSqlite(context.Configuration.GetConnectionString(&quot;SampleDatabase&quot;)))
+</code></pre>
+<p>This code relies on the connection string being present in the appsettings.json file:</p>
+<pre><code class="language-json">{
+    &quot;ConnectionStrings&quot;: {
+        &quot;SamplesDatabase&quot;: &quot;Data Source=LocalDatabase.db&quot;
+    }
+}
+</code></pre>
+<p>The custom <code>analyzer</code> will inspect the appsettings.json file and ensure the connection string is present and correct.</p>
+<hr />
+<h2 id="next-steps-writing-the-analyzer">Next steps: Writing the analyzer</h2>
+<p>Next up, <a href="../analyzer-write">part 2 in the series</a> will go into detail and expand on coding a custom <code>analyzer</code>.</p>
+<hr />
+<h2 id="useful-links">Useful links</h2>
+<p><a href="https://docs.microsoft.com/en-us/ef/core/">Entity Framework Core</a><br />
+<a href="https://github.com/dotnet/roslyn">Roslyn repository</a><br />
+<a href="https://github.com/always-developing/CodeAnalysis.EntityFrameworkCore.Sample">Sample analyzer and code fix repository</a></p>
+
+                        
+<div>
+            <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
+            <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
+            <a role="button" href="/tags/roslyn" class="badge badge-light"> roslyn</a>
+            <a role="button" href="/tags/codefix" class="badge badge-light"> codefix</a>
+            <a role="button" href="/tags/code-fix" class="badge badge-light"> code fix</a>
+            <a role="button" href="/tags/analyser" class="badge badge-light"> analyser</a>
+            <a role="button" href="/tags/analyzer" class="badge badge-light"> analyzer</a>
+            <a role="button" href="/tags/guide" class="badge badge-light"> guide</a>
+            <a role="button" href="/tags/entity-framework" class="badge badge-light"> entity framework</a>
+            <a role="button" href="/tags/entityframework" class="badge badge-light"> entityframework</a>
+            <a role="button" href="/tags/ef" class="badge badge-light"> ef</a>
+            <a role="button" href="/tags/analyzer-series" class="badge badge-light"> analyzer-series</a>
+</div>
+                    </div>
+                    <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
+                        
+
+        <div class="box sticky-top toc-block">
+            <h3 class="no-anchor">On This Page</h3>
+            <ul>
+        <li><a href="#series-introduction">Series introduction</a></li>
+        <li><a href="#what-is-roslyn">What is Roslyn?</a></li>
+        <li><a href="#what-is-a-roslyn-analyzer">What is a Roslyn analyzer?</a></li>
+        <li><a href="#what-is-a-roslyn-analyzer-code-fix">What is a Roslyn analyzer code fix?</a></li>
+        <li><a href="#why-write-an-analyzer">Why write an analyzer?</a></li>
+        <li><a href="#sharing-a-custom-analyzer">Sharing a custom analyzer</a></li>
+        <li><a href="#analyzers-are-tricky">Analyzers are tricky!</a></li>
+        <li><a href="#a-working-sample-analyzer">A working sample analyzer</a></li>
+            <ul>
+        <li><a href="#scenario-1-auto-migrations">Scenario 1: auto-migrations</a></li>
+        <li><a href="#scenario-2-connection-string">Scenario 2: connection string</a></li>
+            </ul>
+        <li><a href="#next-steps-writing-the-analyzer">Next steps: Writing the analyzer</a></li>
+        <li><a href="#useful-links">Useful links</a></li>
+            </ul>
+        </div>
+
+                    </div>
+            </div>
+            <div class="row ">
+                    <div id="content" class="col-md-9">
+                        <div>
+    <script src="https://giscus.app/client.js"
+            data-repo="always-developing/always-developing.github.io"
+            data-repo-id="R_kgDOGQJLBQ"
+            data-category="Comments"
+            data-category-id="DIC_kwDOGQJLBc4B_pUA"
+            data-mapping="pathname"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="bottom"
+            data-theme="transparent_dark"
+            data-lang="en"
+            crossorigin="anonymous"
+            async>
+    </script>
+</div>
+                    </div>
+            </div>
+    </div>
+
+    <hr class="horizontal-rule" />
+
+    <!-- Footer -->
+    <footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <ul class="list-inline text-center">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://www.linkedin.com/in/jean-pierre-seini">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-linkedin fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                <div>
+                    <p class="copyright text-footer">
+                        Copyright © 2022 Always Developing</a>.
+                    </p>
+                </div>
+                <ul class="list-inline text-center small text-feeds">
+                        <li class="list-inline-item">
+                            <a href="/feed.rss"><i class="fa fa-rss"></i> RSS Feed</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="/feed.atom"><i class="fa fa-rss"></i> Atom Feed</a>
+                        </li>
+                </ul>
+                <div class="small text-footer">
+                    <a href="https://github.com/always-developing/alwaysdeveloping-website-src"><i class="fab fa-github"></i> This site on GitHub</a>
+                </div>
+                <div class="small text-footer">
+                    <a href="https://statiq.dev">Generated by Statiq</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="/vendor/jquery/jquery.min.js"></script>
+    <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    
+
+
+    
+
+    <!-- Custom scripts for this template -->
+    <script src="/js/always-developing-blog.js"></script>
+
+</body>
+
+</html>

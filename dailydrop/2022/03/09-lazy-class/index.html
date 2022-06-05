@@ -1,0 +1,387 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="always learning | always growing">
+
+    <title>Always Developing - Lazy loading objects with Lazy&lt;&gt;</title>
+
+    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/03/09-lazy-class">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
+
+    <meta name="application-name" content="Always Developing" />
+    <meta name="msapplication-tooltip" content="Always Developing" />
+    <meta name="msapplication-starturl" content="/" />
+
+    <meta property="og:title" content="Always Developing - Lazy loading objects with Lazy&lt;&gt;" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/03/09-lazy-class" />
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Bootstrap core CSS -->
+    <link href="/vendor/bootstrap/scss/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom fonts for this template -->
+    <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="/vendor/fontawesome-free/css/brands.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css' data-no-mirror>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css' data-no-mirror>
+
+    <!-- Custom styles for this template -->
+    <link href="/scss/always-developing-blog.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/plugins/autoloader/prism-autoloader.min.js" data-no-mirror></script>
+    <script src="https://cdn.jsdelivr.net/npm/quicklink@2.0.0/dist/quicklink.umd.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/themes/prism.css">
+
+    <!-- Lunr search -->
+        <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/pako@2.0.3/dist/pako_inflate.min.js"></script>
+        <script src="/search.js"></script>
+
+    
+
+
+    
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand"  href="/">
+            <img src="/images/ad_logo.png" alt="" width="25" height="25" class="d-inline-block align-text-top">
+            Always Developing
+        </a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            Menu
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/software">Software</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/tags">Tags</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/posts">Posts</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/about">About</a>
+            </li>
+</ul>
+                <form class="form-inline my-2 my-lg-0" action="/search" method="GET">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="query">
+                    <input type="submit" hidden />
+                </form>
+        </div>
+    </div>
+</nav>
+
+    <!-- Page Header -->
+    <header class="masthead">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 align-middle">
+                <div class="post-header-image">
+                    <a href="/">
+                        <img src="/images/ad_logo.png" class="header-image">
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="post-heading">
+                    <h1>
+                        Lazy loading objects with Lazy&lt;&gt;
+                    </h1>
+                            <h2 class="subheading">Defer the loading of large objects until require with Lazy&lt;&gt;</h2>
+                        <p class="post-meta">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
+                                <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
+                            </svg> Published on Wednesday, 09 March 2022
+                        </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <!-- Main Content -->
+    <div class="container">
+            <div class="row ">
+                    <div id="content" class="col-md-9 post-with-toc post-block">
+                        
+<div class="post-header-category">
+    <a class="btn btn-primary btn-sm btn-default btn-home" href="\" role="button"><i class="fas fa-angle-double-left"></i> Home</a>
+            <a class="btn btn-primary btn-sm category-btn" href="/categories/dailydrop" role="button">DailyDrop</a>
+</div>
+
+                        <h2 id="daily-knowledge-drop">Daily Knowledge Drop</h2>
+<p>The <code>loading of (large) objects can be deferred</code> until they are actually <code>used and required</code> using the <code>Lazy&lt;&gt;</code> class</p>
+<hr />
+<h2 id="sample">Sample</h2>
+<h3 id="use-case">Use case</h3>
+<p>In our use case, we have a <code>FileEntity</code> which contains details about a file in a specific location. There are two child entities which are properties to <code>FileEntity</code>:</p>
+<ul>
+<li><code>FileSize</code>: stores the file size in bytes (and just stores a double value, so is small)</li>
+<li><code>FileContents</code>: stores the contents of the file as a string (depending on the size of the file, this can obviously be very large)</li>
+</ul>
+<p>The <code>contents of the file will not always be used</code> and are potentially <code>very large</code> - so let's look at how we can <em>defer loading the data until it is actually used and required</em>.</p>
+<hr />
+<h3 id="the-setup">The setup</h3>
+<pre><code class="language-csharp">// the main file entity class
+public class FileEntity
+{
+    // a normal FileContentsEntity private variable,
+    // just wrapped in Lazy&lt;&gt; 
+    private readonly Lazy&lt;FileContentsEntity&gt; _fileContents;
+
+    public Guid Id { get; }
+
+    public string FileLocation { get; }
+
+    public FileSizeEntity FileSize { get; }
+
+    // when accessed, return Lazy&lt;FileContentsEntity&gt;.Value
+    public FileContentsEntity FileContents =&gt; _fileContents.Value;
+
+    public FileEntity(Guid id, string fileLocation, double fileSizeInBytes)
+    {
+        Console.WriteLine(&quot;FileEntity constructed&quot;);
+
+        Id = id;
+        FileLocation = fileLocation;
+        FileSize = new FileSizeEntity(fileSizeInBytes);
+
+        // instead of instantiating the fileContents,
+        // instantiate Lazy&lt;&gt; with an startup method
+        _fileContents = new Lazy&lt;FileContentsEntity&gt;(LoadFileContents);
+    }
+
+    // method to load the large data volume
+    private FileContentsEntity LoadFileContents()
+    {
+        return new FileContentsEntity(FileLocation);
+    }
+}
+
+// simple entity to store the file size
+public class FileSizeEntity
+{
+    public double FileSizeInBytes { get; set; }
+
+    public FileSizeEntity(double fileSizeInBytes)
+    {
+        Console.WriteLine(&quot;FileSizeEntity constructed&quot;);
+
+        FileSizeInBytes = fileSizeInBytes;
+    }
+}
+
+// simple entity to store the file contents
+public class FileContentsEntity
+{
+    public string LargeStringValue { get; set; }
+
+    public FileContentsEntity(string fileLocation)
+    {
+        Console.WriteLine($&quot;FileContentsEntity loaded from '{fileLocation}'&quot;);
+
+        LargeStringValue = &quot;LargeStringValue&quot;;
+    }
+}
+</code></pre>
+<p>To use <code>Lazy&lt;&gt;</code>, the setup is almost <em>exactly the same</em> as without using <code>Lazy&lt;&gt;</code>.</p>
+<h3 id="output">Output</h3>
+<p>So what does the <code>Lazy&lt;&gt;</code> actually enable, and how does it effect execution?</p>
+<pre><code class="language-csharp">Console.WriteLine(&quot;== pre initialization ==&quot;);
+
+// Two FileEntity instances are created, 
+// one with a small file and one with a large file
+var file1 = new FileEntity(Guid.NewGuid(), &#64;&quot;C:\small-file.txt&quot;, 100);
+var file2 = new FileEntity(Guid.NewGuid(), &#64;&quot;C:\large-file.txt&quot;, 1073741824);
+
+Console.WriteLine(&quot;== post initialization ==&quot;);
+Console.WriteLine(&quot;&quot;);
+
+// The large FileContents is accessed
+Console.WriteLine(&quot;Accessing file1 contents&quot;);
+var file1Location = file1.FileContents;
+
+// only the FileLocation is accessed
+Console.WriteLine(&quot;Accessing file2 location&quot;);
+var fileContents = file2.FileLocation;
+</code></pre>
+<p>The output looks as follows:</p>
+<pre><code class="language-powershell">== pre initialization ==
+FileEntity constructed
+FileSizeEntity constructed
+FileEntity constructed
+FileSizeEntity constructed
+== post initialization ==
+
+Accessing file1 contents
+FileContentsEntity loaded from 'C:\small-file.txt'
+Accessing file2 location
+</code></pre>
+<p>The key take-away from the output, is that the <code>large contents of file2 are never loaded</code>, as they are never used.</p>
+<hr />
+<h2 id="thread-safety">Thread safety</h2>
+<p>There are additional considerations regarding thread safety and Lazy&lt;&gt;. These are not addressed in this post, but can be read in details in the reference below.</p>
+<hr />
+<h2 id="notes">Notes</h2>
+<p><code>Lazy&lt;&gt;</code> provides a simple and easy to use way to load objects <em>only when they are uses</em> - this is especially useful when the large object is not loaded on every code path. This can lead to better performance and memory usage.</p>
+<hr />
+<h2 id="references">References</h2>
+<p><a href="https://docs.microsoft.com/en-us/dotnet/api/system.lazy-1?view=net-6.0">Lazy<T> Class</a></p>
+
+<blockquote class="daily-drop">
+    <div>
+        <div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px; ">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="50" height="50" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffec00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+              <path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+              <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+              <line x1="9.7" y1="17" x2="14.3" y2="17" />
+            </svg>
+        </div>
+        <div class="drop-header">
+            Daily Drop 27: 09-03-2022
+        </div>
+        <div>
+            <br>At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br> It could be anything - some.NET / C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
+            The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+        <div>
+    </div>
+</blockquote>
+
+
+                        
+<div>
+            <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
+            <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
+            <a role="button" href="/tags/dailydrop" class="badge badge-light"> dailydrop</a>
+            <a role="button" href="/tags/lazy" class="badge badge-light"> lazy</a>
+            <a role="button" href="/tags/loading" class="badge badge-light"> loading</a>
+</div>
+                    </div>
+                    <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
+                        
+
+        <div class="box sticky-top toc-block">
+            <h3 class="no-anchor">On This Page</h3>
+            <ul>
+        <li><a href="#daily-knowledge-drop">Daily Knowledge Drop</a></li>
+        <li><a href="#sample">Sample</a></li>
+            <ul>
+        <li><a href="#use-case">Use case</a></li>
+        <li><a href="#the-setup">The setup</a></li>
+        <li><a href="#output">Output</a></li>
+            </ul>
+        <li><a href="#thread-safety">Thread safety</a></li>
+        <li><a href="#notes">Notes</a></li>
+        <li><a href="#references">References</a></li>
+            </ul>
+        </div>
+
+                    </div>
+            </div>
+            <div class="row ">
+                    <div id="content" class="col-md-9">
+                        <div>
+    <script src="https://giscus.app/client.js"
+            data-repo="always-developing/always-developing.github.io"
+            data-repo-id="R_kgDOGQJLBQ"
+            data-category="Comments"
+            data-category-id="DIC_kwDOGQJLBc4B_pUA"
+            data-mapping="pathname"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="bottom"
+            data-theme="transparent_dark"
+            data-lang="en"
+            crossorigin="anonymous"
+            async>
+    </script>
+</div>
+                    </div>
+            </div>
+    </div>
+
+    <hr class="horizontal-rule" />
+
+    <!-- Footer -->
+    <footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <ul class="list-inline text-center">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://www.linkedin.com/in/jean-pierre-seini">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-linkedin fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                <div>
+                    <p class="copyright text-footer">
+                        Copyright © 2022 Always Developing</a>.
+                    </p>
+                </div>
+                <ul class="list-inline text-center small text-feeds">
+                        <li class="list-inline-item">
+                            <a href="/feed.rss"><i class="fa fa-rss"></i> RSS Feed</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="/feed.atom"><i class="fa fa-rss"></i> Atom Feed</a>
+                        </li>
+                </ul>
+                <div class="small text-footer">
+                    <a href="https://github.com/always-developing/alwaysdeveloping-website-src"><i class="fab fa-github"></i> This site on GitHub</a>
+                </div>
+                <div class="small text-footer">
+                    <a href="https://statiq.dev">Generated by Statiq</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="/vendor/jquery/jquery.min.js"></script>
+    <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    
+
+
+    
+
+    <!-- Custom scripts for this template -->
+    <script src="/js/always-developing-blog.js"></script>
+
+</body>
+
+</html>

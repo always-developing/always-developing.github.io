@@ -1,0 +1,364 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="always learning | always growing">
+
+    <title>Always Developing - Useful Visual Studio keyboard shortcuts</title>
+
+    <link rel="canonical" href="https://alwaysdeveloping.net/p/vs-keyboard-shortcuts">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
+
+    <meta name="application-name" content="Always Developing" />
+    <meta name="msapplication-tooltip" content="Always Developing" />
+    <meta name="msapplication-starturl" content="/" />
+
+    <meta property="og:title" content="Always Developing - Useful Visual Studio keyboard shortcuts" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/p/vs-keyboard-shortcuts" />
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Bootstrap core CSS -->
+    <link href="/vendor/bootstrap/scss/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom fonts for this template -->
+    <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="/vendor/fontawesome-free/css/brands.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css' data-no-mirror>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css' data-no-mirror>
+
+    <!-- Custom styles for this template -->
+    <link href="/scss/always-developing-blog.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/plugins/autoloader/prism-autoloader.min.js" data-no-mirror></script>
+    <script src="https://cdn.jsdelivr.net/npm/quicklink@2.0.0/dist/quicklink.umd.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/themes/prism.css">
+
+    <!-- Lunr search -->
+        <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/pako@2.0.3/dist/pako_inflate.min.js"></script>
+        <script src="/search.js"></script>
+
+    
+
+
+    
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand"  href="/">
+            <img src="/images/ad_logo.png" alt="" width="25" height="25" class="d-inline-block align-text-top">
+            Always Developing
+        </a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            Menu
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/software">Software</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/tags">Tags</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/posts">Posts</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/about">About</a>
+            </li>
+</ul>
+                <form class="form-inline my-2 my-lg-0" action="/search" method="GET">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="query">
+                    <input type="submit" hidden />
+                </form>
+        </div>
+    </div>
+</nav>
+
+    <!-- Page Header -->
+    <header class="masthead">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 align-middle">
+                <div class="post-header-image">
+                    <a href="/">
+                        <img src="/images/ad_logo.png" class="header-image">
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="post-heading">
+                    <h1>
+                        Useful Visual Studio keyboard shortcuts
+                    </h1>
+                            <h2 class="subheading">Be up to 20% more productive!</h2>
+                        <p class="post-meta">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
+                                <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
+                            </svg> Published on Monday, 25 October 2021
+                        </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <!-- Main Content -->
+    <div class="container">
+            <div class="row ">
+                    <div id="content" class="col-md-9 post-with-toc post-block">
+                        
+<div class="post-header-category">
+    <a class="btn btn-primary btn-sm btn-default btn-home" href="\" role="button"><i class="fas fa-angle-double-left"></i> Home</a>
+            <a class="btn btn-primary btn-sm category-btn" href="/categories/blog" role="button">Blog</a>
+</div>
+
+                        <h2 id="why-learn-keyboard-shortcuts">Why learn keyboard shortcuts?</h2>
+<p>So I confess I have no empirical evidence to backup the <code>up to 20% more productive</code> claim. That number is just made up, but with years of experience on my side, it honestly feels fairly accurate to me!</p>
+<p>Having often been involved in assisting, troubleshooting and debugging code with fellow developers, it is apparent that the developers which are familiar with their IDE, and make use of the shortcuts, <em>generally</em> (but not always!) resolve tasks quicker and more efficiently than those that don't.</p>
+<p>Every hand reach for the mouse, every unnecessary cursor movement, every menu click is <em>potentially</em> a waste of time. It's time two hands are not on the keyboard writing code. The more shortcuts a person is familiar with, the more the unnecessary time wasting can be minimized. Thus, more programming time and more productivity!</p>
+<ul>
+<li>Is there anything wrong with not making use of keyboard shortcuts? <strong>Definitely not.</strong></li>
+<li>Does not using keyboard shortcuts make a person any less of a developer? <strong>Definitely not.</strong></li>
+<li>Could using keyboard shortcuts make a person more productive? <strong>Definitely yes.</strong></li>
+</ul>
+<h2 id="visual-studio-shortcuts-to-learn">Visual Studio shortcuts to learn</h2>
+<p>Below is a list of useful <code>Visual Studio</code> shortcuts I use the most often and find the more useful in my day to day development. This is by no means an exhaustive list - however I have no doubt a massive benefit can be gained by learning just a few of these.</p>
+<p>Some of these shortcuts are not just Visual Studio shortcuts, and also be leveraged in other applications (such as VS Code).</p>
+
+<blockquote class="info-block">
+    <div>
+        <div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px; ">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-info-circle" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#00abfb" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                <circle cx="12" cy="12" r="9" />
+                <line x1="12" y1="8" x2="12.01" y2="8" />
+                <polyline points="11 12 12 12 12 16 13 16" />
+            </svg >
+        </div >
+        <div>
+            <p>
+<ul>
+<li><p><code>+</code> indicates a combination of keys is to be pressed to perform the action.<br />
+In some cases (like the example below), the final key can be tapped to perform the action multiple times (while still holding down the initial two keys)<br />
+E.g. <code>Ctrl + Shift + -</code>: <em>Ctrl</em> and <em>Shift</em> can be held down at the same time while the <em>-</em> key is pressed multiple times.</p>
+</li>
+<li><p><code>,</code> is used to indicate a sequence of keys is to be pressed.<br />
+E.g. <code>Ctrl + M, O</code>: <em>Ctrl</em> is held down, while <em>M</em> is pressed and then <em>O</em> is pressed.</p>
+</li>
+</ul>
+</p>
+        </div>
+    </div>
+</blockquote >
+
+<h3 id="view-shortcuts">View shortcuts</h3>
+<ul>
+<li><p><code>Ctrl + -</code> and <code>Ctrl + Shift + -</code>: <strong>Navigate backwards and forwards</strong> 🧭<br />
+Moves the cursor, backwards and forwards through the history of visited cursor locations in file(s). This is incredibly useful especially when used in conjunction with the <em>Go to Definition</em> / <code>Ctrl + F12</code> function.</p>
+</li>
+<li><p><code>Ctrl + .</code>: <strong>Quick actions and refactoring</strong> 💡<br />
+When the cursor is over a block of code, this shortcut will bring up the quick actions and refactoring (Lightbulb or screwdriver icon) menu</p>
+</li>
+<li><p><code>Ctrl + Spacebar</code>: <strong>Trigger Intellisense</strong></p>
+</li>
+</ul>
+<h3 id="editor-shortcuts">Editor shortcuts</h3>
+<ul>
+<li><p><code>Ctrl + ←</code> and <code>Ctrl + →</code>: <strong>Moves cursor one word to the left or right</strong> ⬅️➡️<br />
+Great when used in combination with the <em>Shift</em> key (e.g. <code>Ctrl + Shift + →</code>) to highlight/select entire word(s).</p>
+</li>
+<li><p><code>Ctrl + Del</code>: <strong>Delete an entire line</strong> 🚫<br />
+When you dislike your code and you want it gone quickly.</p>
+</li>
+<li><p><code>Ctrl + M, O</code>: <strong>Collapse to definitions</strong> 📄<br />
+Collapse all methods, regions, comment blocks etc in the current document.</p>
+</li>
+<li><p><code>Ctrl + F</code>: <strong>Find in current file</strong> 🔍<br />
+Defaults to search in only the current document, but this can be changed to include more documents (e.g. entire solution)</p>
+</li>
+<li><p><code>Ctrl + Shift + F</code>: <strong>Find in all files</strong> 🔍🔍<br />
+Opens the <em>Find in files</em> dialog. Defaults to search the entire solution, but this can be changed to include less documents (e.g. current document)</p>
+</li>
+<li><p><code>Ctrl + H</code>: <strong>Replace in current file</strong> 📑<br />
+Defaults to search in only the current document, but this can be changed to include more documents (e.g. entire solution)</p>
+</li>
+<li><p><code>Ctrl + Shift + H</code>: <strong>Replace in all files</strong> 📑📑<br />
+Opens the Replace in files_ dialog. Defaults to replace in the entire solution, but this can be changed to include less documents (e.g. current document)</p>
+</li>
+<li><p><code>Ctrl + K, C</code> and <code>Ctrl + K, U</code>: <strong>Comments and uncomment code selection</strong> 📜<br />
+Comment and uncomment code selection. If no selection is made, the line of code the cursor is current on will be commented/un-commented.</p>
+</li>
+</ul>
+<h3 id="refactor-shortcuts">Refactor shortcuts</h3>
+<ul>
+<li><p><code>'ctor', Tab, Tab</code>: <strong>Constructor creation</strong> 🏗️<br />
+This is a prebuilt code snippet and not really a keyboard shortcut. This will create a default parameter-less constructor for the current class</p>
+</li>
+<li><p><code>Ctrl + R, R</code>: <strong>Rename</strong> 💬<br />
+Allows for the rename of a class, method, variable etc. as well as all usages of said code.  Place the cursor on a method name, for example, press <code>Ctrl + R, R</code>, type in the new name and hit enter. The method name and all usages of the name have now been renamed.</p>
+</li>
+<li><p><code>Ctrl + R, M</code>: <strong>Extract to method</strong> 📤<br />
+Create a new method containing the selected code, and invoke the new method from the current code location. Great for code clean up.</p>
+</li>
+<li><p><code>Ctrl + R, G</code>: <strong>Remove and sort <em>usings</em></strong> ⛔
+Performing this shortcut anywhere in a document will remove any unused <em>usings</em> in the file, as well as sort the remaining ones alphabetically.</p>
+</li>
+</ul>
+<h3 id="build-shortcuts">Build shortcuts</h3>
+<ul>
+<li><p><code>F5</code>: <strong>Build and start application with the <em>debugger attached</em></strong>. 🐛<br />
+Breakpoints will pause code execution, code can be stepped through, etc.</p>
+</li>
+<li><p><code>Ctrl + F5</code>: <strong>Build and start application <em>without the debugger attached</em></strong>. 🏃‍♂️<br />
+No debug symbols will be loaded, so breakpoints will not be hit. Most often used when:</p>
+<ol>
+<li>Running multiple dependent services/applications in the same solution (without the need for debugging all the projects)</li>
+<li>Running benchmarking (using BenchmarkDotNet)</li>
+</ol>
+</li>
+</ul>
+<h3 id="code-quality-shortcuts">Code quality shortcuts</h3>
+<ul>
+<li><code>///</code>: <strong>Adds comments</strong> 🧾<br />
+Used above a method or class to create and partially auto populate the comments.<br />
+These comments can be used to generate an XML document file (especially useful for library authors)</li>
+</ul>
+<h2 id="conclusion">Conclusion</h2>
+<p>It does take a conscious effort when starting to actually slow down, lookup the shortcut to be used and force yourself to use it. But adaption happens quickly, and before you know it you'll be using the keyboard shortcuts without even realising it.</p>
+<p>It is an on-going learning process - if you find yourself performing the same time consuming action over and over in the IDE, consider investigating and learning the shortcut.</p>
+<p>The list of <a href="https://docs.microsoft.com/en-us/visualstudio/ide/default-keyboard-shortcuts-in-visual-studio?view=vs-2019"><code>VS2019 Keyboard shortcuts</code></a>. (this mostly apply to VS2017 and VS2022 as well)</p>
+<p>Use shortcuts. Be more productive.</p>
+
+                        
+<div>
+            <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
+            <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
+            <a role="button" href="/tags/visualstudio" class="badge badge-light"> visualstudio</a>
+            <a role="button" href="/tags/ide" class="badge badge-light"> ide</a>
+            <a role="button" href="/tags/productivity" class="badge badge-light"> productivity</a>
+</div>
+                    </div>
+                    <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
+                        
+
+        <div class="box sticky-top toc-block">
+            <h3 class="no-anchor">On This Page</h3>
+            <ul>
+        <li><a href="#why-learn-keyboard-shortcuts">Why learn keyboard shortcuts?</a></li>
+        <li><a href="#visual-studio-shortcuts-to-learn">Visual Studio shortcuts to learn</a></li>
+            <ul>
+        <li><a href="#view-shortcuts">View shortcuts</a></li>
+        <li><a href="#editor-shortcuts">Editor shortcuts</a></li>
+        <li><a href="#refactor-shortcuts">Refactor shortcuts</a></li>
+        <li><a href="#build-shortcuts">Build shortcuts</a></li>
+        <li><a href="#code-quality-shortcuts">Code quality shortcuts</a></li>
+            </ul>
+        <li><a href="#conclusion">Conclusion</a></li>
+            </ul>
+        </div>
+
+                    </div>
+            </div>
+            <div class="row ">
+                    <div id="content" class="col-md-9">
+                        <div>
+    <script src="https://giscus.app/client.js"
+            data-repo="always-developing/always-developing.github.io"
+            data-repo-id="R_kgDOGQJLBQ"
+            data-category="Comments"
+            data-category-id="DIC_kwDOGQJLBc4B_pUA"
+            data-mapping="pathname"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="bottom"
+            data-theme="transparent_dark"
+            data-lang="en"
+            crossorigin="anonymous"
+            async>
+    </script>
+</div>
+                    </div>
+            </div>
+    </div>
+
+    <hr class="horizontal-rule" />
+
+    <!-- Footer -->
+    <footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <ul class="list-inline text-center">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://www.linkedin.com/in/jean-pierre-seini">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-linkedin fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                <div>
+                    <p class="copyright text-footer">
+                        Copyright © 2022 Always Developing</a>.
+                    </p>
+                </div>
+                <ul class="list-inline text-center small text-feeds">
+                        <li class="list-inline-item">
+                            <a href="/feed.rss"><i class="fa fa-rss"></i> RSS Feed</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="/feed.atom"><i class="fa fa-rss"></i> Atom Feed</a>
+                        </li>
+                </ul>
+                <div class="small text-footer">
+                    <a href="https://github.com/always-developing/alwaysdeveloping-website-src"><i class="fab fa-github"></i> This site on GitHub</a>
+                </div>
+                <div class="small text-footer">
+                    <a href="https://statiq.dev">Generated by Statiq</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="/vendor/jquery/jquery.min.js"></script>
+    <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    
+
+
+    
+
+    <!-- Custom scripts for this template -->
+    <script src="/js/always-developing-blog.js"></script>
+
+</body>
+
+</html>

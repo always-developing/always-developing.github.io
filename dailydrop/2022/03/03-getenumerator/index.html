@@ -1,0 +1,405 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="always learning | always growing">
+
+    <title>Always Developing - Enumeration on a custom class</title>
+
+    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/03/03-getenumerator">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
+
+    <meta name="application-name" content="Always Developing" />
+    <meta name="msapplication-tooltip" content="Always Developing" />
+    <meta name="msapplication-starturl" content="/" />
+
+    <meta property="og:title" content="Always Developing - Enumeration on a custom class" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/03/03-getenumerator" />
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Bootstrap core CSS -->
+    <link href="/vendor/bootstrap/scss/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom fonts for this template -->
+    <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="/vendor/fontawesome-free/css/brands.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css' data-no-mirror>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css' data-no-mirror>
+
+    <!-- Custom styles for this template -->
+    <link href="/scss/always-developing-blog.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/plugins/autoloader/prism-autoloader.min.js" data-no-mirror></script>
+    <script src="https://cdn.jsdelivr.net/npm/quicklink@2.0.0/dist/quicklink.umd.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/themes/prism.css">
+
+    <!-- Lunr search -->
+        <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/pako@2.0.3/dist/pako_inflate.min.js"></script>
+        <script src="/search.js"></script>
+
+    
+
+
+    
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand"  href="/">
+            <img src="/images/ad_logo.png" alt="" width="25" height="25" class="d-inline-block align-text-top">
+            Always Developing
+        </a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            Menu
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/software">Software</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/tags">Tags</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/posts">Posts</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/about">About</a>
+            </li>
+</ul>
+                <form class="form-inline my-2 my-lg-0" action="/search" method="GET">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="query">
+                    <input type="submit" hidden />
+                </form>
+        </div>
+    </div>
+</nav>
+
+    <!-- Page Header -->
+    <header class="masthead">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 align-middle">
+                <div class="post-header-image">
+                    <a href="/">
+                        <img src="/images/ad_logo.png" class="header-image">
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="post-heading">
+                    <h1>
+                        Enumeration on a custom class
+                    </h1>
+                            <h2 class="subheading">How to make a custom class enumerable (work with foreach)</h2>
+                        <p class="post-meta">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
+                                <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
+                            </svg> Published on Thursday, 03 March 2022
+                        </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <!-- Main Content -->
+    <div class="container">
+            <div class="row ">
+                    <div id="content" class="col-md-9 post-with-toc post-block">
+                        
+<div class="post-header-category">
+    <a class="btn btn-primary btn-sm btn-default btn-home" href="\" role="button"><i class="fas fa-angle-double-left"></i> Home</a>
+            <a class="btn btn-primary btn-sm category-btn" href="/categories/dailydrop" role="button">DailyDrop</a>
+</div>
+
+                        <h2 id="daily-knowledge-drop">Daily Knowledge Drop</h2>
+<p>To enable <code>enumeration</code> on a class (ability to <code>foreach</code> on the class), the only requirement is for a method named <code>GetEnumerator</code> to exist on the class.</p>
+<p>There is no requirement for the class to implement any interface (IEnumerable, IEnumerator etc), just the presence of the method is enough.</p>
+<hr />
+<h2 id="without-getenumerator">Without GetEnumerator</h2>
+<p>Last week we looked at <a href="../../02/23-indexers">adding indexing to a class</a> - adding <code>enumeration</code> is similar, so we'll use similar examples.</p>
+<p>In the examples below, we are using a <code>ProductPrice</code> entity. This class keeps some basic details of a product, as well as an array of prices, one price for each month of the year. So <em>Prices[0]</em> is the price for January, <em>Prices[1]</em> is the price for February and so on.</p>
+<pre><code class="language-csharp">public class ProductPrice
+{
+    public int ProductId { get; set; }
+
+    public string ProductName { get; set; }
+
+    public decimal[] Prices { get; set; }
+
+    public ProductPrice(int productId, string productName, decimal[] prices)
+    {
+        ProductId = productId;
+        ProductName = productName;
+        Prices = prices;
+    }
+}
+</code></pre>
+<p>To iterate through each price for the product, we can do this via the <em>Prices</em> property exposed on the class.</p>
+<pre><code class="language-csharp">var pp = new ProductPrice(112, &quot;Green t-shirt&quot;, 
+    new decimal[] { 0, 0, 0, 100, 100, 80, 80, 50, 50, 100, 100, 60 });
+
+foreach (var price in pp.Prices)
+{
+    Console.WriteLine(price);
+}
+</code></pre>
+<p>This code will function just fine - however the <code>ProductPrice</code> class can be extended to make it more intuitive and easier to work with.</p>
+<hr />
+<h2 id="with-getenumerator">With GetEnumerator</h2>
+<p>The main purpose of the <code>ProductPrice</code> class is to store price information related to a product. So let's update the class so that we can access a price directly, without going via the <em>Price</em> property.</p>
+<p><code>ProductPrice</code> class update:</p>
+<pre><code class="language-csharp">public class ProductPrice
+{
+    public int ProductId { get; set; }
+
+    public string ProductName { get; set; }
+
+    // Now private
+    private decimal[] Prices { get; }
+
+    public ProductPrice(int productId, string productName, decimal[] prices)
+    {
+        ProductId = productId;
+        ProductName = productName;
+        Prices = prices;
+    }
+
+    // New method called GetEnumerator added. 
+    // The return type of the method is IEnumerator&lt;T&gt;, 
+    // where T is the specific type being returned
+    public IEnumerator&lt;decimal&gt; GetEnumerator()
+    {
+        //  The items in the underlying Prices array are 
+        // `yield returned` one at a time
+        foreach (var price in Prices)
+            yield return price;
+    }
+}
+</code></pre>
+<p>If unfamiliar with the <code>yield</code> keyword, in short it indicates that the method in which it appears is an iterator, and will return one item at a time, one for each iteration.</p>
+<p>The <code>ProductPrice</code> class can now be used as follows:</p>
+<pre><code class="language-csharp">var pp = new ProductPrice(112, &quot;Green t-shirt&quot;, 
+    new decimal[] { 0, 0, 0, 100, 100, 80, 80, 50, 50, 100, 100, 60 });
+
+// No need to go via Prices
+foreach (var price in pp)
+{
+    Console.WriteLine(price);
+}
+</code></pre>
+<hr />
+<h2 id="field-enumeration">Field enumeration</h2>
+<p>Another use for <code>GetEnumerator</code> method is to be able to enumerate through each fields/property on a class.</p>
+<p>In the below example, we have an <code>Address</code> class which has a number of string fields:</p>
+<pre><code class="language-csharp">public class Address
+{
+    public string Number { get; set; }
+
+    public string Line1 { get; set; }
+
+    public string Line2 { get; set; }
+
+    public string Suburb { get; set; }
+
+    public string Town { get; set; }
+
+    public string Province { get; set; }
+
+    public Address(string number, string line1, string line2, 
+        string suburb, string town, string province)
+    {
+        Number = number;
+        Line1 = line1;
+        Line2 = line2;
+        Suburb = suburb;
+        Town = town;
+        Province = province;
+    }
+
+    public IEnumerator&lt;string&gt; GetEnumerator()
+    {
+        yield return Number;
+        yield return Line1;
+        yield return Line2;
+        yield return Suburb;
+        yield return Town;
+        yield return Province;
+    }
+}
+</code></pre>
+<p>The <code>GetEnumerator</code> method has been added even though this class doesn't have an internal array of items to iterate over. Instead we will iterate over each property of the class.<br />
+Each property of the class is <code>yield returned</code> one at a time (so each time the iterator is called, the next item will be returned)</p>
+<p>This allows for accessing a property via an index. This can be leveraged to iteration through the properties on the class:</p>
+<pre><code class="language-csharp">var address = new Address(&quot;11&quot;, &quot;Main Road&quot;, &quot;XYZ Estate&quot;, 
+    &quot;Suburb1&quot;, &quot;Town2&quot;, &quot;Province3&quot;);
+
+foreach (var field in address)
+{
+    Console.WriteLine(field);
+}
+</code></pre>
+<p>The output:</p>
+<pre><code class="language-powershell">11
+Main Road
+XYZ Estate
+Suburb1
+Town2
+Province3
+</code></pre>
+<hr />
+<h2 id="notes">Notes</h2>
+<p>Similarly to working with <strong>indexers</strong>, adding your own <code>enumeration</code> will generally not be required for everyday use. However its advantageous to know that the option exists, and is as simple as adding a <code>GetEnumerator</code> method to the class in question.</p>
+<hr />
+
+<blockquote class="daily-drop">
+    <div>
+        <div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px; ">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="50" height="50" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffec00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+              <path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+              <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+              <line x1="9.7" y1="17" x2="14.3" y2="17" />
+            </svg>
+        </div>
+        <div class="drop-header">
+            Daily Drop 23: 03-03-2022
+        </div>
+        <div>
+            <br>At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br> It could be anything - some.NET / C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
+            The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+        <div>
+    </div>
+</blockquote>
+
+
+                        
+<div>
+            <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
+            <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
+            <a role="button" href="/tags/dailydrop" class="badge badge-light"> dailydrop</a>
+            <a role="button" href="/tags/iteration" class="badge badge-light"> iteration</a>
+            <a role="button" href="/tags/enumeration" class="badge badge-light"> enumeration</a>
+            <a role="button" href="/tags/getenumerator" class="badge badge-light"> getenumerator</a>
+            <a role="button" href="/tags/foreach" class="badge badge-light"> foreach</a>
+</div>
+                    </div>
+                    <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
+                        
+
+        <div class="box sticky-top toc-block">
+            <h3 class="no-anchor">On This Page</h3>
+            <ul>
+        <li><a href="#daily-knowledge-drop">Daily Knowledge Drop</a></li>
+        <li><a href="#without-getenumerator">Without GetEnumerator</a></li>
+        <li><a href="#with-getenumerator">With GetEnumerator</a></li>
+        <li><a href="#field-enumeration">Field enumeration</a></li>
+        <li><a href="#notes">Notes</a></li>
+            </ul>
+        </div>
+
+                    </div>
+            </div>
+            <div class="row ">
+                    <div id="content" class="col-md-9">
+                        <div>
+    <script src="https://giscus.app/client.js"
+            data-repo="always-developing/always-developing.github.io"
+            data-repo-id="R_kgDOGQJLBQ"
+            data-category="Comments"
+            data-category-id="DIC_kwDOGQJLBc4B_pUA"
+            data-mapping="pathname"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="bottom"
+            data-theme="transparent_dark"
+            data-lang="en"
+            crossorigin="anonymous"
+            async>
+    </script>
+</div>
+                    </div>
+            </div>
+    </div>
+
+    <hr class="horizontal-rule" />
+
+    <!-- Footer -->
+    <footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <ul class="list-inline text-center">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://www.linkedin.com/in/jean-pierre-seini">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-linkedin fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                <div>
+                    <p class="copyright text-footer">
+                        Copyright © 2022 Always Developing</a>.
+                    </p>
+                </div>
+                <ul class="list-inline text-center small text-feeds">
+                        <li class="list-inline-item">
+                            <a href="/feed.rss"><i class="fa fa-rss"></i> RSS Feed</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="/feed.atom"><i class="fa fa-rss"></i> Atom Feed</a>
+                        </li>
+                </ul>
+                <div class="small text-footer">
+                    <a href="https://github.com/always-developing/alwaysdeveloping-website-src"><i class="fab fa-github"></i> This site on GitHub</a>
+                </div>
+                <div class="small text-footer">
+                    <a href="https://statiq.dev">Generated by Statiq</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="/vendor/jquery/jquery.min.js"></script>
+    <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    
+
+
+    
+
+    <!-- Custom scripts for this template -->
+    <script src="/js/always-developing-blog.js"></script>
+
+</body>
+
+</html>

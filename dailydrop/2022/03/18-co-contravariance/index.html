@@ -1,0 +1,522 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="always learning | always growing">
+
+    <title>Always Developing - Covariance and Contravariance in C#</title>
+
+    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/03/18-co-contravariance">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
+
+    <meta name="application-name" content="Always Developing" />
+    <meta name="msapplication-tooltip" content="Always Developing" />
+    <meta name="msapplication-starturl" content="/" />
+
+    <meta property="og:title" content="Always Developing - Covariance and Contravariance in C#" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/03/18-co-contravariance" />
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Bootstrap core CSS -->
+    <link href="/vendor/bootstrap/scss/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom fonts for this template -->
+    <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="/vendor/fontawesome-free/css/brands.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css' data-no-mirror>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css' data-no-mirror>
+
+    <!-- Custom styles for this template -->
+    <link href="/scss/always-developing-blog.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/plugins/autoloader/prism-autoloader.min.js" data-no-mirror></script>
+    <script src="https://cdn.jsdelivr.net/npm/quicklink@2.0.0/dist/quicklink.umd.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/themes/prism.css">
+
+    <!-- Lunr search -->
+        <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/pako@2.0.3/dist/pako_inflate.min.js"></script>
+        <script src="/search.js"></script>
+
+    
+
+
+    
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand"  href="/">
+            <img src="/images/ad_logo.png" alt="" width="25" height="25" class="d-inline-block align-text-top">
+            Always Developing
+        </a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            Menu
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/software">Software</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/tags">Tags</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/posts">Posts</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/about">About</a>
+            </li>
+</ul>
+                <form class="form-inline my-2 my-lg-0" action="/search" method="GET">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="query">
+                    <input type="submit" hidden />
+                </form>
+        </div>
+    </div>
+</nav>
+
+    <!-- Page Header -->
+    <header class="masthead">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 align-middle">
+                <div class="post-header-image">
+                    <a href="/">
+                        <img src="/images/ad_logo.png" class="header-image">
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="post-heading">
+                    <h1>
+                        Covariance and Contravariance in C#
+                    </h1>
+                            <h2 class="subheading">Covariance and Contravariance in C# explained with examples</h2>
+                        <p class="post-meta">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
+                                <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
+                            </svg> Published on Friday, 18 March 2022
+                        </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <!-- Main Content -->
+    <div class="container">
+            <div class="row ">
+                    <div id="content" class="col-md-9 post-with-toc post-block">
+                        
+<div class="post-header-category">
+    <a class="btn btn-primary btn-sm btn-default btn-home" href="\" role="button"><i class="fas fa-angle-double-left"></i> Home</a>
+            <a class="btn btn-primary btn-sm category-btn" href="/categories/dailydrop" role="button">DailyDrop</a>
+</div>
+
+                        <h2 id="daily-knowledge-drop">Daily Knowledge Drop</h2>
+<p>The way in which base and inherited classes can automatically be cast up or down the hierarchy (depending on the situation) is referred to <code>covariance</code> and <code>contravariance</code>.</p>
+<p>Most developers have probably used the concepts of <code>covariance</code> and <code>contravariance</code> in their code, perhaps without even realising it. Looking at a some examples, will help explain in a bit more detail.</p>
+<hr />
+<h2 id="base-setup">Base setup</h2>
+<p>In the examples below, the following hierarchy of classes is used:</p>
+<pre><code class="language-csharp">public class Vehicle { }
+
+public class LandVehicle : Vehicle { }
+
+public class SeaVehicle : Vehicle { }
+
+public class Car : LandVehicle { }
+
+public class Boat : SeaVehicle { }
+</code></pre>
+<h2 id="contravariance">Contravariance</h2>
+<p><code>Contravariance</code> applies to types going <em>in</em>, in other words <code>parameters to methods</code>.</p>
+<p><code>Contravariance</code> allows for <code>methods with a parameter of a base class, to accept any type derived from the base class</code>.</p>
+<p>Summary: <code>Contravariance</code> =&gt; <code>IN</code> =&gt; <code>parameter declared as base, but derived can be used</code></p>
+<p>An example:</p>
+<pre><code class="language-csharp">// declare a lambda function which takes in a Vehicle 
+var func = (Vehicle veh) =&gt; Console.WriteLine(veh.ToString());
+
+// the function will accept all types of vehicles
+func(new Vehicle());
+func(new Car());
+func(new SeaVehicle());
+
+</code></pre>
+<p>The lambda is declared with a parameter of <em>Vehicle</em>, but any type of derived vehicle will be accepted.</p>
+<p>Because the lambda takes in a <em>Vehicle</em> if there is a method or property <em>specific to a child</em> which needs to be invoked, the <code>Vehicle type needs to be checked and downcast the derived type</code></p>
+<pre><code class="language-csharp">// the function will accept all types of vehicles
+OuputExtendedDetails(new Vehicle());
+OuputExtendedDetails(new Car());
+OuputExtendedDetails(new SeaVehicle());
+
+// parameter of type Vehicle
+public void OuputExtendedDetails(Vehicle veh)
+{
+    // each IF statement will try downcast and assign to the variable (lv in below case)
+    // if allowed to do so
+    if(veh is LandVehicle lv)
+    {
+        Console.WriteLine($&quot;{lv.GetType()} travels on land&quot;);
+    }
+
+    if (veh is Car car)
+    {
+        Console.WriteLine($&quot;{car.GetType()} travels on land&quot;);
+    }
+
+    if (veh is SeaVehicle sv)
+    {
+        Console.WriteLine($&quot;{sv.GetType()} travels on sea&quot;);
+    }
+
+    if (veh is Boat boat)
+    {
+        Console.WriteLine($&quot;{boat.GetType()} travels on sea&quot;);
+    }
+
+    Console.WriteLine(&quot;Vehicle can travel&quot;);
+}
+</code></pre>
+<p>The output is as follows:</p>
+<pre><code class="language-powershell">Vehicle can travel
+Car travels on land
+Car travels on land
+Vehicle can travel
+SeaVehicle travels on sea
+Vehicle can travel
+</code></pre>
+<p>A <em>Car</em> for instance:</p>
+<ul>
+<li>is a <em>Vehicle</em> so can be passed into the method</li>
+<li>is a <em>LandVehicle</em> so ouput is written</li>
+<li>is a <em>Car</em> so ouput is written</li>
+</ul>
+<p>In short, this is <code>contravariance</code> - <code>the ability to use a derived class as a parameter, where a base class has been specified</code>.</p>
+<hr />
+<h2 id="covariance">Covariance</h2>
+<p><code>Covariance</code> applies to types coming <em>out</em>, in other words <code>return types from methods</code> or assignments.</p>
+<p><code>Covariance</code> allows for <code>passing back a derived type where a base type is expected</code>.</p>
+<p>Summary: <code>Covariance</code> =&gt; <code>OUT</code> =&gt; <code>type declared as derived, but base can be used</code></p>
+<pre><code class="language-csharp">// Even though a Car and Boat
+// are being returned, they are assigned to Vehicle
+Vehicle car = GetCar();
+Vehicle boat = GetBoat();
+
+// get a Car
+public Car GetCar()
+{
+    return new Car();
+}
+
+// get a Boat
+public Boat GetBoat()
+{
+    return new Boat();
+}
+</code></pre>
+<p>Here, the return types are <em>Car</em> and <em>Boat</em>, but they can both be assigned to a variable of type <em>Vehicle</em>.</p>
+<p>This is useful, for example, when we want to have a list of <em>Vehicles</em>. The list is declared of type <em>Vehicle</em>, and therefor can hold any type of vehicle:</p>
+<pre><code class="language-csharp">// add a Car and Boat to a Vehicle list
+var vehList = new List&lt;Vehicle&gt;();
+vehList.Add(GetCar());
+vehList.Add(GetBoat());
+
+// output the items
+foreach(var veh in vehList)
+{
+    Console.WriteLine(veh.ToString());
+}
+
+public Car GetCar()
+{
+    return new Car();
+}
+
+public Boat GetBoat()
+{
+    return new Boat();
+}
+</code></pre>
+<p>The output is as follows:</p>
+<pre><code class="language-powershell">Car
+Boat
+</code></pre>
+<p>In short, this is <code>covariance</code> - <code>the ability to assign a derived type, to its base class</code>.</p>
+<hr />
+<h2 id="contravariance-generics">Contravariance - Generics</h2>
+<p><code>Contravariance</code> can also be applied to <em>Generics</em>, using the <code>in</code> keyword.</p>
+<p>Using the <code>in</code> keyword allows for the usage of a <code>less derived type than the one specified by the generic parameter</code>.</p>
+<p>Consider the following setup (without the <em>in</em> keyword):</p>
+<pre><code class="language-csharp">public interface ITravel&lt;TVehicle&gt; { }
+
+public class Travel&lt;TVehicle&gt; : ITravel&lt;TVehicle&gt; { }
+</code></pre>
+<p>Using the above setup, the following will <strong>NOT</strong> compile:</p>
+<pre><code class="language-csharp">// An instance of ITravel&lt;Car&gt; is declared and the 
+// MoveCar method is called without issue
+var carTravel = new Travel&lt;Car&gt;();
+MoveCar(carTravel); 
+
+// An instance of ITravel&lt;LandVehicle&gt; is declared and the the 
+// MoveCar method is tried to be called. This is NOT ALLOWED.
+var landTravel = new Travel&lt;LandVehicle&gt;();
+MoveCar(landTravel); // THIS IS NOT ALLOWED
+
+// A method is declared which takes an instance of ITravel&lt;Car&gt;
+public void MoveCar(ITravel&lt;Car&gt; travel)
+{
+    Console.WriteLine(travel);
+}
+</code></pre>
+<p>As the generic parameter is not declared with the <code>in</code> keyword, it is not <code>contravariant</code>. By just adding the <code>in</code> keyword, the above will be allowed:</p>
+<pre><code class="language-csharp">public interface ITravel&lt;in TVehicle&gt; { }
+
+public class Travel&lt;TVehicle&gt; : ITravel&lt;TVehicle&gt; { }
+</code></pre>
+<p>Now, any type which is <code>less derived than Car</code> can be used instead of <em>Car</em>. The below is now 100% valid and will compiled with any issue:</p>
+<pre><code class="language-csharp">var carTravel = new Travel&lt;Car&gt;();
+MoveCar(carTravel);
+
+var landTravel = new Travel&lt;LandVehicle&gt;();
+MoveCar(landTravel);
+
+var vehTravel = new Travel&lt;Vehicle&gt;();
+MoveCar(landTravel);
+
+public void MoveCar(ITravel&lt;Car&gt; travel)
+{
+    Console.WriteLine(travel);
+}
+</code></pre>
+<p>The output:</p>
+<pre><code class="language-powershell">Travel`1[Car]
+Travel`1[LandVehicle]
+Travel`1[Vehicle]
+</code></pre>
+<hr />
+<h2 id="covariance-generics">Covariance - Generics</h2>
+<p><code>Covariance</code> can also be applied in <em>Generics</em>, using the <code>out</code> keyword.</p>
+<p>Using the <code>out</code> keyword allows for the usage of a <code>more derived type than the one specified by the generic parameter</code>.</p>
+<p>Consider the following setup (without the <em>out</em> keyword):</p>
+<pre><code class="language-csharp">interface ITravel&lt;TVehicle&gt; { }
+
+class Travel&lt;TVehicle&gt; : ITravel&lt;TVehicle&gt; { }
+</code></pre>
+<p>Using the above setup, the following will <strong>NOT</strong> compile:</p>
+<pre><code class="language-csharp">ITravel&lt;Vehicle&gt; veh = new Travel&lt;Vehicle&gt;();
+ITravel&lt;Car&gt; car = new Travel&lt;Car&gt;(); 
+
+// THIS IS NOT ALLOWED
+veh = car;
+</code></pre>
+<p>The instance of <em>Travel&lt;Car&gt;</em> (a more derived type) <strong>cannot</strong>  cannot be assigned to a variable using type <em>Vehicle</em> (a less derived type).</p>
+<p>As the generic parameter is not declared with the <code>out</code> keyword, it is not <code>covariant</code>. By just adding the <code>out</code> keyword to the generic parameter, the above will be allowed:</p>
+<pre><code class="language-csharp">interface ITravel&lt;out TVehicle&gt; { }
+
+class Travel&lt;TVehicle&gt; : ITravel&lt;TVehicle&gt; { }
+</code></pre>
+<p>Now, any type which is a <code>more derived type than Vehicle</code> can be used instead of <em>Vehicle</em>. The below is now 100% valid and will compiled with any issue:</p>
+<pre><code class="language-csharp">ITravel&lt;Vehicle&gt; veh = new Travel&lt;Vehicle&gt;();
+ITravel&lt;Car&gt; car = new Travel&lt;Car&gt;();
+ITravel&lt;SeaVehicle&gt; sea = new Travel&lt;SeaVehicle&gt;();
+
+Console.WriteLine(veh);
+Console.WriteLine(car);
+
+veh = car;
+Console.WriteLine(veh);
+
+veh = sea;
+Console.WriteLine(veh);
+</code></pre>
+<p>The output:</p>
+<pre><code class="language-powershell">Travel`1[Vehicle]
+Travel`1[Car]
+Travel`1[Car]
+Travel`1[SeaVehicle]
+</code></pre>
+<hr />
+<h2 id="ienumerable-generics">IEnumerable - Generics</h2>
+<p>The above examples, while doing a satisfactory job in demonstrating the functionality, are not concrete examples.</p>
+<p>So lets have a quick look at the .NET IEnumerable&lt;&gt; class, which is defined with the <code>out</code> keyword:</p>
+<pre><code class="language-csharp">namespace System.Collections.Generic
+{
+    public interface IEnumerable&lt;out T&gt; : IEnumerable
+    {
+        // removed for brevity
+    }
+}
+</code></pre>
+<p>This allows IEnumerable&lt;&gt; to be used as follows:</p>
+<pre><code class="language-csharp">IEnumerable&lt;Car&gt; cars = new List&lt;Car&gt;();
+IEnumerable&lt;Vehicle&gt; vehicle = cars;
+</code></pre>
+<p>This is <code>covariance</code> in action - <code>more derived type</code> can be used and assigned to a <code>less derived type</code>.</p>
+<hr />
+<h2 id="notes">Notes</h2>
+<p>In summary:</p>
+<ul>
+<li><code>Contravariance</code> =&gt; <code>in</code> =&gt; <code>parameter declared as base, but derived can be used</code></li>
+<li><code>Covariance</code> =&gt; <code>out</code> =&gt; <code>type declared as derived, but base can be used</code></li>
+</ul>
+<p>Knowing about <code>covariance</code> and <code>contravariance</code>, especially when it comes to generics, is useful to know and can be leveraged to reduce duplicate code.</p>
+<hr />
+<h2 id="references">References</h2>
+<p><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/out-generic-modifier">Out (generic modified)</a><br />
+<a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/in-generic-modifier">In (generic modified)</a><br />
+<a href="https://blog.ndepend.com/covariance-and-contravariance-in-csharp-explained/">Covariance and Contravariance in C# Explained</a></p>
+
+<blockquote class="daily-drop">
+    <div>
+        <div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px; ">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="50" height="50" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffec00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+              <path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+              <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+              <line x1="9.7" y1="17" x2="14.3" y2="17" />
+            </svg>
+        </div>
+        <div class="drop-header">
+            Daily Drop 34: 18-03-2022
+        </div>
+        <div>
+            <br>At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br> It could be anything - some.NET / C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
+            The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+        <div>
+    </div>
+</blockquote>
+
+
+                        
+<div>
+            <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
+            <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
+            <a role="button" href="/tags/dailydrop" class="badge badge-light"> dailydrop</a>
+            <a role="button" href="/tags/covariance" class="badge badge-light"> covariance</a>
+            <a role="button" href="/tags/contravariance" class="badge badge-light"> contravariance</a>
+            <a role="button" href="/tags/generics" class="badge badge-light"> generics</a>
+</div>
+                    </div>
+                    <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
+                        
+
+        <div class="box sticky-top toc-block">
+            <h3 class="no-anchor">On This Page</h3>
+            <ul>
+        <li><a href="#daily-knowledge-drop">Daily Knowledge Drop</a></li>
+        <li><a href="#base-setup">Base setup</a></li>
+        <li><a href="#contravariance">Contravariance</a></li>
+        <li><a href="#covariance">Covariance</a></li>
+        <li><a href="#contravariance-generics">Contravariance - Generics</a></li>
+        <li><a href="#covariance-generics">Covariance - Generics</a></li>
+        <li><a href="#ienumerable-generics">IEnumerable - Generics</a></li>
+        <li><a href="#notes">Notes</a></li>
+        <li><a href="#references">References</a></li>
+            </ul>
+        </div>
+
+                    </div>
+            </div>
+            <div class="row ">
+                    <div id="content" class="col-md-9">
+                        <div>
+    <script src="https://giscus.app/client.js"
+            data-repo="always-developing/always-developing.github.io"
+            data-repo-id="R_kgDOGQJLBQ"
+            data-category="Comments"
+            data-category-id="DIC_kwDOGQJLBc4B_pUA"
+            data-mapping="pathname"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="bottom"
+            data-theme="transparent_dark"
+            data-lang="en"
+            crossorigin="anonymous"
+            async>
+    </script>
+</div>
+                    </div>
+            </div>
+    </div>
+
+    <hr class="horizontal-rule" />
+
+    <!-- Footer -->
+    <footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <ul class="list-inline text-center">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://www.linkedin.com/in/jean-pierre-seini">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-linkedin fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                <div>
+                    <p class="copyright text-footer">
+                        Copyright © 2022 Always Developing</a>.
+                    </p>
+                </div>
+                <ul class="list-inline text-center small text-feeds">
+                        <li class="list-inline-item">
+                            <a href="/feed.rss"><i class="fa fa-rss"></i> RSS Feed</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="/feed.atom"><i class="fa fa-rss"></i> Atom Feed</a>
+                        </li>
+                </ul>
+                <div class="small text-footer">
+                    <a href="https://github.com/always-developing/alwaysdeveloping-website-src"><i class="fab fa-github"></i> This site on GitHub</a>
+                </div>
+                <div class="small text-footer">
+                    <a href="https://statiq.dev">Generated by Statiq</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="/vendor/jquery/jquery.min.js"></script>
+    <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    
+
+
+    
+
+    <!-- Custom scripts for this template -->
+    <script src="/js/always-developing-blog.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,405 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="always learning | always growing">
+
+    <title>Always Developing - EF Core INSERT vs MERGE</title>
+
+    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/06/02-ef-bulk-insert">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
+
+    <meta name="application-name" content="Always Developing" />
+    <meta name="msapplication-tooltip" content="Always Developing" />
+    <meta name="msapplication-starturl" content="/" />
+
+    <meta property="og:title" content="Always Developing - EF Core INSERT vs MERGE" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/06/02-ef-bulk-insert" />
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Bootstrap core CSS -->
+    <link href="/vendor/bootstrap/scss/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom fonts for this template -->
+    <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="/vendor/fontawesome-free/css/brands.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css' data-no-mirror>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css' data-no-mirror>
+
+    <!-- Custom styles for this template -->
+    <link href="/scss/always-developing-blog.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/plugins/autoloader/prism-autoloader.min.js" data-no-mirror></script>
+    <script src="https://cdn.jsdelivr.net/npm/quicklink@2.0.0/dist/quicklink.umd.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/themes/prism.css">
+
+    <!-- Lunr search -->
+        <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/pako@2.0.3/dist/pako_inflate.min.js"></script>
+        <script src="/search.js"></script>
+
+    
+
+
+    
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand"  href="/">
+            <img src="/images/ad_logo.png" alt="" width="25" height="25" class="d-inline-block align-text-top">
+            Always Developing
+        </a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            Menu
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/software">Software</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/tags">Tags</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/posts">Posts</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/about">About</a>
+            </li>
+</ul>
+                <form class="form-inline my-2 my-lg-0" action="/search" method="GET">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="query">
+                    <input type="submit" hidden />
+                </form>
+        </div>
+    </div>
+</nav>
+
+    <!-- Page Header -->
+    <header class="masthead">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 align-middle">
+                <div class="post-header-image">
+                    <a href="/">
+                        <img src="/images/ad_logo.png" class="header-image">
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="post-heading">
+                    <h1>
+                        EF Core INSERT vs MERGE
+                    </h1>
+                            <h2 class="subheading">Entity Framework Core will use MERGE instead of INSERT under certain conditions</h2>
+                        <p class="post-meta">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
+                                <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
+                            </svg> Published on Wednesday, 01 June 2022
+                        </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <!-- Main Content -->
+    <div class="container">
+            <div class="row ">
+                    <div id="content" class="col-md-9 post-with-toc post-block">
+                        
+<div class="post-header-category">
+    <a class="btn btn-primary btn-sm btn-default btn-home" href="\" role="button"><i class="fas fa-angle-double-left"></i> Home</a>
+            <a class="btn btn-primary btn-sm category-btn" href="/categories/dailydrop" role="button">DailyDrop</a>
+</div>
+
+                        <h2 id="daily-knowledge-drop">Daily Knowledge Drop</h2>
+<p>When inserting data into a table using Entity Framework Core (EF Core), by default, if three or less records are being inserted, <code>separate SQL INSERT</code> statements will be used.<br />
+However if four or more records are being inserted, EF Core will batch up the records and perform a <code>single SQL MERGE</code> statement.</p>
+<hr />
+<h2 id="setup">Setup</h2>
+<p>In all of the below samples, the following methods were used.</p>
+<p>A method to retrieve a list of <em>Songs</em> some of which will be used to insert into the database:</p>
+<pre><code class="language-csharp">public Song[] GetSongs()
+{
+    return new Song[]
+    {
+        new Song
+        {
+            Name = &quot;Everlong&quot;,
+            Artist = &quot;Foo Fighters&quot;,
+            YearReleased = 1997,
+            LengthInSeconds = 250
+        },
+        new Song
+        {
+            Name = &quot;Learn to Fly&quot;,
+            Artist = &quot;Foo Fighters&quot;,
+            YearReleased = 1999,
+            LengthInSeconds = 238
+        },
+        new Song
+        {
+            Name = &quot;Monkey Wrench&quot;,
+            Artist = &quot;Foo Fighters&quot;,
+            YearReleased = 1997,
+            LengthInSeconds = 231
+        },
+        new Song
+        {
+            Name = &quot;My Hero&quot;,
+            Artist = &quot;Foo Fighters&quot;,
+            YearReleased = 1998,
+            LengthInSeconds = 260
+        },
+        new Song
+        {
+            Name = &quot;Clarity&quot;,
+            Artist = &quot;John Mayer&quot;,
+            YearReleased = 2003,
+            LengthInSeconds = 268
+        },
+        new Song
+        {
+            Name = &quot;Daughters&quot;,
+            Artist = &quot;John Mayer&quot;,
+            YearReleased = 2003,
+            LengthInSeconds = 238
+        },
+        new Song
+        {
+            Name = &quot;Bigger than my Body&quot;,
+            Artist = &quot;John Mayer&quot;,
+            YearReleased = 2003,
+            LengthInSeconds = 266
+        }
+    };
+}
+</code></pre>
+<p>A minimal endpoint which will insert a variable number of records into the database, based on the <em>count</em> parameter passed to the endpoint:</p>
+<pre><code class="language-csharp">app.MapGet(&quot;/insert/{count}&quot;, async (int count) =&gt;
+{
+    using (var db = new BulkContext())
+    {
+        var songs = GetSongs();
+
+        // add 1 or many songs
+        for(int i = 0; i &lt; count; i++)
+        {
+            db.Add(songs[i]);
+        }
+
+        // only call save changes once
+        await db.SaveChangesAsync();
+    }
+});
+</code></pre>
+<p>Apart from this, the setup of the <em>BulkContext</em> and the <em>Song</em> entity is standard EF Core setup, nothing custom or outside the typical setup.</p>
+<p>What's important here though, is that one or more entities are added to the db context, but the <code>SaveChangesAsync method is only called once</code>, after all entities have been added.</p>
+<hr />
+<h3 id="insert-statement">Insert statement</h3>
+<p>Calling the <code>/insert/{count}</code> endpoint with 1, 2, or 3 as <em>count</em> value, results in the following SQL executed <code>1, 2 or 3 separate times</code>:</p>
+<pre><code class="language-sql">SET NOCOUNT ON;
+INSERT INTO [Song] ([Artist], [LengthInSeconds], [Name], [YearReleased])
+VALUES (&#64;p0, &#64;p1, &#64;p2, &#64;p3);
+SELECT [Id]
+FROM [Song]
+WHERE &#64;&#64;ROWCOUNT = 1 AND [Id] = scope_identity();
+</code></pre>
+<p>EF Core generates SQL which will insert the relevant information, and then return the Id primary key generated for the record.</p>
+<p>If full logging is enabled, EF Core will even tell you what it's doing: <em>Executing update commands individually as the number of batchable commands (3) is smaller than the minimum batch size (4).</em></p>
+<hr />
+<h3 id="merge-statement">Merge statement</h3>
+<p>Calling the <code>/insert/{count}</code> endpoint with 4 or greater as a value for <em>count</em> results in the following SQL executed <code>just once</code> (the below example inserts 5 records):</p>
+<pre><code class="language-sql">SET NOCOUNT ON;
+DECLARE &#64;inserted0 TABLE ([Id] int, [_Position] [int]);
+MERGE [Song] USING (
+VALUES (&#64;p0, &#64;p1, &#64;p2, &#64;p3, 0),
+(&#64;p4, &#64;p5, &#64;p6, &#64;p7, 1),
+(&#64;p8, &#64;p9, &#64;p10, &#64;p11, 2),
+(&#64;p12, &#64;p13, &#64;p14, &#64;p15, 3),
+(&#64;p16, &#64;p17, &#64;p18, &#64;p19, 4)) AS i ([Artist], [LengthInSeconds], 
+        [Name], [YearReleased], _Position) ON 1=0
+WHEN NOT MATCHED THEN
+INSERT ([Artist], [LengthInSeconds], [Name], [YearReleased])
+VALUES (i.[Artist], i.[LengthInSeconds], i.[Name], i.[YearReleased])
+OUTPUT INSERTED.[Id], i._Position
+INTO &#64;inserted0;
+
+SELECT [i].[Id] FROM &#64;inserted0 i
+ORDER BY [i].[_Position];
+
+</code></pre>
+<p>As one can see, EF Core has changed the strategy from multiple INSERT statements to a single MERGE statement.</p>
+<p>Again, with full logging turned on EF Core will inform you what it's doing: <em>Executing 5 update commands as a batch.</em></p>
+<hr />
+<h3 id="custom-batch-size">Custom batch size</h3>
+<p>The default for when EF Core switches from multiple INSERTS to a MERGE statement is 4 records - this however can be overwritten.</p>
+<p>When configuring the connection, the min amd max batch size can be explicitly set:</p>
+<pre><code class="language-csharp">protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+{
+    optionsBuilder.UseSqlServer(
+        &#64;&quot;Server=.\SQLEXPRESS;Database=BulkInsert;Integrated Security=True&quot;, options =&gt;
+        {
+            options.MaxBatchSize(1);
+        });
+}
+</code></pre>
+<p>In this example, the max batch size is to 1, which means a single INSERT will be used for every statement, with no batching taking place at all (generally, this would <em>not</em> be advisable).</p>
+<p>Calling the <code>/insert/{count}</code> endpoint with 4 or greater will now result in multiple INSERTS and <em>not</em> a MERGE statement.</p>
+<hr />
+<h2 id="notes">Notes</h2>
+<p>In most cases, this is not something to worry about - the presumption being that the EF Core team have benchmarked and determined in <em>most</em> cases, 4 is the threshold where doing a MERGE is more efficient that doing multiple INSERTS.</p>
+<p>However, if one determines that 4 is too high (or too low) for a specific use case, one can adjust the value up or down and benchmark how the performance of the code is impacted.</p>
+
+<blockquote class="daily-drop">
+    <div>
+        <div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px; ">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="50" height="50" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffec00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+              <path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+              <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+              <line x1="9.7" y1="17" x2="14.3" y2="17" />
+            </svg>
+        </div>
+        <div class="drop-header">
+            Daily Drop 87: 02-06-2022
+        </div>
+        <div>
+            <br>At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br> It could be anything - some.NET / C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
+            The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+        <div>
+    </div>
+</blockquote>
+
+
+                        
+<div>
+            <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
+            <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
+            <a role="button" href="/tags/efcore" class="badge badge-light"> efcore</a>
+            <a role="button" href="/tags/bulk" class="badge badge-light"> bulk</a>
+            <a role="button" href="/tags/insert" class="badge badge-light"> insert</a>
+</div>
+                    </div>
+                    <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
+                        
+
+        <div class="box sticky-top toc-block">
+            <h3 class="no-anchor">On This Page</h3>
+            <ul>
+        <li><a href="#daily-knowledge-drop">Daily Knowledge Drop</a></li>
+        <li><a href="#setup">Setup</a></li>
+            <ul>
+        <li><a href="#insert-statement">Insert statement</a></li>
+        <li><a href="#merge-statement">Merge statement</a></li>
+        <li><a href="#custom-batch-size">Custom batch size</a></li>
+            </ul>
+        <li><a href="#notes">Notes</a></li>
+            </ul>
+        </div>
+
+                    </div>
+            </div>
+            <div class="row ">
+                    <div id="content" class="col-md-9">
+                        <div>
+    <script src="https://giscus.app/client.js"
+            data-repo="always-developing/always-developing.github.io"
+            data-repo-id="R_kgDOGQJLBQ"
+            data-category="Comments"
+            data-category-id="DIC_kwDOGQJLBc4B_pUA"
+            data-mapping="pathname"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="bottom"
+            data-theme="transparent_dark"
+            data-lang="en"
+            crossorigin="anonymous"
+            async>
+    </script>
+</div>
+                    </div>
+            </div>
+    </div>
+
+    <hr class="horizontal-rule" />
+
+    <!-- Footer -->
+    <footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <ul class="list-inline text-center">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://www.linkedin.com/in/jean-pierre-seini">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-linkedin fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                <div>
+                    <p class="copyright text-footer">
+                        Copyright © 2022 Always Developing</a>.
+                    </p>
+                </div>
+                <ul class="list-inline text-center small text-feeds">
+                        <li class="list-inline-item">
+                            <a href="/feed.rss"><i class="fa fa-rss"></i> RSS Feed</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="/feed.atom"><i class="fa fa-rss"></i> Atom Feed</a>
+                        </li>
+                </ul>
+                <div class="small text-footer">
+                    <a href="https://github.com/always-developing/alwaysdeveloping-website-src"><i class="fab fa-github"></i> This site on GitHub</a>
+                </div>
+                <div class="small text-footer">
+                    <a href="https://statiq.dev">Generated by Statiq</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="/vendor/jquery/jquery.min.js"></script>
+    <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    
+
+
+    
+
+    <!-- Custom scripts for this template -->
+    <script src="/js/always-developing-blog.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,388 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="always learning | always growing">
+
+    <title>Always Developing - Extract calling method metadata with C#</title>
+
+    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/02/11-caller-metadata">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
+
+    <meta name="application-name" content="Always Developing" />
+    <meta name="msapplication-tooltip" content="Always Developing" />
+    <meta name="msapplication-starturl" content="/" />
+
+    <meta property="og:title" content="Always Developing - Extract calling method metadata with C#" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/02/11-caller-metadata" />
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Bootstrap core CSS -->
+    <link href="/vendor/bootstrap/scss/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom fonts for this template -->
+    <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="/vendor/fontawesome-free/css/brands.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css' data-no-mirror>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css' data-no-mirror>
+
+    <!-- Custom styles for this template -->
+    <link href="/scss/always-developing-blog.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/plugins/autoloader/prism-autoloader.min.js" data-no-mirror></script>
+    <script src="https://cdn.jsdelivr.net/npm/quicklink@2.0.0/dist/quicklink.umd.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/themes/prism.css">
+
+    <!-- Lunr search -->
+        <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/pako@2.0.3/dist/pako_inflate.min.js"></script>
+        <script src="/search.js"></script>
+
+    
+
+
+    
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand"  href="/">
+            <img src="/images/ad_logo.png" alt="" width="25" height="25" class="d-inline-block align-text-top">
+            Always Developing
+        </a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            Menu
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/software">Software</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/tags">Tags</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/posts">Posts</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/about">About</a>
+            </li>
+</ul>
+                <form class="form-inline my-2 my-lg-0" action="/search" method="GET">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="query">
+                    <input type="submit" hidden />
+                </form>
+        </div>
+    </div>
+</nav>
+
+    <!-- Page Header -->
+    <header class="masthead">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 align-middle">
+                <div class="post-header-image">
+                    <a href="/">
+                        <img src="/images/ad_logo.png" class="header-image">
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="post-heading">
+                    <h1>
+                        Extract calling method metadata with C#
+                    </h1>
+                            <h2 class="subheading">Extract useful information from a calling method</h2>
+                        <p class="post-meta">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
+                                <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
+                            </svg> Published on Friday, 11 February 2022
+                        </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <!-- Main Content -->
+    <div class="container">
+            <div class="row ">
+                    <div id="content" class="col-md-9 post-with-toc post-block">
+                        
+<div class="post-header-category">
+    <a class="btn btn-primary btn-sm btn-default btn-home" href="\" role="button"><i class="fas fa-angle-double-left"></i> Home</a>
+            <a class="btn btn-primary btn-sm category-btn" href="/categories/dailydrop" role="button">DailyDrop</a>
+</div>
+
+                        <h2 id="daily-knowledge-drop">Daily Knowledge Drop</h2>
+<p>As part of the C# <code>System.Runtime</code> assembly, there are a number of <code>Attributes</code> which can be used to get information about the <code>caller of a method</code>.</p>
+<p>The pattern for usage is the same for all attributes. To extract the metadata when a method is called, the following needs to be done:</p>
+<ul>
+<li>A <code>new parameter</code> needs to be added to the method (the type of the parameter depends on the attribute, see examples below)</li>
+<li>The new parameter must have a <code>default value</code></li>
+<li>The new parameter must be <code>decorated</code> with the relevant <code>Attribute</code></li>
+</ul>
+<hr />
+<h2 id="attributes">Attributes</h2>
+<p>Lets look at a few examples. All examples built using .NET6 minimal console application.</p>
+<h3 id="line-number">Line Number</h3>
+<p>To get the <em>caller line number</em>, the <code>CallerLineNumber</code> attribute is used.</p>
+<pre><code class="language-csharp">LogMessageWithLineNumber(&quot;Message 1&quot;);
+
+static void LogMessageWithLineNumber(string message, [CallerLineNumber] int lineNumber = 0)
+{
+    Console.WriteLine($&quot;LineNumber={lineNumber}: {message}&quot;);
+}
+</code></pre>
+<p>In the method signiture above, we can see a decorated parameter, with a default value has been added. This field will <em>automatically be populated with the line number of the calling method</em></p>
+<p>The output is as follows:</p>
+<pre><code class="language-powershell">LineNumber=4: Message 1
+</code></pre>
+<hr />
+<h3 id="file-path">File Path</h3>
+<p>To get the <em>file path of the calling method</em>, the <code>CallerFilePath</code> attribute is used.</p>
+<pre><code class="language-csharp">LogMessageWithPath(&quot;Message 2&quot;);
+
+static void LogMessageWithPath(string message, [CallerFilePath] string filepath = &quot;&quot;)
+{
+    Console.WriteLine($&quot;Path={filepath}: {message}&quot;);
+}
+</code></pre>
+<p>The output is as follows:</p>
+<pre><code class="language-powershell">Path=C:\Development\Projects\Blog\CallerMetadata\CallerMetadata\Program.cs: Message 2
+</code></pre>
+<hr />
+<h3 id="method-name">Method Name</h3>
+<p>To get the <em>calling method name</em>, the <code>CallerMemberName</code> attribute is used.</p>
+<pre><code class="language-csharp">LogMessageWithPath(&quot;Message 2&quot;);
+
+static void LogMessageWithMethod(string message, [CallerMemberName] string memberName = &quot;&quot;)
+{
+    Console.WriteLine($&quot;Method={memberName}: {message}&quot;);
+}
+</code></pre>
+<p>The output is as follows:</p>
+<pre><code class="language-powershell">Method=&lt;Main&gt;$: Message 3
+</code></pre>
+<p>As the example is using the .NET6 Console minimal project, there is no explicitly defined <em>main</em> method - hence the method reflecting as <em>&lt;Main&gt;$</em></p>
+<p>Lets look at another example.</p>
+<pre><code class="language-csharp">new ClassCall().DoubleHop();
+
+class ClassCall
+{
+    public void DoubleHop()
+    {
+        LogMessageWithMethod(&quot;Message from class&quot;);
+    }
+
+    static void LogMessageWithMethod(string message, 
+        [CallerMemberName] string memberName = &quot;&quot;)
+    {
+        Console.WriteLine($&quot;Method={memberName}: {message}&quot;);
+    }
+}
+</code></pre>
+<p>In this example, the source of the call to <em>LogMessageWithMethod</em> is the <em>DoubleHop</em> method, as such the output is as follows:</p>
+<pre><code class="language-powershell">Method=DoubleHop: Message from class
+</code></pre>
+<hr />
+<h3 id="expression">Expression</h3>
+<p>The last attribute is the most interesting and the most useful. The <code>CallerArgumentExpression</code> attribute is used to get the <em>expression used as the argument to the method</em>.</p>
+<p>In the following example, the same string message &quot;Message 4&quot; will be logged, however the string will be generated differently each time the method is invoked.</p>
+<pre><code class="language-csharp">// Just send a string
+LogMessageWithExpression(&quot;Message 4&quot;);
+// Add two string together with the + operator
+LogMessageWithExpression(&quot;Message&quot; + &quot; 4&quot;);
+// Concatenate two string using Concat method
+LogMessageWithExpression(String.Concat(&quot;Message&quot;, &quot; 4&quot;));
+
+static void LogMessageWithExpression(string value, 
+    [CallerArgumentExpression(&quot;value&quot;)] string expression = &quot;&quot;)
+{
+    Console.WriteLine($&quot;{{{value}}} was generated by {{{expression}}}&quot;);
+}
+</code></pre>
+<p>In this case, the <code>CallerArgumentExpression</code> attribute takes a parameter itself, and that is the <code>name of the parameter for which is should get the caller argument expression</code>.</p>
+<p>The output is as follows:</p>
+<pre><code class="language-powershell">{Message 4} was generated by {&quot;Message 4&quot;}
+{Message 4} was generated by {&quot;Message&quot; + &quot; 4&quot;}
+{Message 4} was generated by {String.Concat(&quot;Message&quot;, &quot; 4&quot;)}
+</code></pre>
+<p>We can see from the output, that the <code>expression parameter gets populated with the code used to generate the parameter value</code> (the expression for the parameter argument).</p>
+<p>This can be invaluable when logging, as not only can a piece of information be logged, but also which piece of code is generating the information.</p>
+<h2 id="overriding-parameter-values">Overriding parameter values</h2>
+<p>In all of the above examples, as mentioned, the parameter decorated with the relevant attribute needs to have a default value. So what happens if a <code>value is explicitly supplied for the parameter</code>?<br />
+As one might expect, instead of using the default and allowing the attribute to populate the parameter, the <code>explicitly supplied value is used</code>.</p>
+<p>Here a value is explicitly supplied for the <em>memberName</em> parameter:</p>
+<pre><code class="language-csharp">LogMessageWithMethod(&quot;Message 5&quot;, &quot;OwnMethodName&quot;);
+
+static void LogMessageWithMethod(string message, 
+    [CallerMemberName] string memberName = &quot;&quot;)
+{
+    Console.WriteLine($&quot;Method={memberName}: {message}&quot;);
+}
+</code></pre>
+<p>The output, as expected:</p>
+<pre><code class="language-powershell">Method=OwnMethodName: Message 5
+</code></pre>
+<hr />
+<h2 id="notes">Notes</h2>
+<p>While simple to implement, using these features can be very intrusive, with the need to add additional parameters to relevant methods. However if required, these tools can provide invaluable information about the calling location.</p>
+<hr />
+<h2 id="references">References</h2>
+<p><a href="https://khalidabuhakmeh.com/get-csharp-metadata-from-a-callsite#using-callerfilepathattribute">Get C# Metadata From a Call Site</a></p>
+
+<blockquote class="daily-drop">
+    <div>
+        <div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px; ">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="50" height="50" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffec00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+              <path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+              <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+              <line x1="9.7" y1="17" x2="14.3" y2="17" />
+            </svg>
+        </div>
+        <div class="drop-header">
+            Daily Drop 09: 11-02-2022
+        </div>
+        <div>
+            <br>At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br> It could be anything - some.NET / C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
+            The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+        <div>
+    </div>
+</blockquote>
+
+
+                        
+<div>
+            <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
+            <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
+            <a role="button" href="/tags/dailydrop" class="badge badge-light"> dailydrop</a>
+            <a role="button" href="/tags/metadata" class="badge badge-light"> metadata</a>
+            <a role="button" href="/tags/call-stack" class="badge badge-light"> call stack</a>
+            <a role="button" href="/tags/attribute" class="badge badge-light"> attribute</a>
+</div>
+                    </div>
+                    <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
+                        
+
+        <div class="box sticky-top toc-block">
+            <h3 class="no-anchor">On This Page</h3>
+            <ul>
+        <li><a href="#daily-knowledge-drop">Daily Knowledge Drop</a></li>
+        <li><a href="#attributes">Attributes</a></li>
+            <ul>
+        <li><a href="#line-number">Line Number</a></li>
+        <li><a href="#file-path">File Path</a></li>
+        <li><a href="#method-name">Method Name</a></li>
+        <li><a href="#expression">Expression</a></li>
+            </ul>
+        <li><a href="#overriding-parameter-values">Overriding parameter values</a></li>
+        <li><a href="#notes">Notes</a></li>
+        <li><a href="#references">References</a></li>
+            </ul>
+        </div>
+
+                    </div>
+            </div>
+            <div class="row ">
+                    <div id="content" class="col-md-9">
+                        <div>
+    <script src="https://giscus.app/client.js"
+            data-repo="always-developing/always-developing.github.io"
+            data-repo-id="R_kgDOGQJLBQ"
+            data-category="Comments"
+            data-category-id="DIC_kwDOGQJLBc4B_pUA"
+            data-mapping="pathname"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="bottom"
+            data-theme="transparent_dark"
+            data-lang="en"
+            crossorigin="anonymous"
+            async>
+    </script>
+</div>
+                    </div>
+            </div>
+    </div>
+
+    <hr class="horizontal-rule" />
+
+    <!-- Footer -->
+    <footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <ul class="list-inline text-center">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://www.linkedin.com/in/jean-pierre-seini">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-linkedin fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                <div>
+                    <p class="copyright text-footer">
+                        Copyright © 2022 Always Developing</a>.
+                    </p>
+                </div>
+                <ul class="list-inline text-center small text-feeds">
+                        <li class="list-inline-item">
+                            <a href="/feed.rss"><i class="fa fa-rss"></i> RSS Feed</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="/feed.atom"><i class="fa fa-rss"></i> Atom Feed</a>
+                        </li>
+                </ul>
+                <div class="small text-footer">
+                    <a href="https://github.com/always-developing/alwaysdeveloping-website-src"><i class="fab fa-github"></i> This site on GitHub</a>
+                </div>
+                <div class="small text-footer">
+                    <a href="https://statiq.dev">Generated by Statiq</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="/vendor/jquery/jquery.min.js"></script>
+    <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    
+
+
+    
+
+    <!-- Custom scripts for this template -->
+    <script src="/js/always-developing-blog.js"></script>
+
+</body>
+
+</html>

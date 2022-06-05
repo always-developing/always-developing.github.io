@@ -1,0 +1,404 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="always learning | always growing">
+
+    <title>Always Developing - C# ValueTuple</title>
+
+    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/02/07-valuetuple">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
+
+    <meta name="application-name" content="Always Developing" />
+    <meta name="msapplication-tooltip" content="Always Developing" />
+    <meta name="msapplication-starturl" content="/" />
+
+    <meta property="og:title" content="Always Developing - C# ValueTuple" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/02/07-valuetuple" />
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Bootstrap core CSS -->
+    <link href="/vendor/bootstrap/scss/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom fonts for this template -->
+    <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="/vendor/fontawesome-free/css/brands.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css' data-no-mirror>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css' data-no-mirror>
+
+    <!-- Custom styles for this template -->
+    <link href="/scss/always-developing-blog.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/plugins/autoloader/prism-autoloader.min.js" data-no-mirror></script>
+    <script src="https://cdn.jsdelivr.net/npm/quicklink@2.0.0/dist/quicklink.umd.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/themes/prism.css">
+
+    <!-- Lunr search -->
+        <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/pako@2.0.3/dist/pako_inflate.min.js"></script>
+        <script src="/search.js"></script>
+
+    
+
+
+    
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand"  href="/">
+            <img src="/images/ad_logo.png" alt="" width="25" height="25" class="d-inline-block align-text-top">
+            Always Developing
+        </a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            Menu
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/software">Software</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/tags">Tags</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/posts">Posts</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/about">About</a>
+            </li>
+</ul>
+                <form class="form-inline my-2 my-lg-0" action="/search" method="GET">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="query">
+                    <input type="submit" hidden />
+                </form>
+        </div>
+    </div>
+</nav>
+
+    <!-- Page Header -->
+    <header class="masthead">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 align-middle">
+                <div class="post-header-image">
+                    <a href="/">
+                        <img src="/images/ad_logo.png" class="header-image">
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="post-heading">
+                    <h1>
+                        C# ValueTuple
+                    </h1>
+                            <h2 class="subheading">Exploring the C# ValueTuple type</h2>
+                        <p class="post-meta">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
+                                <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
+                            </svg> Published on Monday, 07 February 2022
+                        </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <!-- Main Content -->
+    <div class="container">
+            <div class="row ">
+                    <div id="content" class="col-md-9 post-with-toc post-block">
+                        
+<div class="post-header-category">
+    <a class="btn btn-primary btn-sm btn-default btn-home" href="\" role="button"><i class="fas fa-angle-double-left"></i> Home</a>
+            <a class="btn btn-primary btn-sm category-btn" href="/categories/dailydrop" role="button">DailyDrop</a>
+</div>
+
+                        <h2 id="daily-knowledge-drop">Daily Knowledge Drop</h2>
+<p>You may have heard of C# the <code>Tuple</code> type, but there is also a <code>ValueTuple</code> type available, which has existed in C# since .NET 4.7!</p>
+<p>The post will will take a brief look at the <code>Tuple</code> type and compare its functionality to that of the <code>ValueTuple</code> type.</p>
+<hr />
+<h2 id="tuple">Tuple</h2>
+<h3 id="tuple-usage">Tuple usage</h3>
+<p>A Tuple is a <code>data structure which has a specific number and sequence of elements</code>. The data structure can contain up to 8 elements, but if more are required, nested tuple objects can be leveraged in the 8th element to extent the number of elements.</p>
+<p>It is an effective, quick and simple way to create an <em>immutable</em> data entity structure without creating an entire class entity.</p>
+<p>What do I mean by this?<br />
+Assume you have a method which needs to return a number of details related to a <em>person</em>. The go to solution would be to create a <em>Person</em> class with the relevant properties and return an instance of the class from the method.<br />
+If this class is only going to be used in one place, it might not make sense for an entire class to be defined - in this case a <code>Tuple</code> can be used instead.</p>
+<p>The following example uses .NET6 C# console application with minimal startup:</p>
+<pre><code class="language-csharp">// Invoke the method and get the tuple back
+var personInfo = GetPersonInformation();
+
+// Each element in the tuple can be accessed
+// The elements in the Tuple are accessed using 
+// the `ItemX` property, which corresponds to the element in position X 
+Console.WriteLine(personInfo.Item1);
+Console.WriteLine(personInfo.Item2);
+Console.WriteLine(personInfo.Item3);
+Console.WriteLine(personInfo);
+
+static Tuple&lt;string, string, int&gt; GetPersonInformation()
+{
+    return new Tuple&lt;string, string, int&gt;(&quot;Dave&quot;, &quot;Grohl&quot;, 53);
+}
+</code></pre>
+<p>The output is as follows:</p>
+<pre><code class="language-powershell">Dave
+Grohl
+53
+(Dave, Grohl, 53)
+</code></pre>
+<hr />
+<h3 id="tuple-creation">Tuple creation</h3>
+<p>In the above example, the <code>Tuple</code> was created and returned using the constructor method. These is another way - the static <code>Tuple.Create</code> method.</p>
+<pre><code class="language-csharp">// Using a generic constructor 
+var constructorTuple = new Tuple&lt;string, string, int&gt;(&quot;Dave&quot;, &quot;Grohl&quot;, 53);
+
+// Using the static Tuple Create method
+var createTuple = Tuple.Create(&quot;Dave&quot;, &quot;Grohl&quot;, 53);
+</code></pre>
+<p>Both are equivalent, however the <em>Create</em> method is easier to use when dealing with nested Tuples.</p>
+<hr />
+<h2 id="valuetuple">ValueTuple</h2>
+<h3 id="valuetuple-usage">ValueTuple usage</h3>
+<p>A <code>ValueTuple</code> operations the same as a <code>Tuple</code> on the surface, but there are a number of key differences between the two.</p>
+<ul>
+<li><strong>ValueTuple</strong> is a <em>struct</em> (a value type), while a <strong>Tuple</strong> is a <em>class</em> (a reference type)</li>
+<li><strong>ValueTuple</strong> is <em>mutable</em> (can be changed), while a <strong>Tuple</strong> is <em>immutable</em> (they are read-only)</li>
+<li><strong>ValueTuple</strong> data members are fields, while <strong>Tuple</strong> data members are properties.</li>
+</ul>
+<p>In the above example, <code>Tuple</code> can be replaced with <code>ValueTuple</code> and the code will still execute as before, with the same output:</p>
+<pre><code class="language-csharp">var personInfo = GetPersonInformation();
+
+Console.WriteLine(personInfo.Item1);
+Console.WriteLine(personInfo.Item2);
+Console.WriteLine(personInfo.Item3);
+Console.WriteLine(personInfo);
+
+static ValueTuple&lt;string, string, int&gt; GetPersonInformation()
+{
+    return new ValueTuple&lt;string, string, int&gt;(&quot;Dave&quot;, &quot;Grohl&quot;, 53);
+}
+</code></pre>
+<p>In addition to the differences mentioned above, the <code>ValueTuple</code> also has additional ways in which it can be created, which <em>allows working with the elements much easier</em>.</p>
+<hr />
+<h3 id="valuetuple-creation">ValueTuple creation</h3>
+<p>As seen above a <code>ValueTuple</code> can be created using the constructor:</p>
+<pre><code class="language-csharp">    var consValueTuple = new ValueTuple&lt;string, string, int&gt;(&quot;Dave&quot;, &quot;Grohl&quot;, 53);
+</code></pre>
+<p>It can also be created using the static <em>Create</em> method:</p>
+<pre><code class="language-csharp">    var createValueTuple = ValueTuple.Create(&quot;Dave&quot;, &quot;Grohl&quot;, 53);
+</code></pre>
+<p>In addition it can be created as follows</p>
+<pre><code class="language-csharp">    var valueTuple = (&quot;Dave&quot;, &quot;Grohl&quot;, 53);
+</code></pre>
+<p>In all three of the above, the elements are still accessed using the <em>Item1</em>, <em>Item2</em>, etc properties. With a <code>ValueTuple</code> it is possible to <em>give each element a name and access it by name</em>.</p>
+<p>Instead of using the <em>var</em> keyword, we explicitly define the ValueTuple types, with names.</p>
+<pre><code class="language-csharp">
+(string FirstName, string LastName, int Age) nameValueTuple = (&quot;Dave&quot;, &quot;Grohl&quot;, 53);
+
+// The elements can now be accessed by name
+Console.WriteLine(nameValueTuple.FirstName);
+Console.WriteLine(nameValueTuple.LastName);
+Console.WriteLine(nameValueTuple.Age);
+Console.WriteLine(nameValueTuple);
+
+// This will also still also work
+Console.WriteLine(nameValueTuple.Item1);
+Console.WriteLine(nameValueTuple.Item2);
+Console.WriteLine(nameValueTuple.Item3);
+
+</code></pre>
+<p>Any of the three initialization methods can be used to create the a <code>ValueTuple</code> with names.</p>
+<pre><code class="language-csharp">/// Create using the constructor
+(string FirstName, string LastName, int Age) consValueTuple = 
+    new ValueTuple&lt;string, string, int&gt;(&quot;Dave&quot;, &quot;Grohl&quot;, 53);
+
+// Create using the static method
+(string FirstName, string LastName, int Age) createValueTuple = 
+    ValueTuple.Create(&quot;Dave&quot;, &quot;Grohl&quot;, 53);
+
+// Create using the abbreviated syntax
+(string FirstName, string LastName, int Age) valueTuple = (&quot;Dave&quot;, &quot;Grohl&quot;, 53);
+
+</code></pre>
+<p>A named ValueTuple can also be returned from a method:</p>
+<pre><code class="language-csharp">var personInfo = GetPersonInformation();
+
+// now accessed by name
+Console.WriteLine(personInfo.FirstName);
+Console.WriteLine(personInfo.LastName);
+Console.WriteLine(personInfo.Age);
+Console.WriteLine(personInfo);
+
+static (string FirstName, string LastName, int Age) GetPersonInformation()
+{
+    return (&quot;Dave&quot;, &quot;Grohl&quot;, 53);
+}
+</code></pre>
+<hr />
+<h2 id="notes">Notes</h2>
+<p>Today we looked at the <code>Tuple</code> and <code>ValueTuple</code> structures, how they are different and the various ways they can be initialized.</p>
+<p>For additional reading, see the references below.</p>
+<hr />
+<h2 id="references">References</h2>
+<p><a href="https://docs.microsoft.com/en-gb/dotnet/api/system.tuple?view=net-6.0">Tuple Class</a><br />
+<a href="https://docs.microsoft.com/en-us/dotnet/api/system.valuetuple?view=net-6.0">ValueTuple Class</a><br />
+<a href="https://code-maze.com/csharp-tuple/">Tuple in C#</a></p>
+
+<blockquote class="daily-drop">
+    <div>
+        <div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px; ">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="50" height="50" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffec00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+              <path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+              <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+              <line x1="9.7" y1="17" x2="14.3" y2="17" />
+            </svg>
+        </div>
+        <div class="drop-header">
+            Daily Drop 05: 07-02-2022
+        </div>
+        <div>
+            <br>At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br> It could be anything - some.NET / C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
+            The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+        <div>
+    </div>
+</blockquote>
+
+
+                        
+<div>
+            <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
+            <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
+            <a role="button" href="/tags/dailydrop" class="badge badge-light"> dailydrop</a>
+            <a role="button" href="/tags/tuple" class="badge badge-light"> tuple</a>
+            <a role="button" href="/tags/valuetuple" class="badge badge-light"> valuetuple</a>
+            <a role="button" href="/tags/net6" class="badge badge-light"> .net6</a>
+</div>
+                    </div>
+                    <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
+                        
+
+        <div class="box sticky-top toc-block">
+            <h3 class="no-anchor">On This Page</h3>
+            <ul>
+        <li><a href="#daily-knowledge-drop">Daily Knowledge Drop</a></li>
+        <li><a href="#tuple">Tuple</a></li>
+            <ul>
+        <li><a href="#tuple-usage">Tuple usage</a></li>
+        <li><a href="#tuple-creation">Tuple creation</a></li>
+            </ul>
+        <li><a href="#valuetuple">ValueTuple</a></li>
+            <ul>
+        <li><a href="#valuetuple-usage">ValueTuple usage</a></li>
+        <li><a href="#valuetuple-creation">ValueTuple creation</a></li>
+            </ul>
+        <li><a href="#notes">Notes</a></li>
+        <li><a href="#references">References</a></li>
+            </ul>
+        </div>
+
+                    </div>
+            </div>
+            <div class="row ">
+                    <div id="content" class="col-md-9">
+                        <div>
+    <script src="https://giscus.app/client.js"
+            data-repo="always-developing/always-developing.github.io"
+            data-repo-id="R_kgDOGQJLBQ"
+            data-category="Comments"
+            data-category-id="DIC_kwDOGQJLBc4B_pUA"
+            data-mapping="pathname"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="bottom"
+            data-theme="transparent_dark"
+            data-lang="en"
+            crossorigin="anonymous"
+            async>
+    </script>
+</div>
+                    </div>
+            </div>
+    </div>
+
+    <hr class="horizontal-rule" />
+
+    <!-- Footer -->
+    <footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <ul class="list-inline text-center">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://www.linkedin.com/in/jean-pierre-seini">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-linkedin fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                <div>
+                    <p class="copyright text-footer">
+                        Copyright © 2022 Always Developing</a>.
+                    </p>
+                </div>
+                <ul class="list-inline text-center small text-feeds">
+                        <li class="list-inline-item">
+                            <a href="/feed.rss"><i class="fa fa-rss"></i> RSS Feed</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="/feed.atom"><i class="fa fa-rss"></i> Atom Feed</a>
+                        </li>
+                </ul>
+                <div class="small text-footer">
+                    <a href="https://github.com/always-developing/alwaysdeveloping-website-src"><i class="fab fa-github"></i> This site on GitHub</a>
+                </div>
+                <div class="small text-footer">
+                    <a href="https://statiq.dev">Generated by Statiq</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="/vendor/jquery/jquery.min.js"></script>
+    <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    
+
+
+    
+
+    <!-- Custom scripts for this template -->
+    <script src="/js/always-developing-blog.js"></script>
+
+</body>
+
+</html>

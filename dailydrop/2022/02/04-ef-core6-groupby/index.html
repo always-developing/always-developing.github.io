@@ -1,0 +1,449 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="always learning | always growing">
+
+    <title>Always Developing - EF Core 6: GroupBy enhancements</title>
+
+    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/02/04-ef-core6-groupby">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
+
+    <meta name="application-name" content="Always Developing" />
+    <meta name="msapplication-tooltip" content="Always Developing" />
+    <meta name="msapplication-starturl" content="/" />
+
+    <meta property="og:title" content="Always Developing - EF Core 6: GroupBy enhancements" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/02/04-ef-core6-groupby" />
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Bootstrap core CSS -->
+    <link href="/vendor/bootstrap/scss/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom fonts for this template -->
+    <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="/vendor/fontawesome-free/css/brands.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css' data-no-mirror>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css' data-no-mirror>
+
+    <!-- Custom styles for this template -->
+    <link href="/scss/always-developing-blog.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/plugins/autoloader/prism-autoloader.min.js" data-no-mirror></script>
+    <script src="https://cdn.jsdelivr.net/npm/quicklink@2.0.0/dist/quicklink.umd.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/themes/prism.css">
+
+    <!-- Lunr search -->
+        <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/pako@2.0.3/dist/pako_inflate.min.js"></script>
+        <script src="/search.js"></script>
+
+    
+
+
+    
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand"  href="/">
+            <img src="/images/ad_logo.png" alt="" width="25" height="25" class="d-inline-block align-text-top">
+            Always Developing
+        </a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            Menu
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/software">Software</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/tags">Tags</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/posts">Posts</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/about">About</a>
+            </li>
+</ul>
+                <form class="form-inline my-2 my-lg-0" action="/search" method="GET">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="query">
+                    <input type="submit" hidden />
+                </form>
+        </div>
+    </div>
+</nav>
+
+    <!-- Page Header -->
+    <header class="masthead">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 align-middle">
+                <div class="post-header-image">
+                    <a href="/">
+                        <img src="/images/ad_logo.png" class="header-image">
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="post-heading">
+                    <h1>
+                        EF Core 6: GroupBy enhancements
+                    </h1>
+                            <h2 class="subheading">Improvements made to the Entity Framework Core 6 GroupBy functionality</h2>
+                        <p class="post-meta">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
+                                <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
+                            </svg> Published on Friday, 04 February 2022
+                        </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <!-- Main Content -->
+    <div class="container">
+            <div class="row ">
+                    <div id="content" class="col-md-9 post-with-toc post-block">
+                        
+<div class="post-header-category">
+    <a class="btn btn-primary btn-sm btn-default btn-home" href="\" role="button"><i class="fas fa-angle-double-left"></i> Home</a>
+            <a class="btn btn-primary btn-sm category-btn" href="/categories/dailydrop" role="button">DailyDrop</a>
+</div>
+
+                        <h2 id="daily-knowledge-drop">Daily Knowledge Drop</h2>
+<p>The <code>GroupBy</code> support in Entity Framework Core 6 got an update, and has made things a lot easier.<br />
+In short, the following is now supported:</p>
+<ul>
+<li>Translate GroupBy followed by FirstOrDefault (or similar) over a group</li>
+<li>Supports selecting the top N results from a group</li>
+<li>Expands navigation's after the GroupBy operator has been applied</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<h3 id="setup">Setup</h3>
+<p>In all the example below the setup is very simple - a single <code>Song</code> entity and corresponding database table. All sample below were tested with SQL Server.</p>
+<pre><code class="language-csharp">public class Song
+{
+    public int Id { get; set; } 
+    public string Name { get; set; }
+    public string Artist { get; set; }
+    public int YearReleased { get; set; }
+    public int LengthInSeconds { get; set; }
+    public override string ToString()
+    {
+        return $&quot;Song `{Name}` by '{Artist} released &quot; +
+                $&quot;in '{YearReleased}' and is '{LengthInSeconds}' seconds long&quot;;
+    }
+}
+</code></pre>
+<p>The results are based on data in the example dataset, and not necessarily reflective of real world values.</p>
+<p>The below are examples in Entity Framework Core 3.1, where possible, and Entity Framework Core 6 (both are LTS versions).</p>
+<hr />
+<h3 id="count-groupby">Count GroupBy</h3>
+<p><code>Retrieve the number of songs per artist.</code></p>
+<h4 id="efcore-3.1">EFCore 3.1</h4>
+<p>Code:</p>
+<pre><code class="language-csharp">var query = db.Songs
+    .GroupBy(s =&gt; s.Artist)
+    .Select(e =&gt; new { e.Key, Count = e.Count() });
+
+foreach (var item in query.ToList())
+{
+    Console.WriteLine(item);
+}
+</code></pre>
+<p>SQL generated:</p>
+<pre><code class="language-sql">SELECT [s].[Artist] AS [Key], COUNT(*) AS [Count]
+FROM [Song] AS [s]
+GROUP BY [s].[Artist]
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-powershell">{ Key = Foo Fighters, Count = 4 }
+{ Key = John Mayer, Count = 3 }
+</code></pre>
+<h4 id="efcore-6">EFCore 6</h4>
+<p>Code and resulting SQL generated are exactly the same.</p>
+<hr />
+<h3 id="top-1-groupby">Top 1 GroupBy</h3>
+<p><code>Retrieve an artist and the first year a song of theirs was released</code></p>
+<h4 id="efcore-3.1-1">EFCore 3.1</h4>
+<p>Code:</p>
+<pre><code class="language-csharp">var query = db.Songs
+    .Select(s =&gt; s.Artist).Distinct()
+    .Select(e =&gt; new
+    {
+        Artist = e,
+        Year = db.Songs
+            .Where(s =&gt; s.Artist == e)
+            .OrderBy(s =&gt; s.YearReleased)
+            .Select(y =&gt; y.YearReleased)
+            .FirstOrDefault()
+    });
+
+foreach (var item in query.ToList())
+{
+    Console.WriteLine(item);
+}
+</code></pre>
+<p>SQL generated:</p>
+<pre><code class="language-sql">SELECT [t].[Artist], (
+    SELECT TOP(1) [s].[YearReleased]
+    FROM [Song] AS [s]
+    WHERE ([s].[Artist] = [t].[Artist]) 
+        OR ([s].[Artist] IS NULL AND [t].[Artist] IS NULL)
+    ORDER BY [s].[YearReleased]) AS [Year]
+FROM (
+    SELECT DISTINCT [s0].[Artist]
+    FROM [Song] AS [s0]
+) AS [t]
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-powershell">{ Artist = Foo Fighters, Year = 1997 }
+{ Artist = John Mayer, Year = 2003 }
+</code></pre>
+<h4 id="efcore-6-1">EFCore 6</h4>
+<p>Code:</p>
+<pre><code class="language-csharp">var query = db.Songs
+    .GroupBy(a =&gt; a.Artist)
+    .Select(g =&gt; g.OrderBy(a =&gt; a.YearReleased)
+                .Select(s =&gt; new { Artist = s.Artist, Year = s.YearReleased })
+                .FirstOrDefault()
+        );
+
+foreach (var item in query.ToList())
+{
+    Console.WriteLine(item);
+}
+</code></pre>
+<p>SQL generated:</p>
+<pre><code class="language-sql">SELECT [t0].[Artist], [t0].[Year], [t0].[c]
+FROM (
+    SELECT [s].[Artist]
+    FROM [Song] AS [s]
+    GROUP BY [s].[Artist]
+) AS [t]
+LEFT JOIN (
+    SELECT [t1].[Artist], [t1].[Year], [t1].[c]
+    FROM (
+        SELECT [s0].[Artist], [s0].[YearReleased] AS [Year], 1 AS [c], 
+            ROW_NUMBER() OVER(PARTITION BY [s0].[Artist] 
+            ORDER BY [s0].[YearReleased]) AS [row]
+        FROM [Song] AS [s0]
+    ) AS [t1]
+    WHERE [t1].[row] &lt;= 1
+) AS [t0] ON [t].[Artist] = [t0].[Artist]
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-powershell">{ Artist = Foo Fighters, Year = 1997 }
+{ Artist = John Mayer, Year = 2003 }
+</code></pre>
+<p>The LINQ is more intuitive and concise, while the SQL appears to be more complex. More complex SQL does not necessarily mean less performant though - as with everything it should be benchmarked with your expected data volume.</p>
+<hr />
+<h3 id="top-n-groupby">Top N GroupBy</h3>
+<p><code>Retrieve an artist and the first N years a song of theirs was released</code></p>
+<h4 id="efcore-3.1-2">EFCore 3.1</h4>
+<p>It was a struggle to even get an example working for EF Core 3.1 for this scenario. It could be possible, but the fact it was so difficult to even try get it to work directly speaks to the need for the enhancements made in EF Core 6.</p>
+<h4 id="efcore-6-2">EFCore 6</h4>
+<p>Code:</p>
+<pre><code class="language-csharp">var query = db.Songs
+    .GroupBy(a =&gt; a.Artist)
+    .Select(g =&gt; new
+    {
+        Artist = g.Key,
+        Years = g.OrderBy(a =&gt; a.YearReleased)
+                .Distinct()
+                .Take(2)
+                .Select(s =&gt; s.YearReleased)
+    });
+
+foreach (var item in query.ToList())
+{
+    Console.WriteLine($&quot;Artist = {item.Artist}, Years = {string.Join(',', item.Years)}&quot;);
+}
+</code></pre>
+<p>SQL generated:</p>
+<pre><code class="language-sql">SELECT [t].[Artist], [t0].[YearReleased], [t0].[Id]
+FROM (
+    SELECT [s].[Artist]
+    FROM [Song] AS [s]
+    GROUP BY [s].[Artist]
+) AS [t]
+OUTER APPLY (
+    SELECT DISTINCT TOP(2) [s0].[Id], [s0].[Artist], 
+        [s0].[LengthInSeconds], [s0].[Name], [s0].[YearReleased]
+    FROM [Song] AS [s0]
+    WHERE [t].[Artist] = [s0].[Artist]
+) AS [t0]
+ORDER BY [t].[Artist]
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-powershell">Artist = Foo Fighters, Years = 1997,1999
+Artist = John Mayer, Years = 2003,2003
+</code></pre>
+<hr />
+<h2 id="notes">Notes</h2>
+<p>The above are just a few very basic examples of the enhanced functionality. The official Microsoft EF Core 6 documentation referenced below has many more examples - however hopefully this has at least introduced the enhanced GroupBy support, and how EF Core 6 makes it easier to use.</p>
+<p>As always, the recommendation is to benchmark the various LINQ techniques (and corresponding SQL) against your data structure and volumes, and make an informed decision about the best way to structure the LINQ.</p>
+<hr />
+<h2 id="references">References</h2>
+<p><a href="https://docs.microsoft.com/en-us/ef/core/what-is-new/ef-core-6.0/whatsnew#improved-groupby-support">Whats new in EF Crore 6 - improved GroupBy support</a></p>
+
+<blockquote class="daily-drop">
+    <div>
+        <div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px; ">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="50" height="50" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffec00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+              <path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+              <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+              <line x1="9.7" y1="17" x2="14.3" y2="17" />
+            </svg>
+        </div>
+        <div class="drop-header">
+            Daily Drop 04: 04-02-2022
+        </div>
+        <div>
+            <br>At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br> It could be anything - some.NET / C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
+            The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+        <div>
+    </div>
+</blockquote>
+
+
+                        
+<div>
+            <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
+            <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
+            <a role="button" href="/tags/dailydrop" class="badge badge-light"> dailydrop</a>
+            <a role="button" href="/tags/efcore" class="badge badge-light"> efcore</a>
+            <a role="button" href="/tags/efcore6" class="badge badge-light"> efcore6</a>
+            <a role="button" href="/tags/ef" class="badge badge-light"> ef</a>
+            <a role="button" href="/tags/entityframeworkcore" class="badge badge-light"> entityframeworkcore</a>
+            <a role="button" href="/tags/groupby" class="badge badge-light"> groupby</a>
+            <a role="button" href="/tags/net6" class="badge badge-light"> .net6</a>
+</div>
+                    </div>
+                    <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
+                        
+
+        <div class="box sticky-top toc-block">
+            <h3 class="no-anchor">On This Page</h3>
+            <ul>
+        <li><a href="#daily-knowledge-drop">Daily Knowledge Drop</a></li>
+        <li><a href="#examples">Examples</a></li>
+            <ul>
+        <li><a href="#setup">Setup</a></li>
+        <li><a href="#count-groupby">Count GroupBy</a></li>
+        <li><a href="#top-1-groupby">Top 1 GroupBy</a></li>
+        <li><a href="#top-n-groupby">Top N GroupBy</a></li>
+            </ul>
+        <li><a href="#notes">Notes</a></li>
+        <li><a href="#references">References</a></li>
+            </ul>
+        </div>
+
+                    </div>
+            </div>
+            <div class="row ">
+                    <div id="content" class="col-md-9">
+                        <div>
+    <script src="https://giscus.app/client.js"
+            data-repo="always-developing/always-developing.github.io"
+            data-repo-id="R_kgDOGQJLBQ"
+            data-category="Comments"
+            data-category-id="DIC_kwDOGQJLBc4B_pUA"
+            data-mapping="pathname"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="bottom"
+            data-theme="transparent_dark"
+            data-lang="en"
+            crossorigin="anonymous"
+            async>
+    </script>
+</div>
+                    </div>
+            </div>
+    </div>
+
+    <hr class="horizontal-rule" />
+
+    <!-- Footer -->
+    <footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <ul class="list-inline text-center">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://www.linkedin.com/in/jean-pierre-seini">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-linkedin fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                <div>
+                    <p class="copyright text-footer">
+                        Copyright © 2022 Always Developing</a>.
+                    </p>
+                </div>
+                <ul class="list-inline text-center small text-feeds">
+                        <li class="list-inline-item">
+                            <a href="/feed.rss"><i class="fa fa-rss"></i> RSS Feed</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="/feed.atom"><i class="fa fa-rss"></i> Atom Feed</a>
+                        </li>
+                </ul>
+                <div class="small text-footer">
+                    <a href="https://github.com/always-developing/alwaysdeveloping-website-src"><i class="fab fa-github"></i> This site on GitHub</a>
+                </div>
+                <div class="small text-footer">
+                    <a href="https://statiq.dev">Generated by Statiq</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="/vendor/jquery/jquery.min.js"></script>
+    <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    
+
+
+    
+
+    <!-- Custom scripts for this template -->
+    <script src="/js/always-developing-blog.js"></script>
+
+</body>
+
+</html>

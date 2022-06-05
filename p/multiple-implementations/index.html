@@ -1,0 +1,1838 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="always learning | always growing">
+
+    <title>Always Developing - Multiple implementations of same interface - the options</title>
+
+    <link rel="canonical" href="https://alwaysdeveloping.net/p/multiple-implementations">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
+
+    <meta name="application-name" content="Always Developing" />
+    <meta name="msapplication-tooltip" content="Always Developing" />
+    <meta name="msapplication-starturl" content="/" />
+
+    <meta property="og:title" content="Always Developing - Multiple implementations of same interface - the options" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/p/multiple-implementations" />
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Bootstrap core CSS -->
+    <link href="/vendor/bootstrap/scss/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom fonts for this template -->
+    <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="/vendor/fontawesome-free/css/brands.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css' data-no-mirror>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css' data-no-mirror>
+
+    <!-- Custom styles for this template -->
+    <link href="/scss/always-developing-blog.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/plugins/autoloader/prism-autoloader.min.js" data-no-mirror></script>
+    <script src="https://cdn.jsdelivr.net/npm/quicklink@2.0.0/dist/quicklink.umd.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/themes/prism.css">
+
+    <!-- Lunr search -->
+        <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/pako@2.0.3/dist/pako_inflate.min.js"></script>
+        <script src="/search.js"></script>
+
+    
+
+
+    
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand"  href="/">
+            <img src="/images/ad_logo.png" alt="" width="25" height="25" class="d-inline-block align-text-top">
+            Always Developing
+        </a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            Menu
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/software">Software</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/tags">Tags</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/posts">Posts</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/about">About</a>
+            </li>
+</ul>
+                <form class="form-inline my-2 my-lg-0" action="/search" method="GET">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="query">
+                    <input type="submit" hidden />
+                </form>
+        </div>
+    </div>
+</nav>
+
+    <!-- Page Header -->
+    <header class="masthead">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 align-middle">
+                <div class="post-header-image">
+                    <a href="/">
+                        <img src="/images/ad_logo.png" class="header-image">
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="post-heading">
+                    <h1>
+                        Multiple implementations of same interface - the options
+                    </h1>
+                            <h2 class="subheading">Different methods of registering the same interface with multiple implementations using .NET dependency injection</h2>
+                        <p class="post-meta">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
+                                <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
+                            </svg> Published on Saturday, 06 November 2021
+                        </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <!-- Main Content -->
+    <div class="container">
+            <div class="row ">
+                    <div id="content" class="col-md-9 post-with-toc post-block">
+                        
+<div class="post-header-category">
+    <a class="btn btn-primary btn-sm btn-default btn-home" href="\" role="button"><i class="fas fa-angle-double-left"></i> Home</a>
+            <a class="btn btn-primary btn-sm category-btn" href="/categories/blog" role="button">Blog</a>
+</div>
+
+                        <h2 id="the-challenge">The challenge</h2>
+<p>Consider a scenario where the requirement is to upload a file to an online provider (AWS S3, Azure Blob or a FTP site in the examples below), where the provider can be easily changed (either dynamically at runtime, or easily with minimal code changes), with the possibility additional providers being added in future.</p>
+<p>To make use of dependency injection, a generic interface is created, <strong><em>IFileUploader</em></strong>, along with three implementations <strong><em>AWSUploader</em></strong>, <strong><em>AzureUploader</em></strong> and <strong><em>FTPUploader</em></strong>. The interface prescribes that the implementations provide a method to upload a file (<em>UploadFile</em>) and a method to get the implementation name (<em>GetName</em>).</p>
+<p>The built in .NET dependency injection (DI) container is all one will need for almost all situations (including this situation): however this scenario can be a bit more challenging to get right - <strong><code>with multiple implementations of the same interface, how do you get the right implementation from the DI container?</code></strong></p>
+<h2 id="the-problem-with.net-dependency-injection-container">The problem with .NET dependency injection container</h2>
+<p>One piece of functionality the .NET DI container does not have (which is available in some other 3rd party DI/IoC containers) is the ability to add and retrieve service implementations by name.</p>
+<p>Short of actually implementing one of these other 3rd party containers, below are a number of different options and techniques one can use to get the correct implementation from the DI container when there are multiple implementations registered.</p>
+
+<blockquote class="info-block">
+    <div>
+        <div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px; ">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-info-circle" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#00abfb" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                <circle cx="12" cy="12" r="9" />
+                <line x1="12" y1="8" x2="12.01" y2="8" />
+                <polyline points="11 12 12 12 12 16 13 16" />
+            </svg >
+        </div >
+        <div>
+            <p>
+<p>The benchmarks on the below techniques were all executed at the same time under the same conditions using <a href="https://benchmarkdotnet.org/articles/overview.html"><strong>BenchmarkDotNet</strong></a><br />
+Even though some some techniques performed poorly when compared to others, bear in mind that the time frame in question here is nanoseconds (a nanosecond is <strong>one billionth of a second</strong>).<br />
+In <em>most</em> scenarios, the DI technique used (if used correctly) is not going to make a massive material different to the performance of the application/service (of course there are exceptions, depending on how complicated the dependency tree is)</p>
+</p>
+        </div>
+    </div>
+</blockquote >
+
+<h2 id="the-different-techniques">The different techniques</h2>
+<h3 id="ienumerable">IEnumerable</h3>
+<ul>
+<li><strong>Configuration:</strong><br />
+This is the simplest 'out of the box' technique, with the various implementations just all added to the DI container using the same interface:</li>
+</ul>
+<pre><code class="language-csharp">private readonly IHost host;
+public EnumerableBenchmark()
+{
+    host = Host.CreateDefaultBuilder()
+        .ConfigureServices((context, services) =&gt; services
+            .AddTransient&lt;EnumerableHandler&gt;()
+            .AddTransient&lt;IFileUploader, AWSUploader&gt;()
+            .AddTransient&lt;IFileUploader, AzureUploader&gt;()
+            .AddTransient&lt;IFileUploader, FTPUploader&gt;()
+        ).Build();
+}
+</code></pre>
+<ul>
+<li><strong>Usage:</strong><br />
+Inject IEnumerable<Interface> into the relevant class (EnumerableHandler constructor), and then retrieve the required implementation from the IEnumerable collection:</li>
+</ul>
+<pre><code class="language-csharp">public class EnumerableHandler
+{
+    private readonly IEnumerable&lt;IFileUploader&gt; _uploaders;
+    public EnumerableHandler(IEnumerable&lt;IFileUploader&gt; uploaders)
+    {
+        _uploaders = uploaders;
+    }
+
+    public void Execute()
+    {
+        var providerName = &quot;aws&quot;;
+        var uploader = _uploaders.FirstOrDefault(up =&gt; up
+            .GetName().Equals(providerName));
+
+        if (uploader == null)
+        {
+            throw new ArgumentException($&quot;No uploader with name &quot; +
+                    $&quot;{providerName} could be found&quot;);
+        }
+        uploader.UploadFile();
+    }
+}
+</code></pre>
+<ul>
+<li><p><strong>Pros:</strong></p>
+<ul>
+<li>Easy to implement</li>
+<li>Implementation can be selected/changed at runtime</li>
+</ul>
+</li>
+<li><p><strong>Cons:</strong></p>
+<ul>
+<li>Every implementation is instantiated (as part of IEnumerable) even if not required or used. This could be especially problematic if the implementations themselves have a number of dependencies which then need to be instantiated (this was NOT the case with the benchmarks) which could result in a negative performance impact.</li>
+<li>The logic to retrieve the implementation from IEnumerable is contained in multiple places (each class which has it injected)</li>
+</ul>
+</li>
+<li><p><strong>Performance:</strong></p>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Method</th>
+<th style="text-align: right;">Mean</th>
+<th style="text-align: right;">Error</th>
+<th style="text-align: right;">StdDev</th>
+<th style="text-align: right;">Ratio</th>
+<th style="text-align: right;">RatioSD</th>
+<th style="text-align: right;">Gen 0</th>
+<th style="text-align: right;">Allocated</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Enumerable</td>
+<td>Execute</td>
+<td style="text-align: right;">86.99 ns</td>
+<td style="text-align: right;">0.987 ns</td>
+<td style="text-align: right;">0.924 ns</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.0421</td>
+<td style="text-align: right;">264 B</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="factory">Factory</h3>
+<p>One of the negative aspects of the <code>IEnumerable</code> approach, is that the logic to retrieve the correct implementation could be present in multiple places (if IEnumberable is injected into multiple classes). The <code>Factory</code> approach moves the logic into a separate actory class, which is then injected and is responsible for retrieving the required implementation.</p>
+<ul>
+<li><strong>Configuration:</strong><br />
+Configuration is the <em>same as <code>IEnumerable</code></em>, the various implementations all added to the DI container using the same interface, with one additional class added, the factory class:</li>
+</ul>
+<pre><code class="language-csharp">private readonly IHost host;
+public FactoryBenchmark()
+{
+    host = Host.CreateDefaultBuilder()
+        .ConfigureServices((context, services) =&gt; services
+            .AddTransient&lt;FactoryHandler&gt;()
+            .AddTransient&lt;FileUploaderFactory&gt;()
+            .AddTransient&lt;IFileUploader, AWSUploader&gt;()
+            .AddTransient&lt;IFileUploader, AzureUploader&gt;()
+            .AddTransient&lt;IFileUploader, FTPUploader&gt;()
+        ).Build();
+}
+</code></pre>
+<p>The factory looks very similar to the handler from the <code>IEnumerable</code> approach:</p>
+<pre><code class="language-csharp">public class FileUploaderFactory
+{
+    private readonly IEnumerable&lt;IFileUploader&gt; _uploaders;
+    public FileUploaderFactory(IEnumerable&lt;IFileUploader&gt; uploaders)
+    {
+        _uploaders = uploaders; 
+    }
+
+    public IFileUploader Resolve(string providerName)
+    {
+        var uploader = _uploaders.FirstOrDefault(up =&gt; up
+            .GetName().Equals(providerName));
+        if (uploader == null)
+        {
+            throw new ArgumentException($&quot;No uploader with name &quot; +
+                    $&quot;{providerName} could be found&quot;);
+        }
+
+        return uploader;
+    }
+}
+</code></pre>
+<ul>
+<li><strong>Usage:</strong><br />
+The factory is now injected into the relevant class and is then invoked to get the requested implementation:</li>
+</ul>
+<pre><code class="language-csharp">public  class FactoryHandler
+{
+    private readonly FileUploaderFactory _factory;
+    public FactoryHandler(FileUploaderFactory factory)
+    {
+        _factory = factory;
+    }
+
+    public void Execute()
+    {
+        var providerName = &quot;azure&quot;;
+        var uploader = _factory.Resolve(providerName);
+        uploader.UploadFile();
+    }
+}
+</code></pre>
+<ul>
+<li><p><strong>Pros:</strong></p>
+<ul>
+<li>Easy to implement</li>
+<li>Implementation can be selected/changed at runtime</li>
+<li>Retrieval logic is contained in a single place</li>
+</ul>
+</li>
+<li><p><strong>Cons:</strong></p>
+<ul>
+<li>Every implementation is instantiated (as part of IEnumerable) even if not required or used. This could have an impact on performance and memory usage.</li>
+<li>Slightly slower, and slightly more memory usage than the <code>IEnumerable</code> approach (due to the extra layer between the handler and the IEnumerable collection)</li>
+</ul>
+</li>
+<li><p><strong>Performance:</strong></p>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Method</th>
+<th style="text-align: right;">Mean</th>
+<th style="text-align: right;">Error</th>
+<th style="text-align: right;">StdDev</th>
+<th style="text-align: right;">Ratio</th>
+<th style="text-align: right;">RatioSD</th>
+<th style="text-align: right;">Gen 0</th>
+<th style="text-align: right;">Allocated</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Enumerable</td>
+<td>Execute</td>
+<td style="text-align: right;">86.99 ns</td>
+<td style="text-align: right;">0.987 ns</td>
+<td style="text-align: right;">0.924 ns</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.0421</td>
+<td style="text-align: right;">264 B</td>
+</tr>
+<tr>
+<td>Factory</td>
+<td>Execute</td>
+<td style="text-align: right;">103.20 ns</td>
+<td style="text-align: right;">1.324 ns</td>
+<td style="text-align: right;">1.238 ns</td>
+<td style="text-align: right;">1.19</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.0459</td>
+<td style="text-align: right;">288 B</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="type-factory">Type Factory</h3>
+<p>A big negative aspect of the <code>IEnumerable</code> and <code>Factory</code> approach, is that all the implementations are instantiated every time, even if not used or required. This could have big impact on performance and memory if the implementations them themselves have many dependencies (and those dependencies have dependencies and so on).<br />
+The next approach is extends on the <code>Factory</code> technique, but only instantiates the requested implementation <strong>based on naming conventions</strong>.</p>
+<ul>
+<li><strong>Configuration:</strong><br />
+Setup is the same as with the <code>Factory</code> method:</li>
+</ul>
+<pre><code class="language-csharp">private readonly IHost host;
+public FactoryBenchmark()
+{
+    host = Host.CreateDefaultBuilder()
+        .ConfigureServices((context, services) =&gt; services
+            .AddTransient&lt;TypeFactoryHandler&gt;()
+            .AddTransient&lt;FileUploaderTypeFactory&gt;()
+            .AddTransient&lt;IFileUploader, AWSUploader&gt;()
+            .AddTransient&lt;IFileUploader, AzureUploader&gt;()
+            .AddTransient&lt;IFileUploader, FTPUploader&gt;()
+        ).Build();
+}
+</code></pre>
+<p>The factory in this approach, takes the requested name, finds the type based on the name and gets it from the DI container:</p>
+<pre><code class="language-csharp">public class FileUploaderTypeFactory
+{
+    private readonly IServiceProvider _provider;
+    public FileUploaderTypeFactory(IServiceProvider provider)
+    {
+        _provider = provider;
+    }
+
+    public IFileUploader Resolve(string providerName)
+    {
+        var type = Assembly.GetAssembly(typeof(FileUploaderTypeFactory)).GetType(
+            $&quot;{typeof(FileUploaderTypeFactory).Namespace}.{providerName}Uploader&quot;);
+
+        if (type == null)
+        {
+            throw new ArgumentException($&quot;No uploader with name &quot; +
+                    $&quot;{providerName} could be found&quot;);
+        }
+
+        var uploader = _provider.GetService(type);
+        return uploader as IFileUploader;
+    }
+}
+</code></pre>
+<ul>
+<li><strong>Usage:</strong><br />
+The factory is now injected into the relevant class and is then invoked to get the requested implementation:</li>
+</ul>
+<pre><code class="language-csharp">public  class TypeFactoryHandler
+{
+    private readonly FileUploaderTypeFactory _factory;
+    public TypeFactoryHandler(FileUploaderTypeFactory factory)
+    {
+        _factory = factory;
+    }
+
+    public void Execute()
+    {
+        var providerName = &quot;Azure&quot;;
+        var uploader = _factory.Resolve(providerName);
+        uploader.UploadFile();
+    }
+}
+</code></pre>
+<ul>
+<li><p><strong>Pros:</strong></p>
+<ul>
+<li>Not all implementations are instantiated</li>
+<li>Better memory usage compared to other two approaches so far</li>
+<li>Implementation can be selected/changed at runtime</li>
+<li>Retrieval logic is contained in a single place</li>
+</ul>
+</li>
+<li><p><strong>Cons:</strong></p>
+<ul>
+<li>Use of reflection to convert the name to a Type does have an big impact on performance</li>
+<li>Strict naming convention has to be followed in order for the reflection logic to work correctly</li>
+</ul>
+</li>
+<li><p><strong>Performance:</strong></p>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Method</th>
+<th style="text-align: right;">Mean</th>
+<th style="text-align: right;">Error</th>
+<th style="text-align: right;">StdDev</th>
+<th style="text-align: right;">Ratio</th>
+<th style="text-align: right;">RatioSD</th>
+<th style="text-align: right;">Gen 0</th>
+<th style="text-align: right;">Allocated</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Enumerable</td>
+<td>Execute</td>
+<td style="text-align: right;">86.99 ns</td>
+<td style="text-align: right;">0.987 ns</td>
+<td style="text-align: right;">0.924 ns</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.0421</td>
+<td style="text-align: right;">264 B</td>
+</tr>
+<tr>
+<td>Factory</td>
+<td>Execute</td>
+<td style="text-align: right;">103.20 ns</td>
+<td style="text-align: right;">1.324 ns</td>
+<td style="text-align: right;">1.238 ns</td>
+<td style="text-align: right;">1.19</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.0459</td>
+<td style="text-align: right;">288 B</td>
+</tr>
+<tr>
+<td>TypeFactory</td>
+<td>Execute</td>
+<td style="text-align: right;">525.19 ns</td>
+<td style="text-align: right;">2.624 ns</td>
+<td style="text-align: right;">2.455 ns</td>
+<td style="text-align: right;">6.04</td>
+<td style="text-align: right;">0.07</td>
+<td style="text-align: right;">0.0277</td>
+<td style="text-align: right;">176 B</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="delegate">Delegate</h3>
+<p>The next approach tries to achieve the same as the <code>Type Factory</code> approach - not instantiating every implementation, but using a different technique.<br />
+In short, a delegate is called at runtime when an implementation is requested, and using a switch statement the correct one is determined and returned.</p>
+<ul>
+<li><strong>Configuration:</strong></li>
+</ul>
+<pre><code class="language-csharp">private readonly IHost host;
+public DelegateBenchmark()
+{
+    host = Host.CreateDefaultBuilder()
+        .ConfigureServices((context, services) =&gt; services
+            .AddScoped&lt;AWSUploader&gt;()
+            .AddScoped&lt;AzureUploader&gt;()
+            .AddScoped&lt;FTPUploader&gt;()
+            .AddTransient&lt;DelegateHandler&gt;()
+            .AddTransient&lt;DelegateResolver&gt;(serviceProvider =&gt; providerName =&gt;
+            {
+                switch (providerName)
+                {
+                    case &quot;aws&quot;:
+                        return serviceProvider.GetService&lt;AWSUploader&gt;();
+                    case &quot;azure&quot;:
+                        return serviceProvider.GetService&lt;AzureUploader&gt;();
+                    case &quot;ftp&quot;:
+                        return serviceProvider.GetService&lt;FTPUploader&gt;();
+                    default:
+                        throw new ArgumentException($&quot;No uploader with &quot; +
+                                $&quot;name {providerName} could be found&quot;);
+                }
+            })).Build();
+}
+</code></pre>
+<p>The DelegateResolver is as follows:</p>
+<pre><code class="language-csharp">    public delegate IFileUploader DelegateResolver(string providerName);
+</code></pre>
+<ul>
+<li><strong>Usage:</strong></li>
+</ul>
+<p>The delegate is now injected into the relevant class  and is then invoked to get the requested implementation:</p>
+<pre><code class="language-csharp">public class DelegateHandler
+{
+    private readonly DelegateResolver _resolver;
+    public DelegateHandler(DelegateResolver resovler)
+    {
+        _resolver = resovler;
+    }
+
+    public void Execute()
+    {
+        var uploader = _resolver(&quot;ftp&quot;);
+        uploader.UploadFile();
+    }
+
+}
+</code></pre>
+<ul>
+<li><p><strong>Pros:</strong></p>
+<ul>
+<li>Not all implementations are instantiated</li>
+<li>Best memory usage compared to other approaches so far</li>
+<li>Implementation can be selected/changed at runtime</li>
+<li>Retrieval logic is contained in a single place</li>
+</ul>
+</li>
+<li><p><strong>Cons:</strong></p>
+<ul>
+<li>Slightly more complicated setup with the delegate and switch statement compared to other approaches</li>
+<li>Switch statement is hardcoded and needs to be manually maintained every time a new provider is added</li>
+</ul>
+</li>
+<li><p><strong>Performance:</strong></p>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Method</th>
+<th style="text-align: right;">Mean</th>
+<th style="text-align: right;">Error</th>
+<th style="text-align: right;">StdDev</th>
+<th style="text-align: right;">Ratio</th>
+<th style="text-align: right;">RatioSD</th>
+<th style="text-align: right;">Gen 0</th>
+<th style="text-align: right;">Allocated</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Enumerable</td>
+<td>Execute</td>
+<td style="text-align: right;">86.99 ns</td>
+<td style="text-align: right;">0.987 ns</td>
+<td style="text-align: right;">0.924 ns</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.0421</td>
+<td style="text-align: right;">264 B</td>
+</tr>
+<tr>
+<td>Factory</td>
+<td>Execute</td>
+<td style="text-align: right;">103.20 ns</td>
+<td style="text-align: right;">1.324 ns</td>
+<td style="text-align: right;">1.238 ns</td>
+<td style="text-align: right;">1.19</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.0459</td>
+<td style="text-align: right;">288 B</td>
+</tr>
+<tr>
+<td>TypeFactory</td>
+<td>Execute</td>
+<td style="text-align: right;">525.19 ns</td>
+<td style="text-align: right;">2.624 ns</td>
+<td style="text-align: right;">2.455 ns</td>
+<td style="text-align: right;">6.04</td>
+<td style="text-align: right;">0.07</td>
+<td style="text-align: right;">0.0277</td>
+<td style="text-align: right;">176 B</td>
+</tr>
+<tr>
+<td>Delegate</td>
+<td>Execute</td>
+<td style="text-align: right;">111.45 ns</td>
+<td style="text-align: right;">1.456 ns</td>
+<td style="text-align: right;">1.291 ns</td>
+<td style="text-align: right;">1.28</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.0178</td>
+<td style="text-align: right;">112 B</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="type-delegate">Type Delegate</h3>
+<p>The next approach extends the <code>Delegate</code> technique, and uses reflection and naming conventions to get the Type dynamically.</p>
+<ul>
+<li><strong>Configuration:</strong><br />
+Setup is as follows, very similar to the <code>Delegate</code> approach, but instead of the switch statement, reflection is used to get the Type based on naming conventions:</li>
+</ul>
+<pre><code class="language-csharp">private readonly IHost host;
+public TypeDelegateBenchmark()
+{
+    host = Host.CreateDefaultBuilder()
+        .ConfigureServices((context, services) =&gt; services
+            .AddScoped&lt;AWSUploader&gt;()
+            .AddScoped&lt;AzureUploader&gt;()
+            .AddScoped&lt;FTPUploader&gt;()
+            .AddTransient&lt;TypeDelegateHandler&gt;()
+            .AddTransient&lt;TypeDelegateResolver&gt;(serviceProvider =&gt; providerName =&gt;
+            {
+                var type = Assembly.GetAssembly(typeof(FileUploaderTypeFactory))
+                    .GetType($&quot;{typeof(FileUploaderTypeFactory).Namespace}
+                    .{providerName}Uploader&quot;, false, true);
+
+                if (type == null)
+                {
+                    throw new ArgumentException($&quot;No uploader with &quot; +
+                                $&quot;name {providerName} could be found&quot;);
+                }
+
+                var uploader = serviceProvider.GetService(type);
+                return uploader as IFileUploader;
+
+            })).Build();
+}
+</code></pre>
+<p>The DelegateResolver is the same as before:</p>
+<pre><code class="language-csharp">    public delegate IFileUploader DelegateResolver(string providerName);
+</code></pre>
+<ul>
+<li><strong>Usage:</strong><br />
+The delegate is now injected into the relevant class and is then invoked to get the requested implementation:</li>
+</ul>
+<pre><code class="language-csharp">public class TypeDelegateHandler
+{
+    private readonly DelegateResolver _resolver;
+    public TypeDelegateHandler(DelegateResolver resovler)
+    {
+        _resolver = resovler;
+    }
+
+    public void Execute()
+    {
+        var uploader = _resolver(&quot;ftp&quot;);
+        uploader.UploadFile();
+    }
+
+}
+</code></pre>
+<ul>
+<li><p><strong>Pros:</strong></p>
+<ul>
+<li>Not all implementations are instantiated</li>
+<li>Implementation can be selected/changed at runtime</li>
+<li>Retrieval logic is contained in a single place</li>
+<li>No switch statement to maintain when a new provider is added</li>
+</ul>
+</li>
+<li><p><strong>Cons:</strong></p>
+<ul>
+<li>Use of reflection to convert the name to a Type does have a large impact on performance</li>
+<li>Strict naming convention has to be followed in order for the reflection logic to work correctly</li>
+</ul>
+</li>
+<li><p><strong>Performance:</strong></p>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Method</th>
+<th style="text-align: right;">Mean</th>
+<th style="text-align: right;">Error</th>
+<th style="text-align: right;">StdDev</th>
+<th style="text-align: right;">Ratio</th>
+<th style="text-align: right;">RatioSD</th>
+<th style="text-align: right;">Gen 0</th>
+<th style="text-align: right;">Allocated</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Enumerable</td>
+<td>Execute</td>
+<td style="text-align: right;">86.99 ns</td>
+<td style="text-align: right;">0.987 ns</td>
+<td style="text-align: right;">0.924 ns</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.0421</td>
+<td style="text-align: right;">264 B</td>
+</tr>
+<tr>
+<td>Factory</td>
+<td>Execute</td>
+<td style="text-align: right;">103.20 ns</td>
+<td style="text-align: right;">1.324 ns</td>
+<td style="text-align: right;">1.238 ns</td>
+<td style="text-align: right;">1.19</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.0459</td>
+<td style="text-align: right;">288 B</td>
+</tr>
+<tr>
+<td>TypeFactory</td>
+<td>Execute</td>
+<td style="text-align: right;">525.19 ns</td>
+<td style="text-align: right;">2.624 ns</td>
+<td style="text-align: right;">2.455 ns</td>
+<td style="text-align: right;">6.04</td>
+<td style="text-align: right;">0.07</td>
+<td style="text-align: right;">0.0277</td>
+<td style="text-align: right;">176 B</td>
+</tr>
+<tr>
+<td>Delegate</td>
+<td>Execute</td>
+<td style="text-align: right;">111.45 ns</td>
+<td style="text-align: right;">1.456 ns</td>
+<td style="text-align: right;">1.291 ns</td>
+<td style="text-align: right;">1.28</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.0178</td>
+<td style="text-align: right;">112 B</td>
+</tr>
+<tr>
+<td>TypeDelegate</td>
+<td>Execute</td>
+<td style="text-align: right;">861.84 ns</td>
+<td style="text-align: right;">6.599 ns</td>
+<td style="text-align: right;">5.850 ns</td>
+<td style="text-align: right;">9.90</td>
+<td style="text-align: right;">0.15</td>
+<td style="text-align: right;">0.0343</td>
+<td style="text-align: right;">216 B</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="distinct">Distinct</h3>
+<p>The next technique uses a wrapper to make each implementation added to the DI container unique, and hence can be retrieved uniquely.</p>
+<ul>
+<li><strong>Configuration:</strong><br />
+Additional types are also now required to be defined and added to the DI container, <em>IGenericUploader</em> and <em>GenericUploader</em>:</li>
+</ul>
+<pre><code class="language-csharp">private readonly IHost host;
+public DistinctBenchmark()
+{
+    host = Host.CreateDefaultBuilder()
+        .ConfigureServices((context, services) =&gt; services
+            .AddScoped&lt;AWSUploader&gt;()
+            .AddScoped&lt;AzureUploader&gt;()
+            .AddScoped&lt;FTPUploader&gt;()
+            .AddTransient&lt;DistinctHandler&gt;()
+            .AddScoped&lt;IGenericUploader&lt;AWSUploader&gt;, GenericUploader&lt;AWSUploader&gt;&gt;()
+            .AddScoped&lt;IGenericUploader&lt;AzureUploader&gt;, GenericUploader&lt;AzureUploader&gt;&gt;()
+            .AddScoped&lt;IGenericUploader&lt;FTPUploader&gt;, GenericUploader&lt;FTPUploader&gt;&gt;()
+        ).Build();
+}
+</code></pre>
+<p>IGenericUploader is defined as below:</p>
+<pre><code class="language-csharp">    public interface IGenericUploader&lt;T&gt; : IFileUploader where T : IFileUploader { }
+</code></pre>
+<p>GenericUploader is defined as below:</p>
+<pre><code class="language-csharp">public class GenericUploader&lt;T&gt; : IGenericUploader&lt;T&gt; where T : IFileUploader
+{
+    private readonly T _implementation;
+    public GenericUploader(T implementation)
+    {
+        _implementation = implementation;
+    }
+
+    public string GetName()
+    {
+        return _implementation.GetName();
+    }
+
+    public void UploadFile()
+    {
+        _implementation.UploadFile();
+    }
+}
+</code></pre>
+<p>A new generic provider is defined (implementing the relevant interface) and the generic provider wraps the &quot;true provider&quot; implementation. As the generic implementation takes a T argument, this can be used to uniquely distinguish them and retrieve the correct implementation.</p>
+<ul>
+<li><strong>Usage:</strong><br />
+The generic interface with the required implementation is now injected into the relevant class and is then invoked:</li>
+</ul>
+<pre><code class="language-csharp">public class DistinctHandler
+{
+    private readonly IGenericUploader&lt;AWSUploader&gt; _uploader;
+    public DistinctHandler(IGenericUploader&lt;AWSUploader&gt; uploader)
+    {
+        _uploader = uploader;
+    }
+
+    public void Execute()
+    {
+        _uploader.UploadFile();
+    }
+}
+</code></pre>
+<ul>
+<li><p><strong>Pros:</strong></p>
+<ul>
+<li>Not all implementations are instantiated</li>
+<li>The default DI container is doing all the retrieval work (as a unique item is being asked for), so is very efficient</li>
+<li>By far the best performing (in both time and memory usage) technique so far</li>
+</ul>
+</li>
+<li><p><strong>Cons:</strong></p>
+<ul>
+<li>Implementation can NOT be selected/changed at runtime</li>
+<li>Bit of a convoluted process having a wrapper interface</li>
+</ul>
+</li>
+<li><p><strong>Performance:</strong></p>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Method</th>
+<th style="text-align: right;">Mean</th>
+<th style="text-align: right;">Error</th>
+<th style="text-align: right;">StdDev</th>
+<th style="text-align: right;">Ratio</th>
+<th style="text-align: right;">RatioSD</th>
+<th style="text-align: right;">Gen 0</th>
+<th style="text-align: right;">Allocated</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Enumerable</td>
+<td>Execute</td>
+<td style="text-align: right;">86.99 ns</td>
+<td style="text-align: right;">0.987 ns</td>
+<td style="text-align: right;">0.924 ns</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.0421</td>
+<td style="text-align: right;">264 B</td>
+</tr>
+<tr>
+<td>Factory</td>
+<td>Execute</td>
+<td style="text-align: right;">103.20 ns</td>
+<td style="text-align: right;">1.324 ns</td>
+<td style="text-align: right;">1.238 ns</td>
+<td style="text-align: right;">1.19</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.0459</td>
+<td style="text-align: right;">288 B</td>
+</tr>
+<tr>
+<td>TypeFactory</td>
+<td>Execute</td>
+<td style="text-align: right;">525.19 ns</td>
+<td style="text-align: right;">2.624 ns</td>
+<td style="text-align: right;">2.455 ns</td>
+<td style="text-align: right;">6.04</td>
+<td style="text-align: right;">0.07</td>
+<td style="text-align: right;">0.0277</td>
+<td style="text-align: right;">176 B</td>
+</tr>
+<tr>
+<td>Delegate</td>
+<td>Execute</td>
+<td style="text-align: right;">111.45 ns</td>
+<td style="text-align: right;">1.456 ns</td>
+<td style="text-align: right;">1.291 ns</td>
+<td style="text-align: right;">1.28</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.0178</td>
+<td style="text-align: right;">112 B</td>
+</tr>
+<tr>
+<td>TypeDelegate</td>
+<td>Execute</td>
+<td style="text-align: right;">861.84 ns</td>
+<td style="text-align: right;">6.599 ns</td>
+<td style="text-align: right;">5.850 ns</td>
+<td style="text-align: right;">9.90</td>
+<td style="text-align: right;">0.15</td>
+<td style="text-align: right;">0.0343</td>
+<td style="text-align: right;">216 B</td>
+</tr>
+<tr>
+<td>Distinct</td>
+<td>Execute</td>
+<td style="text-align: right;">50.78 ns</td>
+<td style="text-align: right;">0.441 ns</td>
+<td style="text-align: right;">0.413 ns</td>
+<td style="text-align: right;">0.58</td>
+<td style="text-align: right;">0.01</td>
+<td style="text-align: right;">0.0038</td>
+<td style="text-align: right;">24 B</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="distinct-factory">Distinct Factory</h3>
+<p>This technique extends the <code>Distinct</code> approach, resolving the limitation of not being able to select or change the implementation at runtime.</p>
+<ul>
+<li><strong>Configuration:</strong><br />
+Setup very similar to the <code>Distinct</code> setup, with the addition of the DistinctFactory:</li>
+</ul>
+<pre><code class="language-csharp">private readonly IHost host;
+public DistinctFactoryBenchmark()
+{
+    host = Host.CreateDefaultBuilder()
+        .ConfigureServices((context, services) =&gt; services
+            .AddScoped&lt;AWSUploader&gt;()
+            .AddScoped&lt;AzureUploader&gt;()
+            .AddScoped&lt;FTPUploader&gt;()
+            .AddTransient&lt;DistinctFactory&gt;()
+            .AddTransient&lt;DistinctFactoryHandler&gt;()
+            .AddScoped&lt;IGenericUploader&lt;AWSUploader&gt;, GenericUploader&lt;AWSUploader&gt;&gt;()
+            .AddScoped&lt;IGenericUploader&lt;AzureUploader&gt;, GenericUploader&lt;AzureUploader&gt;&gt;()
+            .AddScoped&lt;IGenericUploader&lt;FTPUploader&gt;, GenericUploader&lt;FTPUploader&gt;&gt;()
+        ).Build();
+}
+</code></pre>
+<p>IGenericUploader and GenericUploader are exactly as defined in the <code>Distinct</code> technique.</p>
+<p>DistinctFactoryHandler is defined as below:</p>
+<pre><code class="language-csharp">public class DistinctFactory
+{
+    private readonly IServiceProvider _provider;
+    public DistinctFactory(IServiceProvider provider)
+    {
+        _provider = provider;
+    }
+
+    public IFileUploader Resolve(string providerName)
+    {
+        switch (providerName)
+        {
+            case &quot;aws&quot;:
+                return _provider.GetService(typeof(
+                    IGenericUploader&lt;AWSUploader&gt;)) as IFileUploader;
+            case &quot;azure&quot;:
+                return _provider.GetService(typeof(
+                    IGenericUploader&lt;AzureUploader&gt;)) as IFileUploader;
+            case &quot;ftp&quot;:
+                return _provider.GetService(typeof(
+                    IGenericUploader&lt;FTPUploader&gt;)) as IFileUploader;
+            default:
+                throw new ArgumentException($&quot;No uploader with &quot; +
+                               $&quot;name {providerName} could be found&quot;);
+        }
+    }
+}
+</code></pre>
+<ul>
+<li><strong>Usage:</strong><br />
+The factory is now injected into the relevant class and is then invoked to get the requested implementation by name:</li>
+</ul>
+<pre><code class="language-csharp"> public class DistinctFactoryHandler
+{
+    private readonly DistinctFactory _distinctFactory;
+    public DistinctFactoryHandler(DistinctFactory distinctFactory)
+    {
+        _distinctFactory = distinctFactory;
+    }
+
+    public void Execute()
+    {
+        _distinctFactory.Resolve(&quot;ftp&quot;).UploadFile();
+    }
+
+}
+</code></pre>
+<ul>
+<li><p><strong>Pros:</strong></p>
+<ul>
+<li>Not all implementations are instantiated</li>
+<li>Implementation can be selected/changed at runtime</li>
+<li>Good overall performance</li>
+</ul>
+</li>
+<li><p><strong>Cons:</strong></p>
+<ul>
+<li>Switch statement is hardcoded and needs to be manually maintained every time a new provider is added</li>
+<li>Bit of a convoluted process</li>
+</ul>
+</li>
+<li><p><strong>Performance:</strong></p>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Method</th>
+<th style="text-align: right;">Mean</th>
+<th style="text-align: right;">Error</th>
+<th style="text-align: right;">StdDev</th>
+<th style="text-align: right;">Ratio</th>
+<th style="text-align: right;">RatioSD</th>
+<th style="text-align: right;">Gen 0</th>
+<th style="text-align: right;">Allocated</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Enumerable</td>
+<td>Execute</td>
+<td style="text-align: right;">86.99 ns</td>
+<td style="text-align: right;">0.987 ns</td>
+<td style="text-align: right;">0.924 ns</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.0421</td>
+<td style="text-align: right;">264 B</td>
+</tr>
+<tr>
+<td>Factory</td>
+<td>Execute</td>
+<td style="text-align: right;">103.20 ns</td>
+<td style="text-align: right;">1.324 ns</td>
+<td style="text-align: right;">1.238 ns</td>
+<td style="text-align: right;">1.19</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.0459</td>
+<td style="text-align: right;">288 B</td>
+</tr>
+<tr>
+<td>TypeFactory</td>
+<td>Execute</td>
+<td style="text-align: right;">525.19 ns</td>
+<td style="text-align: right;">2.624 ns</td>
+<td style="text-align: right;">2.455 ns</td>
+<td style="text-align: right;">6.04</td>
+<td style="text-align: right;">0.07</td>
+<td style="text-align: right;">0.0277</td>
+<td style="text-align: right;">176 B</td>
+</tr>
+<tr>
+<td>Delegate</td>
+<td>Execute</td>
+<td style="text-align: right;">111.45 ns</td>
+<td style="text-align: right;">1.456 ns</td>
+<td style="text-align: right;">1.291 ns</td>
+<td style="text-align: right;">1.28</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.0178</td>
+<td style="text-align: right;">112 B</td>
+</tr>
+<tr>
+<td>TypeDelegate</td>
+<td>Execute</td>
+<td style="text-align: right;">861.84 ns</td>
+<td style="text-align: right;">6.599 ns</td>
+<td style="text-align: right;">5.850 ns</td>
+<td style="text-align: right;">9.90</td>
+<td style="text-align: right;">0.15</td>
+<td style="text-align: right;">0.0343</td>
+<td style="text-align: right;">216 B</td>
+</tr>
+<tr>
+<td>Distinct</td>
+<td>Execute</td>
+<td style="text-align: right;">50.78 ns</td>
+<td style="text-align: right;">0.441 ns</td>
+<td style="text-align: right;">0.413 ns</td>
+<td style="text-align: right;">0.58</td>
+<td style="text-align: right;">0.01</td>
+<td style="text-align: right;">0.0038</td>
+<td style="text-align: right;">24 B</td>
+</tr>
+<tr>
+<td>DistinctFactory</td>
+<td>Execute</td>
+<td style="text-align: right;">96.22 ns</td>
+<td style="text-align: right;">1.378 ns</td>
+<td style="text-align: right;">1.289 ns</td>
+<td style="text-align: right;">1.11</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.0076</td>
+<td style="text-align: right;">48 B</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="distinct-lookup-factory">Distinct Lookup Factory</h3>
+<p>This approach gives implementations names as they are added to the DI container, keeps track of the name-implementation link, and facilitates lookup and retrieval of the correct implementation.</p>
+<ul>
+<li><strong>Configuration:</strong><br />
+This setup is different, in that implementations of the same interface are grouped together by the AddNamedUploader extension method, and as implementations are added, they are given a name:</li>
+</ul>
+<pre><code class="language-csharp">private readonly IHost host;
+public DistinctLookupFactoryBenchmark()
+{
+    host = Host.CreateDefaultBuilder()
+        .ConfigureServices((context, services) =&gt; services
+            .AddNamedUploader&lt;IFileUploader&gt;(builder =&gt; builder
+                .AddTransient(&quot;aws&quot;, typeof(AWSUploader))
+                .AddTransient(&quot;azure&quot;, typeof(AzureUploader))
+                .AddTransient(&quot;ftp&quot;, typeof(FTPUploader))
+            )
+            .AddTransient&lt;DistinctLookupFactoryHandler&gt;()
+        ).Build();
+}
+</code></pre>
+<p>There are a number of new components here:</p>
+<ol>
+<li>AddNamedUploader extension method: this will setup base functionality required as expose the UploaderBuilder as a parameter</li>
+<li>builder, of type UploaderBuilder: this is an Action which handles keeping track of the name-implementation link.</li>
+<li>AddTransient extension method: this is <strong>not</strong> the same as the normal AddTransient method on IServiceCollection, but an extension method on the builder (UploaderBuilder) which wraps the usual .NET AddTransient method.</li>
+</ol>
+<p>The full definition of the classes (along with all other code) can be found on <a href="https://github.com/always-developing/Rollcall.Extensions.Microsoft.DependencyInjection/tree/main/benchmark/MultiImplementationBenchark/8.DistinctLookupFactory">Github, here</a></p>
+<p>In summary though, it works as follows:</p>
+<ol>
+<li><em>AddNamedUploader</em> creates an instance of <em>UploaderTypes</em>, which keeps track of the name and the implementation Type.  <em>UploaderTypes</em> is added to the DI container as a singleton:</li>
+</ol>
+<pre><code class="language-csharp">public static IServiceCollection AddNamedUploader&lt;T&gt;(
+    this IServiceCollection services, 
+    Action&lt;UploaderBuilder&lt;T&gt;&gt; builder) where T : class
+{
+    var uploaderType = new UploaderTypes&lt;T&gt;();
+    services.AddSingleton(uploaderType);
+    services.AddTransient(typeof(DistinctLookupFactory&lt;T&gt;));
+
+    builder.Invoke(new UploaderBuilder&lt;T&gt;(services, uploaderType));
+
+    return services;
+}
+</code></pre>
+<ol start="2">
+<li>The <em>AddTransient</em> method will add records to the <em>UploaderTypes</em> class, as well as add the implementation to the DI container:</li>
+</ol>
+<pre><code class="language-csharp">public static UploaderBuilder&lt;T&gt; AddTransient&lt;T&gt;(
+    this UploaderBuilder&lt;T&gt; builder, 
+    string name, 
+    Type implementation) where T : class
+{
+    builder.Types.Add(name, implementation);
+    builder.Services.AddTransient(implementation);
+
+    return builder;
+}
+</code></pre>
+<ul>
+<li><strong>Usage:</strong><br />
+The factory is now injected into the relevant class for a specific interface, and is then invoked to get the requested implementation by name:</li>
+</ul>
+<pre><code class="language-csharp">public class DistinctLookupFactoryHandler
+{
+    private readonly DistinctLookupFactory&lt;IFileUploader&gt; _distinctFactory;
+    public DistinctLookupFactoryHandler(
+        DistinctLookupFactory&lt;IFileUploader&gt; distinctFactory)
+    {
+        _distinctFactory = distinctFactory;
+    }
+
+    public void Execute()
+    {
+        _distinctFactory.Resolve(&quot;ftp&quot;).UploadFile();
+    }
+}
+</code></pre>
+<ul>
+<li><p><strong>Pros:</strong></p>
+<ul>
+<li>Not all implementations are instantiated</li>
+<li>Implementation can be selected/changed at runtime</li>
+<li>Good overall performance</li>
+<li>No hard coded switch statement which needs to be maintained</li>
+</ul>
+</li>
+<li><p><strong>Cons:</strong></p>
+<ul>
+<li>The most complicated to setup, with the most moving parts</li>
+</ul>
+</li>
+<li><p><strong>Performance:</strong></p>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Method</th>
+<th style="text-align: right;">Mean</th>
+<th style="text-align: right;">Error</th>
+<th style="text-align: right;">StdDev</th>
+<th style="text-align: right;">Ratio</th>
+<th style="text-align: right;">RatioSD</th>
+<th style="text-align: right;">Gen 0</th>
+<th style="text-align: right;">Allocated</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Enumerable</td>
+<td>Execute</td>
+<td style="text-align: right;">86.99 ns</td>
+<td style="text-align: right;">0.987 ns</td>
+<td style="text-align: right;">0.924 ns</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.0421</td>
+<td style="text-align: right;">264 B</td>
+</tr>
+<tr>
+<td>Factory</td>
+<td>Execute</td>
+<td style="text-align: right;">103.20 ns</td>
+<td style="text-align: right;">1.324 ns</td>
+<td style="text-align: right;">1.238 ns</td>
+<td style="text-align: right;">1.19</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.0459</td>
+<td style="text-align: right;">288 B</td>
+</tr>
+<tr>
+<td>TypeFactory</td>
+<td>Execute</td>
+<td style="text-align: right;">525.19 ns</td>
+<td style="text-align: right;">2.624 ns</td>
+<td style="text-align: right;">2.455 ns</td>
+<td style="text-align: right;">6.04</td>
+<td style="text-align: right;">0.07</td>
+<td style="text-align: right;">0.0277</td>
+<td style="text-align: right;">176 B</td>
+</tr>
+<tr>
+<td>Delegate</td>
+<td>Execute</td>
+<td style="text-align: right;">111.45 ns</td>
+<td style="text-align: right;">1.456 ns</td>
+<td style="text-align: right;">1.291 ns</td>
+<td style="text-align: right;">1.28</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.0178</td>
+<td style="text-align: right;">112 B</td>
+</tr>
+<tr>
+<td>TypeDelegate</td>
+<td>Execute</td>
+<td style="text-align: right;">861.84 ns</td>
+<td style="text-align: right;">6.599 ns</td>
+<td style="text-align: right;">5.850 ns</td>
+<td style="text-align: right;">9.90</td>
+<td style="text-align: right;">0.15</td>
+<td style="text-align: right;">0.0343</td>
+<td style="text-align: right;">216 B</td>
+</tr>
+<tr>
+<td>Distinct</td>
+<td>Execute</td>
+<td style="text-align: right;">50.78 ns</td>
+<td style="text-align: right;">0.441 ns</td>
+<td style="text-align: right;">0.413 ns</td>
+<td style="text-align: right;">0.58</td>
+<td style="text-align: right;">0.01</td>
+<td style="text-align: right;">0.0038</td>
+<td style="text-align: right;">24 B</td>
+</tr>
+<tr>
+<td>DistinctFactory</td>
+<td>Execute</td>
+<td style="text-align: right;">96.22 ns</td>
+<td style="text-align: right;">1.378 ns</td>
+<td style="text-align: right;">1.289 ns</td>
+<td style="text-align: right;">1.11</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.0076</td>
+<td style="text-align: right;">48 B</td>
+</tr>
+<tr>
+<td>DistinctLookupFactory</td>
+<td>Execute</td>
+<td style="text-align: right;">92.96 ns</td>
+<td style="text-align: right;">0.764 ns</td>
+<td style="text-align: right;">0.714 ns</td>
+<td style="text-align: right;">1.07</td>
+<td style="text-align: right;">0.01</td>
+<td style="text-align: right;">0.0126</td>
+<td style="text-align: right;">80 B</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="rollcall">Rollcall</h3>
+<p><code>Rollcall</code> is a library (written by me) which extends the <code>DistinctLookupFactory</code> approach and makes it generic so that it will function with any interface and implementation. <a href="https://www.nuget.org/packages/Rollcall.Extensions.Microsoft.DependencyInjection/">Rollcall is available on Nuget</a></p>
+<ul>
+<li><strong>Configuration:</strong><br />
+The setup is almost identical to the <code>DistinctLookupFactory</code>, but without the need for the factory, as this is built into the <code>Rollcall</code> library:</li>
+</ul>
+<pre><code class="language-csharp">private readonly IHost host;
+public RollcallBenchmark()
+{
+    host = Host.CreateDefaultBuilder()
+        .ConfigureServices((context, services) =&gt; services
+            .AddTransient&lt;RollcallHandler&gt;()
+            .AddNamedService&lt;IFileUploader&gt;(builder =&gt; builder
+                .AddTransient(&quot;aws&quot;, typeof(AWSUploader))
+                .AddTransient(&quot;azure&quot;, typeof(AzureUploader))
+                .AddTransient(&quot;ftp&quot;, typeof(FTPUploader))
+            )
+        ).Build();
+}
+</code></pre>
+<ul>
+<li><strong>Usage:</strong><br />
+The Rollcall provider/factory is now injected into the relevant class for a specific interface, and is then invoked to get the requested implementation by name:</li>
+</ul>
+<pre><code class="language-csharp">public class RollcallHandler
+{
+    private readonly IRollcallProvider&lt;IFileUploader&gt; _provider;
+    public RollcallHandler(IRollcallProvider&lt;IFileUploader&gt; provider)
+    {
+        _provider = provider;
+    }
+
+    public void Execute()
+    {
+        var providerName = &quot;aws&quot;;
+        var uploader = _provider.GetService(providerName);
+        uploader.UploadFile();
+    }
+}
+</code></pre>
+<p>Not shown above, but one could also inject IServiceProvider and used the provided GetService extension method to get the service by name.</p>
+<ul>
+<li><p><strong>Pros:</strong></p>
+<ul>
+<li>Not all implementations are instantiated</li>
+<li>Implementation can be selected/changed at runtime</li>
+<li>Good overall performance</li>
+<li>No hard coded switch statement which needs to be maintained</li>
+<li>Works with any interface + implementation, and provides all functionality out the box</li>
+</ul>
+</li>
+<li><p><strong>Cons:</strong></p>
+<ul>
+<li>Slight performance overhead when compared to the non-generic method</li>
+</ul>
+</li>
+<li><p><strong>Performance:</strong></p>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Method</th>
+<th style="text-align: right;">Mean</th>
+<th style="text-align: right;">Error</th>
+<th style="text-align: right;">StdDev</th>
+<th style="text-align: right;">Ratio</th>
+<th style="text-align: right;">RatioSD</th>
+<th style="text-align: right;">Gen 0</th>
+<th style="text-align: right;">Allocated</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Enumerable</td>
+<td>Execute</td>
+<td style="text-align: right;">86.99 ns</td>
+<td style="text-align: right;">0.987 ns</td>
+<td style="text-align: right;">0.924 ns</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.0421</td>
+<td style="text-align: right;">264 B</td>
+</tr>
+<tr>
+<td>Factory</td>
+<td>Execute</td>
+<td style="text-align: right;">103.20 ns</td>
+<td style="text-align: right;">1.324 ns</td>
+<td style="text-align: right;">1.238 ns</td>
+<td style="text-align: right;">1.19</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.0459</td>
+<td style="text-align: right;">288 B</td>
+</tr>
+<tr>
+<td>TypeFactory</td>
+<td>Execute</td>
+<td style="text-align: right;">525.19 ns</td>
+<td style="text-align: right;">2.624 ns</td>
+<td style="text-align: right;">2.455 ns</td>
+<td style="text-align: right;">6.04</td>
+<td style="text-align: right;">0.07</td>
+<td style="text-align: right;">0.0277</td>
+<td style="text-align: right;">176 B</td>
+</tr>
+<tr>
+<td>Delegate</td>
+<td>Execute</td>
+<td style="text-align: right;">111.45 ns</td>
+<td style="text-align: right;">1.456 ns</td>
+<td style="text-align: right;">1.291 ns</td>
+<td style="text-align: right;">1.28</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.0178</td>
+<td style="text-align: right;">112 B</td>
+</tr>
+<tr>
+<td>TypeDelegate</td>
+<td>Execute</td>
+<td style="text-align: right;">861.84 ns</td>
+<td style="text-align: right;">6.599 ns</td>
+<td style="text-align: right;">5.850 ns</td>
+<td style="text-align: right;">9.90</td>
+<td style="text-align: right;">0.15</td>
+<td style="text-align: right;">0.0343</td>
+<td style="text-align: right;">216 B</td>
+</tr>
+<tr>
+<td>Distinct</td>
+<td>Execute</td>
+<td style="text-align: right;">50.78 ns</td>
+<td style="text-align: right;">0.441 ns</td>
+<td style="text-align: right;">0.413 ns</td>
+<td style="text-align: right;">0.58</td>
+<td style="text-align: right;">0.01</td>
+<td style="text-align: right;">0.0038</td>
+<td style="text-align: right;">24 B</td>
+</tr>
+<tr>
+<td>DistinctFactory</td>
+<td>Execute</td>
+<td style="text-align: right;">96.22 ns</td>
+<td style="text-align: right;">1.378 ns</td>
+<td style="text-align: right;">1.289 ns</td>
+<td style="text-align: right;">1.11</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.0076</td>
+<td style="text-align: right;">48 B</td>
+</tr>
+<tr>
+<td>DistinctLookupFactory</td>
+<td>Execute</td>
+<td style="text-align: right;">92.96 ns</td>
+<td style="text-align: right;">0.764 ns</td>
+<td style="text-align: right;">0.714 ns</td>
+<td style="text-align: right;">1.07</td>
+<td style="text-align: right;">0.01</td>
+<td style="text-align: right;">0.0126</td>
+<td style="text-align: right;">80 B</td>
+</tr>
+<tr>
+<td>Rollcall</td>
+<td>Execute</td>
+<td style="text-align: right;">124.52 ns</td>
+<td style="text-align: right;">1.485 ns</td>
+<td style="text-align: right;">1.389 ns</td>
+<td style="text-align: right;">1.43</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.0076</td>
+<td style="text-align: right;">48 B</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="rollcall-with-func">Rollcall with Func</h3>
+<p><code>Rollcall</code> can also be used with a implementation factory, a Func&lt;IServiceProvider,object&gt; method. This method is called when requesting the implementation by name from the DI container. <a href="https://www.nuget.org/packages/Rollcall.Extensions.Microsoft.DependencyInjection/">Available on NuGet.</a></p>
+<ul>
+<li><strong>Configuration:</strong><br />
+The setup is a little more complicated than before, as some of the configuration needs to be done manually (instead of by the <code>Rollcall</code> package):</li>
+</ul>
+<pre><code class="language-csharp">private readonly IHost host;
+public RollcallFuncBenchmark()
+{
+    host = Host.CreateDefaultBuilder()
+        .ConfigureServices((context, services) =&gt; services
+            .AddTransient&lt;RollcallFuncHandler&gt;()
+            .AddTransient&lt;AWSUploader&gt;()
+            .AddTransient&lt;AzureUploader&gt;()
+            .AddTransient&lt;FTPUploader&gt;()
+            .AddNamedService&lt;IFileUploader&gt;(builder =&gt; builder
+                .AddTransient(&quot;aws&quot;, sp =&gt; sp.GetService(typeof(AWSUploader)))
+                .AddTransient(&quot;azure&quot;, sp =&gt; sp.GetService(typeof(AzureUploader)))
+                .AddTransient(&quot;ftp&quot;, sp =&gt; sp.GetService(typeof(FTPUploader)))
+            )).Build();
+}
+</code></pre>
+<ul>
+<li><strong>Usage:</strong><br />
+The usage is exactly the same with the Func&lt;&gt; as with the normal interface + implementation (as shown above):</li>
+</ul>
+<pre><code class="language-csharp">public class RollcallFuncHandler
+{
+    private readonly IRollcallProvider&lt;IFileUploader&gt; _provider;
+    public RollcallFuncHandler(IRollcallProvider&lt;IFileUploader&gt; provider)
+    {
+        _provider = provider;
+    }
+
+    public void Execute()
+    {
+        var providerName = &quot;aws&quot;;
+        var uploader = _provider.GetService(providerName);
+        uploader.UploadFile();
+    }
+}
+</code></pre>
+<p>Not shown above, but one could also inject IServiceProvider and used the provided GetService extension method to get the service by name.</p>
+<ul>
+<li><p><strong>Pros:</strong></p>
+<ul>
+<li>Not all implementations are instantiated</li>
+<li>Implementation can be selected/changed at runtime</li>
+<li>Good overall performance</li>
+<li>No hard coded switch statement which needs to be maintained</li>
+<li>Works with any interface + func&lt;&gt;, and provides all functionality out the box</li>
+</ul>
+</li>
+<li><p><strong>Cons:</strong></p>
+<ul>
+<li>Slight performance overhead when compared to the non-generic method, and when compared
+to the interface + implementation method.</li>
+</ul>
+</li>
+<li><p><strong>Performance:</strong></p>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Method</th>
+<th style="text-align: right;">Mean</th>
+<th style="text-align: right;">Error</th>
+<th style="text-align: right;">StdDev</th>
+<th style="text-align: right;">Ratio</th>
+<th style="text-align: right;">RatioSD</th>
+<th style="text-align: right;">Gen 0</th>
+<th style="text-align: right;">Allocated</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Enumerable</td>
+<td>Execute</td>
+<td style="text-align: right;">86.99 ns</td>
+<td style="text-align: right;">0.987 ns</td>
+<td style="text-align: right;">0.924 ns</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.0421</td>
+<td style="text-align: right;">264 B</td>
+</tr>
+<tr>
+<td>Factory</td>
+<td>Execute</td>
+<td style="text-align: right;">103.20 ns</td>
+<td style="text-align: right;">1.324 ns</td>
+<td style="text-align: right;">1.238 ns</td>
+<td style="text-align: right;">1.19</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.0459</td>
+<td style="text-align: right;">288 B</td>
+</tr>
+<tr>
+<td>TypeFactory</td>
+<td>Execute</td>
+<td style="text-align: right;">525.19 ns</td>
+<td style="text-align: right;">2.624 ns</td>
+<td style="text-align: right;">2.455 ns</td>
+<td style="text-align: right;">6.04</td>
+<td style="text-align: right;">0.07</td>
+<td style="text-align: right;">0.0277</td>
+<td style="text-align: right;">176 B</td>
+</tr>
+<tr>
+<td>Delegate</td>
+<td>Execute</td>
+<td style="text-align: right;">111.45 ns</td>
+<td style="text-align: right;">1.456 ns</td>
+<td style="text-align: right;">1.291 ns</td>
+<td style="text-align: right;">1.28</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.0178</td>
+<td style="text-align: right;">112 B</td>
+</tr>
+<tr>
+<td>TypeDelegate</td>
+<td>Execute</td>
+<td style="text-align: right;">861.84 ns</td>
+<td style="text-align: right;">6.599 ns</td>
+<td style="text-align: right;">5.850 ns</td>
+<td style="text-align: right;">9.90</td>
+<td style="text-align: right;">0.15</td>
+<td style="text-align: right;">0.0343</td>
+<td style="text-align: right;">216 B</td>
+</tr>
+<tr>
+<td>Distinct</td>
+<td>Execute</td>
+<td style="text-align: right;">50.78 ns</td>
+<td style="text-align: right;">0.441 ns</td>
+<td style="text-align: right;">0.413 ns</td>
+<td style="text-align: right;">0.58</td>
+<td style="text-align: right;">0.01</td>
+<td style="text-align: right;">0.0038</td>
+<td style="text-align: right;">24 B</td>
+</tr>
+<tr>
+<td>DistinctFactory</td>
+<td>Execute</td>
+<td style="text-align: right;">96.22 ns</td>
+<td style="text-align: right;">1.378 ns</td>
+<td style="text-align: right;">1.289 ns</td>
+<td style="text-align: right;">1.11</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.0076</td>
+<td style="text-align: right;">48 B</td>
+</tr>
+<tr>
+<td>DistinctLookupFactory</td>
+<td>Execute</td>
+<td style="text-align: right;">92.96 ns</td>
+<td style="text-align: right;">0.764 ns</td>
+<td style="text-align: right;">0.714 ns</td>
+<td style="text-align: right;">1.07</td>
+<td style="text-align: right;">0.01</td>
+<td style="text-align: right;">0.0126</td>
+<td style="text-align: right;">80 B</td>
+</tr>
+<tr>
+<td>Rollcall</td>
+<td>Execute</td>
+<td style="text-align: right;">124.52 ns</td>
+<td style="text-align: right;">1.485 ns</td>
+<td style="text-align: right;">1.389 ns</td>
+<td style="text-align: right;">1.43</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.0076</td>
+<td style="text-align: right;">48 B</td>
+</tr>
+<tr>
+<td>RollcallFunc</td>
+<td>Execute</td>
+<td style="text-align: right;">134.68 ns</td>
+<td style="text-align: right;">1.224 ns</td>
+<td style="text-align: right;">1.085 ns</td>
+<td style="text-align: right;">1.55</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.0076</td>
+<td style="text-align: right;">48 B</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="conclusion">Conclusion</h2>
+<p>There are a variety of ways to handle multiple implementations of the same interface, none of which are wrong. However, not all are suitable for every situation and using the incorrect one for the situation could result in a performance impact.<br />
+There are trade-offs and pros and cons to using each technique - the most performant might be the most difficult to maintain for your situation.<br />
+<strong>Test the various methods and find which works best and is most optimal for your particular situation.</strong></p>
+<h2 id="references-and-links">References and links</h2>
+<p><a href="https://github.com/always-developing/Rollcall.Extensions.Microsoft.DependencyInjection">Rollcall Github repo</a><br />
+<a href="https://www.nuget.org/packages/Rollcall.Extensions.Microsoft.DependencyInjection/">Rollcall Nuget package</a></p>
+<hr />
+
+                        
+<div>
+            <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
+            <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
+            <a role="button" href="/tags/dependency-injection" class="badge badge-light"> dependency injection</a>
+            <a role="button" href="/tags/di" class="badge badge-light"> DI</a>
+            <a role="button" href="/tags/dependency" class="badge badge-light"> dependency</a>
+            <a role="button" href="/tags/injection" class="badge badge-light"> injection</a>
+            <a role="button" href="/tags/rollcall" class="badge badge-light"> rollcall</a>
+            <a role="button" href="/tags/transient" class="badge badge-light"> transient</a>
+            <a role="button" href="/tags/singleton" class="badge badge-light"> singleton</a>
+            <a role="button" href="/tags/scoped" class="badge badge-light"> scoped</a>
+            <a role="button" href="/tags/multiple-implementation" class="badge badge-light"> multiple implementation</a>
+            <a role="button" href="/tags/implementation" class="badge badge-light"> implementation</a>
+            <a role="button" href="/tags/interface" class="badge badge-light"> interface</a>
+            <a role="button" href="/tags/multiple" class="badge badge-light"> multiple</a>
+</div>
+                    </div>
+                    <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
+                        
+
+        <div class="box sticky-top toc-block">
+            <h3 class="no-anchor">On This Page</h3>
+            <ul>
+        <li><a href="#the-challenge">The challenge</a></li>
+        <li><a href="#the-problem-with.net-dependency-injection-container">The problem with .NET dependency injection container</a></li>
+        <li><a href="#the-different-techniques">The different techniques</a></li>
+            <ul>
+        <li><a href="#ienumerable">IEnumerable</a></li>
+        <li><a href="#factory">Factory</a></li>
+        <li><a href="#type-factory">Type Factory</a></li>
+        <li><a href="#delegate">Delegate</a></li>
+        <li><a href="#type-delegate">Type Delegate</a></li>
+        <li><a href="#distinct">Distinct</a></li>
+        <li><a href="#distinct-factory">Distinct Factory</a></li>
+        <li><a href="#distinct-lookup-factory">Distinct Lookup Factory</a></li>
+        <li><a href="#rollcall">Rollcall</a></li>
+        <li><a href="#rollcall-with-func">Rollcall with Func</a></li>
+            </ul>
+        <li><a href="#conclusion">Conclusion</a></li>
+        <li><a href="#references-and-links">References and links</a></li>
+            </ul>
+        </div>
+
+                    </div>
+            </div>
+            <div class="row ">
+                    <div id="content" class="col-md-9">
+                        <div>
+    <script src="https://giscus.app/client.js"
+            data-repo="always-developing/always-developing.github.io"
+            data-repo-id="R_kgDOGQJLBQ"
+            data-category="Comments"
+            data-category-id="DIC_kwDOGQJLBc4B_pUA"
+            data-mapping="pathname"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="bottom"
+            data-theme="transparent_dark"
+            data-lang="en"
+            crossorigin="anonymous"
+            async>
+    </script>
+</div>
+                    </div>
+            </div>
+    </div>
+
+    <hr class="horizontal-rule" />
+
+    <!-- Footer -->
+    <footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <ul class="list-inline text-center">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://www.linkedin.com/in/jean-pierre-seini">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-linkedin fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                <div>
+                    <p class="copyright text-footer">
+                        Copyright © 2022 Always Developing</a>.
+                    </p>
+                </div>
+                <ul class="list-inline text-center small text-feeds">
+                        <li class="list-inline-item">
+                            <a href="/feed.rss"><i class="fa fa-rss"></i> RSS Feed</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="/feed.atom"><i class="fa fa-rss"></i> Atom Feed</a>
+                        </li>
+                </ul>
+                <div class="small text-footer">
+                    <a href="https://github.com/always-developing/alwaysdeveloping-website-src"><i class="fab fa-github"></i> This site on GitHub</a>
+                </div>
+                <div class="small text-footer">
+                    <a href="https://statiq.dev">Generated by Statiq</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="/vendor/jquery/jquery.min.js"></script>
+    <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    
+
+
+    
+
+    <!-- Custom scripts for this template -->
+    <script src="/js/always-developing-blog.js"></script>
+
+</body>
+
+</html>

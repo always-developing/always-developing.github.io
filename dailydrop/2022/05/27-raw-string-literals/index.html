@@ -1,0 +1,356 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="always learning | always growing">
+
+    <title>Always Developing - Raw string literals in .NET7</title>
+
+    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/05/27-raw-string-literals">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
+
+    <meta name="application-name" content="Always Developing" />
+    <meta name="msapplication-tooltip" content="Always Developing" />
+    <meta name="msapplication-starturl" content="/" />
+
+    <meta property="og:title" content="Always Developing - Raw string literals in .NET7" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/05/27-raw-string-literals" />
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Bootstrap core CSS -->
+    <link href="/vendor/bootstrap/scss/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom fonts for this template -->
+    <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="/vendor/fontawesome-free/css/brands.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css' data-no-mirror>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css' data-no-mirror>
+
+    <!-- Custom styles for this template -->
+    <link href="/scss/always-developing-blog.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/plugins/autoloader/prism-autoloader.min.js" data-no-mirror></script>
+    <script src="https://cdn.jsdelivr.net/npm/quicklink@2.0.0/dist/quicklink.umd.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/themes/prism.css">
+
+    <!-- Lunr search -->
+        <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/pako@2.0.3/dist/pako_inflate.min.js"></script>
+        <script src="/search.js"></script>
+
+    
+
+
+    
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand"  href="/">
+            <img src="/images/ad_logo.png" alt="" width="25" height="25" class="d-inline-block align-text-top">
+            Always Developing
+        </a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            Menu
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/software">Software</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/tags">Tags</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/posts">Posts</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/about">About</a>
+            </li>
+</ul>
+                <form class="form-inline my-2 my-lg-0" action="/search" method="GET">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="query">
+                    <input type="submit" hidden />
+                </form>
+        </div>
+    </div>
+</nav>
+
+    <!-- Page Header -->
+    <header class="masthead">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 align-middle">
+                <div class="post-header-image">
+                    <a href="/">
+                        <img src="/images/ad_logo.png" class="header-image">
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="post-heading">
+                    <h1>
+                        Raw string literals in .NET7
+                    </h1>
+                            <h2 class="subheading">Exploring the useful .NET7 raw string literal feature</h2>
+                        <p class="post-meta">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
+                                <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
+                            </svg> Published on Thursday, 26 May 2022
+                        </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <!-- Main Content -->
+    <div class="container">
+            <div class="row ">
+                    <div id="content" class="col-md-9 post-with-toc post-block">
+                        
+<div class="post-header-category">
+    <a class="btn btn-primary btn-sm btn-default btn-home" href="\" role="button"><i class="fas fa-angle-double-left"></i> Home</a>
+            <a class="btn btn-primary btn-sm category-btn" href="/categories/dailydrop" role="button">DailyDrop</a>
+</div>
+
+                        <h2 id="daily-knowledge-drop">Daily Knowledge Drop</h2>
+<p>The new <code>raw string literals</code> feature coming as part of .NET7 (now available through the .NET7 preview) is a new format for dealing with strings, which allows for literals to contain  whitespace, new lines, embedded quotes and other special characters <code>without escape sequences</code>.</p>
+<p>This new feature is especially useful when working with embedded language strings JSON, XML, HTML etc.</p>
+<hr />
+<h2 id="pre-raw-string-literals">Pre raw string literals</h2>
+<p>Prior to the raw string literal functionality (before C#11), if building up a JSON string, especially when using string interpolation, a large number of escape characters were required:</p>
+<pre><code class="language-csharp">var name = &quot;Dave Grohl&quot;;
+var age = 42;
+var isActive = true;
+var addressLine1 = &quot;1 Main Street&quot;;
+var addressLine2 = &quot;Cape Town&quot;;
+var postalCode = &quot;8000&quot;;
+
+var jsonString =
+$&#64;&quot;{{
+    &quot;&quot;Name&quot;&quot;: &quot;&quot;{name}&quot;&quot;,
+    &quot;&quot;Age&quot;&quot;: {age},
+    &quot;&quot;IsActive&quot;&quot;: {isActive.ToString().ToLower()},
+    &quot;&quot;DateCreated&quot;&quot;: &quot;&quot;{DateTime.Now.ToString()}&quot;&quot;,
+    &quot;&quot;Address&quot;&quot; : {{
+        &quot;&quot;AddressLine1&quot;&quot;: &quot;&quot;{addressLine1}&quot;&quot;,
+        &quot;&quot;AddressLine2&quot;&quot;: &quot;&quot;{addressLine2}&quot;&quot;,
+        &quot;&quot;PostalCode&quot;&quot;: &quot;&quot;{postalCode}&quot;&quot;
+    }}
+}}&quot;;
+</code></pre>
+<p>As you can see, each time a quote is required, it needs to be escaped with another quote. Each time a brace is required, it needs to be escaped with another brace. Depending on how complicated the embedded string is, this can lead to an unwieldy mess of escape characters.</p>
+<hr />
+<h2 id="raw-string-literals">Raw string literals</h2>
+<p>A raw string literal starts with at least three double-quotes <code>&quot;&quot;&quot;</code>, and ends with the same number of double quotes. Within these three double-quotes, single quotes <code>&quot;</code> are now considered content and included in the string.</p>
+<p>Any number of quotes <code>less than the number that opened the raw string literal</code> will be considered content.</p>
+<p>A similar approach is used for string interpolation - the number of <code>$</code> which prefixes the string, is the number of braces required to to indicate a nested code expression. <code>Any number less will be considered content.</code></p>
+<p>Let's look at a few examples.</p>
+<p>The same example from above, but now using raw string literals:</p>
+<pre><code class="language-csharp">var name = &quot;Dave Grohl&quot;;
+var age = 42;
+var isActive = true;
+var addressLine1 = &quot;1 Main Street&quot;;
+var addressLine2 = &quot;Cape Town&quot;;
+var postalCode = &quot;8000&quot;;
+
+var rawLiteralJsonString = $$&quot;&quot;&quot;
+{
+    &quot;Name&quot;: &quot;{{name}}&quot;,
+    &quot;Age&quot;: {{age}},
+    &quot;IsActive&quot;: {{isActive.ToString().ToLower()}},
+    &quot;DateCreated&quot;: &quot;{{DateTime.Now.ToString()}}&quot;,
+    &quot;Address&quot; : {
+        &quot;AddressLine1&quot;: &quot;{{addressLine1}}&quot;,
+        &quot;AddressLine2&quot;: &quot;{{addressLine2}}&quot;,
+        &quot;PostalCode&quot;: &quot;{{postalCode}}&quot;
+    }
+}
+&quot;&quot;&quot;;
+</code></pre>
+<ul>
+<li>The literal is opened with 3 double quotes, and hence 1 or 2 double-quotes (any number less than the number used to open the literal) inside the literal will be considered content</li>
+<li>The literal is prefixed with 2 dollar signs <code>$</code>, and hence 1 brace will be considered content, while 2 will be considered the indication for nested code</li>
+</ul>
+<hr />
+<p>If more than 1 or 2 double-quotes are required in the string, then the number of opening double-quotes can be increased:</p>
+<pre><code class="language-csharp">var singleQuotes = &quot;&quot;&quot;This string contains a &quot;quoted&quot; word&quot;&quot;&quot;;
+var doubleQuotes = &quot;&quot;&quot;This string contains a doubled &quot;&quot;quoted&quot;&quot; word&quot;&quot;&quot;;
+var tripleQuotes = &quot;&quot;&quot;&quot;This string contains a triple &quot;&quot;&quot;quoted&quot;&quot;&quot; word&quot;&quot;&quot;&quot;;
+
+Console.WriteLine(singleQuotes);
+Console.WriteLine(doubleQuotes);
+Console.WriteLine(tripleQuotes);
+</code></pre>
+<p>In the above example, the first two strings only required 1 and 2 double-quotes respectively, so opening with 3 double-quotes works. In the third string, 3 double-quotes are required in the content, so the raw string literal is opened with 4 double-quotes.</p>
+<hr />
+<p>A similar process can be used for braces:</p>
+<pre><code class="language-csharp">var singleBraces = $$&quot;&quot;&quot;This string contains a {braced} word&quot;&quot;&quot;;
+var doubleBraces = $$$&quot;&quot;&quot;This string contains a doubled {{braced}} word&quot;&quot;&quot;;
+var tripleBraces = $$$$&quot;&quot;&quot;This string contains a triple {{{braced}}} word&quot;&quot;&quot;;
+
+Console.WriteLine(singleBraces);
+Console.WriteLine(doubleBraces);
+Console.WriteLine(tripleBraces);
+</code></pre>
+<p>If braces are required in the string content, the number of <code>$</code> prefixing the string needs to be <code>1 more</code> than the number of consecutive braces in the string. In the third string example above, 3 braces are requires, so 4 <code>$</code> are required. To use string interpolation and a nested code expression, 4 <code>$</code> would need to be used to break out the string.</p>
+<p>For example:</p>
+<pre><code class="language-csharp">var tripleValue = &quot;Triple&quot;;
+var tripleBracesInterpolation = $$$$&quot;&quot;&quot;{{{{tripleValue}}}} {{{braced}}} word&quot;&quot;&quot;;
+Console.WriteLine(tripleBracesInterpolation);
+</code></pre>
+<hr />
+<h2 id="notes">Notes</h2>
+<p>While is may seem a bit convoluted at first, once the basics are understood, this is an incredibly powerful and useful feature, especially dealing with embedded string (such as JSON in the above example). It makes figuring out the correct sequence of escape characters much easier, as well as make the code more readable.</p>
+<hr />
+<h2 id="references">References</h2>
+<p><a href="https://docs.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-11#raw-string-literals">Raw string literals</a></p>
+
+<blockquote class="daily-drop">
+    <div>
+        <div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px; ">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="50" height="50" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffec00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+              <path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+              <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+              <line x1="9.7" y1="17" x2="14.3" y2="17" />
+            </svg>
+        </div>
+        <div class="drop-header">
+            Daily Drop 83: 27-05-2022
+        </div>
+        <div>
+            <br>At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br> It could be anything - some.NET / C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
+            The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+        <div>
+    </div>
+</blockquote>
+
+
+                        
+<div>
+            <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
+            <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
+            <a role="button" href="/tags/string" class="badge badge-light"> string</a>
+            <a role="button" href="/tags/literals" class="badge badge-light"> literals</a>
+            <a role="button" href="/tags/net7" class="badge badge-light"> .net7</a>
+</div>
+                    </div>
+                    <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
+                        
+
+        <div class="box sticky-top toc-block">
+            <h3 class="no-anchor">On This Page</h3>
+            <ul>
+        <li><a href="#daily-knowledge-drop">Daily Knowledge Drop</a></li>
+        <li><a href="#pre-raw-string-literals">Pre raw string literals</a></li>
+        <li><a href="#raw-string-literals">Raw string literals</a></li>
+        <li><a href="#notes">Notes</a></li>
+        <li><a href="#references">References</a></li>
+            </ul>
+        </div>
+
+                    </div>
+            </div>
+            <div class="row ">
+                    <div id="content" class="col-md-9">
+                        <div>
+    <script src="https://giscus.app/client.js"
+            data-repo="always-developing/always-developing.github.io"
+            data-repo-id="R_kgDOGQJLBQ"
+            data-category="Comments"
+            data-category-id="DIC_kwDOGQJLBc4B_pUA"
+            data-mapping="pathname"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="bottom"
+            data-theme="transparent_dark"
+            data-lang="en"
+            crossorigin="anonymous"
+            async>
+    </script>
+</div>
+                    </div>
+            </div>
+    </div>
+
+    <hr class="horizontal-rule" />
+
+    <!-- Footer -->
+    <footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <ul class="list-inline text-center">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://www.linkedin.com/in/jean-pierre-seini">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-linkedin fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                <div>
+                    <p class="copyright text-footer">
+                        Copyright © 2022 Always Developing</a>.
+                    </p>
+                </div>
+                <ul class="list-inline text-center small text-feeds">
+                        <li class="list-inline-item">
+                            <a href="/feed.rss"><i class="fa fa-rss"></i> RSS Feed</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="/feed.atom"><i class="fa fa-rss"></i> Atom Feed</a>
+                        </li>
+                </ul>
+                <div class="small text-footer">
+                    <a href="https://github.com/always-developing/alwaysdeveloping-website-src"><i class="fab fa-github"></i> This site on GitHub</a>
+                </div>
+                <div class="small text-footer">
+                    <a href="https://statiq.dev">Generated by Statiq</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="/vendor/jquery/jquery.min.js"></script>
+    <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    
+
+
+    
+
+    <!-- Custom scripts for this template -->
+    <script src="/js/always-developing-blog.js"></script>
+
+</body>
+
+</html>
