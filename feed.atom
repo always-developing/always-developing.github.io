@@ -4,8 +4,101 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-06-06T04:04:11Z</updated>
+	<updated>2022-06-07T03:57:55Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/06/07-allownull-disallownull-attributes</id>
+		<title>AllowNull and DisallowNull attributes</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/06/07-allownull-disallownull-attributes" />
+		<updated>2022-06-07T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;AllowNull&lt;/code&gt; and &lt;code&gt;DisallowNull&lt;/code&gt; attributes can be used to set that a property can/should allow a &lt;code&gt;null&lt;/code&gt; value or not.&lt;/p&gt;
+&lt;p&gt;These are used in a fairly narrow and niche use case, which won't necessarily effect the performance of code, but does eliminate compiler warnings.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="null-property"&gt;Null Property&lt;/h2&gt;
+&lt;p&gt;Consider a &lt;code&gt;User&lt;/code&gt; class with a &lt;code&gt;Name&lt;/code&gt; property. Our system &lt;em&gt;requires that a user has a name, but does not require the user has to provide one&lt;/em&gt;. If none is provided, then a default is specified.&lt;/p&gt;
+&lt;p&gt;In this case, the &lt;em&gt;Name&lt;/em&gt; will &lt;code&gt;never return null, but can be set to null&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class User
+{
+    private string _name;
+
+    public string Name
+    {
+        get =&amp;gt; _name;
+        set =&amp;gt; _name = value ?? &amp;quot;Anonymous&amp;quot;;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If an instance of &lt;em&gt;User&lt;/em&gt; is declared, and &lt;code&gt;null&lt;/code&gt; assigned to &lt;em&gt;Name&lt;/em&gt;, the compiler will give the following warning:&lt;br /&gt;
+&lt;strong&gt;&lt;em&gt;Cannot convert null literal to non-nullable reference type&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Changing the property type from &lt;em&gt;string&lt;/em&gt; to &lt;em&gt;string?&lt;/em&gt; will get rid of the warning, but this is not an entirely accurate representation of the type. &lt;em&gt;Name&lt;/em&gt; can never have a value of and return &lt;code&gt;null&lt;/code&gt; - callers will never need to check &lt;em&gt;Name&lt;/em&gt; property for &lt;code&gt;null&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;A more accurate method to get rid of the warning, is to use the &lt;code&gt;AllowNull&lt;/code&gt; attribute (in the &lt;em&gt;System.Diagnostics.CodeAnalysis&lt;/em&gt; namespace):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;[AllowNull]
+public string Name
+{
+    get =&amp;gt; _name;
+    set =&amp;gt; _name = value ?? &amp;quot;Anonymous&amp;quot;;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This attribute specified a pre-condition which &lt;code&gt;only applies to arguments&lt;/code&gt;, and since only the &lt;code&gt;set&lt;/code&gt; accessor makes use of an argument, the attribute only applies to this accessor, and not the &lt;code&gt;get&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="non-null-property"&gt;Non-null Property&lt;/h2&gt;
+&lt;p&gt;Consider the opposite situation now - a property which has a &lt;code&gt;null&lt;/code&gt; default value, but if explicitly set, is not allowed to be &lt;code&gt;null&lt;/code&gt;. We would want to indicate to the caller that it is possible for the value to be &lt;code&gt;null&lt;/code&gt;, but also that it cannot explicitly be set to &lt;code&gt;null&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Going back to the &lt;code&gt;User&lt;/code&gt; class, consider now we to add a &lt;code&gt;Email&lt;/code&gt; property. The system &lt;em&gt;requires that if a user has an email address, it cannot be set to null&lt;/em&gt;.&lt;br /&gt;
+The default value for an email is &lt;code&gt;null&lt;/code&gt;, but if it is explicitly set, it cannot be &lt;code&gt;null&lt;/code&gt; (for example, maybe a customer can create a user profile on an e-commerce site, without an email - but if they decide to checkout, an email is required.)&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class User
+{
+    private string _name;
+
+    private string _email;
+
+    [AllowNull]
+    public string Name
+    {
+        get =&amp;gt; _name;
+        set =&amp;gt; _name = value ?? &amp;quot;Anonymous&amp;quot;;
+    }
+
+    public string Email
+    {
+        get =&amp;gt; _email;
+        set =&amp;gt; _email = value ?? 
+            throw new ArgumentNullException(nameof(value), &amp;quot;Cannot set to null&amp;quot;);
+    }
+
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This doesn't indicate that the value &lt;em&gt;could&lt;/em&gt; be &lt;code&gt;null&lt;/code&gt;. To indicate that we can make it a nullable type, &lt;code&gt;string?&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public string? Email
+{
+    get =&amp;gt; _email;
+    set =&amp;gt; _email = value ?? 
+            throw new ArgumentNullException(nameof(value), &amp;quot;Cannot set to null&amp;quot;);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now there is a clear indication that the value &lt;em&gt;could&lt;/em&gt; be &lt;code&gt;null&lt;/code&gt;, however it is still possible to assign a &lt;code&gt;null&lt;/code&gt; value to the field without any compiler time warning. Only at runtime will the exception be thrown.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;DisallowNull&lt;/code&gt; attribute can be used to indicate that the parameter to the property cannot be &lt;code&gt;null&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public string? Email
+{
+    get =&amp;gt; _email;
+    set =&amp;gt; _email = value ?? 
+            throw new ArgumentNullException(nameof(value), &amp;quot;Cannot set to null&amp;quot;);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As with before, this attribute specified a pre-condition which &lt;code&gt;only applies to arguments&lt;/code&gt;, and since only the &lt;code&gt;set&lt;/code&gt; accessor makes use of an argument, the attribute only applies to this accessor, and not the &lt;code&gt;get&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Now if &lt;code&gt;null&lt;/code&gt; is assigned to the &lt;em&gt;Email&lt;/em&gt; property, there &lt;strong&gt;will&lt;/strong&gt; be a compiler warning stating:
+&lt;strong&gt;&lt;em&gt;Cannot convert null literal to non-nullable reference type&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;This is what we would want - an indicator that the value could be &lt;code&gt;null&lt;/code&gt; (the fact the type is a nullable type), but also an indicator if it is explicitly set to &lt;code&gt;null&lt;/code&gt; (a compiler warning)&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;As mentioned, while this is a fairly narrow and niche use case, it a real use case especially for library authors. While neither of the attributes are &amp;quot;required&amp;quot; to make the code function, they assist in conveying the intended usage of the properties to the user of the properties, by either showing or suppressing a compiler warning.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/attributes/nullable-analysis#preconditions-allownull-and-disallownull"&gt;Preconditions: AllowNull and DisallowNull&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;90: 07-06-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/06/06-ienumerable-performance</id>
 		<title>IEnumerable performance cost</title>
@@ -1111,112 +1204,6 @@ Where there:&lt;/p&gt;
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://www.sqlservertutorial.net/sql-server-basics/sql-server-merge/"&gt;SQL Server MERGE&lt;/a&gt;&lt;/p&gt;
 &lt;!--?# DailyDrop ?--&gt;81: 25-05-2022&lt;!--?#/ DailyDrop ?--&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/05/24-value-type-default-value</id>
-		<title>Value type default values</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/05/24-value-type-default-value" />
-		<updated>2022-05-24T00:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;&lt;code&gt;Value Types&lt;/code&gt; by default, have to have a value and cannot be null in C# - even if uninitialized. This can lead to unexpected results if comparing a value type to null instead of the default value.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="null-comparison"&gt;Null comparison&lt;/h2&gt;
-&lt;p&gt;Consider the below example:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;class Program
-{
-    static Point pointValue;
-    static int IntValue;
-
-    static void Main(string[] args)
-    {
-        // comparing an uninitialized Point to null
-        Console.WriteLine(pointValue == null);  
-        Console.WriteLine(IntValue == null);  
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output for this is:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-powershell"&gt;    False
-    False
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Both the Point and int types are &lt;code&gt;value types&lt;/code&gt; and as such have default values of (0, 0) and 0 respectively (&lt;strong&gt;not null&lt;/strong&gt;), even if uninitialized.&lt;/p&gt;
-&lt;p&gt;So instead of comparing to &lt;strong&gt;null&lt;/strong&gt;, we need to check if they are &lt;code&gt;empty&lt;/code&gt; or have the &lt;code&gt;default value&lt;/code&gt; for the type.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="isempty-comparison"&gt;IsEmpty comparison&lt;/h2&gt;
-&lt;p&gt;Some value types (not but all), have a &lt;code&gt;IsEmpty&lt;/code&gt; property which will return true if uninitialized or explicitly set to the default value:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;class Program
-{
-    static Point pointValue;
-    static Point pointValue2 = new Point(0,0);
-    static int IntValue;
-    
-    static void Main(string[] args)
-    {
-        Console.WriteLine(pointValue.IsEmpty);    
-        Console.WriteLine(pointValue2.IsEmpty);   
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output for this is now:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-powershell"&gt;    True
-    True
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Both variables are considered empty as they both have the default value. &lt;code&gt;int&lt;/code&gt; does not have an &lt;em&gt;IsEmpty&lt;/em&gt; property, so cannot be checked using this method.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="default-comparison"&gt;default comparison&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;default&lt;/code&gt; keyword (which will produced the default value of a type) can be compared to a value type to determine if it has the default value:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;class Program
-{
-    static Point pointValue;
-    static Point pointValue2 = new Point(0,0);
-    static int IntValue;
-    
-    static void Main(string[] args)
-    {
-        Console.WriteLine(pointValue == default);  
-        Console.WriteLine(pointValue2 == default); 
-        Console.WriteLine(IntValue == default); 
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output for this is now:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-powershell"&gt;    True
-    True
-    True
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;As you can see, &lt;code&gt;default&lt;/code&gt; works for &lt;em&gt;Point&lt;/em&gt; and &lt;em&gt;int&lt;/em&gt;, and in fact it will work with all types.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="nullable-types"&gt;Nullable types&lt;/h2&gt;
-&lt;p&gt;A value type can made &lt;code&gt;nullable&lt;/code&gt; indicating it &lt;em&gt;can&lt;/em&gt; have a null value. This is done using the &lt;code&gt;?&lt;/code&gt; indicator. In the below sample, each variable is now marked with &lt;code&gt;?&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;class Program
-{
-    static Point? pointValue;
-    static Point? pointValue2 = new Point(0,0);
-    static int? IntValue;
-    
-    static void Main(string[] args)
-    {
-        Console.WriteLine(pointValue == null);
-        Console.WriteLine(pointValue2 == null);
-        Console.WriteLine(IntValue == null);    
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Now when comparing these values to &lt;code&gt;null&lt;/code&gt; the output is as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-powershell"&gt;    True
-    False
-    True
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;If a nullable value type is not initialized, it will have a null value.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;&lt;code&gt;Value type comparison&lt;/code&gt; is a small detail in a large application, but if done incorrectly can lead to unexpected results. Its important to understand how the value type variables are set (or not set) and how each one can be checked for a null or default value.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.toptal.com/c-sharp/top-10-mistakes-that-c-sharp-programmers-make"&gt;Common C# Programming Mistake #2: Misunderstanding default values for uninitialized variables&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;80: 24-05-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
