@@ -4,8 +4,135 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-06-09T04:05:22Z</updated>
+	<updated>2022-06-10T04:26:55Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/06/10-xml-comments</id>
+		<title>Using XML documentation comments to enrich code</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/06/10-xml-comments" />
+		<updated>2022-06-10T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;There are a number of features as part of the C# XML documentation comments (comments prefixed with &lt;code&gt;///&lt;/code&gt;), which can use used to improved the useability of code. In additional to providing commentary on a class or method etc, there is also the ability to:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;link to external URLs&lt;/li&gt;
+&lt;li&gt;add general remarks to the comments&lt;/li&gt;
+&lt;li&gt;share comment blocks between methods&lt;/li&gt;
+&lt;li&gt;reference a parameter by name&lt;/li&gt;
+&lt;li&gt;highlight language keywords&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;All of these can be used to enhance the overall quality and usability of the code, especially if the code is part of a library to be referenced and used by external projects.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="external-urls"&gt;External Urls&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;seealso&lt;/code&gt; keyword can be used to create a clickable link.&lt;/p&gt;
+&lt;p&gt;Assume we want to put a URL in a method comment section:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;/// &amp;lt;summary&amp;gt;
+/// Does some work. See www.alwaysdeveloping.net for more information
+/// &amp;lt;/summary&amp;gt;
+public Task DoWorkAsync()
+{
+    return Task.CompletedTask;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;With this, the URL is present in the comments, but is not clickable:&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/before-seealso.png" alt="Url in comment"&gt;&lt;/p&gt;
+&lt;p&gt;Updating the comments to instead used the &lt;code&gt;seealso&lt;/code&gt; keyword, makes the URL clickable:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;/// &amp;lt;summary&amp;gt;
+/// Does some work. See &amp;lt;seealso href="www.alwaysdeveloping.net" /&amp;gt; for more information
+/// &amp;lt;/summary&amp;gt;
+public Task DoWorkAsync()
+{
+    return Task.CompletedTask;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/after-seealso.png" alt="Clickable URL in comment"&gt;&lt;/p&gt;
+&lt;h2 id="general-remarks"&gt;General remarks&lt;/h2&gt;
+&lt;p&gt;Instead of adding a general remark to the &lt;em&gt;summary&lt;/em&gt; section, it can instead be added to the &lt;code&gt;remark&lt;/code&gt; section:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;/// &amp;lt;summary&amp;gt;
+/// Does some work.
+/// &amp;lt;/summary&amp;gt;
+/// &amp;lt;remarks&amp;gt;See &amp;lt;seealso href="www.alwaysdeveloping.net" /&amp;gt; for more information&amp;lt;/remarks&amp;gt;
+public Task DoWorkAsync()
+{
+    return Task.CompletedTask;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/after-remarks.png" alt="Clickable URL in remarks"&gt;&lt;/p&gt;
+&lt;h2 id="sharing-comments"&gt;Sharing comments&lt;/h2&gt;
+&lt;p&gt;Comments can be shared, which is especially useful when one has a &lt;code&gt;method&lt;/code&gt; and an &lt;code&gt;async version&lt;/code&gt; of the same method. This is done using the &lt;code&gt;inheritdoc&lt;/code&gt; and &lt;code&gt;cref&lt;/code&gt; keywords:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;/// &amp;lt;summary&amp;gt;
+/// Does some work, but with parameters supplied
+/// &amp;lt;/summary&amp;gt;
+/// &amp;lt;param name="length"&amp;gt;The length of the work&amp;lt;/param&amp;gt;
+/// &amp;lt;param name="value"&amp;gt;The value of the work&amp;lt;/param&amp;gt;
+/// &amp;lt;param name="extraWork"&amp;gt;An action delegate to specify 
+/// any additional work which might need to be done&amp;lt;/param&amp;gt;
+public void DoWorkWithParameters(int length, string value, Action extraWork) { }
+
+/// &amp;lt;inheritdoc cref="DoWorkWithParameters(int, string, Action)"/&amp;gt;
+public Task DoWorkWithParametersAsync(int length, string value, Action extraWork)
+{
+    return Task.CompletedTask;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Both methods now show the same comments:&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/work-params.png" alt="Method with comments"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/work-params-async.png" alt="Method with inherited comments"&gt;&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="referencing-parameters"&gt;Referencing parameters&lt;/h2&gt;
+&lt;p&gt;Parameters can be referenced in the comments using the &lt;code&gt;paramref&lt;/code&gt; keyword, making it clearer how the method works and how the parameters are used:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;/// &amp;lt;summary&amp;gt;
+/// Will check if the job with &amp;lt;paramref name="jobName"/&amp;gt; is in progress or has completed
+/// &amp;lt;/summary&amp;gt;
+/// &amp;lt;param name="jobName"&amp;gt;The name of the job to check. 
+/// If set to null, a check is performed on any job&amp;lt;/param&amp;gt;
+/// &amp;lt;returns&amp;gt;True if the job specified by &amp;lt;paramref name="jobName"/&amp;gt;
+/// is still processing, otherwise false&amp;lt;/returns&amp;gt;
+public bool IsWorkInProgress(string jobName)
+{
+    return false;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The parameter name is now highlighted whereever it is referenced.&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/paramref.png" alt="Method using paramref"&gt;&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="language-keywords"&gt;Language keywords&lt;/h2&gt;
+&lt;p&gt;Language keywords can also be highlighted using &lt;code&gt;langword&lt;/code&gt;. If we take the previous example, and update all the C# keywords (true, false) to indicate they are language keywords:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;/// &amp;lt;summary&amp;gt;
+/// Will check if the job with &amp;lt;paramref name="jobName"/&amp;gt; is in progress or has completed.
+/// &amp;lt;/summary&amp;gt;
+/// &amp;lt;param name="jobName"&amp;gt;The name of the job to check.&amp;lt;/param&amp;gt;
+/// &amp;lt;returns&amp;gt;&amp;lt;see langword="true"/&amp;gt; if the job specified by &amp;lt;paramref name="jobName"/&amp;gt; 
+/// is still processing, otherwise &amp;lt;see langword="false"/&amp;gt;&amp;lt;/returns&amp;gt;
+public bool IsWorkInProgress(string jobName)
+{
+    return false;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The language keywords are now highlighted:&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/lang-keyword.png" alt="Language keywords highlighted"&gt;&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="libraries"&gt;Libraries&lt;/h2&gt;
+&lt;p&gt;Updating comments with these features improves the usability of the code - however if developing a shared library (a NuGet package for example), there are some additional steps which need to be done to enable the comments being available to users of the library.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;GenerateDocumentationFile&lt;/code&gt; option needs to be enabled in the csproj:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-xml"&gt;&amp;lt;PropertyGroup&amp;gt;
+    &amp;lt;OutputType&amp;gt;Exe&amp;lt;/OutputType&amp;gt;
+    &amp;lt;TargetFramework&amp;gt;net6.0&amp;lt;/TargetFramework&amp;gt;
+    &amp;lt;ImplicitUsings&amp;gt;enable&amp;lt;/ImplicitUsings&amp;gt;
+    &amp;lt;Nullable&amp;gt;enable&amp;lt;/Nullable&amp;gt;
+    &amp;lt;GenerateDocumentationFile&amp;gt;true&amp;lt;/GenerateDocumentationFile&amp;gt;
+&amp;lt;/PropertyGroup&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;When the code is compiled, an XML file will now be generated containing all the comments - which should then be included as part of the NuGet package to make the comments available.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;As a library author, for public, but mostly for internal corporate packages - I have found adding comments to be very useful in explaining and conveying to the user how a method and class works, lessening the number of questions and queries received. The additional features mentioned above will take the commentary to another level.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/Nick_Craver/status/1516050534670741505"&gt;Nick Craver Tweet&lt;/a&gt;&lt;/p&gt;
+&lt;!--?# DailyDrop ?--&gt;94: 10-06-2022&lt;!--?#/ DailyDrop ?--&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/06/09-parameter-binding</id>
 		<title>Binding a query parameter to an object</title>
@@ -1070,107 +1197,6 @@ var whereFirstValue = values.Where(v =&amp;gt; v == 450).First();
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://leveluppp.ghost.io/content/images/size/w1000/2021/12/linq.png"&gt;LINQ optimizations in .NET can be surprising&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;84: 30-05-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/05/27-raw-string-literals</id>
-		<title>Raw string literals in .NET7</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/05/27-raw-string-literals" />
-		<updated>2022-05-27T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;The new &lt;code&gt;raw string literals&lt;/code&gt; feature coming as part of .NET7 (now available through the .NET7 preview) is a new format for dealing with strings, which allows for literals to contain  whitespace, new lines, embedded quotes and other special characters &lt;code&gt;without escape sequences&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;This new feature is especially useful when working with embedded language strings JSON, XML, HTML etc.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="pre-raw-string-literals"&gt;Pre raw string literals&lt;/h2&gt;
-&lt;p&gt;Prior to the raw string literal functionality (before C#11), if building up a JSON string, especially when using string interpolation, a large number of escape characters were required:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var name = &amp;quot;Dave Grohl&amp;quot;;
-var age = 42;
-var isActive = true;
-var addressLine1 = &amp;quot;1 Main Street&amp;quot;;
-var addressLine2 = &amp;quot;Cape Town&amp;quot;;
-var postalCode = &amp;quot;8000&amp;quot;;
-
-var jsonString =
-$&amp;#64;&amp;quot;{{
-    &amp;quot;&amp;quot;Name&amp;quot;&amp;quot;: &amp;quot;&amp;quot;{name}&amp;quot;&amp;quot;,
-    &amp;quot;&amp;quot;Age&amp;quot;&amp;quot;: {age},
-    &amp;quot;&amp;quot;IsActive&amp;quot;&amp;quot;: {isActive.ToString().ToLower()},
-    &amp;quot;&amp;quot;DateCreated&amp;quot;&amp;quot;: &amp;quot;&amp;quot;{DateTime.Now.ToString()}&amp;quot;&amp;quot;,
-    &amp;quot;&amp;quot;Address&amp;quot;&amp;quot; : {{
-        &amp;quot;&amp;quot;AddressLine1&amp;quot;&amp;quot;: &amp;quot;&amp;quot;{addressLine1}&amp;quot;&amp;quot;,
-        &amp;quot;&amp;quot;AddressLine2&amp;quot;&amp;quot;: &amp;quot;&amp;quot;{addressLine2}&amp;quot;&amp;quot;,
-        &amp;quot;&amp;quot;PostalCode&amp;quot;&amp;quot;: &amp;quot;&amp;quot;{postalCode}&amp;quot;&amp;quot;
-    }}
-}}&amp;quot;;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;As you can see, each time a quote is required, it needs to be escaped with another quote. Each time a brace is required, it needs to be escaped with another brace. Depending on how complicated the embedded string is, this can lead to an unwieldy mess of escape characters.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="raw-string-literals"&gt;Raw string literals&lt;/h2&gt;
-&lt;p&gt;A raw string literal starts with at least three double-quotes &lt;code&gt;&amp;quot;&amp;quot;&amp;quot;&lt;/code&gt;, and ends with the same number of double quotes. Within these three double-quotes, single quotes &lt;code&gt;&amp;quot;&lt;/code&gt; are now considered content and included in the string.&lt;/p&gt;
-&lt;p&gt;Any number of quotes &lt;code&gt;less than the number that opened the raw string literal&lt;/code&gt; will be considered content.&lt;/p&gt;
-&lt;p&gt;A similar approach is used for string interpolation - the number of &lt;code&gt;$&lt;/code&gt; which prefixes the string, is the number of braces required to to indicate a nested code expression. &lt;code&gt;Any number less will be considered content.&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;Let's look at a few examples.&lt;/p&gt;
-&lt;p&gt;The same example from above, but now using raw string literals:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var name = &amp;quot;Dave Grohl&amp;quot;;
-var age = 42;
-var isActive = true;
-var addressLine1 = &amp;quot;1 Main Street&amp;quot;;
-var addressLine2 = &amp;quot;Cape Town&amp;quot;;
-var postalCode = &amp;quot;8000&amp;quot;;
-
-var rawLiteralJsonString = $$&amp;quot;&amp;quot;&amp;quot;
-{
-    &amp;quot;Name&amp;quot;: &amp;quot;{{name}}&amp;quot;,
-    &amp;quot;Age&amp;quot;: {{age}},
-    &amp;quot;IsActive&amp;quot;: {{isActive.ToString().ToLower()}},
-    &amp;quot;DateCreated&amp;quot;: &amp;quot;{{DateTime.Now.ToString()}}&amp;quot;,
-    &amp;quot;Address&amp;quot; : {
-        &amp;quot;AddressLine1&amp;quot;: &amp;quot;{{addressLine1}}&amp;quot;,
-        &amp;quot;AddressLine2&amp;quot;: &amp;quot;{{addressLine2}}&amp;quot;,
-        &amp;quot;PostalCode&amp;quot;: &amp;quot;{{postalCode}}&amp;quot;
-    }
-}
-&amp;quot;&amp;quot;&amp;quot;;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;ul&gt;
-&lt;li&gt;The literal is opened with 3 double quotes, and hence 1 or 2 double-quotes (any number less than the number used to open the literal) inside the literal will be considered content&lt;/li&gt;
-&lt;li&gt;The literal is prefixed with 2 dollar signs &lt;code&gt;$&lt;/code&gt;, and hence 1 brace will be considered content, while 2 will be considered the indication for nested code&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr /&gt;
-&lt;p&gt;If more than 1 or 2 double-quotes are required in the string, then the number of opening double-quotes can be increased:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var singleQuotes = &amp;quot;&amp;quot;&amp;quot;This string contains a &amp;quot;quoted&amp;quot; word&amp;quot;&amp;quot;&amp;quot;;
-var doubleQuotes = &amp;quot;&amp;quot;&amp;quot;This string contains a doubled &amp;quot;&amp;quot;quoted&amp;quot;&amp;quot; word&amp;quot;&amp;quot;&amp;quot;;
-var tripleQuotes = &amp;quot;&amp;quot;&amp;quot;&amp;quot;This string contains a triple &amp;quot;&amp;quot;&amp;quot;quoted&amp;quot;&amp;quot;&amp;quot; word&amp;quot;&amp;quot;&amp;quot;&amp;quot;;
-
-Console.WriteLine(singleQuotes);
-Console.WriteLine(doubleQuotes);
-Console.WriteLine(tripleQuotes);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;In the above example, the first two strings only required 1 and 2 double-quotes respectively, so opening with 3 double-quotes works. In the third string, 3 double-quotes are required in the content, so the raw string literal is opened with 4 double-quotes.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;p&gt;A similar process can be used for braces:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var singleBraces = $$&amp;quot;&amp;quot;&amp;quot;This string contains a {braced} word&amp;quot;&amp;quot;&amp;quot;;
-var doubleBraces = $$$&amp;quot;&amp;quot;&amp;quot;This string contains a doubled {{braced}} word&amp;quot;&amp;quot;&amp;quot;;
-var tripleBraces = $$$$&amp;quot;&amp;quot;&amp;quot;This string contains a triple {{{braced}}} word&amp;quot;&amp;quot;&amp;quot;;
-
-Console.WriteLine(singleBraces);
-Console.WriteLine(doubleBraces);
-Console.WriteLine(tripleBraces);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;If braces are required in the string content, the number of &lt;code&gt;$&lt;/code&gt; prefixing the string needs to be &lt;code&gt;1 more&lt;/code&gt; than the number of consecutive braces in the string. In the third string example above, 3 braces are requires, so 4 &lt;code&gt;$&lt;/code&gt; are required. To use string interpolation and a nested code expression, 4 &lt;code&gt;$&lt;/code&gt; would need to be used to break out the string.&lt;/p&gt;
-&lt;p&gt;For example:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var tripleValue = &amp;quot;Triple&amp;quot;;
-var tripleBracesInterpolation = $$$$&amp;quot;&amp;quot;&amp;quot;{{{{tripleValue}}}} {{{braced}}} word&amp;quot;&amp;quot;&amp;quot;;
-Console.WriteLine(tripleBracesInterpolation);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;While is may seem a bit convoluted at first, once the basics are understood, this is an incredibly powerful and useful feature, especially dealing with embedded string (such as JSON in the above example). It makes figuring out the correct sequence of escape characters much easier, as well as make the code more readable.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-11#raw-string-literals"&gt;Raw string literals&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;83: 27-05-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
