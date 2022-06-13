@@ -5,8 +5,129 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Fri, 10 Jun 2022 04:26:55 GMT</pubDate>
-		<lastBuildDate>Fri, 10 Jun 2022 04:26:55 GMT</lastBuildDate>
+		<pubDate>Mon, 13 Jun 2022 04:11:58 GMT</pubDate>
+		<lastBuildDate>Mon, 13 Jun 2022 04:11:58 GMT</lastBuildDate>
+		<item>
+			<title>Lambda chaining in C#</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/06/13-chaining-lambda</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/06/13-chaining-lambda</guid>
+			<pubDate>Mon, 13 Jun 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;Action lambda&lt;/code&gt; expressions (expressions which take parameters but do not return a value) can be &lt;code&gt;chained together&lt;/code&gt; and operated on with a single handle, the same as is done with delegates. This is because the &lt;code&gt;Action&lt;/code&gt; type in C# is a delegate.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="action"&gt;Action&lt;/h2&gt;
+&lt;p&gt;When defining a lambda as follows, the type of the variable is &lt;code&gt;delegate void Action&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;    var welcomeMsg = () =&amp;gt; Console.Write(&amp;quot;Good morning &amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As it is a delegate, multiple can be chained together:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var welcomeMsg = () =&amp;gt; Console.Write(&amp;quot;Good morning &amp;quot;);
+welcomeMsg += () =&amp;gt; Console.Write(&amp;quot;Dave&amp;quot;);
+welcomeMsg += () =&amp;gt; Console.WriteLine(&amp;quot;&amp;quot;);
+welcomeMsg += () =&amp;gt; Console.WriteLine(&amp;quot;Have a great day.&amp;quot;);
+
+welcomeMsg();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Invoking the Action will result in each lambda being called in order, and the output being:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-powershell"&gt;Good morning Dave
+Have a great day.
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;To expand on this convoluted, non-practical example, logic can be applied to chain or not chain certain lambdas to the main handle.&lt;/p&gt;
+&lt;p&gt;The below will only ouput a name if its supplied, and also allows for additional custom welcome messages to be added to the end of the main welcome message:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;void OuputWelcomeMessage(string name =&amp;quot;&amp;quot;, Action[] extraMessages = null)
+{
+    var welcomeMsg = () =&amp;gt; Console.Write(&amp;quot;Good morning &amp;quot;);
+
+    if (!string.IsNullOrEmpty(name))
+    {
+        welcomeMsg += () =&amp;gt; Console.Write(name);
+        welcomeMsg += () =&amp;gt; Console.Write(&amp;quot;.&amp;quot;);
+    }
+
+    welcomeMsg += () =&amp;gt; Console.Write(Environment.NewLine);
+
+    if (extraMessages != null)
+    {
+        foreach(var action in extraMessages)
+        {
+            welcomeMsg += action;
+        }
+    }
+    welcomeMsg();
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="parameter-action"&gt;Parameter Action&lt;/h2&gt;
+&lt;p&gt;The same process can also be used for lambda's which take in parameters(s) - however to chain them, every lambda which is chained needs to have the same signature.&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var updateDatabase = (int id) =&amp;gt; 
+    Console.WriteLine($&amp;quot;Updating record with `{id}` in database 1&amp;quot;);
+updateDatabase += (int id) =&amp;gt; 
+    Console.WriteLine($&amp;quot;Updating record with `{id}` in database 2&amp;quot;);
+
+updateDatabase(112);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Here we simulate updating two different databases, with the one integer parameter. The parameter will be passed into each lambda in order of them being added to the main handle.&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-powershell"&gt;Updating record with `112` in database 1
+Updating record with `112` in database 2
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="async-action"&gt;Async Action&lt;/h2&gt;
+&lt;p&gt;Again, the same process can also be used for async lambda expressions. These now become &lt;code&gt;Func&amp;lt;Task&amp;gt;&lt;/code&gt; and not &lt;code&gt;Action&lt;/code&gt;, as they DO have a return value, of type Task.&lt;/p&gt;
+&lt;p&gt;The below method will accept an array of lambda's, chain them and invoke to ouput the result:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;async Task OuputMessagesAsync(Func&amp;lt;Task&amp;gt;[] extraMessages = null)
+{
+    var messages = () =&amp;gt; 
+        { 
+            Console.WriteLine(&amp;quot;Executing messages:&amp;quot;); 
+            return Task.CompletedTask; 
+        };
+
+    if (extraMessages != null)
+    {
+        foreach(var action in extraMessages)
+        {
+            messages += action;
+        }
+    }
+
+    await messages();
+
+    Console.ReadLine(); 
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Invoking the method as follows, results in some interesting points:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;await OuputMessagesAsync(
+    new[] {
+        async () =&amp;gt; { await Task.Delay(4); Console.WriteLine(&amp;quot;1&amp;quot;); },
+        async () =&amp;gt; { await Task.Delay(3); Console.WriteLine(&amp;quot;2&amp;quot;); },
+        async () =&amp;gt; { await Task.Delay(2); Console.WriteLine(&amp;quot;3&amp;quot;); },
+        async () =&amp;gt; { await Task.Delay(1); Console.WriteLine(&amp;quot;4&amp;quot;); },
+        async () =&amp;gt; { await Task.Delay(0); Console.WriteLine(&amp;quot;5&amp;quot;); },
+    });
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output for the above is (and may differ each execution):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-powershell"&gt;Executing messages:
+5
+2
+4
+3
+1
+&lt;/code&gt;&lt;/pre&gt;
+&lt;ul&gt;
+&lt;li&gt;Only the main handle is awaiting, not the chained lambdas. If the &lt;code&gt;Console.ReadLine()&lt;/code&gt; is removed, then only one value is output, and not all 5 - the application closes before all async methods have run to completion.&lt;/li&gt;
+&lt;li&gt;This also highlights the fact that the order in which the number are output is not consistent - it can change with each execution. The lambda's are not being awaited individually before the next one in the chain is executed.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;I'm sure there is a valid, practical use case for this somewhere out there, but I can't think of a single situation in the past where I would have used the chaining ability. Perhaps (similar to in the above sample), allowing the caller of a method to supply additional &lt;code&gt;Action&lt;/code&gt;(s) to be performed in addition to core method logic?&lt;/p&gt;
+&lt;p&gt;Either way though, I found this to be an interesting technique and nugget of information to know about to potential future use!&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/buhakmeh/status/1520811273633599489"&gt;Khalid Abuhakmeh Tweet&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;94: 13-06-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Using XML documentation comments to enrich code</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/06/10-xml-comments</link>
@@ -1013,201 +1134,6 @@ public class UsingGenericAttribute
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-11#generic-attributes"&gt;Generic attributes&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;85: 31-05-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>LINQ First and Single performance</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/05/30-linq-first-performance</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/05/30-linq-first-performance</guid>
-			<pubDate>Mon, 30 May 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;When using LINQ to retrieve a value from a collection, there are a number of different techniques - however not all are equal in terms of performance.&lt;/p&gt;
-&lt;p&gt;Today we'll explore the various methods and their comparative performance.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="first-performance"&gt;First performance&lt;/h2&gt;
-&lt;p&gt;First, we'll look at the various ways to retrieve a single value using variations of &lt;code&gt;First&lt;/code&gt;, when &lt;strong&gt;multiple&lt;/strong&gt; values match the condition:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// populate with 10000 values
-int[] values = values = Enumerable.Range(0, 10000).ToArray();
-
-// Only using First
-var firstValue = values.First(v =&amp;gt; v &amp;gt; 400);
-
-// Only FirstOrDefault
-var firstDefaultValue = values.FirstOrDefault(v =&amp;gt; v &amp;gt; 400);
-
-// Where and then First
-var whereFirstValue = values.Where(v =&amp;gt; v &amp;gt; 400).First();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;In the above example, an array of 10000 items is populated, and when we look at three ways to find the &lt;em&gt;First&lt;/em&gt; value greater than 400.&lt;/p&gt;
-&lt;p&gt;Benchmarking the above scenario using BenchmarkDotNet, the results are as follows (using .NET6):&lt;/p&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;Method&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Ratio&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;First&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2,330.2 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;20.03 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;18.74 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;FirstOrDefault&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2,330.7 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;19.28 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;18.04 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;WhereFirst&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;722.3 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;8.27 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;7.73 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.31&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;Interestingly, the &lt;code&gt;Where().First()&lt;/code&gt; approach is 3 times faster than &lt;code&gt;First&lt;/code&gt; or &lt;code&gt;FirstOrDefault&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;The benchmarks were also performed using a &lt;code&gt;List&amp;lt;int&amp;gt;&lt;/code&gt; as well as an &lt;code&gt;Array[100]&lt;/code&gt; (with the condition being &amp;gt; 40). The results were roughly the same, with the &lt;code&gt;WhereFirst&lt;/code&gt; approach &lt;code&gt;2-3 times&lt;/code&gt; faster than &lt;em&gt;First&lt;/em&gt; or &lt;em&gt;FirstOrDefault&lt;/em&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="single-performance"&gt;Single performance&lt;/h2&gt;
-&lt;p&gt;Next, we'll look at the various ways to retrieve a single value using variations of &lt;code&gt;First/Single&lt;/code&gt;, when a &lt;strong&gt;single&lt;/strong&gt; value matches the condition:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// populate with 10000 values
-int[] values = values = Enumerable.Range(0, 10000).ToArray();
-
-// Only using First
-var firstValue = values.First(v =&amp;gt; v == 450);
-
-// Only FirstOrDefault
-var firstDefaultValue = values.FirstOrDefault(v =&amp;gt; v == 450);
-
-// Only Single
-var singleValue = values.Single(v =&amp;gt; v == 450);
-
-// Only SingleOrDefault
-var singleOrDefaultValue = values.SingleOrDefault(v =&amp;gt; v == 450);
-
-// Where and then First
-var whereFirstValue = values.Where(v =&amp;gt; v == 450).First();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;In the above example, an array of 10000 items is populated, and when we look at five ways to find the &lt;em&gt;First&lt;/em&gt; or &lt;em&gt;Single&lt;/em&gt; value equal to 450.&lt;/p&gt;
-&lt;p&gt;Benchmarking the above scenario using BenchmarkDotNet, the results are as follows (using .NET6):&lt;/p&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;Method&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Ratio&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;FirstOneValue&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2,342.4 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;28.89 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;25.61 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;FirstOrDefaultOneValue&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2,341.8 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;21.82 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;19.34 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;SingleOneValue&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;53,322.5 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;403.26 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;357.48 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;22.77&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;SingleOrDefaultOneValue&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;55,948.0 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;463.01 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;433.10 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;23.87&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;WhereFirstOneValue&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;698.9 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;5.24 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;4.90 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.30&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;As before, &lt;code&gt;Where().First()&lt;/code&gt; is the quickest approach being 3 times faster than &lt;em&gt;First&lt;/em&gt; or &lt;em&gt;FirstOrDefault&lt;/em&gt;, while using &lt;em&gt;Single&lt;/em&gt; is &lt;code&gt;22 times slower&lt;/code&gt; than &lt;em&gt;First&lt;/em&gt; and approximately &lt;code&gt;75 times slower&lt;/code&gt; than &lt;em&gt;Where().First()&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;The benchmarks were also performed using a &lt;code&gt;List&amp;lt;int&amp;gt;&lt;/code&gt; with 10000 items - the results were roughly the same, with the &lt;code&gt;WhereFirst&lt;/code&gt; approach &lt;code&gt;2-3 times&lt;/code&gt; faster than &lt;em&gt;First&lt;/em&gt; or &lt;em&gt;FirstOrDefault&lt;/em&gt; and &lt;code&gt;65 times faster&lt;/code&gt; than &lt;em&gt;Single&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;However, when performed with &lt;code&gt;Array[100]&lt;/code&gt; (with the condition being = 45) the differences between the various methods is not as drastic:&lt;/p&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;Method&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Ratio&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;FirstOneValue&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;256.0 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.19 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.05 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;FirstOrDefaultOneValue&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;258.0 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.02 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.89 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.01&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;SingleOneValue&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;574.3 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;11.07 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;9.24 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.24&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;SingleOrDefaultOneValue&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;529.4 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;3.23 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;3.02 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.07&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;WhereFirstOneValue&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;107.5 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.30 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.25 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.42&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;We've looked at various techniques to get a value from an enumeration of varying sizes - in all use cases performed for this post &lt;code&gt;Where().First()&lt;/code&gt; was the fastest approach. but this might not always be the same for all possible use cases.&lt;/p&gt;
-&lt;p&gt;Keep in mind that the size of the collection, and the method used &lt;em&gt;does&lt;/em&gt; have a performance impact (admittedly nanoseconds, but in the right hot path it could make a material difference) and the various methods should be benchmarked with your specific use case to determine the correct method.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://leveluppp.ghost.io/content/images/size/w1000/2021/12/linq.png"&gt;LINQ optimizations in .NET can be surprising&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;84: 30-05-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
