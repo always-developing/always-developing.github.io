@@ -5,8 +5,142 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Mon, 13 Jun 2022 04:11:58 GMT</pubDate>
-		<lastBuildDate>Mon, 13 Jun 2022 04:11:58 GMT</lastBuildDate>
+		<pubDate>Tue, 14 Jun 2022 04:32:19 GMT</pubDate>
+		<lastBuildDate>Tue, 14 Jun 2022 04:32:19 GMT</lastBuildDate>
+		<item>
+			<title>Indexers with multiple arguments</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/06/14-indexer-arguments</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/06/14-indexer-arguments</guid>
+			<pubDate>Tue, 14 Jun 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;Previously we have look at a method to &lt;a href="https://alwaysdeveloping.net/02/23-indexers"&gt;add an indexer and access class as an array&lt;/a&gt;. Today we explore indexers again, and how custom indexers can be written which accept not only integers, but other types as well as &lt;code&gt;multiple parameters&lt;/code&gt;, to access data in a variety of ways.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="list-example"&gt;List example&lt;/h2&gt;
+&lt;p&gt;First as a benchmark, we'll have a look at the &lt;code&gt;List&lt;/code&gt; class:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var strList = new List&amp;lt;string&amp;gt;();
+
+strList.Add("one");
+strList.Add("two");
+strList.Add("three");
+strList.Add("four");
+strList.Add("five");
+
+Console.WriteLine(strList[3]);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The items added to the List can be accessed using an int indexer. In the above example &lt;em&gt;strList[3]&lt;/em&gt; will return the 4th item in the list. This is standard built-in functionality.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="enhancedlist-example"&gt;EnhancedList example&lt;/h2&gt;
+&lt;p&gt;Next we'll create our own &lt;code&gt;EnhancedList&lt;/code&gt;, which inherits from the &lt;code&gt;List&lt;/code&gt; class, but provides additional functionality through custom indexers.&lt;/p&gt;
+&lt;p&gt;The base &lt;code&gt;EnhancedList&lt;/code&gt; looks as follows and operates exactly the same as a normal &lt;code&gt;List&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;    public class EnhancedList&amp;lt;T&amp;gt; : List&amp;lt;T&amp;gt; { }
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr&gt;
+&lt;h3 id="access-index"&gt;Access index&lt;/h3&gt;
+&lt;p&gt;First, let's create an indexer to &lt;code&gt;get the index, based on the value&lt;/code&gt;. This is basically exactly what the &lt;code&gt;IndexOf&lt;/code&gt; method does, but as an indexer:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class EnhancedList&amp;lt;T&amp;gt; : List&amp;lt;T&amp;gt;
+{
+    public int this[T value] =&amp;gt; this.Contains(value) ? this.IndexOf(value) : -1;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The method checks if the list contains the value passed in, and if it does will return the value's index, otherwise -1 will be returned.&lt;/p&gt;
+&lt;p&gt;The usage is now as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var enhancedList = new EnhancedList&amp;lt;string&amp;gt;();
+enhancedList.Add("one");
+enhancedList.Add("two");
+enhancedList.Add("three");
+enhancedList.Add("four");
+enhancedList.Add("five");
+
+// access the value based on the index
+Console.WriteLine(enhancedList[3]);
+
+// access the index based on the value
+Console.WriteLine(enhancedList["two"]);
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output of the above is:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-powershell"&gt;    four
+    1
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The built in indexer for &lt;code&gt;List&lt;/code&gt; accepts an int as a parameter, and we've created an indexer which accepts type T (the type contained in the &lt;em&gt;EnhancedList&lt;/em&gt;), in this example, a string.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id="multiple-index-lookup"&gt;Multiple index lookup&lt;/h3&gt;
+&lt;p&gt;As we've seen, &lt;code&gt;EnhancedList[index]&lt;/code&gt; can be used to get the value at the specified index. Let's update the &lt;code&gt;EnhancedList&lt;/code&gt; to accept &lt;code&gt;multiple indexes and return multiple values&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class EnhancedList&amp;lt;T&amp;gt; : List&amp;lt;T&amp;gt;
+{
+    public int this[T value] =&amp;gt; this.Contains(value) ? this.IndexOf(value) : -1;
+
+    public IEnumerable&amp;lt;T&amp;gt; this[bool rangeLookup, params int[] indexes] =&amp;gt; 
+        indexes.Select(i =&amp;gt; (T)this[i]);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;A new indexer has been added, this time taking a bool and an array of integers as arguments. The bool parameter is required to differentiate between &lt;em&gt;EnhancedList[index]&lt;/em&gt; and &lt;em&gt;EnhancedList[params]&lt;/em&gt; - without the bool forcing a difference, there is no way of specifying which indexer is being called.&lt;/p&gt;
+&lt;p&gt;The usage is now as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var enhancedList = new EnhancedList&amp;lt;string&amp;gt;();
+enhancedList.Add("one");
+enhancedList.Add("two");
+enhancedList.Add("three");
+enhancedList.Add("four");
+enhancedList.Add("five");
+
+// get the value for index 2 and 4
+foreach (var lookupItem in enhancedList[true, 2, 4])
+{
+    Console.WriteLine(lookupItem);
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In the above, we get the values at index 2 and 4. The output being:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-powershell"&gt;    three
+    five
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr&gt;
+&lt;h3 id="t-modification"&gt;T modification&lt;/h3&gt;
+&lt;p&gt;The generic type T contained in the &lt;code&gt;EnhancedList&lt;/code&gt; can also be modified before being returned by the indexer. In the last example, we are going to create an indexer which returned the items in the list as a string, ready for output to the Console:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class EnhancedList&amp;lt;T&amp;gt; : List&amp;lt;T&amp;gt;
+{
+    public int this[T value] =&amp;gt; this.Contains(value) ? this.IndexOf(value) : -1;
+
+    public IEnumerable&amp;lt;T&amp;gt; this[bool rangeLookup, params int[] indexes] =&amp;gt; 
+        indexes.Select(i =&amp;gt; (T)this[i]);
+
+    public IEnumerable&amp;lt;string&amp;gt; this[string prefixMessage, params int[] indexes] =&amp;gt; 
+        indexes.Select(i =&amp;gt; $"{prefixMessage} {(T)this[i]}");
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The new indexer takes a string prefix message, and an array of indexes. Instead of returning just the values at the position of the indexes (as in the previous example), now the &lt;em&gt;prefixMessage&lt;/em&gt; and the &lt;em&gt;value&lt;/em&gt; are combined before being returned.&lt;/p&gt;
+&lt;p&gt;The usage is now as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var enhancedList = new EnhancedList&amp;lt;string&amp;gt;();
+enhancedList.Add("one");
+enhancedList.Add("two");
+enhancedList.Add("three");
+enhancedList.Add("four");
+enhancedList.Add("five");
+
+// return value at index 0, 2 and 4
+// with the supplied message
+foreach (var lookupItem in enhancedList["Printing item ...", 0, 2, 4])
+{
+    Console.WriteLine(lookupItem);
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In the above, we get the values at index 2 and 4. The output being:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-powershell"&gt;    Printing item ... one
+    Printing item ... three
+    Printing item ... five
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;While the examples shown above are not necessarily production ready or practical, they do show how indexers can be created which accept multiple arguments, allowing for some innovative possibilities depending on your specific use case.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/maartenballiauw/status/1527280915092742144"&gt;Maarten Balliauw Tweet&lt;/a&gt;&lt;/p&gt;
+&lt;!--?# DailyDrop ?--&gt;95: 14-06-2022&lt;!--?#/ DailyDrop ?--&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Lambda chaining in C#</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/06/13-chaining-lambda</link>
@@ -1056,84 +1190,6 @@ ORDER BY [i].[_Position];
 &lt;p&gt;&lt;a href="https://www.meziantou.net/list-all-routes-in-an-asp-net-core-application.htm"&gt;How to list all routes in an ASP.NET Core application&lt;/a&gt;&lt;br /&gt;
 &lt;a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/routing?view=aspnetcore-6.0"&gt;Routing in ASP.NET Core&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;86: 01-06-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Generic attributes with C#11</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/05/31-generic-attribute</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/05/31-generic-attribute</guid>
-			<pubDate>Tue, 31 May 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;Coming in C# 11 (later this year with .NET 7) is the &lt;code&gt;generic attributes&lt;/code&gt; feature - the ability to define an attribute which takes a generic parameter. This is a more convenient style for attributes which require a &lt;code&gt;Type&lt;/code&gt; parameter.&lt;/p&gt;
-&lt;p&gt;Generic attribute code samples below were written using the .NET 7 preview release.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="pre-c-11-type-parameter"&gt;Pre C# 11 - Type parameter&lt;/h2&gt;
-&lt;p&gt;Sometimes an attribute needs to take a &lt;code&gt;Type&lt;/code&gt; parameter - currently (using any version prior to C# 11) the only way to do this is passing a &lt;code&gt;Type&lt;/code&gt; parameter to the constructor.&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;[System.AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
-public class TypeAttribute : Attribute
-{
-    readonly Type _classType;
-
-    public TypeAttribute(Type classType)
-    {
-        if(classType is not IMarkerInterface)
-        {
-             throw new Exception($&amp;quot;Parameter '{classType}'&amp;quot; +
-                $&amp;quot; must implement `IMarkerInterface`&amp;quot;);
-        }
-
-        _classType = classType;
-    }
-
-    public Type ClassType
-    {
-        get { return _classType; }
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;A drawback of this approach is that if there are any constraints on the type of &lt;code&gt;Type&lt;/code&gt; then a check needs to explicitly be done in the constructor - as is done above, ensuring that the type implements &lt;em&gt;IMarkerInterface&lt;/em&gt;. However this check is &lt;em&gt;only done at runtime&lt;/em&gt;, quite late in the development loop.&lt;/p&gt;
-&lt;p&gt;Usage of the above attribute:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;[TypeParam(typeof(ImplementationType))]
-public class UsingTypeAttribute
-{
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="c-11-generic-attribute"&gt;C# 11 - Generic attribute&lt;/h2&gt;
-&lt;p&gt;C# 11 introduces generic attributes - which use the same syntax as generic classes or methods. Below is the same attribute as above, but implemented using generics:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;[System.AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
-public class GenericTypeAttribute&amp;lt;T&amp;gt; : Attribute where T : IMarkerInterface
-{
-    public GenericTypeAttribute()
-    {
-    }
-
-    public Type ClassType
-    {
-        get { return typeof(T); }
-    }
-}
-``
-
-As one can see, the code is a lot cleaner, with the type of `Type` being constrained as part of the generics - no need to manually check the type in the constructor. The check is also automatically performed at compile time so any issues with the `Type` are picked up earlier.
-
-Usage of the above attribute is also cleaner:
-
-``` csharp
-[GenericType&amp;lt;ImplementationType&amp;gt;]
-public class UsingGenericAttribute
-{
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;While this may not be something used every day by everyone, for those which do use it, it will be an incredibly useful upgrade - bringing more standardization across the various parts of the C# language.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-11#generic-attributes"&gt;Generic attributes&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;85: 31-05-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
