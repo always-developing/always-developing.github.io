@@ -5,8 +5,90 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Tue, 14 Jun 2022 04:32:19 GMT</pubDate>
-		<lastBuildDate>Tue, 14 Jun 2022 04:32:19 GMT</lastBuildDate>
+		<pubDate>Wed, 15 Jun 2022 04:11:07 GMT</pubDate>
+		<lastBuildDate>Wed, 15 Jun 2022 04:11:07 GMT</lastBuildDate>
+		<item>
+			<title>Creating objects without calling the constructor</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/06/15-get-uninitialized-object</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/06/15-get-uninitialized-object</guid>
+			<pubDate>Wed, 15 Jun 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;RuntimeHelpers.GetUninitializedObject&lt;/code&gt; method can be used to create an instance of an object, without calling its constructor or property initializers.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="usage"&gt;Usage&lt;/h2&gt;
+&lt;h3 id="example-class"&gt;Example class&lt;/h3&gt;
+&lt;p&gt;Consider the following simple &lt;em&gt;Person&lt;/em&gt; class:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Person
+{
+    public string Name { get; } = &amp;quot;(not set)&amp;quot;;
+
+    public int Age { get;  }
+
+    public Person(int age)
+    {
+        Age = age;
+    }
+
+    public Person(string name, int age)
+    {
+        Name = name;
+        Age = age;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The important things to note:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;One constructor which explicitly sets both properties&lt;/li&gt;
+&lt;li&gt;One constructor which only explicitly sets the age&lt;/li&gt;
+&lt;li&gt;The &lt;em&gt;Name&lt;/em&gt; property has an initializer, which sets the value if not explicitly set&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr /&gt;
+&lt;h3 id="normal-initialization"&gt;Normal initialization&lt;/h3&gt;
+&lt;p&gt;First let's look at &amp;quot;normal&amp;quot; object initializations - two instances of the &lt;em&gt;Person&lt;/em&gt; class will be created, using the two different constructors:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var p1 = new Person(&amp;quot;Dave&amp;quot;, 46);
+var p2 = new Person(47);
+
+Console.WriteLine($&amp;quot;p1 has a name of '{p1.Name}' and an age of {p1.Age}&amp;quot;);
+Console.WriteLine($&amp;quot;p2 has a name of '{p2.Name}' and an age of {p2.Age}&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In the first instance, both properties are set, in the second instance only the age is (explicitly) set.&lt;/p&gt;
+&lt;p&gt;The output is then as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-powershell"&gt;p1 has a name of 'Dave' and an age of 46
+p2 has a name of '(not set)' and an age of 47
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As you might have expected, &lt;em&gt;p1&lt;/em&gt; outputs both values passed into the constructor, which &lt;em&gt;p2&lt;/em&gt; outputs the &lt;em&gt;Age&lt;/em&gt; specified, and the default initialization value for the &lt;em&gt;Name&lt;/em&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="getuninitializedobject"&gt;GetUninitializedObject&lt;/h3&gt;
+&lt;p&gt;Next, we'll look at the &lt;code&gt;RuntimeHelpers.GetUninitializedObject&lt;/code&gt; method, which is part of the &lt;code&gt;System.Runtime.CompilerServices&lt;/code&gt; namespace.&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;using System.Runtime.CompilerServices;
+
+var p1 = new Person(&amp;quot;Dave&amp;quot;, 46);
+var p2 = new Person(47);
+var p3 = (Person)RuntimeHelpers.GetUninitializedObject(typeof(Person));
+
+Console.WriteLine($&amp;quot;p1 has a name of '{p1.Name}' and an age of {p1.Age}&amp;quot;);
+Console.WriteLine($&amp;quot;p2 has a name of '{p2.Name}' and an age of {p2.Age}&amp;quot;);
+Console.WriteLine($&amp;quot;p3 has a name of '{p3.Name}' and an age of {p3.Age}&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In the third instance, we use the &lt;em&gt;GetUninitializedObject&lt;/em&gt; to get an &lt;code&gt;uninitialized instance of Person&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;The output is then as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-powershell"&gt;p1 has a name of 'Dave' and an age of 46
+p2 has a name of '(not set)' and an age of 47
+p3 has a name of '' and an age of 0
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As the name of the method suggests, no initialization methods are called - neither the constructors nor the &lt;em&gt;Name&lt;/em&gt; initializer.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;A useful library to know about and leverage when the need arises. I wouldn't suggest using it to initialize objects, unless you know how the object will behave without having any constructor or initializers invoked. Doing so may cause instability in the usage of the instance.&lt;/p&gt;
+&lt;p&gt;One useful use case could be for auto generating documentation - if the documentation is to give examples of clean uninitialized entities, then this method could be used to get an object, which can then be serialized and output.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://khalidabuhakmeh.com/create-dotnet-objects-without-calling-the-constructor"&gt;Create .NET Objects without Calling The Constructor&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;96: 15-06-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Indexers with multiple arguments</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/06/14-indexer-arguments</link>
@@ -1061,135 +1143,6 @@ ORDER BY [i].[_Position];
 &lt;p&gt;In most cases, this is not something to worry about - the presumption being that the EF Core team have benchmarked and determined in &lt;em&gt;most&lt;/em&gt; cases, 4 is the threshold where doing a MERGE is more efficient that doing multiple INSERTS.&lt;/p&gt;
 &lt;p&gt;However, if one determines that 4 is too high (or too low) for a specific use case, one can adjust the value up or down and benchmark how the performance of the code is impacted.&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;87: 02-06-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Listing all ASP.NET Core routes</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/06/01-endpoint-data-source</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/06/01-endpoint-data-source</guid>
-			<pubDate>Wed, 01 Jun 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;ASP.NET Core has a build in class, &lt;code&gt;EndpointDataSource&lt;/code&gt;, which contains information about a route, while the &lt;code&gt;IEnumerable&amp;lt;EndpointDataSource&amp;gt;&lt;/code&gt; collection, available through dependency injection contains information about all endpoints of an application.&lt;/p&gt;
-&lt;p&gt;Information about a specific endpoint can also be retrieved from the &lt;code&gt;HttpContext&lt;/code&gt; for a specific request.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="listing-routes"&gt;Listing routes&lt;/h2&gt;
-&lt;p&gt;First, lets look at getting all the routes (endpoints) for an application - this can be done by injecting &lt;code&gt;IEnumerable&amp;lt;EndpointDataSource&amp;gt;&lt;/code&gt; into the relevant constructor (or endpoint delegate in the below example):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/routes&amp;quot;, (IEnumerable&amp;lt;EndpointDataSource&amp;gt; routes) =&amp;gt;
-        string.Join(Environment.NewLine, routes.SelectMany(es =&amp;gt; es.Endpoints)));
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Browsing to the &lt;code&gt;/routes&lt;/code&gt; endpoint, the following is returned (the 4 endpoints which make up the sample api):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-powershell"&gt;    HTTP: GET /routes
-    HTTP: GET /user/{userId}
-    HTTP: GET /routewithid/{id}
-    HTTP: GET /routes/info
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="additional-route-data"&gt;Additional route data&lt;/h2&gt;
-&lt;p&gt;Additional route metadata can also be retrieved from &lt;code&gt;EndpointDataSource&lt;/code&gt;. The below &lt;code&gt;/routes/info&lt;/code&gt; endpoint extends on the above basic endpoint adding additional data for each endpoint:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/routes/info&amp;quot;, (IEnumerable&amp;lt;EndpointDataSource&amp;gt; endpointSources) =&amp;gt;
-{
-    var sb = new StringBuilder();
-    var endpoints = endpointSources.SelectMany(es =&amp;gt; es.Endpoints);
-
-    // iterate through each endpoint
-    foreach (var endpoint in endpoints)
-    {
-        // get the display name
-        sb.AppendLine($&amp;quot;Endpoint: {endpoint.DisplayName}&amp;quot;);
-
-        // check if the endpoint is a RouteEndpoint
-        if (endpoint is RouteEndpoint routeEndpoint)
-        {
-            // output route pattern information
-            sb.AppendLine($&amp;quot;        - Segment Count: &amp;quot; +
-                $&amp;quot;{routeEndpoint.RoutePattern.PathSegments.Count}&amp;quot;);
-            
-            sb.AppendLine($&amp;quot;        - Parameters: &amp;quot;);
-            foreach(var param in routeEndpoint.RoutePattern.Parameters)
-            {
-                sb.AppendLine($&amp;quot;            - {param.Name}&amp;quot;);
-            }
-            
-            sb.AppendLine($&amp;quot;        - Inbound Precedence: &amp;quot; +
-                $&amp;quot;{routeEndpoint.RoutePattern.InboundPrecedence}&amp;quot;);
-            sb.AppendLine($&amp;quot;        - Outbound Precedence: &amp;quot; +
-                $&amp;quot;{routeEndpoint.RoutePattern.OutboundPrecedence}&amp;quot;);
-        }
-
-        // output meta data
-        sb.AppendLine($&amp;quot;        - Meta Count: {endpoint.Metadata.Count()}&amp;quot;);
-        foreach (var meta in endpoint.Metadata)
-        {
-            sb.AppendLine($&amp;quot;            - Meta Type: {meta}&amp;quot;);
-        }
-    }
-
-    return sb.ToString();
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Browsing to the &lt;code&gt;/routes/info&lt;/code&gt; endpoint, one can see the additional information:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-powershell"&gt;    Endpoint: HTTP: GET /routes
-            - Segment Count: 1
-            - Parameters: 
-            - Inbound Precedence: 1
-            - Outbound Precedence: 5
-            - Meta Count: 2
-                - Meta Type: System.String &amp;lt;&amp;lt;Main&amp;gt;$&amp;gt;b__0_0(System.Collections.Generic.IEnumerable`1[Microsoft.AspNetCore.Routing.EndpointDataSource])
-                - Meta Type: Microsoft.AspNetCore.Routing.HttpMethodMetadata
-    Endpoint: HTTP: GET /user/{userId}
-            - Segment Count: 2
-            - Parameters: 
-                - userId
-            - Inbound Precedence: 1,3
-            - Outbound Precedence: 5,3
-            - Meta Count: 2
-                - Meta Type: System.String &amp;lt;&amp;lt;Main&amp;gt;$&amp;gt;b__0_1(System.String)
-                - Meta Type: Microsoft.AspNetCore.Routing.HttpMethodMetadata
-    Endpoint: HTTP: GET /routewithid/{id}
-            - Segment Count: 2
-            - Parameters: 
-                - id
-            - Inbound Precedence: 1,3
-            - Outbound Precedence: 5,3
-            - Meta Count: 3
-                - Meta Type: System.String &amp;lt;&amp;lt;Main&amp;gt;$&amp;gt;b__0_2(Microsoft.AspNetCore.Http.HttpContext, System.String)
-                - Meta Type: System.Runtime.CompilerServices.NullableContextAttribute
-                - Meta Type: Microsoft.AspNetCore.Routing.HttpMethodMetadata
-    Endpoint: HTTP: GET /routes/info
-            - Segment Count: 2
-            - Parameters: 
-            - Inbound Precedence: 1,1
-            - Outbound Precedence: 5,5
-            - Meta Count: 2
-                - Meta Type: System.String &amp;lt;&amp;lt;Main&amp;gt;$&amp;gt;b__0_3(System.Collections.Generic.IEnumerable`1[Microsoft.AspNetCore.Routing.EndpointDataSource])
-                - Meta Type: Microsoft.AspNetCore.Routing.HttpMethodMetadata
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Some examples of the type of information available:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;The count and type of each segment making up the endpoint url (e.g. lines 2 and 10)&lt;/li&gt;
-&lt;li&gt;The list of parameters for an endpoint (e.g. line 12)&lt;/li&gt;
-&lt;li&gt;The lambda delegate for each endpoint (e.g lines 7 and 16)&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;The metadata information would need to be checked and cast to the specific type to retrieve additional information - but additional information is available.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="httpcontext-route-information"&gt;HttpContext route information&lt;/h2&gt;
-&lt;p&gt;Information can also be received from the &lt;code&gt;HttpContext&lt;/code&gt; of a specific request, for the endpoint being called. The information is the same as is contained in the &lt;code&gt;EndpointDataSource.Endpoints&lt;/code&gt; collection used in the above examples:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/routewithid/{id}&amp;quot;, (HttpContext context, string id) =&amp;gt; 
-        $&amp;quot;Route `{context.GetEndpoint()?.DisplayName}` with id = '{id}'&amp;quot;); 
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Calling this endpoint with an &lt;em&gt;id&lt;/em&gt; of &lt;em&gt;&amp;quot;sampleId&amp;quot;&lt;/em&gt; (&lt;code&gt;/routewithid/sampleId&lt;/code&gt;) results in the following output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-powershell"&gt;    Route `HTTP: GET /routewithid/{id}` with id = 'sampleid'
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;There are a number of useful outputs which could be done using this metadata information, such as outputting the information to be consumed into external api documentation, or &lt;a href="https://andrewlock.net/adding-an-endpoint-graph-to-your-aspnetcore-application/"&gt;adding an endpoint graph to the application&lt;/a&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.meziantou.net/list-all-routes-in-an-asp-net-core-application.htm"&gt;How to list all routes in an ASP.NET Core application&lt;/a&gt;&lt;br /&gt;
-&lt;a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/routing?view=aspnetcore-6.0"&gt;Routing in ASP.NET Core&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;86: 01-06-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
