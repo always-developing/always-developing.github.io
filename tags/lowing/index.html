@@ -7,9 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <meta name="description" content="always learning | always growing">
 
-    <title>Always Developing - dailydrop</title>
+    <title>Always Developing - lowing</title>
 
-    <link rel="canonical" href="https://alwaysdeveloping.net/tags/dailydrop/3">
+    <link rel="canonical" href="https://alwaysdeveloping.net/tags/lowing">
 
             <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
             <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
@@ -18,9 +18,9 @@
     <meta name="msapplication-tooltip" content="Always Developing" />
     <meta name="msapplication-starturl" content="/" />
 
-    <meta property="og:title" content="Always Developing - dailydrop" />
+    <meta property="og:title" content="Always Developing - lowing" />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://alwaysdeveloping.net/tags/dailydrop/3" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/tags/lowing" />
 
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
@@ -104,7 +104,7 @@
             <div class="col-md-10">
                 <div class="site-heading">
                     <h1>
-                        dailydrop
+                        lowing
                     </h1>
                 </div>
             </div>
@@ -125,167 +125,22 @@
     <div class="post-category">
                 <a class="btn btn-primary btn-sm category-btn" href="/categories/dailydrop" role="button">DailyDrop</a>
     </div>
-    <h2 class="post-title"><a href="/dailydrop/2022/02/18-gc-variables">Garbage collection configuration</a></h2>
+    <h2 class="post-title"><a href="/dailydrop/2022/07/08-lowing-for-loop">For loop lowering in C#</a></h2>
     <p class="post-meta">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
             <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
             <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
-        </svg> Published on Friday, 18 February 2022
+        </svg> Published on Monday, 20 June 2022
     </p>
-        <div class="post-subtitle">The .NET garbage collector can be configured at runtime</div>
-    <p class="post-read-more"><br /><a href="/dailydrop/2022/02/18-gc-variables">Read more...</a></p>
+        <div class="post-subtitle">Discovering how C# lowers for a loop to a while loop</div>
+    <p class="post-read-more"><br /><a href="/dailydrop/2022/07/08-lowing-for-loop">Read more...</a></p>
 </div>
 <div class="post-buffer"><br /></div>
-<div class="post-preview">
-    <div class="post-category">
-                <a class="btn btn-primary btn-sm category-btn" href="/categories/dailydrop" role="button">DailyDrop</a>
-    </div>
-    <h2 class="post-title"><a href="/dailydrop/2022/02/17-using-idisposable">Using with IDisposable</a></h2>
-    <p class="post-meta">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
-            <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
-            <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
-        </svg> Published on Thursday, 17 February 2022
-    </p>
-        <div class="post-subtitle">Use using by implementing a single interface</div>
-    <p class="post-read-more"><br /><a href="/dailydrop/2022/02/17-using-idisposable">Read more...</a></p>
-</div>
-<div class="post-buffer"><br /></div>
-<div class="post-preview">
-    <div class="post-category">
-                <a class="btn btn-primary btn-sm category-btn" href="/categories/dailydrop" role="button">DailyDrop</a>
-    </div>
-    <h2 class="post-title"><a href="/dailydrop/2022/02/16-task-wait-async">Task.WaitAsync in .NET6</a></h2>
-    <p class="post-meta">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
-            <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
-            <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
-        </svg> Published on Wednesday, 16 February 2022
-    </p>
-        <div class="post-subtitle">Exploring the new WaitAsync method introduced in .NET6</div>
-    <p class="post-read-more"><br /><a href="/dailydrop/2022/02/16-task-wait-async">Read more...</a></p>
-</div>
-<div class="post-buffer"><br /></div>
-<div class="post-preview">
-    <div class="post-category">
-                <a class="btn btn-primary btn-sm category-btn" href="/categories/dailydrop" role="button">DailyDrop</a>
-    </div>
-    <h2 class="post-title"><a href="/dailydrop/2022/02/15-global-using-directive">Aliases with global using directives</a></h2>
-    <p class="post-meta">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
-            <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
-            <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
-        </svg> Published on Tuesday, 15 February 2022
-    </p>
-        <div class="post-subtitle">Create an alias with C#10 global usings</div>
-    <p class="post-read-more"><br /><a href="/dailydrop/2022/02/15-global-using-directive">Read more...</a></p>
-</div>
-<div class="post-buffer"><br /></div>
-<div class="post-preview">
-    <div class="post-category">
-                <a class="btn btn-primary btn-sm category-btn" href="/categories/dailydrop" role="button">DailyDrop</a>
-    </div>
-    <h2 class="post-title"><a href="/dailydrop/2022/02/14-exceptions-when">Filtering try-catch statement</a></h2>
-    <p class="post-meta">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
-            <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
-            <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
-        </svg> Published on Monday, 14 February 2022
-    </p>
-        <div class="post-subtitle">Apply filtering to catch statements with a when clause</div>
-    <p class="post-read-more"><br /><a href="/dailydrop/2022/02/14-exceptions-when">Read more...</a></p>
-</div>
-<div class="post-buffer"><br /></div>
-<div class="post-preview">
-    <div class="post-category">
-                <a class="btn btn-primary btn-sm category-btn" href="/categories/dailydrop" role="button">DailyDrop</a>
-    </div>
-    <h2 class="post-title"><a href="/dailydrop/2022/02/11-caller-metadata">Extract calling method metadata with C#</a></h2>
-    <p class="post-meta">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
-            <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
-            <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
-        </svg> Published on Friday, 11 February 2022
-    </p>
-        <div class="post-subtitle">Extract useful information from a calling method</div>
-    <p class="post-read-more"><br /><a href="/dailydrop/2022/02/11-caller-metadata">Read more...</a></p>
-</div>
-<div class="post-buffer"><br /></div>
-<div class="post-preview">
-    <div class="post-category">
-                <a class="btn btn-primary btn-sm category-btn" href="/categories/dailydrop" role="button">DailyDrop</a>
-    </div>
-    <h2 class="post-title"><a href="/dailydrop/2022/02/10-channels">C# Channels - Produce &amp; Consume data</a></h2>
-    <p class="post-meta">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
-            <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
-            <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
-        </svg> Published on Thursday, 10 February 2022
-    </p>
-        <div class="post-subtitle">A thread-safe feature for producing and consumer data</div>
-    <p class="post-read-more"><br /><a href="/dailydrop/2022/02/10-channels">Read more...</a></p>
-</div>
-<div class="post-buffer"><br /></div>
-<div class="post-preview">
-    <div class="post-category">
-                <a class="btn btn-primary btn-sm category-btn" href="/categories/dailydrop" role="button">DailyDrop</a>
-    </div>
-    <h2 class="post-title"><a href="/dailydrop/2022/02/09-logger-message-attribute">Performant logging with LoggerMessageAttribute</a></h2>
-    <p class="post-meta">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
-            <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
-            <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
-        </svg> Published on Wednesday, 09 February 2022
-    </p>
-        <div class="post-subtitle">How to leverage LoggerMessageAttribute for a highly performant logging solution</div>
-    <p class="post-read-more"><br /><a href="/dailydrop/2022/02/09-logger-message-attribute">Read more...</a></p>
-</div>
-<div class="post-buffer"><br /></div>
-<div class="post-preview">
-    <div class="post-category">
-                <a class="btn btn-primary btn-sm category-btn" href="/categories/dailydrop" role="button">DailyDrop</a>
-    </div>
-    <h2 class="post-title"><a href="/dailydrop/2022/02/08-github-action-schedule">Scheduling with GitHub Actions</a></h2>
-    <p class="post-meta">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
-            <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
-            <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
-        </svg> Published on Tuesday, 08 February 2022
-    </p>
-        <div class="post-subtitle">How to schedule a GitHub Action</div>
-    <p class="post-read-more"><br /><a href="/dailydrop/2022/02/08-github-action-schedule">Read more...</a></p>
-</div>
-<div class="post-buffer"><br /></div>
-<div class="post-preview">
-    <div class="post-category">
-                <a class="btn btn-primary btn-sm category-btn" href="/categories/dailydrop" role="button">DailyDrop</a>
-    </div>
-    <h2 class="post-title"><a href="/dailydrop/2022/02/07-valuetuple">C# ValueTuple</a></h2>
-    <p class="post-meta">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
-            <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
-            <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
-        </svg> Published on Monday, 07 February 2022
-    </p>
-        <div class="post-subtitle">Exploring the C# ValueTuple type</div>
-    <p class="post-read-more"><br /><a href="/dailydrop/2022/02/07-valuetuple">Read more...</a></p>
-</div>
-<div class="post-buffer"><br /></div>
-    <div>
-        <div class="float-sm-left">
-                <a class="btn btn-primary btn-default" href="/tags/dailydrop/2" role="button "><i class="fas fa-angle-double-left"></i> Newer</a>
-        </div>
-        <div class="float-sm-right">
-                <a class="btn btn-primary btn-default" href="/tags/dailydrop/4" role="button">Older <i class="fas fa-angle-double-right"></i></a>
-        </div>
-        <div class="clearfix"></div>
-    </div>
 
             </div>
             <div class="col-md-4 mt-4 mt-md-0 col-sm-height">
-                    <a href="/tags/c" class="badge badge-light"> c# (108)</a>
-                    <a href="/tags/net" class="badge badge-light"> .net (108)</a>
-                    <a href="/tags/dailydrop" class="badge badge-dark"> dailydrop (34)</a>
+                    <a href="/tags/c" class="badge badge-light"> c# (110)</a>
+                    <a href="/tags/net" class="badge badge-light"> .net (110)</a>
                     <a href="/tags/attribute" class="badge badge-light"> attribute (10)</a>
                     <a href="/tags/entityframework" class="badge badge-light"> entityframework (9)</a>
                     <a href="/tags/ef" class="badge badge-light"> ef (8)</a>
@@ -304,7 +159,6 @@
                     <a href="/tags/anonymous" class="badge badge-light"> anonymous (4)</a>
                     <a href="/tags/switch" class="badge badge-light"> switch (4)</a>
                     <a href="/tags/task" class="badge badge-light"> task (4)</a>
-                    <a href="/tags/sql" class="badge badge-light"> sql (3)</a>
                     <a href="/tags/net7" class="badge badge-light"> .net7 (3)</a>
                     <a href="/tags/enum" class="badge badge-light"> enum (3)</a>
                     <a href="/tags/exception" class="badge badge-light"> exception (3)</a>
@@ -317,7 +171,6 @@
                     <a href="/tags/efcore6" class="badge badge-light"> efcore6 (3)</a>
                     <a href="/tags/logging" class="badge badge-light"> logging (3)</a>
                     <a href="/tags/guid" class="badge badge-light"> guid (2)</a>
-                    <a href="/tags/tsql" class="badge badge-light"> tsql (2)</a>
                     <a href="/tags/lambda" class="badge badge-light"> lambda (2)</a>
                     <a href="/tags/action" class="badge badge-light"> action (2)</a>
                     <a href="/tags/debugging" class="badge badge-light"> debugging (2)</a>
@@ -325,6 +178,7 @@
                     <a href="/tags/api" class="badge badge-light"> api (2)</a>
                     <a href="/tags/string" class="badge badge-light"> string (2)</a>
                     <a href="/tags/enumeration" class="badge badge-light"> enumeration (2)</a>
+                    <a href="/tags/sql" class="badge badge-light"> sql (2)</a>
                     <a href="/tags/flags" class="badge badge-light"> flags (2)</a>
                     <a href="/tags/static" class="badge badge-light"> static (2)</a>
                     <a href="/tags/goto" class="badge badge-light"> goto (2)</a>
@@ -345,6 +199,10 @@
                     <a href="/tags/extend" class="badge badge-light"> extend (2)</a>
                     <a href="/tags/using" class="badge badge-light"> using (2)</a>
                     <a href="/tags/github" class="badge badge-light"> github (2)</a>
+                    <a href="/tags/binary" class="badge badge-light"> binary (1)</a>
+                    <a href="/tags/hexadecimal" class="badge badge-light"> hexadecimal (1)</a>
+                    <a href="/tags/lowing" class="badge badge-dark"> lowing (1)</a>
+                    <a href="/tags/forloop" class="badge badge-light"> forloop (1)</a>
                     <a href="/tags/newid" class="badge badge-light"> newid (1)</a>
                     <a href="/tags/nullable" class="badge badge-light"> nullable (1)</a>
                     <a href="/tags/chaining" class="badge badge-light"> chaining (1)</a>
@@ -420,6 +278,7 @@
                     <a href="/tags/covariance" class="badge badge-light"> covariance (1)</a>
                     <a href="/tags/contravariance" class="badge badge-light"> contravariance (1)</a>
                     <a href="/tags/generics" class="badge badge-light"> generics (1)</a>
+                    <a href="/tags/tsql" class="badge badge-light"> tsql (1)</a>
                     <a href="/tags/offset" class="badge badge-light"> offset (1)</a>
                     <a href="/tags/fetch" class="badge badge-light"> fetch (1)</a>
                     <a href="/tags/query" class="badge badge-light"> query (1)</a>
@@ -479,6 +338,7 @@
                     <a href="/tags/tuple" class="badge badge-light"> tuple (1)</a>
                     <a href="/tags/valuetuple" class="badge badge-light"> valuetuple (1)</a>
                     <a href="/tags/groupby" class="badge badge-light"> groupby (1)</a>
+                    <a href="/tags/dailydrop" class="badge badge-light"> dailydrop (1)</a>
                     <a href="/tags/ioptions" class="badge badge-light"> ioptions (1)</a>
                     <a href="/tags/ioptionssnapshot" class="badge badge-light"> ioptionssnapshot (1)</a>
                     <a href="/tags/ioptionsmonitor" class="badge badge-light"> ioptionsmonitor (1)</a>

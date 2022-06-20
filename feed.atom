@@ -4,8 +4,180 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-06-17T04:06:12Z</updated>
+	<updated>2022-06-20T03:59:43Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/06/20-base-conversion</id>
+		<title>Binary and hexadecimal conversion</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/06/20-base-conversion" />
+		<updated>2022-06-20T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;Convert&lt;/code&gt; class can be used to convert any integer value to it's corresponding value of a &lt;code&gt;different base&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;Binary&lt;/code&gt; (base 2), &lt;code&gt;Octal&lt;/code&gt; (base 8), &lt;code&gt;Decimal&lt;/code&gt; (base 10) and &lt;code&gt;Hexadecimal&lt;/code&gt; (base 16) are supported.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="convert-class"&gt;Convert class&lt;/h2&gt;
+&lt;p&gt;Using the &lt;code&gt;Convert&lt;/code&gt; class to perform the conversion is incredibly simple:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var intValue = 642;
+
+// use the ToString method, specifying the new base
+var binary = Convert.ToString(intValue, 2);
+var octal = Convert.ToString(intValue, 8);
+var hex = Convert.ToString(intValue, 16);
+
+Console.WriteLine(binary);
+Console.WriteLine(octal);
+Console.WriteLine(hex);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output is as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-powershell"&gt;1010000010
+1202
+282
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Negative values are also supported:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var intValue = 642;
+
+// use the ToString method, specifying the new base
+var binaryNeg = Convert.ToString(intValue * 1, 2);
+var octalNeg = Convert.ToString(intValue * -1, 8);
+var hexNeg = Convert.ToString(intValue * -1, 16);
+
+Console.WriteLine(binaryNeg);
+Console.WriteLine(octalNeg);
+Console.WriteLine(hexNeg);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output is as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-powershell"&gt;11111111111111111111110101111110
+37777776576
+fffffd7e
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And that's all there is to it - simple and occasionally useful!&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;In my almost 20 years of programming, I don't think I've ever had to perform these kinds of conversions (outside of assignments at university), so this functionality is probably not useful for every day development for most applications - however when the need does arise, it's useful to know it can be easily implemented.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/buhakmeh/status/1523685323875635200"&gt;Khalid Abuhakmeh Tweet&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;99: 20-06-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/07/08-lowing-for-loop</id>
+		<title>For loop lowering in C#</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/07/08-lowing-for-loop" />
+		<updated>2022-06-20T00:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;In C#, a &lt;code&gt;for loop&lt;/code&gt; is &lt;em&gt;lowered&lt;/em&gt; to a &lt;code&gt;while loop&lt;/code&gt; by the compiler.&lt;/p&gt;
+&lt;p&gt;At a lower level, the &lt;code&gt;for&lt;/code&gt; loop &lt;em&gt;does not exist&lt;/em&gt; - it gets translated into a &lt;code&gt;while&lt;/code&gt; loop by the C# compiler, and then is executed as such.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="lowering"&gt;Lowering&lt;/h2&gt;
+&lt;p&gt;Done by the C# compiler, &lt;code&gt;lowering&lt;/code&gt; is the process of rewriting high-level language features, into low-level language features in the &lt;em&gt;same language&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;There are a number of C# features, which are just &lt;em&gt;syntactic sugar&lt;/em&gt; over (often) more complex lower-level features - the compiler will take the high-level feature and &lt;em&gt;lower&lt;/em&gt; it to the lower-level feature.&lt;/p&gt;
+&lt;p&gt;Lowering is done for a number of reasons, including:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Working with high-level features, are easier and simpler to work with&lt;/li&gt;
+&lt;li&gt;Optimization&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;This post is specifically about the &lt;code&gt;for&lt;/code&gt; loop, not an especially complex feature - however it is more complex than the &lt;code&gt;while&lt;/code&gt; loop, its lower-level equivalent.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="for-loop"&gt;For loop&lt;/h2&gt;
+&lt;p&gt;Using &lt;a href="https://sharplab.io/"&gt;sharplab.io&lt;/a&gt;, one is able to see the lowered code the compiler generates.&lt;/p&gt;
+&lt;p&gt;Here is an example of some code written in Visual Studio:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public void ForLoopExample() 
+{
+    for(int i = 0; i &amp;lt; 100; i++)
+    {
+        Console.WriteLine(i);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And the lowered code the compiler generates:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public void ForLoopExample()
+{
+    int num = 0;
+    while (num &amp;lt; 100)
+    {
+        Console.WriteLine(num);
+        num++;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As you can see - the &lt;code&gt;for&lt;/code&gt; loop is converted to a &lt;code&gt;while&lt;/code&gt; loop!&lt;/p&gt;
+&lt;p&gt;Another example, in a previous post we learnt how the &lt;em&gt;iterator section&lt;/em&gt; of a for loop could &lt;a href="https://alwaysdeveloping.net/06/30-for-multi-operations"&gt;contain multiple statements&lt;/a&gt;. Looking at the lowered code for that example, the &lt;code&gt;while&lt;/code&gt; loop is controlled only by the &lt;em&gt;condition section&lt;/em&gt; of the &lt;code&gt;for&lt;/code&gt; loop - this is why this portion of the for loop can only contain one statement, while the other sections can contain multiple.&lt;/p&gt;
+&lt;p&gt;Original C# code:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public void ForLoopExample2() 
+{
+    int countDown = 100;
+    for(int i = 0; i &amp;lt; 100; i++, countDown--)
+    {
+        Console.WriteLine(i);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And the lowered code the compiler generates:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public void ForLoopExample2()
+{
+    int num = 100;
+    int num2 = 0;
+    while (num2 &amp;lt; 100)
+    {
+        Console.WriteLine(num2);
+        num2++;
+        num--;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr&gt;
+&lt;h2 id="foreach"&gt;Foreach&lt;/h2&gt;
+&lt;p&gt;Just for reference, the &lt;code&gt;foreach&lt;/code&gt; does not operate the same way as the &lt;code&gt;for&lt;/code&gt; loop - even though both iterate through a list of items, they do it very differently.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;Foreach&lt;/code&gt; works using the &lt;em&gt;&lt;a href="https://alwaysdeveloping.net/03/03-getenumerator"&gt;GetEnumerator&lt;/a&gt;&lt;/em&gt; method on a class, and is not lowered to a &lt;code&gt;while&lt;/code&gt; loop:&lt;/p&gt;
+&lt;p&gt;Original C# code:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public void ForEachLoopExample() 
+{
+    var list = new List&amp;lt;int&amp;gt; { 1, 2, 3, 4, 5, };
+
+    foreach (var item in list)
+    {
+        Console.WriteLine(item);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And the lowered code the compiler generates:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public void ForEachLoopExample()
+{
+    List&amp;lt;int&amp;gt; list = new List&amp;lt;int&amp;gt;();
+    list.Add(1);
+    list.Add(2);
+    list.Add(3);
+    list.Add(4);
+    list.Add(5);
+    List&amp;lt;int&amp;gt; list2 = list;
+    List&amp;lt;int&amp;gt;.Enumerator enumerator = list2.GetEnumerator();
+    try
+    {
+        while (enumerator.MoveNext())
+        {
+            int current = enumerator.Current;
+            Console.WriteLine(current);
+        }
+    }
+    finally
+    {
+        ((IDisposable)enumerator).Dispose();
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;While the developer written code for a &lt;code&gt;for&lt;/code&gt; and &lt;code&gt;foreach&lt;/code&gt; loop are fairly similar - the lowered code for the &lt;code&gt;foreach&lt;/code&gt; is a bit more complex than a simple &lt;code&gt;while&lt;/code&gt; loop.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;While this may not be something one has to worry or think about when coding - its always good to have a general knowledge of how the compiler works, and what its doing (even at a high level), and how the code written impacts the lowered code which gets executed.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://sharplab.io/"&gt;sharplab.io&lt;/a&gt;&lt;/p&gt;
+&lt;!--?# DailyDrop ?--&gt;113: 07-08-2022&lt;!--?#/ DailyDrop ?--&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/06/17-sortable-guids</id>
 		<title>Sortable Guids using NewId</title>
@@ -84,114 +256,6 @@ df1d0000-0a83-7cd3-4f5c-08da40cae579
 &lt;p&gt;&lt;a href="https://www.nuget.org/packages/NewId/"&gt;NewId&lt;/a&gt;&lt;br&gt;
 &lt;a href="https://andrewlock.net/generating-sortable-guids-using-newid/"&gt;Generating sortable Guids using NewId&lt;/a&gt;&lt;/p&gt;
 &lt;!--?# DailyDrop ?--&gt;98: 17-06-2022&lt;!--?#/ DailyDrop ?--&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/07/06-sql-2022-enhancements</id>
-		<title>T-SQL enhancements in SQL Server 2022</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/07/06-sql-2022-enhancements" />
-		<updated>2022-06-17T00:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;There are a number of very useful T-SQL enhancements coming with SQL Server 2022 (currently in preview). Some of these include:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;STRING_SPLIT&lt;/code&gt; - splits a string into rows of substrings, based on a specified separator character, now with &lt;strong&gt;ordinal support&lt;/strong&gt;&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;GREATEST/LEAST&lt;/code&gt; - Similar to &lt;em&gt;MAX/MIN&lt;/em&gt;, but operates across columns instead of across rows&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;GENERATE_SERIES&lt;/code&gt; - Produces a set-based sequence of numeric values&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;JSON functions&lt;/code&gt; - Including functions to test whether a string is valid JSON, construct a JSON object and construct a JSON array&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;DATE_BUCKET&lt;/code&gt; - Returns the date-time value corresponding to the start of each date-time bucket from the timestamp defined&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Below we'll explore some of the enhancements I will find most useful (based on my previous experiences and requirements), while additional details on the other enhancements can be found in the references below.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="string_split"&gt;STRING_SPLIT&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;SPLIT_STRING&lt;/code&gt; function, first introduced with SQL Server 2016, allows for the splitting a string into rows of substrings - especially useful for developers making extensive use of stored procedures (for example, with SQL Server Reporting Services)&lt;/p&gt;
-&lt;p&gt;For example, executing the following SQL:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT * from STRING_SPLIT('one,two,three,four,five', ',')
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Results in the following output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;value
------------------------
-one
-two
-three
-four
-five
-&lt;/code&gt;&lt;/pre&gt;
-&lt;br&gt;
-&lt;p&gt;Coming in SQL Server 2022, is the ability to &lt;em&gt;determine the nth item of the list&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;For example, executing the following SQL:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT * from STRING_SPLIT('one,two,three,four,five', ',' , 1) WHERE ordinal = 3
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Results in the following output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;value                   ordinal
------------------------ --------------------
-three                   3
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;An additional parameter, &lt;em&gt;enable_ordinal&lt;/em&gt; is available which will return an &lt;em&gt;ordinal&lt;/em&gt; column - which can then be used as part of a WHERE clause.&lt;/p&gt;
-&lt;p&gt;One limitation of the &lt;code&gt;SPLIT_STRING&lt;/code&gt; remains, and that is that the delimiter can only be a single character, and not a string.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="greatestleast"&gt;GREATEST/LEAST&lt;/h2&gt;
-&lt;p&gt;The new &lt;code&gt;GREATEST and LEAST&lt;/code&gt; functions, are similar to the existing  &lt;em&gt;MAX and MIN&lt;/em&gt; functions, but operates across columns instead of across rows.&lt;/p&gt;
-&lt;p&gt;Consider the following &lt;em&gt;VisitorsPerMonth&lt;/em&gt; table which stores the number of unique visitors to a website, per month, per year.&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT * FROM VisitorsPerMonth
-
-Year        Jan         Feb         March
------------ ----------- ----------- -----------
-2020        435         643         763
-2021        893         1121        1327
-2022        1923        2107        2782
-
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We can use &lt;em&gt;Max&lt;/em&gt; to determine &lt;em&gt;maximum number of visitors in any January&lt;/em&gt; (a max across rows):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT MAX(Jan)
-FROM VisitorsPerMonth
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;However, what if we wanted the &lt;em&gt;max number of visitors in any particular month in a year&lt;/em&gt; - this requires an operation across columns, which is where the &lt;code&gt;GREATEST&lt;/code&gt; function comes into play.&lt;/p&gt;
-&lt;p&gt;A number of &lt;em&gt;columns&lt;/em&gt; are supplied to the function, and the greatest value will be returned:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT Year, GREATEST(Jan, Feb, March) as HighestVisitors
-FROM VisitorsPerMonth
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This results in the following output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;Year        HighestVisitors
------------ ---------------
-2020        763
-2021        1327
-2022        2782
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We now know how many visitors the site had in its most popular month in each year.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="generate_series"&gt;GENERATE_SERIES&lt;/h2&gt;
-&lt;p&gt;This new function produces a set-based sequence of numeric values based on specified &lt;em&gt;START&lt;/em&gt;, &lt;em&gt;STOP&lt;/em&gt; and &lt;em&gt;STEP&lt;/em&gt; values.&lt;/p&gt;
-&lt;p&gt;The usage is fairly straightforward:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT value FROM GENERATE_SERIES(START = 1, STOP = 3);
-SELECT value FROM GENERATE_SERIES(START = 0, STOP = 25, STEP = 5);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Which results in the output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;value
------------
-1
-2
-3
-
-value
------------
-0
-5
-10
-15
-20
-25
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;If no &lt;em&gt;STEP&lt;/em&gt; value is specified, a value of &lt;strong&gt;1&lt;/strong&gt; is used.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;As a C# developer, in recent years, my focus has been more on using Entity Framework Core and less on raw SQL usage - however, knowledge of these enhancement will come in useful when the need arises to do raw SQL (a custom query through EF, or Dapper, or a report stored procedure, for example).&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.mssqltips.com/sqlservertip/7265/sql-server-2022-t-sql-enhancements/"&gt;My Favorite T-SQL Enhancements in SQL Server 2022&lt;/a&gt;&lt;br /&gt;
-&lt;a href="https://docs.microsoft.com/en-us/sql/t-sql/functions/date-bucket-transact-sql?view=sql-server-ver16"&gt;DATE_BUCKET (Transact-SQL)&lt;/a&gt;&lt;br /&gt;
-&lt;a href="https://docs.microsoft.com/en-us/sql/t-sql/functions/json-object-transact-sql?view=sql-server-ver16"&gt;JSON_OBJECT (Transact-SQL)&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;111: 06-07-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
@@ -989,99 +1053,6 @@ Also, it might not be possible to add a &lt;code&gt;ToString&lt;/code&gt; method
 &lt;p&gt;&lt;a href="https://devblogs.microsoft.com/visualstudio/view-net-collections-with-the-new-ienumerable-debugger-visualizer/?WT.mc_id=DOP-MVP-4025064"&gt;View .NET collections with the new IEnumerable Debugger Visualizer&lt;/a&gt;&lt;br&gt;
 &lt;a href="https://devblogs.microsoft.com/visualstudio/visual-studio-2022-17-2-is-now-available/#debugging-collections"&gt;Debugging collections&lt;/a&gt;&lt;/p&gt;
 &lt;!--?# DailyDrop ?--&gt;91: 08-06-2022&lt;!--?#/ DailyDrop ?--&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/06/07-allownull-disallownull-attributes</id>
-		<title>AllowNull and DisallowNull attributes</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/06/07-allownull-disallownull-attributes" />
-		<updated>2022-06-07T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;AllowNull&lt;/code&gt; and &lt;code&gt;DisallowNull&lt;/code&gt; attributes can be used to set that a property can/should allow a &lt;code&gt;null&lt;/code&gt; value or not.&lt;/p&gt;
-&lt;p&gt;These are used in a fairly narrow and niche use case, which won't necessarily effect the performance of code, but does eliminate compiler warnings.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="null-property"&gt;Null Property&lt;/h2&gt;
-&lt;p&gt;Consider a &lt;code&gt;User&lt;/code&gt; class with a &lt;code&gt;Name&lt;/code&gt; property. Our system &lt;em&gt;requires that a user has a name, but does not require the user has to provide one&lt;/em&gt;. If none is provided, then a default is specified.&lt;/p&gt;
-&lt;p&gt;In this case, the &lt;em&gt;Name&lt;/em&gt; will &lt;code&gt;never return null, but can be set to null&lt;/code&gt;.&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class User
-{
-    private string _name;
-
-    public string Name
-    {
-        get =&amp;gt; _name;
-        set =&amp;gt; _name = value ?? &amp;quot;Anonymous&amp;quot;;
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;If an instance of &lt;em&gt;User&lt;/em&gt; is declared, and &lt;code&gt;null&lt;/code&gt; assigned to &lt;em&gt;Name&lt;/em&gt;, the compiler will give the following warning:&lt;br /&gt;
-&lt;strong&gt;&lt;em&gt;Cannot convert null literal to non-nullable reference type&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;Changing the property type from &lt;em&gt;string&lt;/em&gt; to &lt;em&gt;string?&lt;/em&gt; will get rid of the warning, but this is not an entirely accurate representation of the type. &lt;em&gt;Name&lt;/em&gt; can never have a value of and return &lt;code&gt;null&lt;/code&gt; - callers will never need to check &lt;em&gt;Name&lt;/em&gt; property for &lt;code&gt;null&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;A more accurate method to get rid of the warning, is to use the &lt;code&gt;AllowNull&lt;/code&gt; attribute (in the &lt;em&gt;System.Diagnostics.CodeAnalysis&lt;/em&gt; namespace):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;[AllowNull]
-public string Name
-{
-    get =&amp;gt; _name;
-    set =&amp;gt; _name = value ?? &amp;quot;Anonymous&amp;quot;;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This attribute specified a pre-condition which &lt;code&gt;only applies to arguments&lt;/code&gt;, and since only the &lt;code&gt;set&lt;/code&gt; accessor makes use of an argument, the attribute only applies to this accessor, and not the &lt;code&gt;get&lt;/code&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="non-null-property"&gt;Non-null Property&lt;/h2&gt;
-&lt;p&gt;Consider the opposite situation now - a property which has a &lt;code&gt;null&lt;/code&gt; default value, but if explicitly set, is not allowed to be &lt;code&gt;null&lt;/code&gt;. We would want to indicate to the caller that it is possible for the value to be &lt;code&gt;null&lt;/code&gt;, but also that it cannot explicitly be set to &lt;code&gt;null&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;Going back to the &lt;code&gt;User&lt;/code&gt; class, consider now we to add a &lt;code&gt;Email&lt;/code&gt; property. The system &lt;em&gt;requires that if a user has an email address, it cannot be set to null&lt;/em&gt;.&lt;br /&gt;
-The default value for an email is &lt;code&gt;null&lt;/code&gt;, but if it is explicitly set, it cannot be &lt;code&gt;null&lt;/code&gt; (for example, maybe a customer can create a user profile on an e-commerce site, without an email - but if they decide to checkout, an email is required.)&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class User
-{
-    private string _name;
-
-    private string _email;
-
-    [AllowNull]
-    public string Name
-    {
-        get =&amp;gt; _name;
-        set =&amp;gt; _name = value ?? &amp;quot;Anonymous&amp;quot;;
-    }
-
-    public string Email
-    {
-        get =&amp;gt; _email;
-        set =&amp;gt; _email = value ?? 
-            throw new ArgumentNullException(nameof(value), &amp;quot;Cannot set to null&amp;quot;);
-    }
-
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This doesn't indicate that the value &lt;em&gt;could&lt;/em&gt; be &lt;code&gt;null&lt;/code&gt;. To indicate that we can make it a nullable type, &lt;code&gt;string?&lt;/code&gt;.&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public string? Email
-{
-    get =&amp;gt; _email;
-    set =&amp;gt; _email = value ?? 
-            throw new ArgumentNullException(nameof(value), &amp;quot;Cannot set to null&amp;quot;);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Now there is a clear indication that the value &lt;em&gt;could&lt;/em&gt; be &lt;code&gt;null&lt;/code&gt;, however it is still possible to assign a &lt;code&gt;null&lt;/code&gt; value to the field without any compiler time warning. Only at runtime will the exception be thrown.&lt;/p&gt;
-&lt;p&gt;The &lt;code&gt;DisallowNull&lt;/code&gt; attribute can be used to indicate that the parameter to the property cannot be &lt;code&gt;null&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public string? Email
-{
-    get =&amp;gt; _email;
-    set =&amp;gt; _email = value ?? 
-            throw new ArgumentNullException(nameof(value), &amp;quot;Cannot set to null&amp;quot;);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;As with before, this attribute specified a pre-condition which &lt;code&gt;only applies to arguments&lt;/code&gt;, and since only the &lt;code&gt;set&lt;/code&gt; accessor makes use of an argument, the attribute only applies to this accessor, and not the &lt;code&gt;get&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;Now if &lt;code&gt;null&lt;/code&gt; is assigned to the &lt;em&gt;Email&lt;/em&gt; property, there &lt;strong&gt;will&lt;/strong&gt; be a compiler warning stating:
-&lt;strong&gt;&lt;em&gt;Cannot convert null literal to non-nullable reference type&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;This is what we would want - an indicator that the value could be &lt;code&gt;null&lt;/code&gt; (the fact the type is a nullable type), but also an indicator if it is explicitly set to &lt;code&gt;null&lt;/code&gt; (a compiler warning)&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;As mentioned, while this is a fairly narrow and niche use case, it a real use case especially for library authors. While neither of the attributes are &amp;quot;required&amp;quot; to make the code function, they assist in conveying the intended usage of the properties to the user of the properties, by either showing or suppressing a compiler warning.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/attributes/nullable-analysis#preconditions-allownull-and-disallownull"&gt;Preconditions: AllowNull and DisallowNull&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;90: 07-06-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>

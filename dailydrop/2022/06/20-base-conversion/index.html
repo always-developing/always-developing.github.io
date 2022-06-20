@@ -7,9 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <meta name="description" content="always learning | always growing">
 
-    <title>Always Developing - T-SQL enhancements in SQL Server 2022</title>
+    <title>Always Developing - Binary and hexadecimal conversion</title>
 
-    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/07/06-sql-2022-enhancements">
+    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/06/20-base-conversion">
 
             <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
             <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
@@ -18,9 +18,9 @@
     <meta name="msapplication-tooltip" content="Always Developing" />
     <meta name="msapplication-starturl" content="/" />
 
-    <meta property="og:title" content="Always Developing - T-SQL enhancements in SQL Server 2022" />
+    <meta property="og:title" content="Always Developing - Binary and hexadecimal conversion" />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/07/06-sql-2022-enhancements" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/06/20-base-conversion" />
 
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
@@ -104,14 +104,14 @@
             <div class="col-md-10">
                 <div class="post-heading">
                     <h1>
-                        T-SQL enhancements in SQL Server 2022
+                        Binary and hexadecimal conversion
                     </h1>
-                            <h2 class="subheading">Exploring some of the more useful T-SQL enhancement coming with SQL Server 2022</h2>
+                            <h2 class="subheading">Using the Convert class to convert a integer to binary or hexadecimal</h2>
                         <p class="post-meta">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
                                 <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
                                 <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
-                            </svg> Published on Friday, 17 June 2022
+                            </svg> Published on Monday, 20 June 2022
                         </p>
                 </div>
             </div>
@@ -130,104 +130,51 @@
 </div>
 
                         <h2 id="daily-knowledge-drop">Daily Knowledge Drop</h2>
-<p>There are a number of very useful T-SQL enhancements coming with SQL Server 2022 (currently in preview). Some of these include:</p>
-<ul>
-<li><code>STRING_SPLIT</code> - splits a string into rows of substrings, based on a specified separator character, now with <strong>ordinal support</strong></li>
-<li><code>GREATEST/LEAST</code> - Similar to <em>MAX/MIN</em>, but operates across columns instead of across rows</li>
-<li><code>GENERATE_SERIES</code> - Produces a set-based sequence of numeric values</li>
-<li><code>JSON functions</code> - Including functions to test whether a string is valid JSON, construct a JSON object and construct a JSON array</li>
-<li><code>DATE_BUCKET</code> - Returns the date-time value corresponding to the start of each date-time bucket from the timestamp defined</li>
-</ul>
-<p>Below we'll explore some of the enhancements I will find most useful (based on my previous experiences and requirements), while additional details on the other enhancements can be found in the references below.</p>
+<p>The <code>Convert</code> class can be used to convert any integer value to it's corresponding value of a <code>different base</code>.</p>
+<p><code>Binary</code> (base 2), <code>Octal</code> (base 8), <code>Decimal</code> (base 10) and <code>Hexadecimal</code> (base 16) are supported.</p>
 <hr />
-<h2 id="string_split">STRING_SPLIT</h2>
-<p>The <code>SPLIT_STRING</code> function, first introduced with SQL Server 2016, allows for the splitting a string into rows of substrings - especially useful for developers making extensive use of stored procedures (for example, with SQL Server Reporting Services)</p>
-<p>For example, executing the following SQL:</p>
-<pre><code class="language-sql">SELECT * from STRING_SPLIT('one,two,three,four,five', ',')
-</code></pre>
-<p>Results in the following output:</p>
-<pre><code class="language-sql">value
------------------------
-one
-two
-three
-four
-five
-</code></pre>
-<br>
-<p>Coming in SQL Server 2022, is the ability to <em>determine the nth item of the list</em>.</p>
-<p>For example, executing the following SQL:</p>
-<pre><code class="language-sql">SELECT * from STRING_SPLIT('one,two,three,four,five', ',' , 1) WHERE ordinal = 3
-</code></pre>
-<p>Results in the following output:</p>
-<pre><code class="language-sql">value                   ordinal
------------------------ --------------------
-three                   3
-</code></pre>
-<p>An additional parameter, <em>enable_ordinal</em> is available which will return an <em>ordinal</em> column - which can then be used as part of a WHERE clause.</p>
-<p>One limitation of the <code>SPLIT_STRING</code> remains, and that is that the delimiter can only be a single character, and not a string.</p>
-<hr />
-<h2 id="greatestleast">GREATEST/LEAST</h2>
-<p>The new <code>GREATEST and LEAST</code> functions, are similar to the existing  <em>MAX and MIN</em> functions, but operates across columns instead of across rows.</p>
-<p>Consider the following <em>VisitorsPerMonth</em> table which stores the number of unique visitors to a website, per month, per year.</p>
-<pre><code class="language-sql">SELECT * FROM VisitorsPerMonth
+<h2 id="convert-class">Convert class</h2>
+<p>Using the <code>Convert</code> class to perform the conversion is incredibly simple:</p>
+<pre><code class="language-csharp">var intValue = 642;
 
-Year        Jan         Feb         March
------------ ----------- ----------- -----------
-2020        435         643         763
-2021        893         1121        1327
-2022        1923        2107        2782
+// use the ToString method, specifying the new base
+var binary = Convert.ToString(intValue, 2);
+var octal = Convert.ToString(intValue, 8);
+var hex = Convert.ToString(intValue, 16);
 
+Console.WriteLine(binary);
+Console.WriteLine(octal);
+Console.WriteLine(hex);
 </code></pre>
-<p>We can use <em>Max</em> to determine <em>maximum number of visitors in any January</em> (a max across rows):</p>
-<pre><code class="language-sql">SELECT MAX(Jan)
-FROM VisitorsPerMonth
+<p>The output is as follows:</p>
+<pre><code class="language-powershell">1010000010
+1202
+282
 </code></pre>
-<p>However, what if we wanted the <em>max number of visitors in any particular month in a year</em> - this requires an operation across columns, which is where the <code>GREATEST</code> function comes into play.</p>
-<p>A number of <em>columns</em> are supplied to the function, and the greatest value will be returned:</p>
-<pre><code class="language-sql">SELECT Year, GREATEST(Jan, Feb, March) as HighestVisitors
-FROM VisitorsPerMonth
-</code></pre>
-<p>This results in the following output:</p>
-<pre><code class="language-sql">Year        HighestVisitors
------------ ---------------
-2020        763
-2021        1327
-2022        2782
-</code></pre>
-<p>We now know how many visitors the site had in its most popular month in each year.</p>
-<hr />
-<h2 id="generate_series">GENERATE_SERIES</h2>
-<p>This new function produces a set-based sequence of numeric values based on specified <em>START</em>, <em>STOP</em> and <em>STEP</em> values.</p>
-<p>The usage is fairly straightforward:</p>
-<pre><code class="language-sql">SELECT value FROM GENERATE_SERIES(START = 1, STOP = 3);
-SELECT value FROM GENERATE_SERIES(START = 0, STOP = 25, STEP = 5);
-</code></pre>
-<p>Which results in the output:</p>
-<pre><code class="language-sql">value
------------
-1
-2
-3
+<p>Negative values are also supported:</p>
+<pre><code class="language-csharp">var intValue = 642;
 
-value
------------
-0
-5
-10
-15
-20
-25
+// use the ToString method, specifying the new base
+var binaryNeg = Convert.ToString(intValue * 1, 2);
+var octalNeg = Convert.ToString(intValue * -1, 8);
+var hexNeg = Convert.ToString(intValue * -1, 16);
+
+Console.WriteLine(binaryNeg);
+Console.WriteLine(octalNeg);
+Console.WriteLine(hexNeg);
 </code></pre>
-<p>If no <em>STEP</em> value is specified, a value of <strong>1</strong> is used.</p>
+<p>The output is as follows:</p>
+<pre><code class="language-powershell">11111111111111111111110101111110
+37777776576
+fffffd7e
+</code></pre>
+<p>And that's all there is to it - simple and occasionally useful!</p>
 <hr />
 <h2 id="notes">Notes</h2>
-<p>As a C# developer, in recent years, my focus has been more on using Entity Framework Core and less on raw SQL usage - however, knowledge of these enhancement will come in useful when the need arises to do raw SQL (a custom query through EF, or Dapper, or a report stored procedure, for example).</p>
+<p>In my almost 20 years of programming, I don't think I've ever had to perform these kinds of conversions (outside of assignments at university), so this functionality is probably not useful for every day development for most applications - however when the need does arise, it's useful to know it can be easily implemented.</p>
 <hr />
 <h2 id="references">References</h2>
-<p><a href="https://www.mssqltips.com/sqlservertip/7265/sql-server-2022-t-sql-enhancements/">My Favorite T-SQL Enhancements in SQL Server 2022</a><br />
-<a href="https://docs.microsoft.com/en-us/sql/t-sql/functions/date-bucket-transact-sql?view=sql-server-ver16">DATE_BUCKET (Transact-SQL)</a><br />
-<a href="https://docs.microsoft.com/en-us/sql/t-sql/functions/json-object-transact-sql?view=sql-server-ver16">JSON_OBJECT (Transact-SQL)</a></p>
+<p><a href="https://twitter.com/buhakmeh/status/1523685323875635200">Khalid Abuhakmeh Tweet</a></p>
 
 <blockquote class="daily-drop">
     <div>
@@ -240,7 +187,7 @@ value
             </svg>
         </div>
         <div class="drop-header">
-            Daily Drop 111: 06-07-2022
+            Daily Drop 99: 20-06-2022
         </div>
         <div>
             <br>At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br> It could be anything - some.NET / C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
@@ -252,8 +199,10 @@ value
 
                         
 <div>
-            <a role="button" href="/tags/sql" class="badge badge-light"> sql</a>
-            <a role="button" href="/tags/tsql" class="badge badge-light"> tsql</a>
+            <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
+            <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
+            <a role="button" href="/tags/binary" class="badge badge-light"> binary</a>
+            <a role="button" href="/tags/hexadecimal" class="badge badge-light"> hexadecimal</a>
 </div>
                     </div>
                     <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
@@ -263,9 +212,7 @@ value
             <h3 class="no-anchor">On This Page</h3>
             <ul>
         <li><a href="#daily-knowledge-drop">Daily Knowledge Drop</a></li>
-        <li><a href="#string_split">STRING_SPLIT</a></li>
-        <li><a href="#greatestleast">GREATEST/LEAST</a></li>
-        <li><a href="#generate_series">GENERATE_SERIES</a></li>
+        <li><a href="#convert-class">Convert class</a></li>
         <li><a href="#notes">Notes</a></li>
         <li><a href="#references">References</a></li>
             </ul>
