@@ -5,8 +5,115 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Mon, 20 Jun 2022 03:59:43 GMT</pubDate>
-		<lastBuildDate>Mon, 20 Jun 2022 03:59:43 GMT</lastBuildDate>
+		<pubDate>Tue, 21 Jun 2022 04:12:39 GMT</pubDate>
+		<lastBuildDate>Tue, 21 Jun 2022 04:12:39 GMT</lastBuildDate>
+		<item>
+			<title>TryAddEnumerable to configure dependency injection</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/06/21-tryaddenumerable</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/06/21-tryaddenumerable</guid>
+			<pubDate>Tue, 21 Jun 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;When using the C# dependency injection container, the:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;Add&lt;/code&gt; methods (&lt;em&gt;AddSingleton&lt;/em&gt;, &lt;em&gt;AddScoped&lt;/em&gt;, &lt;em&gt;AddTransient&lt;/em&gt;) will always add the interface and implementation to the container, even if it results in duplicate registrations&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;TryAdd&lt;/code&gt; methods (&lt;em&gt;TryAddSingleton&lt;/em&gt;, &lt;em&gt;TryAddScoped&lt;/em&gt;, &lt;em&gt;TryAddTransient&lt;/em&gt;) will only add the interface and implementation to the container if the &lt;em&gt;interface&lt;/em&gt; has not already been registered&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Today we are looking specifically at &lt;code&gt;TryAddEnumerable&lt;/code&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;TryAddEnumerable&lt;/code&gt; will only add the interface and implementation to the container if the &lt;em&gt;combination of the interface and implementation&lt;/em&gt; has not already been registered&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr /&gt;
+&lt;h2 id="endpoint-example"&gt;Endpoint example&lt;/h2&gt;
+&lt;p&gt;In the three examples below, we have a simple setup, with an interface and a couple of implementations of the interface:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public interface IServiceInterface { }
+
+public class ServiceImplementationOne: IServiceInterface { }
+
+public class ServiceImplementationTwo : IServiceInterface { }
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And then a minimal endpoint which has &lt;em&gt;IEnumerable&amp;lt;IServiceInterface&amp;gt;&lt;/em&gt; injected, and returns all implementations:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/endpoint&amp;quot;, (IEnumerable&amp;lt;IServiceInterface&amp;gt; service) =&amp;gt;
+{
+    return service.Select(s =&amp;gt; s.GetType().Name);
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="add-methods"&gt;Add methods&lt;/h3&gt;
+&lt;p&gt;First, lets look at the behavior of the &lt;em&gt;Add&lt;/em&gt; methods. These methods will always add the interface and implementation, even if its already been added.&lt;/p&gt;
+&lt;p&gt;In the dependency injection configuration, in this example, a duplicate implementation of &lt;em&gt;ServiceImplementationTwo&lt;/em&gt; is added:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddTransient(typeof(IServiceInterface), 
+    typeof(ServiceImplementationOne));
+builder.Services.AddTransient(typeof(IServiceInterface), 
+    typeof(ServiceImplementationTwo));
+builder.Services.AddTransient(typeof(IServiceInterface), 
+    typeof(ServiceImplementationTwo));
+
+var app = builder.Build();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The endpoint will return the following - &lt;em&gt;ServiceImplementationTwo&lt;/em&gt; has been added to the dependency injection container twice, and is therefor the duplicate was injected into and returned from the endpoint:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-json"&gt;[
+  &amp;quot;ServiceImplementationOne&amp;quot;,
+  &amp;quot;ServiceImplementationTwo&amp;quot;,
+  &amp;quot;ServiceImplementationTwo&amp;quot;
+]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="tryadd-methods"&gt;TryAdd methods&lt;/h3&gt;
+&lt;p&gt;The &lt;em&gt;TryAdd&lt;/em&gt; methods operate differently, and will ensure that only one implementation of the interface is added to the container.&lt;/p&gt;
+&lt;p&gt;In the dependency injection configuration, in this example, we use the same configuration as in the first example, but with the &lt;em&gt;TryAddTransient&lt;/em&gt; method instead of the &lt;em&gt;AddTransient&lt;/em&gt; method:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.TryAddTransient(typeof(IServiceInterface), 
+    typeof(ServiceImplementationOne));
+builder.Services.TryAddTransient(typeof(IServiceInterface), 
+    typeof(ServiceImplementationTwo));
+builder.Services.TryAddTransient(typeof(IServiceInterface), 
+    typeof(ServiceImplementationTwo));
+
+var app = builder.Build();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The endpoint will return the following - only the first implementation of &lt;em&gt;IServiceInterface&lt;/em&gt; added to the dependency injection container is registered.&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-json"&gt;[
+  &amp;quot;ServiceImplementationOne&amp;quot;
+]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Neither of the two registrations of &lt;em&gt;ServiceImplementationTwo&lt;/em&gt; are actioned, because an implementation of &lt;em&gt;IServiceInterface&lt;/em&gt; (ServiceImplementationOne) was already added.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="tryaddenumerable-method"&gt;TryAddEnumerable method&lt;/h3&gt;
+&lt;p&gt;The &lt;em&gt;TryAddEnumerable&lt;/em&gt; method is used slightly differently - this method takes a &lt;em&gt;ServiceDescriptor&lt;/em&gt; instance, and not a interface and implementation directly.&lt;/p&gt;
+&lt;p&gt;In the dependency injection configuration, in this example, we use the the same configuration as in the above example, with a slightly different setup. We define three instances of &lt;em&gt;ServiceDescriptor&lt;/em&gt;, two of them are describing implementations of &lt;em&gt;ServiceImplementationTwo&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
+
+var descriptorOne = new ServiceDescriptor(typeof(IServiceInterface), 
+    typeof(ServiceImplementationOne), ServiceLifetime.Transient);
+var descriptorTwo = new ServiceDescriptor(typeof(IServiceInterface), 
+    typeof(ServiceImplementationTwo), ServiceLifetime.Transient);
+var descriptorThree = new ServiceDescriptor(typeof(IServiceInterface), 
+    typeof(ServiceImplementationTwo), ServiceLifetime.Transient);
+
+builder.Services.TryAddEnumerable(new[] { descriptorOne, descriptorTwo, descriptorThree });
+
+var app = builder.Build();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The endpoint will return the following - only the first implementation of each unique &lt;em&gt;interface&lt;/em&gt; + &lt;em&gt;implementation&lt;/em&gt; combination:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-json"&gt;[
+  &amp;quot;ServiceImplementationOne&amp;quot;,
+  &amp;quot;ServiceImplementationTwo&amp;quot;
+]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;The &lt;em&gt;TryAddEnumerable&lt;/em&gt; method is incredible useful, especially as a library author where your library might need to add items to the dependency injection container, but without knowing if another library has already added it. &lt;em&gt;TryAddEnumerable&lt;/em&gt; can be used to ensure that the dependency injection container is not &amp;quot;polluted&amp;quot; with duplicate identical implementations, which could potentially cause issues.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://www.youtube.com/watch?v=iQ8cNI7a6mk"&gt;The .NET dependency injection methods you are not using&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;100: 21-06-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Binary and hexadecimal conversion</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/06/20-base-conversion</link>
@@ -60,124 +167,6 @@ fffffd7e
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://twitter.com/buhakmeh/status/1523685323875635200"&gt;Khalid Abuhakmeh Tweet&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;99: 20-06-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>For loop lowering in C#</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/07/08-lowing-for-loop</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/07/08-lowing-for-loop</guid>
-			<pubDate>Mon, 20 Jun 2022 00:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;In C#, a &lt;code&gt;for loop&lt;/code&gt; is &lt;em&gt;lowered&lt;/em&gt; to a &lt;code&gt;while loop&lt;/code&gt; by the compiler.&lt;/p&gt;
-&lt;p&gt;At a lower level, the &lt;code&gt;for&lt;/code&gt; loop &lt;em&gt;does not exist&lt;/em&gt; - it gets translated into a &lt;code&gt;while&lt;/code&gt; loop by the C# compiler, and then is executed as such.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="lowering"&gt;Lowering&lt;/h2&gt;
-&lt;p&gt;Done by the C# compiler, &lt;code&gt;lowering&lt;/code&gt; is the process of rewriting high-level language features, into low-level language features in the &lt;em&gt;same language&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;There are a number of C# features, which are just &lt;em&gt;syntactic sugar&lt;/em&gt; over (often) more complex lower-level features - the compiler will take the high-level feature and &lt;em&gt;lower&lt;/em&gt; it to the lower-level feature.&lt;/p&gt;
-&lt;p&gt;Lowering is done for a number of reasons, including:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Working with high-level features, are easier and simpler to work with&lt;/li&gt;
-&lt;li&gt;Optimization&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;This post is specifically about the &lt;code&gt;for&lt;/code&gt; loop, not an especially complex feature - however it is more complex than the &lt;code&gt;while&lt;/code&gt; loop, its lower-level equivalent.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="for-loop"&gt;For loop&lt;/h2&gt;
-&lt;p&gt;Using &lt;a href="https://sharplab.io/"&gt;sharplab.io&lt;/a&gt;, one is able to see the lowered code the compiler generates.&lt;/p&gt;
-&lt;p&gt;Here is an example of some code written in Visual Studio:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public void ForLoopExample() 
-{
-    for(int i = 0; i &amp;lt; 100; i++)
-    {
-        Console.WriteLine(i);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;And the lowered code the compiler generates:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public void ForLoopExample()
-{
-    int num = 0;
-    while (num &amp;lt; 100)
-    {
-        Console.WriteLine(num);
-        num++;
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;As you can see - the &lt;code&gt;for&lt;/code&gt; loop is converted to a &lt;code&gt;while&lt;/code&gt; loop!&lt;/p&gt;
-&lt;p&gt;Another example, in a previous post we learnt how the &lt;em&gt;iterator section&lt;/em&gt; of a for loop could &lt;a href="https://alwaysdeveloping.net/06/30-for-multi-operations"&gt;contain multiple statements&lt;/a&gt;. Looking at the lowered code for that example, the &lt;code&gt;while&lt;/code&gt; loop is controlled only by the &lt;em&gt;condition section&lt;/em&gt; of the &lt;code&gt;for&lt;/code&gt; loop - this is why this portion of the for loop can only contain one statement, while the other sections can contain multiple.&lt;/p&gt;
-&lt;p&gt;Original C# code:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public void ForLoopExample2() 
-{
-    int countDown = 100;
-    for(int i = 0; i &amp;lt; 100; i++, countDown--)
-    {
-        Console.WriteLine(i);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;And the lowered code the compiler generates:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public void ForLoopExample2()
-{
-    int num = 100;
-    int num2 = 0;
-    while (num2 &amp;lt; 100)
-    {
-        Console.WriteLine(num2);
-        num2++;
-        num--;
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr&gt;
-&lt;h2 id="foreach"&gt;Foreach&lt;/h2&gt;
-&lt;p&gt;Just for reference, the &lt;code&gt;foreach&lt;/code&gt; does not operate the same way as the &lt;code&gt;for&lt;/code&gt; loop - even though both iterate through a list of items, they do it very differently.&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;Foreach&lt;/code&gt; works using the &lt;em&gt;&lt;a href="https://alwaysdeveloping.net/03/03-getenumerator"&gt;GetEnumerator&lt;/a&gt;&lt;/em&gt; method on a class, and is not lowered to a &lt;code&gt;while&lt;/code&gt; loop:&lt;/p&gt;
-&lt;p&gt;Original C# code:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public void ForEachLoopExample() 
-{
-    var list = new List&amp;lt;int&amp;gt; { 1, 2, 3, 4, 5, };
-
-    foreach (var item in list)
-    {
-        Console.WriteLine(item);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;And the lowered code the compiler generates:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public void ForEachLoopExample()
-{
-    List&amp;lt;int&amp;gt; list = new List&amp;lt;int&amp;gt;();
-    list.Add(1);
-    list.Add(2);
-    list.Add(3);
-    list.Add(4);
-    list.Add(5);
-    List&amp;lt;int&amp;gt; list2 = list;
-    List&amp;lt;int&amp;gt;.Enumerator enumerator = list2.GetEnumerator();
-    try
-    {
-        while (enumerator.MoveNext())
-        {
-            int current = enumerator.Current;
-            Console.WriteLine(current);
-        }
-    }
-    finally
-    {
-        ((IDisposable)enumerator).Dispose();
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;While the developer written code for a &lt;code&gt;for&lt;/code&gt; and &lt;code&gt;foreach&lt;/code&gt; loop are fairly similar - the lowered code for the &lt;code&gt;foreach&lt;/code&gt; is a bit more complex than a simple &lt;code&gt;while&lt;/code&gt; loop.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;While this may not be something one has to worry or think about when coding - its always good to have a general knowledge of how the compiler works, and what its doing (even at a high level), and how the code written impacts the lowered code which gets executed.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://sharplab.io/"&gt;sharplab.io&lt;/a&gt;&lt;/p&gt;
-&lt;!--?# DailyDrop ?--&gt;113: 07-08-2022&lt;!--?#/ DailyDrop ?--&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>

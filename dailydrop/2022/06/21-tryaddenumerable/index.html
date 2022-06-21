@@ -7,9 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <meta name="description" content="always learning | always growing">
 
-    <title>Always Developing - For loop lowering in C#</title>
+    <title>Always Developing - TryAddEnumerable to configure dependency injection</title>
 
-    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/07/08-lowing-for-loop">
+    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/06/21-tryaddenumerable">
 
             <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
             <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
@@ -18,9 +18,9 @@
     <meta name="msapplication-tooltip" content="Always Developing" />
     <meta name="msapplication-starturl" content="/" />
 
-    <meta property="og:title" content="Always Developing - For loop lowering in C#" />
+    <meta property="og:title" content="Always Developing - TryAddEnumerable to configure dependency injection" />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/07/08-lowing-for-loop" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/06/21-tryaddenumerable" />
 
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
@@ -104,14 +104,14 @@
             <div class="col-md-10">
                 <div class="post-heading">
                     <h1>
-                        For loop lowering in C#
+                        TryAddEnumerable to configure dependency injection
                     </h1>
-                            <h2 class="subheading">Discovering how C# lowers for a loop to a while loop</h2>
+                            <h2 class="subheading">How TryAddEnumerable operates differently to the other DI methods</h2>
                         <p class="post-meta">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
                                 <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
                                 <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
-                            </svg> Published on Monday, 20 June 2022
+                            </svg> Published on Tuesday, 21 June 2022
                         </p>
                 </div>
             </div>
@@ -130,113 +130,102 @@
 </div>
 
                         <h2 id="daily-knowledge-drop">Daily Knowledge Drop</h2>
-<p>In C#, a <code>for loop</code> is <em>lowered</em> to a <code>while loop</code> by the compiler.</p>
-<p>At a lower level, the <code>for</code> loop <em>does not exist</em> - it gets translated into a <code>while</code> loop by the C# compiler, and then is executed as such.</p>
-<hr />
-<h2 id="lowering">Lowering</h2>
-<p>Done by the C# compiler, <code>lowering</code> is the process of rewriting high-level language features, into low-level language features in the <em>same language</em>.</p>
-<p>There are a number of C# features, which are just <em>syntactic sugar</em> over (often) more complex lower-level features - the compiler will take the high-level feature and <em>lower</em> it to the lower-level feature.</p>
-<p>Lowering is done for a number of reasons, including:</p>
+<p>When using the C# dependency injection container, the:</p>
 <ul>
-<li>Working with high-level features, are easier and simpler to work with</li>
-<li>Optimization</li>
+<li><code>Add</code> methods (<em>AddSingleton</em>, <em>AddScoped</em>, <em>AddTransient</em>) will always add the interface and implementation to the container, even if it results in duplicate registrations</li>
+<li><code>TryAdd</code> methods (<em>TryAddSingleton</em>, <em>TryAddScoped</em>, <em>TryAddTransient</em>) will only add the interface and implementation to the container if the <em>interface</em> has not already been registered</li>
 </ul>
-<p>This post is specifically about the <code>for</code> loop, not an especially complex feature - however it is more complex than the <code>while</code> loop, its lower-level equivalent.</p>
+<p>Today we are looking specifically at <code>TryAddEnumerable</code>:</p>
+<ul>
+<li><code>TryAddEnumerable</code> will only add the interface and implementation to the container if the <em>combination of the interface and implementation</em> has not already been registered</li>
+</ul>
 <hr />
-<h2 id="for-loop">For loop</h2>
-<p>Using <a href="https://sharplab.io/">sharplab.io</a>, one is able to see the lowered code the compiler generates.</p>
-<p>Here is an example of some code written in Visual Studio:</p>
-<pre><code class="language-csharp">public void ForLoopExample() 
-{
-    for(int i = 0; i &lt; 100; i++)
-    {
-        Console.WriteLine(i);
-    }
-}
-</code></pre>
-<p>And the lowered code the compiler generates:</p>
-<pre><code class="language-csharp">public void ForLoopExample()
-{
-    int num = 0;
-    while (num &lt; 100)
-    {
-        Console.WriteLine(num);
-        num++;
-    }
-}
-</code></pre>
-<p>As you can see - the <code>for</code> loop is converted to a <code>while</code> loop!</p>
-<p>Another example, in a previous post we learnt how the <em>iterator section</em> of a for loop could <a href="../../06/30-for-multi-operations">contain multiple statements</a>. Looking at the lowered code for that example, the <code>while</code> loop is controlled only by the <em>condition section</em> of the <code>for</code> loop - this is why this portion of the for loop can only contain one statement, while the other sections can contain multiple.</p>
-<p>Original C# code:</p>
-<pre><code class="language-csharp">public void ForLoopExample2() 
-{
-    int countDown = 100;
-    for(int i = 0; i &lt; 100; i++, countDown--)
-    {
-        Console.WriteLine(i);
-    }
-}
-</code></pre>
-<p>And the lowered code the compiler generates:</p>
-<pre><code class="language-csharp">public void ForLoopExample2()
-{
-    int num = 100;
-    int num2 = 0;
-    while (num2 &lt; 100)
-    {
-        Console.WriteLine(num2);
-        num2++;
-        num--;
-    }
-}
-</code></pre>
-<hr />
-<h2 id="foreach">Foreach</h2>
-<p>Just for reference, the <code>foreach</code> does not operate the same way as the <code>for</code> loop - even though both iterate through a list of items, they do it very differently.</p>
-<p><code>Foreach</code> works using the <em><a href="../../03/03-getenumerator">GetEnumerator</a></em> method on a class, and is not lowered to a <code>while</code> loop:</p>
-<p>Original C# code:</p>
-<pre><code class="language-csharp">public void ForEachLoopExample() 
-{
-    var list = new List&lt;int&gt; { 1, 2, 3, 4, 5, };
+<h2 id="endpoint-example">Endpoint example</h2>
+<p>In the three examples below, we have a simple setup, with an interface and a couple of implementations of the interface:</p>
+<pre><code class="language-csharp">public interface IServiceInterface { }
 
-    foreach (var item in list)
-    {
-        Console.WriteLine(item);
-    }
-}
+public class ServiceImplementationOne: IServiceInterface { }
+
+public class ServiceImplementationTwo : IServiceInterface { }
 </code></pre>
-<p>And the lowered code the compiler generates:</p>
-<pre><code class="language-csharp">public void ForEachLoopExample()
+<p>And then a minimal endpoint which has <em>IEnumerable&lt;IServiceInterface&gt;</em> injected, and returns all implementations:</p>
+<pre><code class="language-csharp">app.MapGet(&quot;/endpoint&quot;, (IEnumerable&lt;IServiceInterface&gt; service) =&gt;
 {
-    List&lt;int&gt; list = new List&lt;int&gt;();
-    list.Add(1);
-    list.Add(2);
-    list.Add(3);
-    list.Add(4);
-    list.Add(5);
-    List&lt;int&gt; list2 = list;
-    List&lt;int&gt;.Enumerator enumerator = list2.GetEnumerator();
-    try
-    {
-        while (enumerator.MoveNext())
-        {
-            int current = enumerator.Current;
-            Console.WriteLine(current);
-        }
-    }
-    finally
-    {
-        ((IDisposable)enumerator).Dispose();
-    }
-}
+    return service.Select(s =&gt; s.GetType().Name);
+});
 </code></pre>
-<p>While the developer written code for a <code>for</code> and <code>foreach</code> loop are fairly similar - the lowered code for the <code>foreach</code> is a bit more complex than a simple <code>while</code> loop.</p>
+<hr />
+<h3 id="add-methods">Add methods</h3>
+<p>First, lets look at the behavior of the <em>Add</em> methods. These methods will always add the interface and implementation, even if its already been added.</p>
+<p>In the dependency injection configuration, in this example, a duplicate implementation of <em>ServiceImplementationTwo</em> is added:</p>
+<pre><code class="language-csharp">var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddTransient(typeof(IServiceInterface), 
+    typeof(ServiceImplementationOne));
+builder.Services.AddTransient(typeof(IServiceInterface), 
+    typeof(ServiceImplementationTwo));
+builder.Services.AddTransient(typeof(IServiceInterface), 
+    typeof(ServiceImplementationTwo));
+
+var app = builder.Build();
+</code></pre>
+<p>The endpoint will return the following - <em>ServiceImplementationTwo</em> has been added to the dependency injection container twice, and is therefor the duplicate was injected into and returned from the endpoint:</p>
+<pre><code class="language-json">[
+  &quot;ServiceImplementationOne&quot;,
+  &quot;ServiceImplementationTwo&quot;,
+  &quot;ServiceImplementationTwo&quot;
+]
+</code></pre>
+<hr />
+<h3 id="tryadd-methods">TryAdd methods</h3>
+<p>The <em>TryAdd</em> methods operate differently, and will ensure that only one implementation of the interface is added to the container.</p>
+<p>In the dependency injection configuration, in this example, we use the same configuration as in the first example, but with the <em>TryAddTransient</em> method instead of the <em>AddTransient</em> method:</p>
+<pre><code class="language-csharp">var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.TryAddTransient(typeof(IServiceInterface), 
+    typeof(ServiceImplementationOne));
+builder.Services.TryAddTransient(typeof(IServiceInterface), 
+    typeof(ServiceImplementationTwo));
+builder.Services.TryAddTransient(typeof(IServiceInterface), 
+    typeof(ServiceImplementationTwo));
+
+var app = builder.Build();
+</code></pre>
+<p>The endpoint will return the following - only the first implementation of <em>IServiceInterface</em> added to the dependency injection container is registered.</p>
+<pre><code class="language-json">[
+  &quot;ServiceImplementationOne&quot;
+]
+</code></pre>
+<p>Neither of the two registrations of <em>ServiceImplementationTwo</em> are actioned, because an implementation of <em>IServiceInterface</em> (ServiceImplementationOne) was already added.</p>
+<hr />
+<h3 id="tryaddenumerable-method">TryAddEnumerable method</h3>
+<p>The <em>TryAddEnumerable</em> method is used slightly differently - this method takes a <em>ServiceDescriptor</em> instance, and not a interface and implementation directly.</p>
+<p>In the dependency injection configuration, in this example, we use the the same configuration as in the above example, with a slightly different setup. We define three instances of <em>ServiceDescriptor</em>, two of them are describing implementations of <em>ServiceImplementationTwo</em>:</p>
+<pre><code class="language-csharp">var builder = WebApplication.CreateBuilder(args);
+
+var descriptorOne = new ServiceDescriptor(typeof(IServiceInterface), 
+    typeof(ServiceImplementationOne), ServiceLifetime.Transient);
+var descriptorTwo = new ServiceDescriptor(typeof(IServiceInterface), 
+    typeof(ServiceImplementationTwo), ServiceLifetime.Transient);
+var descriptorThree = new ServiceDescriptor(typeof(IServiceInterface), 
+    typeof(ServiceImplementationTwo), ServiceLifetime.Transient);
+
+builder.Services.TryAddEnumerable(new[] { descriptorOne, descriptorTwo, descriptorThree });
+
+var app = builder.Build();
+</code></pre>
+<p>The endpoint will return the following - only the first implementation of each unique <em>interface</em> + <em>implementation</em> combination:</p>
+<pre><code class="language-json">[
+  &quot;ServiceImplementationOne&quot;,
+  &quot;ServiceImplementationTwo&quot;
+]
+</code></pre>
 <hr />
 <h2 id="notes">Notes</h2>
-<p>While this may not be something one has to worry or think about when coding - its always good to have a general knowledge of how the compiler works, and what its doing (even at a high level), and how the code written impacts the lowered code which gets executed.</p>
+<p>The <em>TryAddEnumerable</em> method is incredible useful, especially as a library author where your library might need to add items to the dependency injection container, but without knowing if another library has already added it. <em>TryAddEnumerable</em> can be used to ensure that the dependency injection container is not &quot;polluted&quot; with duplicate identical implementations, which could potentially cause issues.</p>
 <hr />
 <h2 id="references">References</h2>
-<p><a href="https://sharplab.io/">sharplab.io</a></p>
+<p><a href="https://www.youtube.com/watch?v=iQ8cNI7a6mk">The .NET dependency injection methods you are not using</a></p>
 
 <blockquote class="daily-drop">
     <div>
@@ -249,7 +238,7 @@
             </svg>
         </div>
         <div class="drop-header">
-            Daily Drop 113: 07-08-2022
+            Daily Drop 100: 21-06-2022
         </div>
         <div>
             <br>At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br> It could be anything - some.NET / C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
@@ -263,8 +252,8 @@
 <div>
             <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
             <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
-            <a role="button" href="/tags/lowing" class="badge badge-light"> lowing</a>
-            <a role="button" href="/tags/forloop" class="badge badge-light"> forloop</a>
+            <a role="button" href="/tags/dependencyinjection" class="badge badge-light"> dependencyinjection</a>
+            <a role="button" href="/tags/tryaddenumerable" class="badge badge-light"> tryaddenumerable</a>
 </div>
                     </div>
                     <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
@@ -274,9 +263,12 @@
             <h3 class="no-anchor">On This Page</h3>
             <ul>
         <li><a href="#daily-knowledge-drop">Daily Knowledge Drop</a></li>
-        <li><a href="#lowering">Lowering</a></li>
-        <li><a href="#for-loop">For loop</a></li>
-        <li><a href="#foreach">Foreach</a></li>
+        <li><a href="#endpoint-example">Endpoint example</a></li>
+            <ul>
+        <li><a href="#add-methods">Add methods</a></li>
+        <li><a href="#tryadd-methods">TryAdd methods</a></li>
+        <li><a href="#tryaddenumerable-method">TryAddEnumerable method</a></li>
+            </ul>
         <li><a href="#notes">Notes</a></li>
         <li><a href="#references">References</a></li>
             </ul>
