@@ -5,8 +5,115 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Tue, 21 Jun 2022 04:12:39 GMT</pubDate>
-		<lastBuildDate>Tue, 21 Jun 2022 04:12:39 GMT</lastBuildDate>
+		<pubDate>Wed, 22 Jun 2022 04:08:36 GMT</pubDate>
+		<lastBuildDate>Wed, 22 Jun 2022 04:08:36 GMT</lastBuildDate>
+		<item>
+			<title>Converting ExpandObject</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/06/22-expando-conversion</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/06/22-expando-conversion</guid>
+			<pubDate>Wed, 22 Jun 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;ExpandoObject&lt;/code&gt; class implements &lt;code&gt;IEnumberable&lt;/code&gt; and &lt;code&gt;IDictionary&lt;/code&gt; - this means its fields can be iterated over, and that it can be converted to, and operated on as a Dictionary.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="expandoobject"&gt;ExpandoObject&lt;/h2&gt;
+&lt;p&gt;First some information on the &lt;code&gt;ExpandoObject&lt;/code&gt; class - it enables one to add and deleted members of its instance at runtime.&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;dynamic infoObject = new ExpandoObject();
+infoObject.Name = &amp;quot;Always Developing&amp;quot;;
+infoObject.Url = &amp;quot;www.alwaysdeveloping.net&amp;quot;;
+
+Console.WriteLine(infoObject.Name);
+Console.WriteLine(infoObject.Url);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In the above example, the properties &lt;em&gt;Name&lt;/em&gt; and &lt;em&gt;Age&lt;/em&gt; are dynamically added at runtime. Any number of properties, of any type can dynamically be added.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;ExpandoObject&lt;/code&gt; can also have methods (Action and Func) added dynamically, and then invoked:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;dynamic infoObject = new ExpandoObject();
+infoObject.Name = &amp;quot;Always Developing&amp;quot;;
+infoObject.Url = &amp;quot;www.alwaysdeveloping.net&amp;quot;;
+infoObject.Visitors = 0;
+infoObject.IncreaseVisitorCount = (Action)(() =&amp;gt; { infoObject.Visitors++; });
+infoObject.GetVisitorCount = (Func&amp;lt;int&amp;gt;)(() =&amp;gt; { return infoObject.Visitors; });
+
+infoObject.IncreaseVisitorCount();
+infoObject.IncreaseVisitorCount();
+
+Console.WriteLine(infoObject.GetVisitorCount());
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The &lt;em&gt;IncreaseVisitorCount&lt;/em&gt; Action and &lt;em&gt;GetVisitorCount&lt;/em&gt; Func are dynamically added, and then invoked.&lt;/p&gt;
+&lt;p&gt;The output of the above being &lt;code&gt;2&lt;/code&gt;, as expected, as the &lt;em&gt;IncreaseVisitorCount&lt;/em&gt; method is invoked twice.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="ienumerable-conversion"&gt;IEnumerable conversion&lt;/h2&gt;
+&lt;p&gt;As &lt;code&gt;ExpandoObject&lt;/code&gt; implement IEnumberable, specifically &lt;code&gt;IEnumerable&amp;lt;KeyValuePair&amp;lt;string, object?&amp;gt;&amp;gt;&lt;/code&gt; and can be iterated over, with a &lt;code&gt;KeyValuePair&amp;lt;string, object?&amp;gt;&lt;/code&gt; item returned for each iteration:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;dynamic infoObject = new ExpandoObject();
+infoObject.Name = &amp;quot;Always Developing&amp;quot;;
+infoObject.Url = &amp;quot;www.alwaysdeveloping.net&amp;quot;;
+infoObject.Visitors = 0;
+infoObject.IncreaseVisitorCount = (Action)(() =&amp;gt; { infoObject.Visitors++; });
+infoObject.GetVisitorCount = (Func&amp;lt;int&amp;gt;)(() =&amp;gt; { return infoObject.Visitors; });
+
+// prop is of type KeyValuePair&amp;lt;string, object?&amp;gt;
+foreach (var prop in infoObject)
+{
+    Console.WriteLine($&amp;quot;Key: '{prop.Key}' with value '{prop.Value}'&amp;quot;);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In the above, iterating over &lt;em&gt;infoObject&lt;/em&gt; will return each property dynamically added to the &lt;code&gt;ExpandoObject&lt;/code&gt; instance, including methods:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-powershell"&gt;Key: 'Name' with value 'Always Developing'
+Key: 'Url' with value 'www.alwaysdeveloping.net'
+Key: 'Visitors' with value '2'
+Key: 'IncreaseVisitorCount' with value 'System.Action'
+Key: 'GetVisitorCount' with value 'System.Func`1[System.Int32]'
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="dictionary-conversion"&gt;Dictionary conversion&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;ExpandoObject&lt;/code&gt; also implements &lt;code&gt;IDictionary&amp;lt;string, object?&amp;gt;&lt;/code&gt;, so can directly be assigned to this type:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;dynamic infoObject = new ExpandoObject();
+infoObject.Name = &amp;quot;Always Developing&amp;quot;;
+infoObject.Url = &amp;quot;www.alwaysdeveloping.net&amp;quot;;
+infoObject.Visitors = 0;
+infoObject.IncreaseVisitorCount = (Action)(() =&amp;gt; { infoObject.Visitors++; });
+infoObject.GetVisitorCount = (Func&amp;lt;int&amp;gt;)(() =&amp;gt; { return infoObject.Visitors; });
+
+// cast ExpandoObject to IDictionary&amp;lt;string, object?&amp;gt;
+IDictionary&amp;lt;string, object?&amp;gt; dictionary = infoObject;
+foreach (var item in dictionary)
+{
+    Console.WriteLine($&amp;quot;Key: '{item.Key}' with value '{item.Value}'&amp;quot;);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output of the above the same as the first example:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-powershell"&gt;Key: 'Name' with value 'Always Developing'
+Key: 'Url' with value 'www.alwaysdeveloping.net'
+Key: 'Visitors' with value '2'
+Key: 'IncreaseVisitorCount' with value 'System.Action'
+Key: 'GetVisitorCount' with value 'System.Func`1[System.Int32]'
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Casting to &lt;code&gt;Dictionary&lt;/code&gt; allows one to check if a property/key has been added to the &lt;code&gt;ExpandoObject&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;IDictionary&amp;lt;string, object?&amp;gt; dictionary = infoObject;
+foreach (var item in dictionary)
+{
+    Console.WriteLine($&amp;quot;Key: '{item.Key}' with value '{item.Value}'&amp;quot;);
+}
+
+// This would result in an exception
+// var value = infoObject[&amp;quot;Name&amp;quot;];
+
+// On a dictionary, this is allowed
+if (dictionary.ContainsKey(&amp;quot;Name&amp;quot;))
+{
+    Console.WriteLine(dictionary[&amp;quot;Name&amp;quot;]);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;This is a small, but useful piece of knowledge to be aware of if working with &lt;code&gt;ExpandoObject&lt;/code&gt; as the ability to easily convert to other types opens up new operations and possibilities on the instance.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://www.code4it.dev/csharptips/expandoobject-to-dictionary"&gt;C# Tip: Convert ExpandoObjects to IDictionary&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;101: 22-06-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>TryAddEnumerable to configure dependency injection</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/06/21-tryaddenumerable</link>
@@ -981,78 +1088,6 @@ public bool IsWorkInProgress(string jobName)
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://jaliyaudagedara.blogspot.com/2022/04/aspnet-core-custom-controller-action.html"&gt;ASP.NET Core: Custom Controller Action Parameter Binding using TryParse in Minimal APIs &lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;92: 09-06-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Viewing collections with IEnumerable Visualizer</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/06/08-ienumerable-visualizer</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/06/08-ienumerable-visualizer</guid>
-			<pubDate>Wed, 08 Jun 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;When coding a system which makes use of collections of data (even reasonably small collections), inspecting, debugging and discovering issues with the dataset can be very difficult and cumbersome.&lt;/p&gt;
-&lt;p&gt;The &lt;code&gt;IEnumerable Visualizer&lt;/code&gt;, available in Visual Studio 17.2, (Visual Studio 2022), aims to make this tedious process easier allowing for easier inspection of collections of data in Visual Studio.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="watch-window"&gt;Watch window&lt;/h2&gt;
-&lt;p&gt;When debugging, the starting point for viewing the data being operated on, is the &lt;code&gt;Watch window&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/watch-window.png" alt="Watch Window"&gt;&lt;/p&gt;
-&lt;p&gt;The issue with the Watch window, is when working with collections, its difficult to find a specific record. There is no useful identifying information immediately available without expanding each row one by one to find the relevant record. This is just not sustainable as the collection size grows.&lt;/p&gt;
-&lt;p&gt;In addition, there is no way to export the collection of information so that it would be inspected in another tool (such as Excel, for example).&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="watch-and-tostring"&gt;Watch and ToString&lt;/h2&gt;
-&lt;p&gt;One method for making it easier to find the relevent record(s), is to overwrite the &lt;code&gt;ToString&lt;/code&gt; method of the object - in this example, the &lt;code&gt;Song&lt;/code&gt; object.&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Song
-{
-    public int Id { get; set; } 
-
-    public string Name { get; set; }
-
-    public string Artist { get; set; }
-
-    public int YearReleased { get; set; }
-
-    public int LengthInSeconds { get; set; }
-
-    public override string ToString()
-    {
-        return $"Song `{Name}` by '{Artist} released " +
-            $"in '{YearReleased}' and is '{LengthInSeconds}' seconds long";
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The ouput of the &lt;code&gt;ToString&lt;/code&gt; method, pulls through to the &lt;code&gt;Watch window&lt;/code&gt;:&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/watch-tostring.png" alt="Watch Window with ToString"&gt;&lt;/p&gt;
-&lt;p&gt;At least now one has a visual cue as to the contents of each record without having to expand the row in the window. However, it still requires inspecting each row, which is not sustainable with thousands of rows.
-Also, it might not be possible to add a &lt;code&gt;ToString&lt;/code&gt; method if the entity is owned by a third party.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="ienumerable-visualizer"&gt;IEnumerable Visualizer&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;IEnumberable Visualizer&lt;/code&gt; solves many of the issues (but not all) - this window is available by clicking the magnifying glass for the collection, in the Watch window:&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/visualizer-location.png" alt="IEnumberable Visualizer location"&gt;&lt;/p&gt;
-&lt;p&gt;This icon will bring up the &lt;code&gt;IEnumberable Visualizer&lt;/code&gt;:&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/visualizer.png" alt="IEnumberable Visualizer"&gt;&lt;/p&gt;
-&lt;p&gt;This windows allows for the data to be:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Sorted by any column&lt;/li&gt;
-&lt;li&gt;Exported to Excel&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;This will greatly increase the ability to:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Find the relevent record&lt;/li&gt;
-&lt;li&gt;Perform additional operations on the data if required (sums, filtering) via exporting&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;Having worked with large collections before, this new visualizer is definitely going ease the pain and difficulty collection inspection brings! There are two future enhancements I feel would add great value to the already useful feature:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;A column in the visualizer which indicates the index of the record in the underlying collection. This will make it easier to find the record in the Watch window to perform updates on the data&lt;/li&gt;
-&lt;li&gt;The ability to filter data in the visualizer, making it even easier to find and search for data.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://devblogs.microsoft.com/visualstudio/view-net-collections-with-the-new-ienumerable-debugger-visualizer/?WT.mc_id=DOP-MVP-4025064"&gt;View .NET collections with the new IEnumerable Debugger Visualizer&lt;/a&gt;&lt;br&gt;
-&lt;a href="https://devblogs.microsoft.com/visualstudio/visual-studio-2022-17-2-is-now-available/#debugging-collections"&gt;Debugging collections&lt;/a&gt;&lt;/p&gt;
-&lt;!--?# DailyDrop ?--&gt;91: 08-06-2022&lt;!--?#/ DailyDrop ?--&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
