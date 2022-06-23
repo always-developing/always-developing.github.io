@@ -5,8 +5,52 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Wed, 22 Jun 2022 04:08:36 GMT</pubDate>
-		<lastBuildDate>Wed, 22 Jun 2022 04:08:36 GMT</lastBuildDate>
+		<pubDate>Thu, 23 Jun 2022 04:08:31 GMT</pubDate>
+		<lastBuildDate>Thu, 23 Jun 2022 04:08:31 GMT</lastBuildDate>
+		<item>
+			<title>Visual Studio layouts</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/06/23-visual-studio-layouts</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/06/23-visual-studio-layouts</guid>
+			<pubDate>Thu, 23 Jun 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;Visual Studio provides the functionality to configure different &lt;code&gt;layouts&lt;/code&gt; and switch between, based on the type of project or work being done.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="examples"&gt;Examples&lt;/h2&gt;
+&lt;h3 id="default"&gt;Default&lt;/h3&gt;
+&lt;p&gt;Creating and then switching between different layouts is as easy as clicking a button.&lt;/p&gt;
+&lt;p&gt;For me, the first step is to create a &lt;code&gt;Default&lt;/code&gt; layout - a general purpose layout, suitable for most type of development work I do.&lt;/p&gt;
+&lt;p&gt;This entails configuring the panes and windows in Visual Studio to have the desired layout, then selecting the &lt;code&gt;Window -&amp;gt; Save Window Layout&lt;/code&gt; menu option. A prompt will appear to give the layout a name - &lt;code&gt;Default&lt;/code&gt; for me.&lt;/p&gt;
+&lt;p&gt;The actual panes and layout is unimportant, but what is important is what you have something which works for you. My default:&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/default.png" alt="Default layout"&gt;&lt;/p&gt;
+&lt;p&gt;Now that there is a default saved, you can easily move things around and at the click of a button go back to the default. By clicking &lt;code&gt;Window -&amp;gt; Apply Window Layout -&amp;gt; Default&lt;/code&gt; (or Ctrl-Alt-1), the panes and windows are restored to the &lt;code&gt;Default&lt;/code&gt; layout.&lt;/p&gt;
+&lt;p&gt;Let's create another layout and switch between them.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id="analyzer"&gt;Analyzer&lt;/h3&gt;
+&lt;p&gt;When working with &lt;a href="https://alwaysdeveloping.net/p/analyzer-explained"&gt;Roslyn Analyzers&lt;/a&gt;, the &lt;em&gt;Syntax Visualizer&lt;/em&gt; is an critical window, so one would want this to be prominent.&lt;/p&gt;
+&lt;p&gt;I have update the layout to be as follows below, and saved it as my &lt;code&gt;RoslynAnalyzer&lt;/code&gt; layout. As you can see, the &lt;em&gt;Syntax Visualizer&lt;/em&gt; is now displayed on the right, using a good portion of screen real estate:&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/Analyzer.png" alt="Analyzer layout"&gt;&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;Window -&amp;gt; Apply Window Layout -&amp;gt; X&lt;/code&gt; menu option (or Ctrl-Alt-1 and Ctrl-Alt-2) can now be used to easily switch between the layouts at the click of a button.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id="design"&gt;Design&lt;/h3&gt;
+&lt;p&gt;Another example is when doing design work which involves the &lt;em&gt;Toolbox&lt;/em&gt;, one might want as much space to use the designer:&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/Design.png" alt="Design layout"&gt;&lt;/p&gt;
+&lt;p&gt;Here the right panel has been made to "auto hide" to give as much space as possible to the middle pane for design (this could also apply to code as well, if thats what works for you)&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;The ability to customize and personalize the layout in Visual Studio can definitely lead to more productivity and a sense of comfort with one's tools. The ability to customize it even more based on the &lt;em&gt;type of work&lt;/em&gt; just increases that productivity even more!&lt;/p&gt;
+&lt;p&gt;Some additional scenarios for when one might want a different, custom layout:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Projects which use the database related windows vs non-database projects&lt;/li&gt;
+&lt;li&gt;Projects which contain unit tests (and the usage of the related windows) vs projects with no unit tests&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/visualstudio/ide/customizing-window-layouts-in-visual-studio?view=vs-2022#create-and-save-custom-layouts"&gt;Create and save custom layouts&lt;/a&gt;&lt;/p&gt;
+&lt;!--?# DailyDrop ?--&gt;102: 23-06-2022&lt;!--?#/ DailyDrop ?--&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Converting ExpandObject</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/06/22-expando-conversion</link>
@@ -1001,93 +1045,6 @@ public bool IsWorkInProgress(string jobName)
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://twitter.com/Nick_Craver/status/1516050534670741505"&gt;Nick Craver Tweet&lt;/a&gt;&lt;/p&gt;
 &lt;!--?# DailyDrop ?--&gt;94: 10-06-2022&lt;!--?#/ DailyDrop ?--&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Binding a query parameter to an object</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/06/09-parameter-binding</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/06/09-parameter-binding</guid>
-			<pubDate>Thu, 09 Jun 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;Coming in .NET 7, endpoint query parameter can automatically me mapped to an object by adding a &lt;code&gt;TryParse&lt;/code&gt; method to the object. In this post we'll compare the traditional query parameter functionality, and compare it with the newly added functionality.&lt;/p&gt;
-&lt;p&gt;This functionality is available now in the the .NET 7 preview release, and subject to change by the final .NET 7 release.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="use-case"&gt;Use case&lt;/h2&gt;
-&lt;p&gt;In our use case, we have a search page on an e-commerce website. Query string parameters can be send as part of the URL to determine which &lt;em&gt;category&lt;/em&gt; to display, which &lt;em&gt;page number&lt;/em&gt; to display and &lt;em&gt;how many items per page&lt;/em&gt; to display.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="separate-parameters"&gt;Separate parameters&lt;/h3&gt;
-&lt;p&gt;The above can be achieved using three separate query string parameters. A minimal endpoint can be defined with 3 parameters, matching the query string parameter names - the query string parameters will automatically be mapped to the endpoint parameters by ASPNET Core.&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/api/searchpage&amp;quot;, (string category, int pageIndex, int pageSize) =&amp;gt;
-{
-    return $&amp;quot;Returning page '{pageIndex}' of size &amp;quot; +
-        $&amp;quot;'{pageSize}' for category '{category}'&amp;quot;;
-
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This endpoint can be access on the URL &lt;code&gt;/api/searchpage?category=pants&amp;amp;pageIndex=3&amp;amp;pageSize=50&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;This solution will work, but there is also another cleaner (although, that is subjective) way to define the endpoint and handle the query string.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="binding-to-an-object"&gt;Binding to an object&lt;/h3&gt;
-&lt;p&gt;Let's update the endpoint to take an object instead of the three separate parameters:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/api/searchpageoptions&amp;quot;, (SearchPageOptions searchOptions) =&amp;gt;
-{
-    return $&amp;quot;Returning page '{searchOptions.PageIndex}' of size &amp;quot; +
-        $&amp;quot;'{searchOptions.PageSize}' for category '{searchOptions.Category}'&amp;quot;;
-    
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;With &lt;code&gt;SearchPageOptions&lt;/code&gt; defined as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class SearchPageOptions
-{
-    public string Category { get; set; }
-
-    public int PageIndex { get; set; }
-
-    public int PageSize { get; set; }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;If we try run this as it, an exception will occur - this is because by &lt;code&gt;default ASPNET Core will infer and try map the body of the request to an object parameter to the endpoint&lt;/code&gt;, and GET requests do not allow body parameters.&lt;/p&gt;
-&lt;p&gt;We need to instruct ASPNET Core how to map from the query string to the object - and thankfully this is very simple.&lt;/p&gt;
-&lt;p&gt;We are however required to make a change to the format of the query string - only a single query string parameter can be mapped to an object, so the three query string parameters need to be converted to one parameter in &lt;code&gt;json format&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;We can add a &lt;code&gt;TryParse&lt;/code&gt; method to the &lt;em&gt;SearchPageOptions&lt;/em&gt; class:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class SearchPageOptions
-{
-    public string Category { get; set; }
-
-    public int PageIndex { get; set; }
-
-    public int PageSize { get; set; }
-
-    public static bool TryParse(string value, out SearchPageOptions result)
-    {
-        if (value is null)
-        {
-            result = default;
-            return false;
-        }
-
-        JsonSerializerOptions options = new()
-        {
-            PropertyNameCaseInsensitive = true
-        };
-        result = JsonSerializer.Deserialize&amp;lt;SearchPageOptions&amp;gt;(value, options);
-
-        return true;
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;ASPNET Core will look for, and call this method with the relevent query string parameter, allowing the method to try convert the parameter to the object. With the above changes to the endpoint and &lt;em&gt;SearchPageOptions&lt;/em&gt; class, the endpoint can now be called using:&lt;br /&gt;
-&lt;code&gt;/api/searchpageoptions?searchOptions={&amp;quot;category&amp;quot;:&amp;quot;pants&amp;quot;,&amp;quot;pageIndex&amp;quot;:3,&amp;quot;pageSize&amp;quot;:50}&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;Notice the information conveyed is the same, just in a simple json parameter now, instead of three separate parameters - allowing for the conversion of the query string parameter to a &lt;em&gt;SearchPageOptions&lt;/em&gt; instance.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;Both methods above result in the same outcome, just using slightly different techniques - but in the end it comes down to personal preference. Personally, I prefer the binding method, with the cleaner and concise method arguments. This approach however does result in a slightly more complicated query string format - the tradeoffs of each approach should be considered, and the best one for your application chosen.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://jaliyaudagedara.blogspot.com/2022/04/aspnet-core-custom-controller-action.html"&gt;ASP.NET Core: Custom Controller Action Parameter Binding using TryParse in Minimal APIs &lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;92: 09-06-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
