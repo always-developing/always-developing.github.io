@@ -4,8 +4,139 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-06-23T04:08:31Z</updated>
+	<updated>2022-06-24T04:12:17Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/06/24-curry-basics</id>
+		<title>Method currying basics in C#</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/06/24-curry-basics" />
+		<updated>2022-06-24T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;Method Currying&lt;/code&gt; is entails breaking a single method (which takes multiple parameters), into a sequence of single-parameter methods.&lt;br /&gt;
+For example, instead of a method which takes 3 parameters &lt;code&gt;method(a, b, c)&lt;/code&gt;, currying the method would instead turn it into &lt;code&gt;method(a)(b)(c)&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;This offers a different syntax, which allows for complex composite methods to be built up from simpler methods. Currying is more commonly used in functional programming, but can be utilized in C#.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="currying"&gt;Currying&lt;/h2&gt;
+&lt;p&gt;The below examples contain a &lt;em&gt;very simple&lt;/em&gt; example of currying, but it will demonstrate the basics of how currying a method will break it down into a sequence of single argument methods.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="multiply-method"&gt;Multiply method&lt;/h3&gt;
+&lt;p&gt;Let's consider a method which &lt;code&gt;multiples three integers together&lt;/code&gt;, and returns the result. This can be written as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;int Multiply(int a, int b, int c)
+{
+    return a * b * c;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;So far so good.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="multiply-lambda"&gt;Multiply Lambda&lt;/h3&gt;
+&lt;p&gt;This &lt;em&gt;Multiply&lt;/em&gt; method, can also be written as a &lt;code&gt;lambda Func&lt;/code&gt; instead of a full method:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;Func&amp;lt;int, int, int, int&amp;gt; multiply = (a, b, c) =&amp;gt; a * b * c;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now we start with the currying process.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="multiply-curry-part-1"&gt;Multiply Curry part 1&lt;/h3&gt;
+&lt;p&gt;As mentioned, &lt;code&gt;currying&lt;/code&gt; entails breaking down a single method, with three parameters in this example, into a sequence of single-parameters methods. Let's start small and build on it until we have the desired result.&lt;/p&gt;
+&lt;p&gt;First, we'll change the above &lt;em&gt;multiply&lt;/em&gt; lambda to only take one argument:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;Func&amp;lt;int, Func&amp;lt;int, int, int&amp;gt;&amp;gt; curryMultipleBase = a =&amp;gt; ((b, c) =&amp;gt; a * b * c);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;It looks a bit complicated, but basically the initial lambda has been updated to instead of having three arguments, it now &lt;code&gt;takes one argument, and returns a Func&amp;lt;&amp;gt;, which takes 2 arguments, and returns an int&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Overall, the entire composition of methods still takes 3 parameters. This can now be invoked as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;Func&amp;lt;int, Func&amp;lt;int, int, int&amp;gt;&amp;gt; curryMultipleBase = a =&amp;gt; ((b, c) =&amp;gt; a * b * c);
+
+// invoke the lambda, passing in one value
+// getting back a lambda which takes two arguments
+Func&amp;lt;int, int, int&amp;gt; result1 = curryMultipleBase(2);
+
+// invoke the lambda which takes two arguments
+// and returns an int
+int result2 = result1(3, 4);
+
+Console.WriteLine(result2);
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Or more succinctly expressed as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;Func&amp;lt;int, Func&amp;lt;int, int, int&amp;gt;&amp;gt; curryMultipleBase = a =&amp;gt; ((b, c) =&amp;gt; a * b * c);
+
+// instead of having the intermediate Func&amp;lt;int, int, int&amp;gt;
+// just invoke the result directly
+int result = curryMultipleBase(2)(3, 4);
+Console.WriteLine(result);
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Both of the above yield a result of &lt;code&gt;24&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;We've converted a portion to be single parameter, but a portion still has 2 parameters.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="multiply-curry-part-2"&gt;Multiply Curry part 2&lt;/h3&gt;
+&lt;p&gt;The &lt;em&gt;curryMultipleBase&lt;/em&gt; returns a lambda, which has two parameters - the objective to too only have single parameter methods. Let's convert the two parameter Func into two single parameter Func's:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// Old
+Func&amp;lt;int, Func&amp;lt;int, int, int&amp;gt;&amp;gt; curryMultipleBase = a =&amp;gt; ((b, c) =&amp;gt; a * b * c);
+
+// New
+Func&amp;lt;int, Func&amp;lt;int, Func&amp;lt;int, int&amp;gt;&amp;gt;&amp;gt; curryMultiple = a =&amp;gt; (b =&amp;gt; c =&amp;gt; a * b * c;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Instead of returning a Func which takes 2 arguments and returns an int, the lambda now returns a &lt;code&gt;Func, which takes 1 parameter, and returns a Func which takes one parameter and returns an int&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;The new version of the lambda can be invoked as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;Func&amp;lt;int, Func&amp;lt;int, Func&amp;lt;int, int&amp;gt;&amp;gt;&amp;gt; curryMultiple = a =&amp;gt; (b =&amp;gt; (c =&amp;gt; a * b * c));
+
+Func&amp;lt;int, Func&amp;lt;int, int&amp;gt;&amp;gt; result1 = curryMultiple(2);
+Func&amp;lt;int, int&amp;gt; result2 = result1(3);
+int result3 = result2(3);
+
+Console.WriteLine(result3);
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Or more succinctly expressed as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;Func&amp;lt;int, Func&amp;lt;int, int, int&amp;gt;&amp;gt; curryMultipleBase = a =&amp;gt; ((b, c) =&amp;gt; a * b * c);
+
+// instead of having the intermediate Func(s)
+// just invoke the result directly
+int result = curryMultiple(2)(3)(4);
+Console.WriteLine(result);
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And that's it! We've successfully converted the initial three parameter method, into a sequence of one parameter methods - &lt;code&gt;int result = curryMultiple(2)(3)(4);&lt;/code&gt;!&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="logging-example"&gt;Logging example&lt;/h3&gt;
+&lt;p&gt;Suppose we have to call a &lt;em&gt;Log&lt;/em&gt; method, with a message and the type of message to log (Error, Warning or Information). There are a number of techniques to achieve this, especially if the method is called often.&lt;/p&gt;
+&lt;p&gt;The method could be called directly:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;    Log(&amp;quot;error&amp;quot;, &amp;quot;An Exception occurred&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The &amp;quot;issue&amp;quot; with this approach is that the constant type parameter &amp;quot;error&amp;quot; (or &amp;quot;warning&amp;quot; or &amp;quot;info&amp;quot;) is repeated with every call.&lt;/p&gt;
+&lt;p&gt;We could create an &lt;code&gt;Action&lt;/code&gt; for each log type, which can then be reused:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;Action&amp;lt;string&amp;gt; logError = message =&amp;gt; Log(&amp;quot;error&amp;quot;, message);
+Action&amp;lt;string&amp;gt; logWarning = message =&amp;gt; Log(&amp;quot;warning&amp;quot;, message);
+Action&amp;lt;string&amp;gt; logInfo = message =&amp;gt; Log(&amp;quot;info&amp;quot;, message);
+
+logWarning(&amp;quot;Validation failed, skipping record&amp;quot;);
+
+// logWarning can be reused
+logWarning(&amp;quot;An exception occurred, but the record was saved successfully&amp;quot;);
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The constant type parameter is now only specified once, instead of once per call.&lt;/p&gt;
+&lt;p&gt;Yet another option, is too make use of &lt;code&gt;method currying&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;Action&amp;lt;string&amp;gt; CurryLog(string type) =&amp;gt; message =&amp;gt; Log(type, message);
+
+var curryLogInfo = CurryLog(&amp;quot;info&amp;quot;);
+curryLogInfo(&amp;quot;Record processed successfully&amp;quot;);
+
+// curryLogInfo can be reused
+curryLogInfo(&amp;quot;Saving record to database&amp;quot;);
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The &lt;code&gt;currying&lt;/code&gt; approach is very similar to the &lt;code&gt;Action&lt;/code&gt; technique mentioned above, but it comes down to syntax preference.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;I found the idea of &lt;code&gt;method currying&lt;/code&gt; very interesting and intriguing, but I'm not sure of its benefits in C# over other techniques. Perhaps a preference for the syntax style is enough of a benefit to use it instead of the &amp;quot;traditional&amp;quot; way.&lt;/p&gt;
+&lt;p&gt;Either way though, its useful to have knowledge of this technique, just incase it offers a unique solution to a problem in the future.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://weblogs.asp.net/dixin/lambda-calculus-via-c-sharp-1-fundamentals-closure-currying-and-partial-application"&gt;Currying and partial application&lt;/a&gt;&lt;br /&gt;
+&lt;a href="https://towardsdatascience.com/what-is-currying-in-programming-56fd57103431"&gt;What Is Currying in Programming?&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;103: 24-06-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/06/23-visual-studio-layouts</id>
 		<title>Visual Studio layouts</title>
@@ -907,133 +1038,6 @@ Updating record with `112` in database 2
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://twitter.com/buhakmeh/status/1520811273633599489"&gt;Khalid Abuhakmeh Tweet&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;94: 13-06-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/06/10-xml-comments</id>
-		<title>Using XML documentation comments to enrich code</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/06/10-xml-comments" />
-		<updated>2022-06-10T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;There are a number of features as part of the C# XML documentation comments (comments prefixed with &lt;code&gt;///&lt;/code&gt;), which can use used to improved the useability of code. In additional to providing commentary on a class or method etc, there is also the ability to:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;link to external URLs&lt;/li&gt;
-&lt;li&gt;add general remarks to the comments&lt;/li&gt;
-&lt;li&gt;share comment blocks between methods&lt;/li&gt;
-&lt;li&gt;reference a parameter by name&lt;/li&gt;
-&lt;li&gt;highlight language keywords&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;All of these can be used to enhance the overall quality and usability of the code, especially if the code is part of a library to be referenced and used by external projects.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="external-urls"&gt;External Urls&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;seealso&lt;/code&gt; keyword can be used to create a clickable link.&lt;/p&gt;
-&lt;p&gt;Assume we want to put a URL in a method comment section:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;/// &amp;lt;summary&amp;gt;
-/// Does some work. See www.alwaysdeveloping.net for more information
-/// &amp;lt;/summary&amp;gt;
-public Task DoWorkAsync()
-{
-    return Task.CompletedTask;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;With this, the URL is present in the comments, but is not clickable:&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/before-seealso.png" alt="Url in comment"&gt;&lt;/p&gt;
-&lt;p&gt;Updating the comments to instead used the &lt;code&gt;seealso&lt;/code&gt; keyword, makes the URL clickable:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;/// &amp;lt;summary&amp;gt;
-/// Does some work. See &amp;lt;seealso href="www.alwaysdeveloping.net" /&amp;gt; for more information
-/// &amp;lt;/summary&amp;gt;
-public Task DoWorkAsync()
-{
-    return Task.CompletedTask;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/after-seealso.png" alt="Clickable URL in comment"&gt;&lt;/p&gt;
-&lt;h2 id="general-remarks"&gt;General remarks&lt;/h2&gt;
-&lt;p&gt;Instead of adding a general remark to the &lt;em&gt;summary&lt;/em&gt; section, it can instead be added to the &lt;code&gt;remark&lt;/code&gt; section:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;/// &amp;lt;summary&amp;gt;
-/// Does some work.
-/// &amp;lt;/summary&amp;gt;
-/// &amp;lt;remarks&amp;gt;See &amp;lt;seealso href="www.alwaysdeveloping.net" /&amp;gt; for more information&amp;lt;/remarks&amp;gt;
-public Task DoWorkAsync()
-{
-    return Task.CompletedTask;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/after-remarks.png" alt="Clickable URL in remarks"&gt;&lt;/p&gt;
-&lt;h2 id="sharing-comments"&gt;Sharing comments&lt;/h2&gt;
-&lt;p&gt;Comments can be shared, which is especially useful when one has a &lt;code&gt;method&lt;/code&gt; and an &lt;code&gt;async version&lt;/code&gt; of the same method. This is done using the &lt;code&gt;inheritdoc&lt;/code&gt; and &lt;code&gt;cref&lt;/code&gt; keywords:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;/// &amp;lt;summary&amp;gt;
-/// Does some work, but with parameters supplied
-/// &amp;lt;/summary&amp;gt;
-/// &amp;lt;param name="length"&amp;gt;The length of the work&amp;lt;/param&amp;gt;
-/// &amp;lt;param name="value"&amp;gt;The value of the work&amp;lt;/param&amp;gt;
-/// &amp;lt;param name="extraWork"&amp;gt;An action delegate to specify 
-/// any additional work which might need to be done&amp;lt;/param&amp;gt;
-public void DoWorkWithParameters(int length, string value, Action extraWork) { }
-
-/// &amp;lt;inheritdoc cref="DoWorkWithParameters(int, string, Action)"/&amp;gt;
-public Task DoWorkWithParametersAsync(int length, string value, Action extraWork)
-{
-    return Task.CompletedTask;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Both methods now show the same comments:&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/work-params.png" alt="Method with comments"&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/work-params-async.png" alt="Method with inherited comments"&gt;&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="referencing-parameters"&gt;Referencing parameters&lt;/h2&gt;
-&lt;p&gt;Parameters can be referenced in the comments using the &lt;code&gt;paramref&lt;/code&gt; keyword, making it clearer how the method works and how the parameters are used:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;/// &amp;lt;summary&amp;gt;
-/// Will check if the job with &amp;lt;paramref name="jobName"/&amp;gt; is in progress or has completed
-/// &amp;lt;/summary&amp;gt;
-/// &amp;lt;param name="jobName"&amp;gt;The name of the job to check. 
-/// If set to null, a check is performed on any job&amp;lt;/param&amp;gt;
-/// &amp;lt;returns&amp;gt;True if the job specified by &amp;lt;paramref name="jobName"/&amp;gt;
-/// is still processing, otherwise false&amp;lt;/returns&amp;gt;
-public bool IsWorkInProgress(string jobName)
-{
-    return false;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The parameter name is now highlighted whereever it is referenced.&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/paramref.png" alt="Method using paramref"&gt;&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="language-keywords"&gt;Language keywords&lt;/h2&gt;
-&lt;p&gt;Language keywords can also be highlighted using &lt;code&gt;langword&lt;/code&gt;. If we take the previous example, and update all the C# keywords (true, false) to indicate they are language keywords:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;/// &amp;lt;summary&amp;gt;
-/// Will check if the job with &amp;lt;paramref name="jobName"/&amp;gt; is in progress or has completed.
-/// &amp;lt;/summary&amp;gt;
-/// &amp;lt;param name="jobName"&amp;gt;The name of the job to check.&amp;lt;/param&amp;gt;
-/// &amp;lt;returns&amp;gt;&amp;lt;see langword="true"/&amp;gt; if the job specified by &amp;lt;paramref name="jobName"/&amp;gt; 
-/// is still processing, otherwise &amp;lt;see langword="false"/&amp;gt;&amp;lt;/returns&amp;gt;
-public bool IsWorkInProgress(string jobName)
-{
-    return false;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The language keywords are now highlighted:&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/lang-keyword.png" alt="Language keywords highlighted"&gt;&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="libraries"&gt;Libraries&lt;/h2&gt;
-&lt;p&gt;Updating comments with these features improves the usability of the code - however if developing a shared library (a NuGet package for example), there are some additional steps which need to be done to enable the comments being available to users of the library.&lt;/p&gt;
-&lt;p&gt;The &lt;code&gt;GenerateDocumentationFile&lt;/code&gt; option needs to be enabled in the csproj:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-xml"&gt;&amp;lt;PropertyGroup&amp;gt;
-    &amp;lt;OutputType&amp;gt;Exe&amp;lt;/OutputType&amp;gt;
-    &amp;lt;TargetFramework&amp;gt;net6.0&amp;lt;/TargetFramework&amp;gt;
-    &amp;lt;ImplicitUsings&amp;gt;enable&amp;lt;/ImplicitUsings&amp;gt;
-    &amp;lt;Nullable&amp;gt;enable&amp;lt;/Nullable&amp;gt;
-    &amp;lt;GenerateDocumentationFile&amp;gt;true&amp;lt;/GenerateDocumentationFile&amp;gt;
-&amp;lt;/PropertyGroup&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;When the code is compiled, an XML file will now be generated containing all the comments - which should then be included as part of the NuGet package to make the comments available.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;As a library author, for public, but mostly for internal corporate packages - I have found adding comments to be very useful in explaining and conveying to the user how a method and class works, lessening the number of questions and queries received. The additional features mentioned above will take the commentary to another level.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://twitter.com/Nick_Craver/status/1516050534670741505"&gt;Nick Craver Tweet&lt;/a&gt;&lt;/p&gt;
-&lt;!--?# DailyDrop ?--&gt;94: 10-06-2022&lt;!--?#/ DailyDrop ?--&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
