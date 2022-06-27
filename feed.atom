@@ -4,8 +4,210 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-06-24T04:12:17Z</updated>
+	<updated>2022-06-27T04:33:09Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/06/27-lambda-vs-local</id>
+		<title>Lambda vs local function performance</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/06/27-lambda-vs-local" />
+		<updated>2022-06-27T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;A &lt;code&gt;local function&lt;/code&gt; will out perform a &lt;code&gt;lambda function&lt;/code&gt; by a significant margin, which can make a different especially if the function is called from within a loop.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="examples"&gt;Examples&lt;/h2&gt;
+&lt;p&gt;The use case is straight forward: &lt;code&gt;iterate through a list of 500 integers, and if the number is larger than a supplied value (y), add it to a running total&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Below we look at a number of different ways to perform the &lt;code&gt;if the number is larger than a supplied value (y)&lt;/code&gt; check, and then benchmark the performance of each technique.&lt;/p&gt;
+&lt;h3 id="lambda"&gt;Lambda&lt;/h3&gt;
+&lt;p&gt;The first method is to use a &lt;code&gt;lambda function&lt;/code&gt; to perform the &lt;em&gt;where&lt;/em&gt; check:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public int Lambda(int y)
+{
+    int runningTotal = 0;
+
+    // define the lambda to compare two values
+    // and return true or false based on the results
+    Func&amp;lt;int, bool&amp;gt; whereFilter = x =&amp;gt; x &amp;gt; y;
+
+    for(int i = 0; i &amp;lt; 500; i++)
+    {
+        // call the lambda
+        if(whereFilter(i))
+        {
+            runningTotal += i;
+        }
+    }
+
+    return runningTotal;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;A lambda function is defined which compares two values, and is then invoked to compare the iteration value with the supplied value.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="local-function"&gt;Local function&lt;/h3&gt;
+&lt;p&gt;Next, instead of using a lambda, we will define a &lt;code&gt;local function&lt;/code&gt; to perform the &lt;em&gt;where&lt;/em&gt; check:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public int LocalFunction(int y)
+{
+    int runningTotal = 0;
+
+    // define the local function expression
+    // with the same functionality as the above lambda
+    bool whereFilter(int x) =&amp;gt; x &amp;gt; y;
+
+    for (int i = 0; i &amp;lt; 500; i++)
+    {
+        // invoke the local function
+        if (whereFilter(i))
+        {
+            runningTotal += i;
+        }
+    }
+
+    return runningTotal;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;A local function, as with the lambda, is defined which compares two values, and is then invoked to compare the iteration value with the supplied value.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="function"&gt;Function&lt;/h3&gt;
+&lt;p&gt;Next, the local function will be replaced with a normal &lt;code&gt;function&lt;/code&gt; to perform the &lt;em&gt;where&lt;/em&gt; check:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public int Method(int y)
+{
+    int runningTotal = 0;
+
+    for (int i = 0; i &amp;lt; 500; i++)
+    {
+        // call the separate expression-bodied method
+        if (whereFilterMethod(i, y))
+        {
+            runningTotal += i;
+        }
+    }
+
+    return runningTotal;
+}
+
+// expression bodied method to compare two values
+private bool whereFilterMethod(int x, int y) =&amp;gt; x &amp;gt; y;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The method body is the same as the local function, but defined outside the method in question (&lt;em&gt;Method&lt;/em&gt; in this example).&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="operation"&gt;Operation&lt;/h3&gt;
+&lt;p&gt;Lastly, instead of using any variation of method, the operation will be put directly inline:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public int Operation(int y)
+{
+    int runningTotal = 0;
+
+    for (int i = 0; i &amp;lt; 500; i++)
+    {
+        // straight compare of the two value
+        if (i &amp;gt; y)
+        {
+            runningTotal += i;
+        }
+    }
+
+    return runningTotal;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;No method defined here, just the straight comparison.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="benchmarks"&gt;Benchmarks&lt;/h2&gt;
+&lt;p&gt;Finally let's benchmark all of the above techniques. &lt;strong&gt;BenchmarkDotNet&lt;/strong&gt; was used to benchmark each technique using two parameters, &lt;code&gt;17&lt;/code&gt; and &lt;code&gt;472&lt;/code&gt;, to give representation for the lower and upper bounds of the loop.&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Method&lt;/th&gt;
+&lt;th&gt;y&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Ratio&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;Lambda&lt;/td&gt;
+&lt;td&gt;17&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;974.7 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;13.68 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;12.79 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;LocalFunction&lt;/td&gt;
+&lt;td&gt;17&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;135.6 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.51 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.34 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.14&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Method&lt;/td&gt;
+&lt;td&gt;17&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;136.2 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2.30 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2.15 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.14&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Operation&lt;/td&gt;
+&lt;td&gt;17&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;135.4 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.86 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.67 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.14&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Lambda&lt;/td&gt;
+&lt;td&gt;472&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;854.0 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;9.61 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;8.99 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;LocalFunction&lt;/td&gt;
+&lt;td&gt;472&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;255.0 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;3.85 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;3.42 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.30&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Method&lt;/td&gt;
+&lt;td&gt;472&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;263.0 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2.95 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2.76 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.31&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Operation&lt;/td&gt;
+&lt;td&gt;472&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;252.2 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;4.00 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;3.74 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.30&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;As one can see from the results, a lambda is &lt;code&gt;3-6x times&lt;/code&gt; slower than any of the other methods.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;When calling the &lt;code&gt;lambda/local function/function/operation&lt;/code&gt; once off in the hot path, there probably won't be any noticeable difference depending on which method is used.&lt;br /&gt;
+However if used in a loop (such as in the example), consider moving away from a &lt;code&gt;lambda&lt;/code&gt; to any of the other techniques to see an improvement in performance.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://leveluppp.ghost.io/content/images/size/w1000/2021/07/lambda_tips1-1.png"&gt;Lambda Optimizations Tips 1&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;104: 27-06-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/06/24-curry-basics</id>
 		<title>Method currying basics in C#</title>
@@ -918,126 +1120,6 @@ foreach (var lookupItem in enhancedList["Printing item ...", 0, 2, 4])
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://twitter.com/maartenballiauw/status/1527280915092742144"&gt;Maarten Balliauw Tweet&lt;/a&gt;&lt;/p&gt;
 &lt;!--?# DailyDrop ?--&gt;95: 14-06-2022&lt;!--?#/ DailyDrop ?--&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/06/13-chaining-lambda</id>
-		<title>Lambda chaining in C#</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/06/13-chaining-lambda" />
-		<updated>2022-06-13T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;&lt;code&gt;Action lambda&lt;/code&gt; expressions (expressions which take parameters but do not return a value) can be &lt;code&gt;chained together&lt;/code&gt; and operated on with a single handle, the same as is done with delegates. This is because the &lt;code&gt;Action&lt;/code&gt; type in C# is a delegate.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="action"&gt;Action&lt;/h2&gt;
-&lt;p&gt;When defining a lambda as follows, the type of the variable is &lt;code&gt;delegate void Action&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;    var welcomeMsg = () =&amp;gt; Console.Write(&amp;quot;Good morning &amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;As it is a delegate, multiple can be chained together:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var welcomeMsg = () =&amp;gt; Console.Write(&amp;quot;Good morning &amp;quot;);
-welcomeMsg += () =&amp;gt; Console.Write(&amp;quot;Dave&amp;quot;);
-welcomeMsg += () =&amp;gt; Console.WriteLine(&amp;quot;&amp;quot;);
-welcomeMsg += () =&amp;gt; Console.WriteLine(&amp;quot;Have a great day.&amp;quot;);
-
-welcomeMsg();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Invoking the Action will result in each lambda being called in order, and the output being:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-powershell"&gt;Good morning Dave
-Have a great day.
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;To expand on this convoluted, non-practical example, logic can be applied to chain or not chain certain lambdas to the main handle.&lt;/p&gt;
-&lt;p&gt;The below will only ouput a name if its supplied, and also allows for additional custom welcome messages to be added to the end of the main welcome message:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;void OuputWelcomeMessage(string name =&amp;quot;&amp;quot;, Action[] extraMessages = null)
-{
-    var welcomeMsg = () =&amp;gt; Console.Write(&amp;quot;Good morning &amp;quot;);
-
-    if (!string.IsNullOrEmpty(name))
-    {
-        welcomeMsg += () =&amp;gt; Console.Write(name);
-        welcomeMsg += () =&amp;gt; Console.Write(&amp;quot;.&amp;quot;);
-    }
-
-    welcomeMsg += () =&amp;gt; Console.Write(Environment.NewLine);
-
-    if (extraMessages != null)
-    {
-        foreach(var action in extraMessages)
-        {
-            welcomeMsg += action;
-        }
-    }
-    welcomeMsg();
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="parameter-action"&gt;Parameter Action&lt;/h2&gt;
-&lt;p&gt;The same process can also be used for lambda's which take in parameters(s) - however to chain them, every lambda which is chained needs to have the same signature.&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var updateDatabase = (int id) =&amp;gt; 
-    Console.WriteLine($&amp;quot;Updating record with `{id}` in database 1&amp;quot;);
-updateDatabase += (int id) =&amp;gt; 
-    Console.WriteLine($&amp;quot;Updating record with `{id}` in database 2&amp;quot;);
-
-updateDatabase(112);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Here we simulate updating two different databases, with the one integer parameter. The parameter will be passed into each lambda in order of them being added to the main handle.&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-powershell"&gt;Updating record with `112` in database 1
-Updating record with `112` in database 2
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="async-action"&gt;Async Action&lt;/h2&gt;
-&lt;p&gt;Again, the same process can also be used for async lambda expressions. These now become &lt;code&gt;Func&amp;lt;Task&amp;gt;&lt;/code&gt; and not &lt;code&gt;Action&lt;/code&gt;, as they DO have a return value, of type Task.&lt;/p&gt;
-&lt;p&gt;The below method will accept an array of lambda's, chain them and invoke to ouput the result:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;async Task OuputMessagesAsync(Func&amp;lt;Task&amp;gt;[] extraMessages = null)
-{
-    var messages = () =&amp;gt; 
-        { 
-            Console.WriteLine(&amp;quot;Executing messages:&amp;quot;); 
-            return Task.CompletedTask; 
-        };
-
-    if (extraMessages != null)
-    {
-        foreach(var action in extraMessages)
-        {
-            messages += action;
-        }
-    }
-
-    await messages();
-
-    Console.ReadLine(); 
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Invoking the method as follows, results in some interesting points:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;await OuputMessagesAsync(
-    new[] {
-        async () =&amp;gt; { await Task.Delay(4); Console.WriteLine(&amp;quot;1&amp;quot;); },
-        async () =&amp;gt; { await Task.Delay(3); Console.WriteLine(&amp;quot;2&amp;quot;); },
-        async () =&amp;gt; { await Task.Delay(2); Console.WriteLine(&amp;quot;3&amp;quot;); },
-        async () =&amp;gt; { await Task.Delay(1); Console.WriteLine(&amp;quot;4&amp;quot;); },
-        async () =&amp;gt; { await Task.Delay(0); Console.WriteLine(&amp;quot;5&amp;quot;); },
-    });
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output for the above is (and may differ each execution):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-powershell"&gt;Executing messages:
-5
-2
-4
-3
-1
-&lt;/code&gt;&lt;/pre&gt;
-&lt;ul&gt;
-&lt;li&gt;Only the main handle is awaiting, not the chained lambdas. If the &lt;code&gt;Console.ReadLine()&lt;/code&gt; is removed, then only one value is output, and not all 5 - the application closes before all async methods have run to completion.&lt;/li&gt;
-&lt;li&gt;This also highlights the fact that the order in which the number are output is not consistent - it can change with each execution. The lambda's are not being awaited individually before the next one in the chain is executed.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;I'm sure there is a valid, practical use case for this somewhere out there, but I can't think of a single situation in the past where I would have used the chaining ability. Perhaps (similar to in the above sample), allowing the caller of a method to supply additional &lt;code&gt;Action&lt;/code&gt;(s) to be performed in addition to core method logic?&lt;/p&gt;
-&lt;p&gt;Either way though, I found this to be an interesting technique and nugget of information to know about to potential future use!&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://twitter.com/buhakmeh/status/1520811273633599489"&gt;Khalid Abuhakmeh Tweet&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;94: 13-06-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
