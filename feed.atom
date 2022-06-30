@@ -4,8 +4,106 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-06-29T04:27:22Z</updated>
+	<updated>2022-06-30T04:12:46Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/06/30-for-multi-operations</id>
+		<title>Multiple statements in a for loop</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/06/30-for-multi-operations" />
+		<updated>2022-06-30T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;Not only can the &lt;em&gt;iterator section&lt;/em&gt; (the last section) in a &lt;code&gt;for loop&lt;/code&gt; contain &lt;code&gt;multiple operations&lt;/code&gt;, but it can also contain &lt;code&gt;statements&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="iterator-section"&gt;Iterator section&lt;/h2&gt;
+&lt;p&gt;Generally, when defining and using a &lt;code&gt;for loop&lt;/code&gt;, the &lt;em&gt;iterator section&lt;/em&gt; only increases (or decreased) the initializer variable, &lt;code&gt;loopCount&lt;/code&gt; in the below example:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;for (var loopCount = 0; loopCount &amp;lt; 100; loopCount++) 
+{ 
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This &lt;em&gt;iterator section&lt;/em&gt; &lt;code&gt;can actually contain statements, separated by a comma!&lt;/code&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="operations"&gt;Operations&lt;/h3&gt;
+&lt;p&gt;In this simple example, each loop handles its iterations with the &lt;code&gt;i&lt;/code&gt; variable, but also decreases a shared &lt;code&gt;progress&lt;/code&gt; variable representing overall progress:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var valueArray = new int[] { 100, 25, 70 };
+var progress = valueArray.Sum();
+
+for (int i = 0; i &amp;lt; valueArray[0]; i++, progress--)
+{
+    // Simulate some processing
+    Thread.Sleep(10);
+    
+    Console.Clear();
+    Console.WriteLine($&amp;quot;{progress} items remaining to be processed&amp;quot;);
+}
+
+for (int i = 0; i &amp;lt; valueArray[1]; i++, progress--)
+{
+    // Simulate some processing
+    Thread.Sleep(10);
+    
+    Console.Clear();
+    Console.WriteLine($&amp;quot;{progress} items remaining to be processed&amp;quot;);
+}
+
+for (int i = 0; i &amp;lt;= valueArray[2]; i++, progress--)
+{
+    // Simulate some processing
+    Thread.Sleep(10);
+    
+    Console.Clear();
+    Console.WriteLine($&amp;quot;{progress} items remaining to be processed&amp;quot;);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="statements"&gt;Statements&lt;/h3&gt;
+&lt;p&gt;The &lt;em&gt;iterator section&lt;/em&gt; can doesn't only have to contain operations, but can also contain statements.&lt;/p&gt;
+&lt;p&gt;For example purposes, consider logging is to be performed for each record being processed - you might do it as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;for (int i = 1; i &amp;lt;= recordsToProcess.Count(); i++)
+{
+    // log some information about the record
+    Console.WriteLine($&amp;quot;Current value of process record: {recordsToProcess[i]}&amp;quot;);
+
+    // Simulate some processing
+    Thread.Sleep(10);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The keep the code contained within the for loop block clear, one could move the log statement into the &lt;code&gt;for loop iterator section&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// logging moved to into the for loop statement
+for (int i = 1; i &amp;lt;= recordsToProcess.Count(); 
+    Console.WriteLine($&amp;quot;Current value of process record: {recordsToProcess[i]}&amp;quot;), i++)
+{
+    // actual code block is cleaner
+
+    // Simulate some processing
+    Thread.Sleep(10);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="methods"&gt;Methods&lt;/h3&gt;
+&lt;p&gt;Expanding on the previous example, methods can also be invoked in the &lt;em&gt;iterator section&lt;/em&gt; - the logging can be moved to its own method to keep the code slightly cleaner:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;for (int i = 0; i &amp;lt;= recordsToProcess.Count(); LogRecord(recordsToProcess[i]), i++)
+{
+    // Simulate some processing
+    Thread.Sleep(10);
+}
+
+// ---------------------
+
+void LogRecord(int recordValue)
+{
+    Console.WriteLine($&amp;quot;Current value of process record: {recordValue}&amp;quot;);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;This bit of knowledge does have limited practical application, and one could argue that it makes the code &lt;em&gt;harder&lt;/em&gt; to read - however it does have it's place, and I think could be especially useful in the first example to keep track of multiple &amp;quot;progress-type&amp;quot; counters.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/buhakmeh/status/1526275436140961805"&gt;Khalid Abuhakmeh Tweet&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;107: 30-06-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/06/29-css-all</id>
 		<title>CSS property: all</title>
@@ -1037,185 +1135,6 @@ df1d0000-0a83-7cd3-4f5c-08da40cae579
 &lt;p&gt;&lt;a href="https://www.nuget.org/packages/NewId/"&gt;NewId&lt;/a&gt;&lt;br&gt;
 &lt;a href="https://andrewlock.net/generating-sortable-guids-using-newid/"&gt;Generating sortable Guids using NewId&lt;/a&gt;&lt;/p&gt;
 &lt;!--?# DailyDrop ?--&gt;98: 17-06-2022&lt;!--?#/ DailyDrop ?--&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/06/16-nullable-performance</id>
-		<title>The cost of Nullable variables</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/06/16-nullable-performance" />
-		<updated>2022-06-16T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;The ability to mark a variable as &lt;code&gt;Nullable&lt;/code&gt; (using the ? syntax) is a useful feature in C#, but does come with a large (relative to non-nullable) performance cost.&lt;/p&gt;
-&lt;p&gt;Today we'll have a look at some simple benchmarks and how making a variable nullable impacts performance.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="benchmark"&gt;Benchmark&lt;/h2&gt;
-&lt;p&gt;The benchmarks were be run on .NET6, using BenchmarkDotNet.&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;[Benchmark(Baseline =true)]
-[Arguments(1, 2)]
-[Arguments(2, 4)]
-[Arguments(0, 0)]
-public void NotNullableParameters(int a, int b)
-{
-    int result = 0;
-
-    for (int i = 0; i &amp;lt; 1000; i++)
-    {
-        result += a * b;
-    }
-}
-
-[Benchmark]
-[Arguments(1, 2)]
-[Arguments(2, 4)]
-[Arguments(0, 0)]
-[Arguments(null, null)]
-public void NullableParameters(int? a, int? b)
-{
-    int? result = 0;
-
-    for (int i = 0; i &amp;lt; 1000; i++)
-    {
-        result += a * b;
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The logic of each method is the same, and is straight-forward - multiple two int values, 1000 times, and keep a running total of the result.&lt;/p&gt;
-&lt;p&gt;The first benchmark will us non-nullable int values, while the second will use nullable int values.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="results"&gt;Results&lt;/h2&gt;
-&lt;p&gt;Running the benchmarks yields the following results:&lt;/p&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;Method&lt;/th&gt;
-&lt;th&gt;a&lt;/th&gt;
-&lt;th&gt;b&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Ratio&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;RatioSD&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;NullableParameters&lt;/td&gt;
-&lt;td&gt;?&lt;/td&gt;
-&lt;td&gt;?&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1,196.4 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;21.79 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;20.38 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;?&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;?&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;NotNullableParameters&lt;/td&gt;
-&lt;td&gt;0&lt;/td&gt;
-&lt;td&gt;0&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;240.0 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;3.53 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;3.13 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.00&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;NullableParameters&lt;/td&gt;
-&lt;td&gt;0&lt;/td&gt;
-&lt;td&gt;0&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1,051.0 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;5.70 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;4.45 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;4.37&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.06&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;NotNullableParameters&lt;/td&gt;
-&lt;td&gt;1&lt;/td&gt;
-&lt;td&gt;2&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;241.4 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;3.74 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;3.50 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.00&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;NullableParameters&lt;/td&gt;
-&lt;td&gt;1&lt;/td&gt;
-&lt;td&gt;2&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1,054.5 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;8.60 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;7.18 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;4.37&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.07&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;NotNullableParameters&lt;/td&gt;
-&lt;td&gt;2&lt;/td&gt;
-&lt;td&gt;4&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;240.8 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.92 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.73 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.00&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;NullableParameters&lt;/td&gt;
-&lt;td&gt;2&lt;/td&gt;
-&lt;td&gt;4&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1,053.6 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;8.73 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;6.81 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;4.38&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.06&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;In all cases, the &lt;code&gt;non-nullable version is approximately 4.4x faster than the nullable version&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;Bear in mind, this is measured in nano-seconds, so probably won't make a material different to performance, unless the logic is computational heavy.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="lowered-code"&gt;Lowered code&lt;/h2&gt;
-&lt;p&gt;Using &lt;a href="https://sharplab.io/"&gt;sharplab.io&lt;/a&gt; to have a look at the lowered code, there a number of additional checks performed with the nullable version, all of which adds to the performance difference.&lt;/p&gt;
-&lt;p&gt;The &lt;code&gt;non-nullable&lt;/code&gt; version is lowered to the following:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public void NotNullableParameters(int a, int b)
-{
-    int num = 0;
-    int num2 = 0;
-    while (num2 &amp;lt; 1000)
-    {
-        num += a * b;
-        num2++;
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;While the &lt;code&gt;nullable&lt;/code&gt; version is lowered to this:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public void NullableParameters(Nullable&amp;lt;int&amp;gt; a, Nullable&amp;lt;int&amp;gt; b)
-{
-    Nullable&amp;lt;int&amp;gt; num = 0;
-    int num2 = 0;
-    while (num2 &amp;lt; 1000)
-    {
-        Nullable&amp;lt;int&amp;gt; num3 = num;
-        Nullable&amp;lt;int&amp;gt; num4 = a;
-        Nullable&amp;lt;int&amp;gt; num5 = b;
-        Nullable&amp;lt;int&amp;gt; num6 = ((num4.HasValue &amp;amp; num5.HasValue) ? 
-            new Nullable&amp;lt;int&amp;gt;(num4.GetValueOrDefault() * num5.GetValueOrDefault()) : 
-            null);
-        num = ((num3.HasValue &amp;amp; num6.HasValue) ? 
-            new Nullable&amp;lt;int&amp;gt;(num3.GetValueOrDefault() + num6.GetValueOrDefault()) : 
-            null);
-        num2++;
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;As with most things, there is a trade-off, in this case - the convenience of nullable types vs the performance impact their usage brings.&lt;/p&gt;
-&lt;p&gt;The performance penalty when using nullable types is measured in nano-seconds, and for the most part won't have any noticeable impact on performance of the application. However if a large number of operations are being performed on nullable types, and performance is to be improved, then one can look at converting the nullable types to non-nullable.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://leveluppp.ghost.io/content/images/size/w1000/2021/12/nullable_b.png"&gt;What is the cost of Nullable in .NET&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;97: 16-06-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
