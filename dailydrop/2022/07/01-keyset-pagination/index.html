@@ -1,0 +1,384 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="always learning | always growing">
+
+    <title>Always Developing - Keyset Pagination (vs Offset pagination)</title>
+
+    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/07/01-keyset-pagination">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
+
+    <meta name="application-name" content="Always Developing" />
+    <meta name="msapplication-tooltip" content="Always Developing" />
+    <meta name="msapplication-starturl" content="/" />
+
+    <meta property="og:title" content="Always Developing - Keyset Pagination (vs Offset pagination)" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/07/01-keyset-pagination" />
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Bootstrap core CSS -->
+    <link href="/vendor/bootstrap/scss/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom fonts for this template -->
+    <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="/vendor/fontawesome-free/css/brands.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css' data-no-mirror>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css' data-no-mirror>
+
+    <!-- Custom styles for this template -->
+    <link href="/scss/always-developing-blog.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/plugins/autoloader/prism-autoloader.min.js" data-no-mirror></script>
+    <script src="https://cdn.jsdelivr.net/npm/quicklink@2.0.0/dist/quicklink.umd.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/themes/prism.css">
+
+    <!-- Lunr search -->
+        <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/pako@2.0.3/dist/pako_inflate.min.js"></script>
+        <script src="/search.js"></script>
+
+    
+
+
+    
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand"  href="/">
+            <img src="/images/ad_logo.png" alt="" width="25" height="25" class="d-inline-block align-text-top">
+            Always Developing
+        </a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            Menu
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/software">Software</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/posts">Posts</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/tags">Tags</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/about">About</a>
+            </li>
+</ul>
+                <form class="form-inline my-2 my-lg-0" action="/search" method="GET">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="query">
+                    <input type="submit" hidden />
+                </form>
+        </div>
+    </div>
+</nav>
+
+    <!-- Page Header -->
+    <header class="masthead">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 align-middle">
+                <div class="post-header-image">
+                    <a href="/">
+                        <img src="/images/ad_logo.png" class="header-image">
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="post-heading">
+                    <h1>
+                        Keyset Pagination (vs Offset pagination)
+                    </h1>
+                            <h2 class="subheading">Exploring keyset pagination in SQL Server</h2>
+                        <p class="post-meta">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
+                                <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
+                            </svg> Published on Friday, 01 July 2022
+                        </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <!-- Main Content -->
+    <div class="container">
+            <div class="row ">
+                    <div id="content" class="col-md-9 post-with-toc post-block">
+                        
+<div class="post-header-category">
+    <a class="btn btn-primary btn-sm btn-default btn-home" href="\" role="button"><i class="fas fa-angle-double-left"></i> Home</a>
+            <a class="btn btn-primary btn-sm category-btn" href="/categories/dailydrop" role="button">DailyDrop</a>
+</div>
+
+                        <h2 id="daily-knowledge-drop">Daily Knowledge Drop</h2>
+<p>In a previous daily drop post, I learn about using <a href="../../03/17-sql-offset-fetch">OFFSET and FETCH</a> to perform paging when retrieving data - however this is <code>not always a good method</code> for retrieving results, especially with a large dataset.</p>
+<p>Instead, the usage of <code>keyset pagination</code> should be considered, as it is more performant. <code>Keyset pagination</code> returns a subset of the dataset by using a <code>WHERE</code> clause instead of the <code>OFFSET</code> clause as with <em>offset pagination</em>.</p>
+<p>There are however some limitations with the <code>keyset</code> approach, which will be explored below.</p>
+<hr />
+<h2 id="offset">Offset</h2>
+<h3 id="recap">Recap</h3>
+<p>First, a brief recap on <code>offset pagination</code> - this method uses the <code>OFFSET</code> and <code>FETCH</code> clauses to effectively skip <em>X</em> rows, and FETCH the following <em>Y</em> rows, ordered by the specified column(s):</p>
+<pre><code class="language-sql">DECLARE &#64;PageNumber INT = 5,
+        &#64;PageSize INT = 20; 
+
+-- In this example, skip 100 records
+-- and return the next 20
+SELECT Id 
+FROM OffSetDemo
+ORDER BY Id ASC
+OFFSET &#64;PageNumber * &#64;PageSize ROWS
+FETCH NEXT &#64;PageSize ROWS ONLY
+</code></pre>
+<p>Based on <em>PageNumber</em> and <em>PageSize</em>, the appropriate number of rows and skipped, and then <em>PageSize</em> rows retrieved.</p>
+<p>This approach works, however might not be suitable for all use cases.</p>
+<h3 id="issues">Issues</h3>
+<ul>
+<li><p><strong>Large datasets</strong></p>
+<p>One issue with the <code>offset pagination</code> approach, is that when the <code>OFFSET</code> clauses is used, the database is still required to go through all rows to find the correct starting record.</p>
+<p>For example, if we have a database with 1 000 000 rows.</p>
+<p>When the following is executed, the database still needs to go through the first 100 rows (the OFFSET value) to find the 101st row.</p>
+<pre><code class="language-sql">SELECT Id 
+FROM OffSetDemo
+ORDER BY Id ASC
+OFFSET 100 ROWS
+FETCH NEXT 50 ROWS ONLY
+</code></pre>
+<p>This will probably not have a negative impact on performance, however if the following is executed:</p>
+<pre><code class="language-sql">SELECT Id 
+FROM OffSetDemo
+ORDER BY Id ASC
+OFFSET 900 000 ROWS
+FETCH NEXT 50 ROWS ONLY
+</code></pre>
+<p>Now the database needs to go through 900 000 rows (the OFFSET value) to find the 900 001st row, which could definitely have a performance impact.<br />
+<br></p>
+</li>
+<li><p><strong>Missing/duplicate records</strong></p>
+<p>If the dataset being used is changing while being queried, the <code>offset</code> method could result in records either being missed, or records being duplicated as paging occurs.</p>
+<p>With a page size of 20, when the first page is queried, the first 20 records are returned. When the second page is being queried for, the first 20 rows are skipped (with <code>OFFSET</code>) and the next 20 rows are returned. Consider however, if between loading the first and second page, a record in the first 20 is deleted. The record which was number 21 when the first page loaded, is record 20 when the second page is loaded - this is missed when loading page 1 and page 2.</p>
+<p>The same applied if a record is added which falls into the first 20 - the record which previously was number 20, would become record number 21, and thus would appear on page 1 and page 2.</p>
+</li>
+</ul>
+<p><code>Keyset pagination</code> solves aims to solve these problems (while introducing a different set of limitations).</p>
+<h2 id="keyset">Keyset</h2>
+<p>With <code>keyset</code> pagination, instead of using the <code>OFFSET</code> clause to skip rows to determine where the returned dataset should start, a <code>WHERE</code> clause is used to determine where the returned dataset should start.</p>
+<p>A few examples will make it clearer - again consider a database with 1 000 000 rows, with an int <em>Id</em> primary key column on which the data is sorted.</p>
+<p>To retrieve the first page:</p>
+<pre><code class="language-sql">-- OFFSET pagination
+SELECT Id 
+FROM OffSetDemo
+ORDER BY Id ASC
+OFFSET 0 ROWS
+FETCH NEXT 50 ROWS ONLY
+
+-- KEYSET pagination
+SELECT TOP 50 Id 
+FROM OffSetDemo
+WHERE Id &gt; 0
+ORDER BY Id ASC
+</code></pre>
+<p>To retrieve the 10th page (for example):</p>
+<pre><code class="language-sql">-- OFFSET pagination
+SELECT Id 
+FROM OffSetDemo
+ORDER BY Id ASC
+OFFSET 500 ROWS -- 50 x 10
+FETCH NEXT 50 ROWS ONLY
+
+-- KEYSET pagination
+SELECT TOP 50 Id 
+FROM OffSetDemo
+WHERE Id &gt; 500
+ORDER BY Id ASC
+</code></pre>
+<p>In terms of performance, the keyset version is a lot more performant - assuming there are indexes created on the <code>WHERE</code> clause columns. Using the WHERE clause and the index, SQL does not need to go through <em>X</em> number rows to find the correct starting point</p>
+<p>This also solves the problem of records being duplicated or being missed as absolute values are being used to do the lookup and not offsets. If a record in the first 20 is deleted, it will not effect the second page of 20 records, and the same applied if a new record is added to the first 20 - the second page of 20 records is unaffected.</p>
+<p><code>Keyset pagination</code> is not without its own limitations though.</p>
+<h3 id="limitations">Limitations</h3>
+<ul>
+<li><p><code>No random access</code> - with <em>keyset pagination</em> one is unable to get, for example, the 15th page. To get a page of data, the last <em>Id</em> (in the above example) of the previous page is required.</p>
+</li>
+<li><p><code>Complicated multi-column filtering</code> - with the above examples, the <code>WHERE</code> clause is straightforward, but this can get complicated. Consider if the data is going to be sorted by a <em>CreatedDate</em> column, and if two record have the same <em>CreatedDate</em>, then they should be sorted by <em>Id</em>.</p>
+<pre><code class="language-sql">SELECT TOP 50 DateCreated, Id 
+FROM OffSetDemo
+WHERE ((DateCreated &gt; '2022/06/12') OR (DateCreated = '2022/06/12' AND Id &gt; 500))
+ORDER BY DateCreated, Id ASC
+</code></pre>
+<p>Depending on how many filter conditions there are, the <code>WHERE</code> clause could become complex.</p>
+</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<p>The choice between the two methods (and any other), as always, comes down to the specific use case.</p>
+<ul>
+<li>Need random access to any page? Use offset</li>
+<li>Large dataset, and no random access required? Use keyset</li>
+<li>Large dataset, but do require random access? Why not both? - offset for the random access, and keyset for the <em>next/previous</em> functionality</li>
+</ul>
+<hr />
+<h2 id="references">References</h2>
+<p><a href="https://www.youtube.com/watch?v=DIKH-q-gJNU">.NET Data Community Standup - Database Pagination</a></p>
+
+<blockquote class="daily-drop">
+    <div>
+        <div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px; ">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="50" height="50" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffec00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+              <path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+              <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+              <line x1="9.7" y1="17" x2="14.3" y2="17" />
+            </svg>
+        </div>
+        <div class="drop-header">
+            Daily Drop 108: 01-07-2022
+        </div>
+        <div>
+            <br>At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br> It could be anything - some.NET / C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
+            The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+        <div>
+    </div>
+</blockquote>
+
+
+                        
+<div>
+            <a role="button" href="/tags/sql" class="badge badge-light"> sql</a>
+            <a role="button" href="/tags/pagination" class="badge badge-light"> pagination</a>
+            <a role="button" href="/tags/keyset" class="badge badge-light"> keyset</a>
+            <a role="button" href="/tags/sort" class="badge badge-light"> sort</a>
+</div>
+                    </div>
+                    <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
+                        
+
+        <div class="box sticky-top toc-block">
+            <h3 class="no-anchor">On This Page</h3>
+            <ul>
+        <li><a href="#daily-knowledge-drop">Daily Knowledge Drop</a></li>
+        <li><a href="#offset">Offset</a></li>
+            <ul>
+        <li><a href="#recap">Recap</a></li>
+        <li><a href="#issues">Issues</a></li>
+            </ul>
+        <li><a href="#keyset">Keyset</a></li>
+            <ul>
+        <li><a href="#limitations">Limitations</a></li>
+            </ul>
+        <li><a href="#notes">Notes</a></li>
+        <li><a href="#references">References</a></li>
+            </ul>
+        </div>
+
+                    </div>
+            </div>
+            <div class="row ">
+                    <div id="content" class="col-md-9">
+                        <div>
+    <script src="https://giscus.app/client.js"
+            data-repo="always-developing/always-developing.github.io"
+            data-repo-id="R_kgDOGQJLBQ"
+            data-category="Comments"
+            data-category-id="DIC_kwDOGQJLBc4B_pUA"
+            data-mapping="pathname"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="bottom"
+            data-theme="transparent_dark"
+            data-lang="en"
+            crossorigin="anonymous"
+            async>
+    </script>
+</div>
+                    </div>
+            </div>
+    </div>
+
+    <hr class="horizontal-rule" />
+
+    <!-- Footer -->
+    <footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <ul class="list-inline text-center">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://www.linkedin.com/in/jean-pierre-seini">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-linkedin fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                <div>
+                    <p class="copyright text-footer">
+                        Copyright © 2022 Always Developing</a>.
+                    </p>
+                </div>
+                <ul class="list-inline text-center small text-feeds">
+                        <li class="list-inline-item">
+                            <a href="/feed.rss"><i class="fa fa-rss"></i> RSS Feed</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="/feed.atom"><i class="fa fa-rss"></i> Atom Feed</a>
+                        </li>
+                </ul>
+                <div class="small text-footer">
+                    <a href="https://github.com/always-developing/alwaysdeveloping-website-src"><i class="fab fa-github"></i> This site on GitHub</a>
+                </div>
+                <div class="small text-footer">
+                    <a href="https://statiq.dev">Generated by Statiq</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="/vendor/jquery/jquery.min.js"></script>
+    <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CXPLFS7K38"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){window.dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  //gtag('config', 'G-CXPLFS7K38');
+</script>
+
+    
+
+    <!-- Custom scripts for this template -->
+    <script src="/js/always-developing-blog.js"></script>
+
+</body>
+
+</html>

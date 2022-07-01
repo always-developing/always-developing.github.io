@@ -5,8 +5,125 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Thu, 30 Jun 2022 04:12:46 GMT</pubDate>
-		<lastBuildDate>Thu, 30 Jun 2022 04:12:46 GMT</lastBuildDate>
+		<pubDate>Fri, 01 Jul 2022 04:39:03 GMT</pubDate>
+		<lastBuildDate>Fri, 01 Jul 2022 04:39:03 GMT</lastBuildDate>
+		<item>
+			<title>Keyset Pagination (vs Offset pagination)</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/07/01-keyset-pagination</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/07/01-keyset-pagination</guid>
+			<pubDate>Fri, 01 Jul 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;In a previous daily drop post, I learn about using &lt;a href="https://alwaysdeveloping.net/03/17-sql-offset-fetch"&gt;OFFSET and FETCH&lt;/a&gt; to perform paging when retrieving data - however this is &lt;code&gt;not always a good method&lt;/code&gt; for retrieving results, especially with a large dataset.&lt;/p&gt;
+&lt;p&gt;Instead, the usage of &lt;code&gt;keyset pagination&lt;/code&gt; should be considered, as it is more performant. &lt;code&gt;Keyset pagination&lt;/code&gt; returns a subset of the dataset by using a &lt;code&gt;WHERE&lt;/code&gt; clause instead of the &lt;code&gt;OFFSET&lt;/code&gt; clause as with &lt;em&gt;offset pagination&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;There are however some limitations with the &lt;code&gt;keyset&lt;/code&gt; approach, which will be explored below.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="offset"&gt;Offset&lt;/h2&gt;
+&lt;h3 id="recap"&gt;Recap&lt;/h3&gt;
+&lt;p&gt;First, a brief recap on &lt;code&gt;offset pagination&lt;/code&gt; - this method uses the &lt;code&gt;OFFSET&lt;/code&gt; and &lt;code&gt;FETCH&lt;/code&gt; clauses to effectively skip &lt;em&gt;X&lt;/em&gt; rows, and FETCH the following &lt;em&gt;Y&lt;/em&gt; rows, ordered by the specified column(s):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;DECLARE @PageNumber INT = 5,
+        @PageSize INT = 20; 
+
+-- In this example, skip 100 records
+-- and return the next 20
+SELECT Id 
+FROM OffSetDemo
+ORDER BY Id ASC
+OFFSET @PageNumber * @PageSize ROWS
+FETCH NEXT @PageSize ROWS ONLY
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Based on &lt;em&gt;PageNumber&lt;/em&gt; and &lt;em&gt;PageSize&lt;/em&gt;, the appropriate number of rows and skipped, and then &lt;em&gt;PageSize&lt;/em&gt; rows retrieved.&lt;/p&gt;
+&lt;p&gt;This approach works, however might not be suitable for all use cases.&lt;/p&gt;
+&lt;h3 id="issues"&gt;Issues&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Large datasets&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;One issue with the &lt;code&gt;offset pagination&lt;/code&gt; approach, is that when the &lt;code&gt;OFFSET&lt;/code&gt; clauses is used, the database is still required to go through all rows to find the correct starting record.&lt;/p&gt;
+&lt;p&gt;For example, if we have a database with 1 000 000 rows.&lt;/p&gt;
+&lt;p&gt;When the following is executed, the database still needs to go through the first 100 rows (the OFFSET value) to find the 101st row.&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT Id 
+FROM OffSetDemo
+ORDER BY Id ASC
+OFFSET 100 ROWS
+FETCH NEXT 50 ROWS ONLY
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This will probably not have a negative impact on performance, however if the following is executed:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT Id 
+FROM OffSetDemo
+ORDER BY Id ASC
+OFFSET 900 000 ROWS
+FETCH NEXT 50 ROWS ONLY
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now the database needs to go through 900 000 rows (the OFFSET value) to find the 900 001st row, which could definitely have a performance impact.&lt;br&gt;
+&lt;br&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Missing/duplicate records&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;If the dataset being used is changing while being queried, the &lt;code&gt;offset&lt;/code&gt; method could result in records either being missed, or records being duplicated as paging occurs.&lt;/p&gt;
+&lt;p&gt;With a page size of 20, when the first page is queried, the first 20 records are returned. When the second page is being queried for, the first 20 rows are skipped (with &lt;code&gt;OFFSET&lt;/code&gt;) and the next 20 rows are returned. Consider however, if between loading the first and second page, a record in the first 20 is deleted. The record which was number 21 when the first page loaded, is record 20 when the second page is loaded - this is missed when loading page 1 and page 2.&lt;/p&gt;
+&lt;p&gt;The same applied if a record is added which falls into the first 20 - the record which previously was number 20, would become record number 21, and thus would appear on page 1 and page 2.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;code&gt;Keyset pagination&lt;/code&gt; solves aims to solve these problems (while introducing a different set of limitations).&lt;/p&gt;
+&lt;h2 id="keyset"&gt;Keyset&lt;/h2&gt;
+&lt;p&gt;With &lt;code&gt;keyset&lt;/code&gt; pagination, instead of using the &lt;code&gt;OFFSET&lt;/code&gt; clause to skip rows to determine where the returned dataset should start, a &lt;code&gt;WHERE&lt;/code&gt; clause is used to determine where the returned dataset should start.&lt;/p&gt;
+&lt;p&gt;A few examples will make it clearer - again consider a database with 1 000 000 rows, with an int &lt;em&gt;Id&lt;/em&gt; primary key column on which the data is sorted.&lt;/p&gt;
+&lt;p&gt;To retrieve the first page:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;-- OFFSET pagination
+SELECT Id 
+FROM OffSetDemo
+ORDER BY Id ASC
+OFFSET 0 ROWS
+FETCH NEXT 50 ROWS ONLY
+
+-- KEYSET pagination
+SELECT TOP 50 Id 
+FROM OffSetDemo
+WHERE Id &amp;gt; 0
+ORDER BY Id ASC
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;To retrieve the 10th page (for example):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;-- OFFSET pagination
+SELECT Id 
+FROM OffSetDemo
+ORDER BY Id ASC
+OFFSET 500 ROWS -- 50 x 10
+FETCH NEXT 50 ROWS ONLY
+
+-- KEYSET pagination
+SELECT TOP 50 Id 
+FROM OffSetDemo
+WHERE Id &amp;gt; 500
+ORDER BY Id ASC
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In terms of performance, the keyset version is a lot more performant - assuming there are indexes created on the &lt;code&gt;WHERE&lt;/code&gt; clause columns. Using the WHERE clause and the index, SQL does not need to go through &lt;em&gt;X&lt;/em&gt; number rows to find the correct starting point&lt;/p&gt;
+&lt;p&gt;This also solves the problem of records being duplicated or being missed as absolute values are being used to do the lookup and not offsets. If a record in the first 20 is deleted, it will not effect the second page of 20 records, and the same applied if a new record is added to the first 20 - the second page of 20 records is unaffected.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;Keyset pagination&lt;/code&gt; is not without its own limitations though.&lt;/p&gt;
+&lt;h3 id="limitations"&gt;Limitations&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;code&gt;No random access&lt;/code&gt; - with &lt;em&gt;keyset pagination&lt;/em&gt; one is unable to get, for example, the 15th page. To get a page of data, the last &lt;em&gt;Id&lt;/em&gt; (in the above example) of the previous page is required.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;code&gt;Complicated multi-column filtering&lt;/code&gt; - with the above examples, the &lt;code&gt;WHERE&lt;/code&gt; clause is straightforward, but this can get complicated. Consider if the data is going to be sorted by a &lt;em&gt;CreatedDate&lt;/em&gt; column, and if two record have the same &lt;em&gt;CreatedDate&lt;/em&gt;, then they should be sorted by &lt;em&gt;Id&lt;/em&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT TOP 50 DateCreated, Id 
+FROM OffSetDemo
+WHERE ((DateCreated &amp;gt; '2022/06/12') OR (DateCreated = '2022/06/12' AND Id &amp;gt; 500))
+ORDER BY DateCreated, Id ASC
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Depending on how many filter conditions there are, the &lt;code&gt;WHERE&lt;/code&gt; clause could become complex.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;The choice between the two methods (and any other), as always, comes down to the specific use case.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Need random access to any page? Use offset&lt;/li&gt;
+&lt;li&gt;Large dataset, and no random access required? Use keyset&lt;/li&gt;
+&lt;li&gt;Large dataset, but do require random access? Why not both? - offset for the random access, and keyset for the &lt;em&gt;next/previous&lt;/em&gt; functionality&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://www.youtube.com/watch?v=DIKH-q-gJNU"&gt;.NET Data Community Standup - Database Pagination&lt;/a&gt;&lt;/p&gt;
+&lt;!--?# DailyDrop ?--&gt;108: 01-07-2022&lt;!--?#/ DailyDrop ?--&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Multiple statements in a for loop</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/06/30-for-multi-operations</link>
@@ -1064,88 +1181,6 @@ fffffd7e
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://twitter.com/buhakmeh/status/1523685323875635200"&gt;Khalid Abuhakmeh Tweet&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;99: 20-06-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Sortable Guids using NewId</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/06/17-sortable-guids</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/06/17-sortable-guids</guid>
-			<pubDate>Fri, 17 Jun 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;Often &lt;code&gt;Guids&lt;/code&gt; are used as database primary keys, as they are "guaranteed" to be unique and random or un-guessable. However one drawback of them, is that due to their uniqueness there is no ordering, which leads to &lt;a href="https://www.mssqltips.com/sqlservertip/4331/sql-server-index-fragmentation-overview/"&gt;index fragmentation&lt;/a&gt;, an increase in database size, as well as a potential performance degradation.&lt;/p&gt;
-&lt;p&gt;The &lt;a href="https://www.nuget.org/packages/NewId/"&gt;NewId&lt;/a&gt; library, can assist with this, by generating unique, but sortable &lt;code&gt;Guids&lt;/code&gt;.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="guid"&gt;Guid&lt;/h2&gt;
-&lt;p&gt;In C#, &lt;code&gt;Guid's&lt;/code&gt; are mostly created using the &lt;code&gt;Guid.NewGuid&lt;/code&gt; method (there are other ways, such as using this &lt;a href="https://alwaysdeveloping.net/05/10-deterministic-guid"&gt;technique to create a deterministic Guid&lt;/a&gt;)&lt;/p&gt;
-&lt;p&gt;Using &lt;code&gt;Guid.NewGuid&lt;/code&gt; to created 10 &lt;code&gt;Guids&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;for (int i = 0; i &amp;lt; 10; i++)
-{
-    var id = Guid.NewGuid();
-    Console.WriteLine(id);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We can see, as by design, the values of the 10 &lt;code&gt;Guids&lt;/code&gt; are random and are unrelated to one another:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-powershell"&gt;7620e975-26e6-46ca-876d-dff93495ad57
-24751db7-6372-4b8c-94fd-2ae3ad92f926
-c8791bf1-f85a-4b12-81e7-18cab1516cb9
-5a78214c-adb6-4d59-8921-bca021b50b22
-e46a7e0e-faf4-4af3-bd2e-39a1102af894
-807ad5c4-7314-4ebb-8914-3b9a0f38386f
-ca536113-ea85-41a6-844f-891d8aab40e4
-44cf6ff1-89da-458f-8f69-57d4c68c73cf
-b18e4911-e439-4506-9f23-b5017ce82d55
-225557ab-a5eb-48e1-b04e-7a72696e85ca
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;As mentioned, having unique values is the desired goal, but having them be completely random can cause issues if they are being used as database primary keys.&lt;br&gt;
-The non-sequential nature of this approach leads to index fragmentation, but also means records cannot be sorted by this field, and requires another field (e.g. DateCreated) to be sortable.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="newid"&gt;NewId&lt;/h2&gt;
-&lt;p&gt;The &lt;a href="https://www.nuget.org/packages/NewId/"&gt;Newid&lt;/a&gt; library addresses these issues, by creating unique, semi-random, sortable &lt;code&gt;Ids&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;The library is very easy to use, with the &lt;code&gt;NewId.Next()&lt;/code&gt; method used to produce an &lt;code&gt;Id&lt;/code&gt;. It is also possible to set a start &lt;code&gt;Id&lt;/code&gt;, or a start byte-array, from quick subsequent &lt;code&gt;Ids&lt;/code&gt; are based.&lt;/p&gt;
-&lt;p&gt;Using &lt;code&gt;NewId&lt;/code&gt; to created 10 &lt;code&gt;Ids&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;for (int i = 0; i &amp;lt; 10; i++)
-{
-    var newId = NewId.Next().ToGuid();
-    Console.WriteLine(newId);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The 10 unique, but sortable &lt;code&gt;Guids&lt;/code&gt; are as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;df1d0000-0a83-7cd3-fdf2-08da40cae578
-df1d0000-0a83-7cd3-467a-08da40cae579
-df1d0000-0a83-7cd3-48ba-08da40cae579
-df1d0000-0a83-7cd3-49de-08da40cae579
-df1d0000-0a83-7cd3-4aba-08da40cae579
-df1d0000-0a83-7cd3-4b95-08da40cae579
-df1d0000-0a83-7cd3-4c93-08da40cae579
-df1d0000-0a83-7cd3-4d6e-08da40cae579
-df1d0000-0a83-7cd3-4e8b-08da40cae579
-df1d0000-0a83-7cd3-4f5c-08da40cae579
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;As one can see, the &lt;code&gt;Guids&lt;/code&gt; are unique and sorted, but don't look entirely random - this is because some parts are in fact not entirely random.&lt;/p&gt;
-&lt;p&gt;The &lt;code&gt;Id&lt;/code&gt; generated is made up of three portions:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;df1d0000-0a83-7cd3&lt;/code&gt;: this portion is the same for all &lt;code&gt;Ids&lt;/code&gt; generated by the same process/worker Id. This will be constant on a particular machine, but will differ PC to PC.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;4f5c&lt;/code&gt;: this portion will change with each &lt;code&gt;Id&lt;/code&gt; generated.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;08da40cae579&lt;/code&gt;: this portion increments, but slowly and not for every &lt;code&gt;Id&lt;/code&gt; generated (as is evident in the the above example)&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;There are three sources of information are used to construct the &lt;code&gt;Id&lt;/code&gt;:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;A &lt;code&gt;process/worker Id&lt;/code&gt;: unique and constant for each PC&lt;/li&gt;
-&lt;li&gt;A &lt;code&gt;timestamp&lt;/code&gt;: by definition, incrementing and thus orderable&lt;/li&gt;
-&lt;li&gt;A &lt;code&gt;sequence&lt;/code&gt;: this is an incrementing Id&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Generating a &lt;code&gt;NewId&lt;/code&gt; is just as easy as generating a &lt;code&gt;Guid&lt;/code&gt; directly - and are directly convertible to a &lt;code&gt;Guid&lt;/code&gt; (as was done in the above code example)&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;&lt;code&gt;NewId&lt;/code&gt; is not suitable for every situation - in some cases you would want the generated &lt;code&gt;Id&lt;/code&gt; to be completely random and un-guessable. However, if you are using &lt;code&gt;Guids&lt;/code&gt; as database primary keys, consider using &lt;code&gt;NewId&lt;/code&gt; to generate the &lt;code&gt;Ids&lt;/code&gt; instead of &lt;em&gt;Guid.NewGuid&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;I appreciate the fact that, while the library does generate its own type (also called &lt;em&gt;NewId&lt;/em&gt;), this type is effectively a &lt;code&gt;Guid&lt;/code&gt;, and can easy be converted to one. This means that any underlying entities which currently use a &lt;code&gt;Guid&lt;/code&gt; do not need to be updated with a new type, or reference a third party package - they can be kept "clean".&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.nuget.org/packages/NewId/"&gt;NewId&lt;/a&gt;&lt;br&gt;
-&lt;a href="https://andrewlock.net/generating-sortable-guids-using-newid/"&gt;Generating sortable Guids using NewId&lt;/a&gt;&lt;/p&gt;
-&lt;!--?# DailyDrop ?--&gt;98: 17-06-2022&lt;!--?#/ DailyDrop ?--&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
