@@ -5,8 +5,145 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Fri, 01 Jul 2022 04:39:03 GMT</pubDate>
-		<lastBuildDate>Fri, 01 Jul 2022 04:39:03 GMT</lastBuildDate>
+		<pubDate>Mon, 04 Jul 2022 04:29:25 GMT</pubDate>
+		<lastBuildDate>Mon, 04 Jul 2022 04:29:25 GMT</lastBuildDate>
+		<item>
+			<title>EF Find vs First performance </title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/07/04-ef-find-vs-single</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/07/04-ef-find-vs-single</guid>
+			<pubDate>Mon, 04 Jul 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;When retrieving a single record from the database using Entity Framework, the &lt;code&gt;Single (or SingleOrDefault)&lt;/code&gt; method can be used - however the &lt;code&gt;Find&lt;/code&gt; method on the DbSet is potentially more efficient, however it comes with some limitations.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="first"&gt;First&lt;/h2&gt;
+&lt;p&gt;The first method is using &lt;code&gt;First (or FirstOrDefault)&lt;/code&gt; - this is an extension method on &lt;em&gt;Queryable&lt;/em&gt; (an important factor when comparing it to the &lt;em&gt;Find&lt;/em&gt; method)&lt;/p&gt;
+&lt;p&gt;As &lt;em&gt;DbSet&lt;/em&gt; implement &lt;em&gt;IQueryable&lt;/em&gt;, this method can be use directly on the &lt;em&gt;DbSet&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;Assuming we have a &lt;em&gt;DbContext&lt;/em&gt; with a &amp;quot;Song&amp;quot; &lt;em&gt;DbSet&lt;/em&gt;, a single record can be retrieved as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;using var context = new DemoContext();
+
+// using Single
+var song = context.Songs.Single(x =&amp;gt; x.Id == 43);
+
+// using SingleOrDefault
+var song2 = context.Songs.SingleOrDefault(x =&amp;gt; x.Id == 43);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="find"&gt;Find&lt;/h2&gt;
+&lt;p&gt;The next method is using &lt;code&gt;Find&lt;/code&gt; - this is an extension method on &lt;em&gt;DBset&lt;/em&gt; itself.&lt;/p&gt;
+&lt;p&gt;Again, assuming we have a &lt;em&gt;DbContext&lt;/em&gt; with a &amp;quot;Song&amp;quot; &lt;em&gt;DbSet&lt;/em&gt;, a record can be retrieved as follows using &lt;em&gt;Find&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;using var context = new DemoContext();
+
+var song = context.Songs.Find(43);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="limitation"&gt;Limitation&lt;/h3&gt;
+&lt;p&gt;As mentioned above, having &lt;code&gt;Find&lt;/code&gt; as an extension method on &lt;strong&gt;DbSet&lt;/strong&gt; does limit its usage. It cannot be used in conjunction with other &lt;em&gt;IQueryable&lt;/em&gt; extension methods.&lt;/p&gt;
+&lt;p&gt;The following examples are &lt;strong&gt;NOT&lt;/strong&gt; valid and will &lt;strong&gt;NOT&lt;/strong&gt; compile:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// Find() returns a 'Song' and as such Include()
+// cannot be used in this example
+var song = context.Songs.Find(43).Include(&amp;quot;Artist&amp;quot;);
+
+// Include() returns a 'IQueryable' and as such Find()
+// cannot be used in this example
+var song2 = context.Songs.Include(&amp;quot;Artist&amp;quot;).Find(43);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;However, the following using &lt;code&gt;Single&lt;/code&gt; &lt;strong&gt;is VALID&lt;/strong&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// Include() returns a 'IQueryable' and as Single is
+// an extension method on 'IQueryable' it CAN be used
+var song = context.Songs.Include(&amp;quot;Artist&amp;quot;).Single(x =&amp;gt; x.Id == 43);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="benchmark"&gt;Benchmark&lt;/h2&gt;
+&lt;p&gt;The different methods where benchmarked, with a:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;Shared DbContext&lt;/code&gt; - defined in the constructor once, and reused&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Single-use DbContext&lt;/code&gt; - a new DbContext is declared for each database call&lt;/li&gt;
+&lt;/ul&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Method&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Median&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Ratio&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;RatioSD&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;FindSharedContext&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;14.93 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2.845 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;8.071 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;12.00 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.14&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.07&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;SingleDefaultSharedContext&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;123.26 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2.294 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2.146 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;123.22 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.98&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.05&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;SingleSharedContext&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;123.78 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2.320 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;4.242 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;122.09 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.00&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;FindOneUseContext&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;488.81 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;9.539 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;10.207 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;487.06 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;3.91&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.20&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;SingleDefaultOneUseContext&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;261.49 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;5.098 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;5.236 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;260.91 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2.09&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.11&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;SingleOneUseContext&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;259.93 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;5.166 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;10.317 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;257.45 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2.11&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.11&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;br&gt;
+&lt;p&gt;The &lt;em&gt;Find&lt;/em&gt; method is &lt;code&gt;substantially quicker&lt;/code&gt; when reusing the DbContext (as one should).&lt;/p&gt;
+&lt;p&gt;However, interestingly, with a single-use DbContext, the &lt;em&gt;Single/SingleOrDefault&lt;/em&gt; method is almost twice as quick as the &lt;em&gt;Find&lt;/em&gt; method.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;While &lt;em&gt;Find&lt;/em&gt; is approximately &lt;code&gt;7 times&lt;/code&gt; faster than the equivalent &lt;em&gt;Single&lt;/em&gt; method, it does come with considerable limitations. If performance is critical, it might be worth finding a way to work around the limitations - however keep in mind that the differences are being measured in microseconds, so the performance gain might not be worth the potential additional effort.&lt;/p&gt;
+&lt;p&gt;Be aware of the performance differences, and the limitations - and for each specific use case, apply the more appropriate technique.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/danylaws/status/1524284247049216000"&gt;Daniel Lawson tweet&lt;/a&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;?# DailyDrop ?&gt;109: 04-07-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Keyset Pagination (vs Offset pagination)</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/07/01-keyset-pagination</link>
@@ -1125,62 +1262,6 @@ var app = builder.Build();
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://www.youtube.com/watch?v=iQ8cNI7a6mk"&gt;The .NET dependency injection methods you are not using&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;100: 21-06-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Binary and hexadecimal conversion</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/06/20-base-conversion</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/06/20-base-conversion</guid>
-			<pubDate>Mon, 20 Jun 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;Convert&lt;/code&gt; class can be used to convert any integer value to it's corresponding value of a &lt;code&gt;different base&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;Binary&lt;/code&gt; (base 2), &lt;code&gt;Octal&lt;/code&gt; (base 8), &lt;code&gt;Decimal&lt;/code&gt; (base 10) and &lt;code&gt;Hexadecimal&lt;/code&gt; (base 16) are supported.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="convert-class"&gt;Convert class&lt;/h2&gt;
-&lt;p&gt;Using the &lt;code&gt;Convert&lt;/code&gt; class to perform the conversion is incredibly simple:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var intValue = 642;
-
-// use the ToString method, specifying the new base
-var binary = Convert.ToString(intValue, 2);
-var octal = Convert.ToString(intValue, 8);
-var hex = Convert.ToString(intValue, 16);
-
-Console.WriteLine(binary);
-Console.WriteLine(octal);
-Console.WriteLine(hex);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output is as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-powershell"&gt;1010000010
-1202
-282
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Negative values are also supported:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var intValue = 642;
-
-// use the ToString method, specifying the new base
-var binaryNeg = Convert.ToString(intValue * 1, 2);
-var octalNeg = Convert.ToString(intValue * -1, 8);
-var hexNeg = Convert.ToString(intValue * -1, 16);
-
-Console.WriteLine(binaryNeg);
-Console.WriteLine(octalNeg);
-Console.WriteLine(hexNeg);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output is as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-powershell"&gt;11111111111111111111110101111110
-37777776576
-fffffd7e
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;And that's all there is to it - simple and occasionally useful!&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;In my almost 20 years of programming, I don't think I've ever had to perform these kinds of conversions (outside of assignments at university), so this functionality is probably not useful for every day development for most applications - however when the need does arise, it's useful to know it can be easily implemented.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://twitter.com/buhakmeh/status/1523685323875635200"&gt;Khalid Abuhakmeh Tweet&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;99: 20-06-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
