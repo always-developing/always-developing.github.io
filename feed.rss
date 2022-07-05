@@ -5,8 +5,128 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Mon, 04 Jul 2022 04:29:25 GMT</pubDate>
-		<lastBuildDate>Mon, 04 Jul 2022 04:29:25 GMT</lastBuildDate>
+		<pubDate>Tue, 05 Jul 2022 04:15:44 GMT</pubDate>
+		<lastBuildDate>Tue, 05 Jul 2022 04:15:44 GMT</lastBuildDate>
+		<item>
+			<title>View config values with GetDebugView</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/07/05-getdebugview</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/07/05-getdebugview</guid>
+			<pubDate>Tue, 05 Jul 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;All configuration values for an aapplication, as well &lt;code&gt;as their source&lt;/code&gt;, can be viewed with the &lt;code&gt;GetDebugView&lt;/code&gt; method on &lt;em&gt;IConfigurationRoot&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;While this core functionality has been available since .NET Core 3, enhancements are also coming with .NET7 (currently in preview) to allow for confidential values to be masked.&lt;/p&gt;
+&lt;p&gt;All of this in more detail below.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="getdebugview-current"&gt;GetDebugView: Current&lt;/h2&gt;
+&lt;p&gt;To retrieve the configuration information is fairly straightforward - all one needs is the &lt;em&gt;IConfiguration&lt;/em&gt; implementation.&lt;/p&gt;
+&lt;p&gt;The below uses top-level statements and minimal API to expose a &lt;em&gt;config&lt;/em&gt; endpoint:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// inject IConfiguration from dependency injection container
+app.MapGet(&amp;quot;/config&amp;quot;, (IConfiguration config) =&amp;gt;
+{
+    // convert to IConfigurationRoot
+    var root = config as IConfigurationRoot;
+
+    return root.GetDebugView();
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;With a &lt;em&gt;appsettings.json&lt;/em&gt; file which contains the following:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-json"&gt;{
+  &amp;quot;Logging&amp;quot;: {
+    &amp;quot;LogLevel&amp;quot;: {
+      &amp;quot;Default&amp;quot;: &amp;quot;Information&amp;quot;,
+      &amp;quot;Microsoft.AspNetCore&amp;quot;: &amp;quot;Warning&amp;quot;
+    }
+  },
+  &amp;quot;AllowedHosts&amp;quot;: &amp;quot;*&amp;quot;,
+  &amp;quot;ServiceCredentials&amp;quot;: {
+    &amp;quot;username&amp;quot;: &amp;quot;admin123&amp;quot;,
+    &amp;quot;password&amp;quot; : &amp;quot;admin456&amp;quot;
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Browsing to the endpoint will return the following &lt;em&gt;relevent configuration values&lt;/em&gt; (along with numerous other system environment variables):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-powershell"&gt;AllowedHosts=* (JsonConfigurationProvider for 'appsettings.json' (Optional))
+ASPNETCORE_ENVIRONMENT=Development (EnvironmentVariablesConfigurationProvider Prefix: '')
+Logging:
+  LogLevel:
+    Default=Information (JsonConfigurationProvider for 'appsettings.Development.json' (Optional))
+    Microsoft.AspNetCore=Warning (JsonConfigurationProvider for 'appsettings.Development.json' (Optional))
+ServiceCredentials:
+  password=admin456 (JsonConfigurationProvider for 'appsettings.json' (Optional))
+  username=admin123 (JsonConfigurationProvider for 'appsettings.json' (Optional))
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The configuration from the &lt;em&gt;appsettings.json&lt;/em&gt; config file are displayed, with the corresponding provider source (&lt;em&gt;JsonConfigurationProvider&lt;/em&gt;) as well as a configuration value sourced from the environment variable provider (&lt;em&gt;EnvironmentVariablesConfigurationProvider&lt;/em&gt;).&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="secrets-exposed"&gt;Secrets exposed&lt;/h3&gt;
+&lt;p&gt;One limitation of the current (.NET Core 3 to .NET 6) implementation, which is demonstrated above - is that configuration values which are secrets (keys, passwords, etc.) are included in the output.&lt;/p&gt;
+&lt;p&gt;In my example the password was stored in the &lt;em&gt;appsettings.json&lt;/em&gt;, which ideally shouldn't happen - however even if injected at runtime as an environment variable, the same would occur, and the value would still be exposed (just coming from a different provider source).&lt;/p&gt;
+&lt;p&gt;The enhancements in .NET7 aim to improve this.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="getdebugview-preview"&gt;GetDebugView: Preview&lt;/h2&gt;
+&lt;p&gt;Bear in mind, that the following is done using a &lt;em&gt;Preview&lt;/em&gt; version of .NET7, and may change by the time it is officially release.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;GetDebugView&lt;/code&gt; now has an overload which accepts a &lt;em&gt;Func&lt;/em&gt; and allows for custom processing and manipulation of the configuration values for display:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// inject IConfiguration from dependency injection container
+app.MapGet(&amp;quot;/config&amp;quot;, (IConfiguration config) =&amp;gt;
+{
+    // convert to IConfigurationRoot
+    var root = config as IConfigurationRoot;
+
+    return root.GetDebugView(context =&amp;gt;
+    {
+        // this Func keys called for each Key in the configuration
+
+        // if the key is one we know contains a password
+        if(context.Key == &amp;quot;ServiceCredentials:password&amp;quot;)
+        {
+            // return a masked value
+            return &amp;quot;***&amp;quot;;
+        }
+        
+        // otherwise return the original configuration value
+        return context.Value;
+    });
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;With a &lt;em&gt;appsettings.json&lt;/em&gt; file the same as before&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-json"&gt;{
+  &amp;quot;Logging&amp;quot;: {
+    &amp;quot;LogLevel&amp;quot;: {
+      &amp;quot;Default&amp;quot;: &amp;quot;Information&amp;quot;,
+      &amp;quot;Microsoft.AspNetCore&amp;quot;: &amp;quot;Warning&amp;quot;
+    }
+  },
+  &amp;quot;AllowedHosts&amp;quot;: &amp;quot;*&amp;quot;,
+  &amp;quot;ServiceCredentials&amp;quot;: {
+    &amp;quot;username&amp;quot;: &amp;quot;admin123&amp;quot;,
+    &amp;quot;password&amp;quot; : &amp;quot;admin456&amp;quot;
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Browsing to the endpoint will return the same as before, but with one small adjustment:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-powershell"&gt;AllowedHosts=* (JsonConfigurationProvider for 'appsettings.json' (Optional))
+ASPNETCORE_ENVIRONMENT=Development (EnvironmentVariablesConfigurationProvider Prefix: '')
+Logging:
+  LogLevel:
+    Default=Information (JsonConfigurationProvider for 'appsettings.Development.json' (Optional))
+    Microsoft.AspNetCore=Warning (JsonConfigurationProvider for 'appsettings.Development.json' (Optional))
+ServiceCredentials:
+  password=*** (JsonConfigurationProvider for 'appsettings.json' (Optional))
+  username=admin123 (JsonConfigurationProvider for 'appsettings.json' (Optional))
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The password returned is now the &lt;code&gt;masked value&lt;/code&gt; specified in the &lt;em&gt;Func&lt;/em&gt;!&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;Having the ability to expose all configuration values can definitely save time and effort - it eliminates the need to remote into other machines or containers and get a list of environment variables when doing investigations. However the fact that confidential information could be exposed is far from ideal, and depending on how serious security is taken, could render the functionality unusable.&lt;/p&gt;
+&lt;p&gt;However the .NET7 enhancements provides a working solution for this, which I look forward to being able to leverage.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://dunnhq.com/posts/2022/viewing-configuration-values/"&gt;Viewing .NET configuration values&lt;/a&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;?# DailyDrop ?&gt;110: 05-07-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>EF Find vs First performance </title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/07/04-ef-find-vs-single</link>
@@ -1155,113 +1275,6 @@ if (dictionary.ContainsKey(&amp;quot;Name&amp;quot;))
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://www.code4it.dev/csharptips/expandoobject-to-dictionary"&gt;C# Tip: Convert ExpandoObjects to IDictionary&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;101: 22-06-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>TryAddEnumerable to configure dependency injection</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/06/21-tryaddenumerable</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/06/21-tryaddenumerable</guid>
-			<pubDate>Tue, 21 Jun 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;When using the C# dependency injection container, the:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;Add&lt;/code&gt; methods (&lt;em&gt;AddSingleton&lt;/em&gt;, &lt;em&gt;AddScoped&lt;/em&gt;, &lt;em&gt;AddTransient&lt;/em&gt;) will always add the interface and implementation to the container, even if it results in duplicate registrations&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;TryAdd&lt;/code&gt; methods (&lt;em&gt;TryAddSingleton&lt;/em&gt;, &lt;em&gt;TryAddScoped&lt;/em&gt;, &lt;em&gt;TryAddTransient&lt;/em&gt;) will only add the interface and implementation to the container if the &lt;em&gt;interface&lt;/em&gt; has not already been registered&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Today we are looking specifically at &lt;code&gt;TryAddEnumerable&lt;/code&gt;:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;TryAddEnumerable&lt;/code&gt; will only add the interface and implementation to the container if the &lt;em&gt;combination of the interface and implementation&lt;/em&gt; has not already been registered&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr /&gt;
-&lt;h2 id="endpoint-example"&gt;Endpoint example&lt;/h2&gt;
-&lt;p&gt;In the three examples below, we have a simple setup, with an interface and a couple of implementations of the interface:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public interface IServiceInterface { }
-
-public class ServiceImplementationOne: IServiceInterface { }
-
-public class ServiceImplementationTwo : IServiceInterface { }
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;And then a minimal endpoint which has &lt;em&gt;IEnumerable&amp;lt;IServiceInterface&amp;gt;&lt;/em&gt; injected, and returns all implementations:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/endpoint&amp;quot;, (IEnumerable&amp;lt;IServiceInterface&amp;gt; service) =&amp;gt;
-{
-    return service.Select(s =&amp;gt; s.GetType().Name);
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h3 id="add-methods"&gt;Add methods&lt;/h3&gt;
-&lt;p&gt;First, lets look at the behavior of the &lt;em&gt;Add&lt;/em&gt; methods. These methods will always add the interface and implementation, even if its already been added.&lt;/p&gt;
-&lt;p&gt;In the dependency injection configuration, in this example, a duplicate implementation of &lt;em&gt;ServiceImplementationTwo&lt;/em&gt; is added:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddTransient(typeof(IServiceInterface), 
-    typeof(ServiceImplementationOne));
-builder.Services.AddTransient(typeof(IServiceInterface), 
-    typeof(ServiceImplementationTwo));
-builder.Services.AddTransient(typeof(IServiceInterface), 
-    typeof(ServiceImplementationTwo));
-
-var app = builder.Build();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The endpoint will return the following - &lt;em&gt;ServiceImplementationTwo&lt;/em&gt; has been added to the dependency injection container twice, and is therefor the duplicate was injected into and returned from the endpoint:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-json"&gt;[
-  &amp;quot;ServiceImplementationOne&amp;quot;,
-  &amp;quot;ServiceImplementationTwo&amp;quot;,
-  &amp;quot;ServiceImplementationTwo&amp;quot;
-]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h3 id="tryadd-methods"&gt;TryAdd methods&lt;/h3&gt;
-&lt;p&gt;The &lt;em&gt;TryAdd&lt;/em&gt; methods operate differently, and will ensure that only one implementation of the interface is added to the container.&lt;/p&gt;
-&lt;p&gt;In the dependency injection configuration, in this example, we use the same configuration as in the first example, but with the &lt;em&gt;TryAddTransient&lt;/em&gt; method instead of the &lt;em&gt;AddTransient&lt;/em&gt; method:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.TryAddTransient(typeof(IServiceInterface), 
-    typeof(ServiceImplementationOne));
-builder.Services.TryAddTransient(typeof(IServiceInterface), 
-    typeof(ServiceImplementationTwo));
-builder.Services.TryAddTransient(typeof(IServiceInterface), 
-    typeof(ServiceImplementationTwo));
-
-var app = builder.Build();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The endpoint will return the following - only the first implementation of &lt;em&gt;IServiceInterface&lt;/em&gt; added to the dependency injection container is registered.&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-json"&gt;[
-  &amp;quot;ServiceImplementationOne&amp;quot;
-]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Neither of the two registrations of &lt;em&gt;ServiceImplementationTwo&lt;/em&gt; are actioned, because an implementation of &lt;em&gt;IServiceInterface&lt;/em&gt; (ServiceImplementationOne) was already added.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="tryaddenumerable-method"&gt;TryAddEnumerable method&lt;/h3&gt;
-&lt;p&gt;The &lt;em&gt;TryAddEnumerable&lt;/em&gt; method is used slightly differently - this method takes a &lt;em&gt;ServiceDescriptor&lt;/em&gt; instance, and not a interface and implementation directly.&lt;/p&gt;
-&lt;p&gt;In the dependency injection configuration, in this example, we use the the same configuration as in the above example, with a slightly different setup. We define three instances of &lt;em&gt;ServiceDescriptor&lt;/em&gt;, two of them are describing implementations of &lt;em&gt;ServiceImplementationTwo&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
-
-var descriptorOne = new ServiceDescriptor(typeof(IServiceInterface), 
-    typeof(ServiceImplementationOne), ServiceLifetime.Transient);
-var descriptorTwo = new ServiceDescriptor(typeof(IServiceInterface), 
-    typeof(ServiceImplementationTwo), ServiceLifetime.Transient);
-var descriptorThree = new ServiceDescriptor(typeof(IServiceInterface), 
-    typeof(ServiceImplementationTwo), ServiceLifetime.Transient);
-
-builder.Services.TryAddEnumerable(new[] { descriptorOne, descriptorTwo, descriptorThree });
-
-var app = builder.Build();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The endpoint will return the following - only the first implementation of each unique &lt;em&gt;interface&lt;/em&gt; + &lt;em&gt;implementation&lt;/em&gt; combination:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-json"&gt;[
-  &amp;quot;ServiceImplementationOne&amp;quot;,
-  &amp;quot;ServiceImplementationTwo&amp;quot;
-]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;The &lt;em&gt;TryAddEnumerable&lt;/em&gt; method is incredible useful, especially as a library author where your library might need to add items to the dependency injection container, but without knowing if another library has already added it. &lt;em&gt;TryAddEnumerable&lt;/em&gt; can be used to ensure that the dependency injection container is not &amp;quot;polluted&amp;quot; with duplicate identical implementations, which could potentially cause issues.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.youtube.com/watch?v=iQ8cNI7a6mk"&gt;The .NET dependency injection methods you are not using&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;100: 21-06-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
