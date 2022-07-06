@@ -5,8 +5,118 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Tue, 05 Jul 2022 04:15:44 GMT</pubDate>
-		<lastBuildDate>Tue, 05 Jul 2022 04:15:44 GMT</lastBuildDate>
+		<pubDate>Wed, 06 Jul 2022 04:31:42 GMT</pubDate>
+		<lastBuildDate>Wed, 06 Jul 2022 04:31:42 GMT</lastBuildDate>
+		<item>
+			<title>T-SQL enhancements in SQL Server 2022</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/07/06-sql-2022-enhancements</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/07/06-sql-2022-enhancements</guid>
+			<pubDate>Wed, 06 Jul 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;There are a number of very useful T-SQL enhancements coming with SQL Server 2022 (currently in preview). Some of these include:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;STRING_SPLIT&lt;/code&gt; - splits a string into rows of substrings, based on a specified separator character, now with &lt;strong&gt;ordinal support&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;GREATEST/LEAST&lt;/code&gt; - Similar to &lt;em&gt;MAX/MIN&lt;/em&gt;, but operates across columns instead of across rows&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;GENERATE_SERIES&lt;/code&gt; - Produces a set-based sequence of numeric values&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;JSON functions&lt;/code&gt; - Including functions to test whether a string is valid JSON, construct a JSON object and construct a JSON array&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;DATE_BUCKET&lt;/code&gt; - Returns the date-time value corresponding to the start of each date-time bucket from the timestamp defined&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Below we'll explore some of the enhancements I will find most useful (based on my previous experiences and requirements), while additional details on the other enhancements can be found in the references below.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="string_split"&gt;STRING_SPLIT&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;SPLIT_STRING&lt;/code&gt; function, first introduced with SQL Server 2016, allows for the splitting a string into rows of substrings - especially useful for developers making extensive use of stored procedures (for example, with SQL Server Reporting Services)&lt;/p&gt;
+&lt;p&gt;For example, executing the following SQL:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT * from STRING_SPLIT('one,two,three,four,five', ',')
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Results in the following output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;value
+-----------------------
+one
+two
+three
+four
+five
+&lt;/code&gt;&lt;/pre&gt;
+&lt;br&gt;
+&lt;p&gt;Coming in SQL Server 2022, is the ability to &lt;em&gt;determine the nth item of the list&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;For example, executing the following SQL:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT * from STRING_SPLIT('one,two,three,four,five', ',' , 1) WHERE ordinal = 3
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Results in the following output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;value                   ordinal
+----------------------- --------------------
+three                   3
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;An additional parameter, &lt;em&gt;enable_ordinal&lt;/em&gt; is available which will return an &lt;em&gt;ordinal&lt;/em&gt; column - which can then be used as part of a WHERE clause.&lt;/p&gt;
+&lt;p&gt;One limitation of the &lt;code&gt;SPLIT_STRING&lt;/code&gt; remains, and that is that the delimiter can only be a single character, and not a string.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="greatestleast"&gt;GREATEST/LEAST&lt;/h2&gt;
+&lt;p&gt;The new &lt;code&gt;GREATEST and LEAST&lt;/code&gt; functions, are similar to the existing  &lt;em&gt;MAX and MIN&lt;/em&gt; functions, but operates across columns instead of across rows.&lt;/p&gt;
+&lt;p&gt;Consider the following &lt;em&gt;VisitorsPerMonth&lt;/em&gt; table which stores the number of unique visitors to a website, per month, per year.&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT * FROM VisitorsPerMonth
+
+Year        Jan         Feb         March
+----------- ----------- ----------- -----------
+2020        435         643         763
+2021        893         1121        1327
+2022        1923        2107        2782
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We can use &lt;em&gt;Max&lt;/em&gt; to determine &lt;em&gt;maximum number of visitors in any January&lt;/em&gt; (a max across rows):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT MAX(Jan)
+FROM VisitorsPerMonth
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;However, what if we wanted the &lt;em&gt;max number of visitors in any particular month in a year&lt;/em&gt; - this requires an operation across columns, which is where the &lt;code&gt;GREATEST&lt;/code&gt; function comes into play.&lt;/p&gt;
+&lt;p&gt;A number of &lt;em&gt;columns&lt;/em&gt; are supplied to the function, and the greatest value will be returned:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT Year, GREATEST(Jan, Feb, March) as HighestVisitors
+FROM VisitorsPerMonth
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This results in the following output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;Year        HighestVisitors
+----------- ---------------
+2020        763
+2021        1327
+2022        2782
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We now know how many visitors the site had in its most popular month in each year.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="generate_series"&gt;GENERATE_SERIES&lt;/h2&gt;
+&lt;p&gt;This new function produces a set-based sequence of numeric values based on specified &lt;em&gt;START&lt;/em&gt;, &lt;em&gt;STOP&lt;/em&gt; and &lt;em&gt;STEP&lt;/em&gt; values.&lt;/p&gt;
+&lt;p&gt;The usage is fairly straightforward:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT value FROM GENERATE_SERIES(START = 1, STOP = 3);
+SELECT value FROM GENERATE_SERIES(START = 0, STOP = 25, STEP = 5);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Which results in the output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;value
+-----------
+1
+2
+3
+
+value
+-----------
+0
+5
+10
+15
+20
+25
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If no &lt;em&gt;STEP&lt;/em&gt; value is specified, a value of &lt;strong&gt;1&lt;/strong&gt; is used.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;As a C# developer, in recent years, my focus has been more on using Entity Framework Core and less on raw SQL usage - however, knowledge of these enhancement will come in useful when the need arises to do raw SQL (a custom query through EF, or Dapper, or a report stored procedure, for example).&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://www.mssqltips.com/sqlservertip/7265/sql-server-2022-t-sql-enhancements/"&gt;My Favorite T-SQL Enhancements in SQL Server 2022&lt;/a&gt;&lt;br /&gt;
+&lt;a href="https://docs.microsoft.com/en-us/sql/t-sql/functions/date-bucket-transact-sql?view=sql-server-ver16"&gt;DATE_BUCKET (Transact-SQL)&lt;/a&gt;&lt;br /&gt;
+&lt;a href="https://docs.microsoft.com/en-us/sql/t-sql/functions/json-object-transact-sql?view=sql-server-ver16"&gt;JSON_OBJECT (Transact-SQL)&lt;/a&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;?# DailyDrop ?&gt;111: 06-07-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>View config values with GetDebugView</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/07/05-getdebugview</link>
@@ -1168,113 +1278,6 @@ curryLogInfo(&amp;quot;Saving record to database&amp;quot;);
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/visualstudio/ide/customizing-window-layouts-in-visual-studio?view=vs-2022#create-and-save-custom-layouts"&gt;Create and save custom layouts&lt;/a&gt;&lt;/p&gt;
 &lt;!--?# DailyDrop ?--&gt;102: 23-06-2022&lt;!--?#/ DailyDrop ?--&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Converting ExpandObject</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/06/22-expando-conversion</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/06/22-expando-conversion</guid>
-			<pubDate>Wed, 22 Jun 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;ExpandoObject&lt;/code&gt; class implements &lt;code&gt;IEnumberable&lt;/code&gt; and &lt;code&gt;IDictionary&lt;/code&gt; - this means its fields can be iterated over, and that it can be converted to, and operated on as a Dictionary.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="expandoobject"&gt;ExpandoObject&lt;/h2&gt;
-&lt;p&gt;First some information on the &lt;code&gt;ExpandoObject&lt;/code&gt; class - it enables one to add and deleted members of its instance at runtime.&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;dynamic infoObject = new ExpandoObject();
-infoObject.Name = &amp;quot;Always Developing&amp;quot;;
-infoObject.Url = &amp;quot;www.alwaysdeveloping.net&amp;quot;;
-
-Console.WriteLine(infoObject.Name);
-Console.WriteLine(infoObject.Url);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;In the above example, the properties &lt;em&gt;Name&lt;/em&gt; and &lt;em&gt;Age&lt;/em&gt; are dynamically added at runtime. Any number of properties, of any type can dynamically be added.&lt;/p&gt;
-&lt;p&gt;The &lt;code&gt;ExpandoObject&lt;/code&gt; can also have methods (Action and Func) added dynamically, and then invoked:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;dynamic infoObject = new ExpandoObject();
-infoObject.Name = &amp;quot;Always Developing&amp;quot;;
-infoObject.Url = &amp;quot;www.alwaysdeveloping.net&amp;quot;;
-infoObject.Visitors = 0;
-infoObject.IncreaseVisitorCount = (Action)(() =&amp;gt; { infoObject.Visitors++; });
-infoObject.GetVisitorCount = (Func&amp;lt;int&amp;gt;)(() =&amp;gt; { return infoObject.Visitors; });
-
-infoObject.IncreaseVisitorCount();
-infoObject.IncreaseVisitorCount();
-
-Console.WriteLine(infoObject.GetVisitorCount());
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The &lt;em&gt;IncreaseVisitorCount&lt;/em&gt; Action and &lt;em&gt;GetVisitorCount&lt;/em&gt; Func are dynamically added, and then invoked.&lt;/p&gt;
-&lt;p&gt;The output of the above being &lt;code&gt;2&lt;/code&gt;, as expected, as the &lt;em&gt;IncreaseVisitorCount&lt;/em&gt; method is invoked twice.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="ienumerable-conversion"&gt;IEnumerable conversion&lt;/h2&gt;
-&lt;p&gt;As &lt;code&gt;ExpandoObject&lt;/code&gt; implement IEnumberable, specifically &lt;code&gt;IEnumerable&amp;lt;KeyValuePair&amp;lt;string, object?&amp;gt;&amp;gt;&lt;/code&gt; and can be iterated over, with a &lt;code&gt;KeyValuePair&amp;lt;string, object?&amp;gt;&lt;/code&gt; item returned for each iteration:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;dynamic infoObject = new ExpandoObject();
-infoObject.Name = &amp;quot;Always Developing&amp;quot;;
-infoObject.Url = &amp;quot;www.alwaysdeveloping.net&amp;quot;;
-infoObject.Visitors = 0;
-infoObject.IncreaseVisitorCount = (Action)(() =&amp;gt; { infoObject.Visitors++; });
-infoObject.GetVisitorCount = (Func&amp;lt;int&amp;gt;)(() =&amp;gt; { return infoObject.Visitors; });
-
-// prop is of type KeyValuePair&amp;lt;string, object?&amp;gt;
-foreach (var prop in infoObject)
-{
-    Console.WriteLine($&amp;quot;Key: '{prop.Key}' with value '{prop.Value}'&amp;quot;);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;In the above, iterating over &lt;em&gt;infoObject&lt;/em&gt; will return each property dynamically added to the &lt;code&gt;ExpandoObject&lt;/code&gt; instance, including methods:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-powershell"&gt;Key: 'Name' with value 'Always Developing'
-Key: 'Url' with value 'www.alwaysdeveloping.net'
-Key: 'Visitors' with value '2'
-Key: 'IncreaseVisitorCount' with value 'System.Action'
-Key: 'GetVisitorCount' with value 'System.Func`1[System.Int32]'
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="dictionary-conversion"&gt;Dictionary conversion&lt;/h2&gt;
-&lt;p&gt;&lt;code&gt;ExpandoObject&lt;/code&gt; also implements &lt;code&gt;IDictionary&amp;lt;string, object?&amp;gt;&lt;/code&gt;, so can directly be assigned to this type:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;dynamic infoObject = new ExpandoObject();
-infoObject.Name = &amp;quot;Always Developing&amp;quot;;
-infoObject.Url = &amp;quot;www.alwaysdeveloping.net&amp;quot;;
-infoObject.Visitors = 0;
-infoObject.IncreaseVisitorCount = (Action)(() =&amp;gt; { infoObject.Visitors++; });
-infoObject.GetVisitorCount = (Func&amp;lt;int&amp;gt;)(() =&amp;gt; { return infoObject.Visitors; });
-
-// cast ExpandoObject to IDictionary&amp;lt;string, object?&amp;gt;
-IDictionary&amp;lt;string, object?&amp;gt; dictionary = infoObject;
-foreach (var item in dictionary)
-{
-    Console.WriteLine($&amp;quot;Key: '{item.Key}' with value '{item.Value}'&amp;quot;);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output of the above the same as the first example:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-powershell"&gt;Key: 'Name' with value 'Always Developing'
-Key: 'Url' with value 'www.alwaysdeveloping.net'
-Key: 'Visitors' with value '2'
-Key: 'IncreaseVisitorCount' with value 'System.Action'
-Key: 'GetVisitorCount' with value 'System.Func`1[System.Int32]'
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Casting to &lt;code&gt;Dictionary&lt;/code&gt; allows one to check if a property/key has been added to the &lt;code&gt;ExpandoObject&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;IDictionary&amp;lt;string, object?&amp;gt; dictionary = infoObject;
-foreach (var item in dictionary)
-{
-    Console.WriteLine($&amp;quot;Key: '{item.Key}' with value '{item.Value}'&amp;quot;);
-}
-
-// This would result in an exception
-// var value = infoObject[&amp;quot;Name&amp;quot;];
-
-// On a dictionary, this is allowed
-if (dictionary.ContainsKey(&amp;quot;Name&amp;quot;))
-{
-    Console.WriteLine(dictionary[&amp;quot;Name&amp;quot;]);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;This is a small, but useful piece of knowledge to be aware of if working with &lt;code&gt;ExpandoObject&lt;/code&gt; as the ability to easily convert to other types opens up new operations and possibilities on the instance.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.code4it.dev/csharptips/expandoobject-to-dictionary"&gt;C# Tip: Convert ExpandoObjects to IDictionary&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;101: 22-06-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
