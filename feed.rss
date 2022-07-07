@@ -5,8 +5,141 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Wed, 06 Jul 2022 04:31:42 GMT</pubDate>
-		<lastBuildDate>Wed, 06 Jul 2022 04:31:42 GMT</lastBuildDate>
+		<pubDate>Thu, 07 Jul 2022 04:28:37 GMT</pubDate>
+		<lastBuildDate>Thu, 07 Jul 2022 04:28:37 GMT</lastBuildDate>
+		<item>
+			<title>Type conversion with the implicit operator</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/07/07-implicit-type-conversion</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/07/07-implicit-type-conversion</guid>
+			<pubDate>Thu, 07 Jul 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;implicit operator&lt;/code&gt; keywords can be used to define a method to perform an implicit conversion from one type to another.&lt;/p&gt;
+&lt;p&gt;Effectively this is a mapper function, which is implicitly invoked without any special syntax - making its usage automatic and more natural.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="setup"&gt;Setup&lt;/h2&gt;
+&lt;p&gt;In this simple example, we have two types, &lt;em&gt;SourceType&lt;/em&gt; and &lt;em&gt;DestinationType&lt;/em&gt; - &lt;em&gt;SourceType&lt;/em&gt; contains an &lt;strong&gt;int&lt;/strong&gt; field, while &lt;em&gt;DestinationType&lt;/em&gt; contains a &lt;strong&gt;string&lt;/strong&gt; field. We require the ability to convert an instance of &lt;em&gt;SourceType&lt;/em&gt; to an instance of &lt;em&gt;DestinationType&lt;/em&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class SourceType
+{
+    public int Value { get; set; }
+}
+
+public class DestinationType
+{
+    public string Name { get; set; }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="mapper"&gt;Mapper&lt;/h2&gt;
+&lt;p&gt;A conversion between the two types can be performed with a &lt;em&gt;mapper&lt;/em&gt; method. There are a number of places this method could be defined, including (but not limited to):&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;a method inside source type&lt;/li&gt;
+&lt;li&gt;the constructor of the destination type&lt;/li&gt;
+&lt;li&gt;a method outside of the source or destination types&lt;/li&gt;
+&lt;/ol&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class SourceType
+{
+    // 1. Method inside SourceType to return
+    // an instance of DestinationType
+    DestinationType ToDestinationType()
+    {
+        return new DestinationType
+        {
+            Name = this.Value.ToString()
+        };
+    }
+
+    public int Value { get; set; }
+}
+
+public class DestinationType
+{
+    public DestinationType() { }
+
+    // 2. Constructor which takes a parameter of SourceType
+    public DestinationType(SourceType sourceType)
+    {
+        this.Name = sourceType.Value.ToString();
+    }
+
+    public string Name { get; set; }
+}
+
+// 3. External method to do the mapping between SourceType 
+// and DestinationType
+DestinationType SourceToDestinationMapper(SourceType sourceType)
+{
+    return new DestinationType
+    {
+        Name = sourceType.Value.ToString()
+    };
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Any of the above will work, however they are required to be invoked explicitly for the conversion to take place.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="implicit"&gt;Implicit&lt;/h2&gt;
+&lt;p&gt;Instead of one of the mapper methods described above, another technique is to use the &lt;code&gt;implicit operator&lt;/code&gt; keywords. Effectively this is a mapper method - but is implicitly invoked under certain conditions, instead of having to explicitly be invoked as with a mapper method.&lt;/p&gt;
+&lt;p&gt;The operator is added to the &lt;em&gt;SourceType&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class SourceType
+{
+    public int Value { get; set; }
+
+    public static implicit operator DestinationType(SourceType t) =&amp;gt; 
+        new DestinationType { Name = t.Value.ToString() };
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As you can see, the operator has the same logic as the mapper methods above - a &lt;em&gt;SourceType&lt;/em&gt; is accepted as a parameter, and a &lt;em&gt;DestinationType&lt;/em&gt; is returned.&lt;/p&gt;
+&lt;p&gt;Next'll we'll look at how the operator is implicitly invoked.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="usage"&gt;Usage&lt;/h2&gt;
+&lt;p&gt;There are a number of scenarios in which the implicit operator is automatically invoked.&lt;/p&gt;
+&lt;p&gt;Assigning a &lt;em&gt;SourceType&lt;/em&gt; to a &lt;em&gt;DestinationType&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var source = new SourceType { Value = 100 };
+
+// implicit operator code is called for this line
+DestinationType destination = source;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;A &lt;em&gt;cast&lt;/em&gt; from one type to the other:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var source = new SourceType { Value = 100 };
+
+// implicit operator code is called for this line
+// x is of type DestinationType
+var x = (DestinationType)source;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;When calling a method:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var source = new SourceType { Value = 100 };
+
+// pass SourceType to the method
+DoProcessing(source);
+
+// method accepts DestinationType
+// implicit operator code is called for this line
+public void DoProcessing(DestinationType dest)
+{
+    Console.WriteLine($&amp;quot;Doing processing on '{dest.Name}'&amp;quot;);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As you can see, no mapper functions are required to be called - the conversion &lt;em&gt;implicitly&lt;/em&gt; occurs, resulting in cleaner code.&lt;/p&gt;
+&lt;h2 id="limitations"&gt;Limitations&lt;/h2&gt;
+&lt;p&gt;One limitation of this &lt;code&gt;implicit operator&lt;/code&gt; keywords, is that is not considered by the &lt;code&gt;is&lt;/code&gt; or &lt;code&gt;as&lt;/code&gt; operators. A &lt;em&gt;cast&lt;/em&gt; should be invoked to the explicit conversion.&lt;/p&gt;
+&lt;p&gt;The following will &lt;strong&gt;NOT&lt;/strong&gt; compile:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// NOT ALLOWED
+var destination = source as DestinationType;
+Console.WriteLine(destination.Name);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;Personally, I find this simplifies the usage and readability of the code and is something I will try to implement more where it makes sense.&lt;br /&gt;
+One potentially drawback of the &lt;code&gt;implicit operator&lt;/code&gt;, depending on the specific code architecture, is that &lt;em&gt;SourceType&lt;/em&gt; now requires a reference to &lt;em&gt;DestinationType&lt;/em&gt; which may not make sense or be practical (if &lt;em&gt;SourceType&lt;/em&gt; is from a 3rd party for example).&lt;/p&gt;
+&lt;p&gt;As always, consider your own use case, and which method will work best for that use case.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/operators/user-defined-conversion-operators"&gt;User-defined conversion operators (C# reference)&lt;/a&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;?# DailyDrop ?&gt;112: 07-07-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>T-SQL enhancements in SQL Server 2022</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/07/06-sql-2022-enhancements</link>
@@ -1234,50 +1367,6 @@ curryLogInfo(&amp;quot;Saving record to database&amp;quot;);
 &lt;p&gt;&lt;a href="https://weblogs.asp.net/dixin/lambda-calculus-via-c-sharp-1-fundamentals-closure-currying-and-partial-application"&gt;Currying and partial application&lt;/a&gt;&lt;br /&gt;
 &lt;a href="https://towardsdatascience.com/what-is-currying-in-programming-56fd57103431"&gt;What Is Currying in Programming?&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;103: 24-06-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Visual Studio layouts</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/06/23-visual-studio-layouts</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/06/23-visual-studio-layouts</guid>
-			<pubDate>Thu, 23 Jun 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;Visual Studio provides the functionality to configure different &lt;code&gt;layouts&lt;/code&gt; and switch between, based on the type of project or work being done.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="examples"&gt;Examples&lt;/h2&gt;
-&lt;h3 id="default"&gt;Default&lt;/h3&gt;
-&lt;p&gt;Creating and then switching between different layouts is as easy as clicking a button.&lt;/p&gt;
-&lt;p&gt;For me, the first step is to create a &lt;code&gt;Default&lt;/code&gt; layout - a general purpose layout, suitable for most type of development work I do.&lt;/p&gt;
-&lt;p&gt;This entails configuring the panes and windows in Visual Studio to have the desired layout, then selecting the &lt;code&gt;Window -&amp;gt; Save Window Layout&lt;/code&gt; menu option. A prompt will appear to give the layout a name - &lt;code&gt;Default&lt;/code&gt; for me.&lt;/p&gt;
-&lt;p&gt;The actual panes and layout is unimportant, but what is important is what you have something which works for you. My default:&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/default.png" alt="Default layout"&gt;&lt;/p&gt;
-&lt;p&gt;Now that there is a default saved, you can easily move things around and at the click of a button go back to the default. By clicking &lt;code&gt;Window -&amp;gt; Apply Window Layout -&amp;gt; Default&lt;/code&gt; (or Ctrl-Alt-1), the panes and windows are restored to the &lt;code&gt;Default&lt;/code&gt; layout.&lt;/p&gt;
-&lt;p&gt;Let's create another layout and switch between them.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h3 id="analyzer"&gt;Analyzer&lt;/h3&gt;
-&lt;p&gt;When working with &lt;a href="https://alwaysdeveloping.net/p/analyzer-explained"&gt;Roslyn Analyzers&lt;/a&gt;, the &lt;em&gt;Syntax Visualizer&lt;/em&gt; is an critical window, so one would want this to be prominent.&lt;/p&gt;
-&lt;p&gt;I have update the layout to be as follows below, and saved it as my &lt;code&gt;RoslynAnalyzer&lt;/code&gt; layout. As you can see, the &lt;em&gt;Syntax Visualizer&lt;/em&gt; is now displayed on the right, using a good portion of screen real estate:&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/Analyzer.png" alt="Analyzer layout"&gt;&lt;/p&gt;
-&lt;p&gt;The &lt;code&gt;Window -&amp;gt; Apply Window Layout -&amp;gt; X&lt;/code&gt; menu option (or Ctrl-Alt-1 and Ctrl-Alt-2) can now be used to easily switch between the layouts at the click of a button.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h3 id="design"&gt;Design&lt;/h3&gt;
-&lt;p&gt;Another example is when doing design work which involves the &lt;em&gt;Toolbox&lt;/em&gt;, one might want as much space to use the designer:&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/Design.png" alt="Design layout"&gt;&lt;/p&gt;
-&lt;p&gt;Here the right panel has been made to "auto hide" to give as much space as possible to the middle pane for design (this could also apply to code as well, if thats what works for you)&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;The ability to customize and personalize the layout in Visual Studio can definitely lead to more productivity and a sense of comfort with one's tools. The ability to customize it even more based on the &lt;em&gt;type of work&lt;/em&gt; just increases that productivity even more!&lt;/p&gt;
-&lt;p&gt;Some additional scenarios for when one might want a different, custom layout:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Projects which use the database related windows vs non-database projects&lt;/li&gt;
-&lt;li&gt;Projects which contain unit tests (and the usage of the related windows) vs projects with no unit tests&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/visualstudio/ide/customizing-window-layouts-in-visual-studio?view=vs-2022#create-and-save-custom-layouts"&gt;Create and save custom layouts&lt;/a&gt;&lt;/p&gt;
-&lt;!--?# DailyDrop ?--&gt;102: 23-06-2022&lt;!--?#/ DailyDrop ?--&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
