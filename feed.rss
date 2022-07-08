@@ -5,8 +5,127 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Thu, 07 Jul 2022 04:28:37 GMT</pubDate>
-		<lastBuildDate>Thu, 07 Jul 2022 04:28:37 GMT</lastBuildDate>
+		<pubDate>Fri, 08 Jul 2022 04:17:25 GMT</pubDate>
+		<lastBuildDate>Fri, 08 Jul 2022 04:17:25 GMT</lastBuildDate>
+		<item>
+			<title>For loop lowering in C#</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/07/08-lowing-for-loop</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/07/08-lowing-for-loop</guid>
+			<pubDate>Fri, 08 Jul 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;In C#, a &lt;code&gt;for loop&lt;/code&gt; is &lt;em&gt;lowered&lt;/em&gt; to a &lt;code&gt;while loop&lt;/code&gt; by the compiler.&lt;/p&gt;
+&lt;p&gt;At a lower level, the &lt;code&gt;for&lt;/code&gt; loop &lt;em&gt;does not exist&lt;/em&gt; - it gets translated into a &lt;code&gt;while&lt;/code&gt; loop by the C# compiler, and then is executed as such.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="lowering"&gt;Lowering&lt;/h2&gt;
+&lt;p&gt;Done by the C# compiler, &lt;code&gt;lowering&lt;/code&gt; is the process of rewriting high-level language features, into low-level language features in the &lt;em&gt;same language&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;There are a number of C# features, which are just &lt;em&gt;syntactic sugar&lt;/em&gt; over (often) more complex lower-level features - the compiler will take the high-level feature and &lt;em&gt;lower&lt;/em&gt; it to the lower-level feature.&lt;/p&gt;
+&lt;p&gt;Lowering is done for a number of reasons, including:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Working with high-level features, are easier and simpler to work with&lt;/li&gt;
+&lt;li&gt;Optimization&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;This post is specifically about the &lt;code&gt;for&lt;/code&gt; loop, not an especially complex feature - however it is more complex than the &lt;code&gt;while&lt;/code&gt; loop, its lower-level equivalent.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="for-loop"&gt;For loop&lt;/h2&gt;
+&lt;p&gt;Using &lt;a href="https://sharplab.io/"&gt;sharplab.io&lt;/a&gt;, one is able to see the lowered code the compiler generates.&lt;/p&gt;
+&lt;p&gt;Here is an example of some code written in Visual Studio:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public void ForLoopExample() 
+{
+    for(int i = 0; i &amp;lt; 100; i++)
+    {
+        Console.WriteLine(i);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And the lowered code the compiler generates:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public void ForLoopExample()
+{
+    int num = 0;
+    while (num &amp;lt; 100)
+    {
+        Console.WriteLine(num);
+        num++;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As you can see - the &lt;code&gt;for&lt;/code&gt; loop is converted to a &lt;code&gt;while&lt;/code&gt; loop!&lt;/p&gt;
+&lt;p&gt;Another example, in a previous post we learnt how the &lt;em&gt;iterator section&lt;/em&gt; of a for loop could &lt;a href="https://alwaysdeveloping.net/06/30-for-multi-operations"&gt;contain multiple statements&lt;/a&gt;. Looking at the lowered code for that example, the &lt;code&gt;while&lt;/code&gt; loop is controlled only by the &lt;em&gt;condition section&lt;/em&gt; of the &lt;code&gt;for&lt;/code&gt; loop - this is why this portion of the for loop can only contain one statement, while the other sections can contain multiple.&lt;/p&gt;
+&lt;p&gt;Original C# code:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public void ForLoopExample2() 
+{
+    int countDown = 100;
+    for(int i = 0; i &amp;lt; 100; i++, countDown--)
+    {
+        Console.WriteLine(i);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And the lowered code the compiler generates:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public void ForLoopExample2()
+{
+    int num = 100;
+    int num2 = 0;
+    while (num2 &amp;lt; 100)
+    {
+        Console.WriteLine(num2);
+        num2++;
+        num--;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr&gt;
+&lt;h2 id="foreach"&gt;Foreach&lt;/h2&gt;
+&lt;p&gt;Just for reference, the &lt;code&gt;foreach&lt;/code&gt; does not operate the same way as the &lt;code&gt;for&lt;/code&gt; loop - even though both iterate through a list of items, they do it very differently.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;Foreach&lt;/code&gt; works using the &lt;em&gt;&lt;a href="https://alwaysdeveloping.net/03/03-getenumerator"&gt;GetEnumerator&lt;/a&gt;&lt;/em&gt; method on a class, and is not lowered to a &lt;code&gt;while&lt;/code&gt; loop:&lt;/p&gt;
+&lt;p&gt;Original C# code:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public void ForEachLoopExample() 
+{
+    var list = new List&amp;lt;int&amp;gt; { 1, 2, 3, 4, 5, };
+
+    foreach (var item in list)
+    {
+        Console.WriteLine(item);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And the lowered code the compiler generates:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public void ForEachLoopExample()
+{
+    List&amp;lt;int&amp;gt; list = new List&amp;lt;int&amp;gt;();
+    list.Add(1);
+    list.Add(2);
+    list.Add(3);
+    list.Add(4);
+    list.Add(5);
+    List&amp;lt;int&amp;gt; list2 = list;
+    List&amp;lt;int&amp;gt;.Enumerator enumerator = list2.GetEnumerator();
+    try
+    {
+        while (enumerator.MoveNext())
+        {
+            int current = enumerator.Current;
+            Console.WriteLine(current);
+        }
+    }
+    finally
+    {
+        ((IDisposable)enumerator).Dispose();
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;While the developer written code for a &lt;code&gt;for&lt;/code&gt; and &lt;code&gt;foreach&lt;/code&gt; loop are fairly similar - the lowered code for the &lt;code&gt;foreach&lt;/code&gt; is a bit more complex than a simple &lt;code&gt;while&lt;/code&gt; loop.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;While this may not be something one has to worry or think about when coding - its always good to have a general knowledge of how the compiler works, and what its doing (even at a high level), and how the code written impacts the lowered code which gets executed.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://sharplab.io/"&gt;sharplab.io&lt;/a&gt;&lt;/p&gt;
+&lt;hr&gt;
+&lt;!--?# DailyDrop ?--&gt;113: 08-07-2022&lt;!--?#/ DailyDrop ?--&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Type conversion with the implicit operator</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/07/07-implicit-type-conversion</link>
@@ -1235,138 +1354,6 @@ However if used in a loop (such as in the example), consider moving away from a 
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://leveluppp.ghost.io/content/images/size/w1000/2021/07/lambda_tips1-1.png"&gt;Lambda Optimizations Tips 1&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;104: 27-06-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Method currying basics in C#</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/06/24-curry-basics</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/06/24-curry-basics</guid>
-			<pubDate>Fri, 24 Jun 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;&lt;code&gt;Method Currying&lt;/code&gt; is entails breaking a single method (which takes multiple parameters), into a sequence of single-parameter methods.&lt;br /&gt;
-For example, instead of a method which takes 3 parameters &lt;code&gt;method(a, b, c)&lt;/code&gt;, currying the method would instead turn it into &lt;code&gt;method(a)(b)(c)&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;This offers a different syntax, which allows for complex composite methods to be built up from simpler methods. Currying is more commonly used in functional programming, but can be utilized in C#.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="currying"&gt;Currying&lt;/h2&gt;
-&lt;p&gt;The below examples contain a &lt;em&gt;very simple&lt;/em&gt; example of currying, but it will demonstrate the basics of how currying a method will break it down into a sequence of single argument methods.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="multiply-method"&gt;Multiply method&lt;/h3&gt;
-&lt;p&gt;Let's consider a method which &lt;code&gt;multiples three integers together&lt;/code&gt;, and returns the result. This can be written as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;int Multiply(int a, int b, int c)
-{
-    return a * b * c;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;So far so good.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="multiply-lambda"&gt;Multiply Lambda&lt;/h3&gt;
-&lt;p&gt;This &lt;em&gt;Multiply&lt;/em&gt; method, can also be written as a &lt;code&gt;lambda Func&lt;/code&gt; instead of a full method:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;Func&amp;lt;int, int, int, int&amp;gt; multiply = (a, b, c) =&amp;gt; a * b * c;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Now we start with the currying process.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="multiply-curry-part-1"&gt;Multiply Curry part 1&lt;/h3&gt;
-&lt;p&gt;As mentioned, &lt;code&gt;currying&lt;/code&gt; entails breaking down a single method, with three parameters in this example, into a sequence of single-parameters methods. Let's start small and build on it until we have the desired result.&lt;/p&gt;
-&lt;p&gt;First, we'll change the above &lt;em&gt;multiply&lt;/em&gt; lambda to only take one argument:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;Func&amp;lt;int, Func&amp;lt;int, int, int&amp;gt;&amp;gt; curryMultipleBase = a =&amp;gt; ((b, c) =&amp;gt; a * b * c);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;It looks a bit complicated, but basically the initial lambda has been updated to instead of having three arguments, it now &lt;code&gt;takes one argument, and returns a Func&amp;lt;&amp;gt;, which takes 2 arguments, and returns an int&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;Overall, the entire composition of methods still takes 3 parameters. This can now be invoked as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;Func&amp;lt;int, Func&amp;lt;int, int, int&amp;gt;&amp;gt; curryMultipleBase = a =&amp;gt; ((b, c) =&amp;gt; a * b * c);
-
-// invoke the lambda, passing in one value
-// getting back a lambda which takes two arguments
-Func&amp;lt;int, int, int&amp;gt; result1 = curryMultipleBase(2);
-
-// invoke the lambda which takes two arguments
-// and returns an int
-int result2 = result1(3, 4);
-
-Console.WriteLine(result2);
-
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Or more succinctly expressed as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;Func&amp;lt;int, Func&amp;lt;int, int, int&amp;gt;&amp;gt; curryMultipleBase = a =&amp;gt; ((b, c) =&amp;gt; a * b * c);
-
-// instead of having the intermediate Func&amp;lt;int, int, int&amp;gt;
-// just invoke the result directly
-int result = curryMultipleBase(2)(3, 4);
-Console.WriteLine(result);
-
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Both of the above yield a result of &lt;code&gt;24&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;We've converted a portion to be single parameter, but a portion still has 2 parameters.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="multiply-curry-part-2"&gt;Multiply Curry part 2&lt;/h3&gt;
-&lt;p&gt;The &lt;em&gt;curryMultipleBase&lt;/em&gt; returns a lambda, which has two parameters - the objective to too only have single parameter methods. Let's convert the two parameter Func into two single parameter Func's:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// Old
-Func&amp;lt;int, Func&amp;lt;int, int, int&amp;gt;&amp;gt; curryMultipleBase = a =&amp;gt; ((b, c) =&amp;gt; a * b * c);
-
-// New
-Func&amp;lt;int, Func&amp;lt;int, Func&amp;lt;int, int&amp;gt;&amp;gt;&amp;gt; curryMultiple = a =&amp;gt; (b =&amp;gt; c =&amp;gt; a * b * c;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Instead of returning a Func which takes 2 arguments and returns an int, the lambda now returns a &lt;code&gt;Func, which takes 1 parameter, and returns a Func which takes one parameter and returns an int&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;The new version of the lambda can be invoked as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;Func&amp;lt;int, Func&amp;lt;int, Func&amp;lt;int, int&amp;gt;&amp;gt;&amp;gt; curryMultiple = a =&amp;gt; (b =&amp;gt; (c =&amp;gt; a * b * c));
-
-Func&amp;lt;int, Func&amp;lt;int, int&amp;gt;&amp;gt; result1 = curryMultiple(2);
-Func&amp;lt;int, int&amp;gt; result2 = result1(3);
-int result3 = result2(3);
-
-Console.WriteLine(result3);
-
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Or more succinctly expressed as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;Func&amp;lt;int, Func&amp;lt;int, int, int&amp;gt;&amp;gt; curryMultipleBase = a =&amp;gt; ((b, c) =&amp;gt; a * b * c);
-
-// instead of having the intermediate Func(s)
-// just invoke the result directly
-int result = curryMultiple(2)(3)(4);
-Console.WriteLine(result);
-
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;And that's it! We've successfully converted the initial three parameter method, into a sequence of one parameter methods - &lt;code&gt;int result = curryMultiple(2)(3)(4);&lt;/code&gt;!&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="logging-example"&gt;Logging example&lt;/h3&gt;
-&lt;p&gt;Suppose we have to call a &lt;em&gt;Log&lt;/em&gt; method, with a message and the type of message to log (Error, Warning or Information). There are a number of techniques to achieve this, especially if the method is called often.&lt;/p&gt;
-&lt;p&gt;The method could be called directly:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;    Log(&amp;quot;error&amp;quot;, &amp;quot;An Exception occurred&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The &amp;quot;issue&amp;quot; with this approach is that the constant type parameter &amp;quot;error&amp;quot; (or &amp;quot;warning&amp;quot; or &amp;quot;info&amp;quot;) is repeated with every call.&lt;/p&gt;
-&lt;p&gt;We could create an &lt;code&gt;Action&lt;/code&gt; for each log type, which can then be reused:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;Action&amp;lt;string&amp;gt; logError = message =&amp;gt; Log(&amp;quot;error&amp;quot;, message);
-Action&amp;lt;string&amp;gt; logWarning = message =&amp;gt; Log(&amp;quot;warning&amp;quot;, message);
-Action&amp;lt;string&amp;gt; logInfo = message =&amp;gt; Log(&amp;quot;info&amp;quot;, message);
-
-logWarning(&amp;quot;Validation failed, skipping record&amp;quot;);
-
-// logWarning can be reused
-logWarning(&amp;quot;An exception occurred, but the record was saved successfully&amp;quot;);
-
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The constant type parameter is now only specified once, instead of once per call.&lt;/p&gt;
-&lt;p&gt;Yet another option, is too make use of &lt;code&gt;method currying&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;Action&amp;lt;string&amp;gt; CurryLog(string type) =&amp;gt; message =&amp;gt; Log(type, message);
-
-var curryLogInfo = CurryLog(&amp;quot;info&amp;quot;);
-curryLogInfo(&amp;quot;Record processed successfully&amp;quot;);
-
-// curryLogInfo can be reused
-curryLogInfo(&amp;quot;Saving record to database&amp;quot;);
-
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The &lt;code&gt;currying&lt;/code&gt; approach is very similar to the &lt;code&gt;Action&lt;/code&gt; technique mentioned above, but it comes down to syntax preference.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;I found the idea of &lt;code&gt;method currying&lt;/code&gt; very interesting and intriguing, but I'm not sure of its benefits in C# over other techniques. Perhaps a preference for the syntax style is enough of a benefit to use it instead of the &amp;quot;traditional&amp;quot; way.&lt;/p&gt;
-&lt;p&gt;Either way though, its useful to have knowledge of this technique, just incase it offers a unique solution to a problem in the future.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://weblogs.asp.net/dixin/lambda-calculus-via-c-sharp-1-fundamentals-closure-currying-and-partial-application"&gt;Currying and partial application&lt;/a&gt;&lt;br /&gt;
-&lt;a href="https://towardsdatascience.com/what-is-currying-in-programming-56fd57103431"&gt;What Is Currying in Programming?&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;103: 24-06-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
