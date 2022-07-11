@@ -4,8 +4,150 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-07-08T04:17:25Z</updated>
+	<updated>2022-07-11T04:12:09Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/07/11-initializer-expansion</id>
+		<title>Expanding on an property initializer</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/07/11-initializer-expansion" />
+		<updated>2022-07-11T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;A class &lt;code&gt;property initializer can be expanded on in the class declaration&lt;/code&gt; (assuming the property type supports it, such as Dictionary) to a have additional values added.&lt;/p&gt;
+&lt;p&gt;This technique (explained further below) does have fairly limited practical application and is quite niche - but it does have its place, and practical or not, is very interesting.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="use-case"&gt;Use case&lt;/h2&gt;
+&lt;p&gt;In our use case, when an exception occurs, we want to capture some generic information about the PC on which the exception occurred (machine name, operating system), as well as the actual exception.&lt;/p&gt;
+&lt;p&gt;If we have an &lt;code&gt;ExceptionInformation&lt;/code&gt; class to capture all this information:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Static information such as the &lt;em&gt;machine name&lt;/em&gt; can be &lt;code&gt;automatically initialized&lt;/code&gt; on instantiation of an &lt;em&gt;ExceptionInformation&lt;/em&gt; instance&lt;/li&gt;
+&lt;li&gt;Dynamic information such as the &lt;em&gt;exception&lt;/em&gt; must be &lt;code&gt;manually supplied&lt;/code&gt; to our capture class&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="constructor"&gt;Constructor&lt;/h3&gt;
+&lt;p&gt;One way of &lt;em&gt;manually&lt;/em&gt; supplying the exception information is pass it to the &lt;code&gt;ExceptionInformation&lt;/code&gt; instance in the constructor:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class ExceptionInformation
+{
+    // string representation of the exception
+    private readonly string _exceptionString;
+
+    // set the exception in the constructor
+    public ExceptionInformation(string exceptionString)
+    {
+        _exceptionString = exceptionString;
+    }
+
+    // A dictionary to contain all the relevent information about the exception
+    // initialize it with the information on class initialization
+    public Dictionary&amp;lt;string, object&amp;gt; Configuration { get; } = 
+        new Dictionary&amp;lt;string, object&amp;gt;
+        {
+            [&amp;quot;MachineName&amp;quot;] = Environment.MachineName,
+            [&amp;quot;OsVersion&amp;quot;] = Environment.OSVersion
+        };
+
+    // override method to be able to output a representation of the class
+    public override string ToString()
+    {
+        return $&amp;quot;{_exceptionString}{Environment.NewLine}&amp;quot; +
+            $&amp;quot;{String.Join(Environment.NewLine, Configuration.Select(d =&amp;gt; $&amp;quot;{d.Key}: { d.Value}&amp;quot;))}&amp;quot;;
+    }
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The usage of the class would be as follows (with an exception being forced to occur):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;try
+{
+    // force a divide by zero exception
+    var intValue = 100;
+    _ = intValue / 0;
+}
+catch(Exception ex)
+{
+    // capture the exception
+    var ei = new ExceptionInformation(ex.ToString());
+    Console.WriteLine(ei.ToString());
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And the output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;System.DivideByZeroException: Attempted to divide by zero.
+   at Program.&amp;lt;Main&amp;gt;$(String[] args) in 
+    C:\Development\Projects\InitializerExpansion\Program.cs:line 5
+MachineName: T800
+OsVersion: Microsoft Windows NT 10.0.22000.0
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;There are other options to achieve the same result - instead of a setting the private &lt;em&gt;_exceptionString&lt;/em&gt; variable, the exception string value could have been added directly to the dictionary in the constructor:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public ExceptionInformation(string exceptionString)
+{
+    this.Configuration.Add(&amp;quot;ExceptionString&amp;quot;, exceptionString);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Both of the above approaches are valid and will achieve the desired result, however another interesting approach is to &lt;em&gt;expand on the property initializer&lt;/em&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="initializer-expansion"&gt;Initializer expansion&lt;/h3&gt;
+&lt;p&gt;The initializer can be expanded to include adding custom information to the &lt;em&gt;ExceptionInformation&lt;/em&gt; instance. Similar to how the &lt;em&gt;exceptionString&lt;/em&gt; was added to the dictionary in the constructor in the above example, except this method is more dynamic and allows for any values to be added.&lt;/p&gt;
+&lt;p&gt;If we remove all references to &lt;em&gt;exceptionString&lt;/em&gt; from the &lt;em&gt;ExceptionInformation&lt;/em&gt; class, including from the constructor:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class ExceptionInformation
+{
+    // No constructor which takes the exception
+   
+    // A dictionary to contain all the relevent information about the exception
+    // initialize it with the information on class initialization
+    public Dictionary&amp;lt;string, object&amp;gt; Configuration { get; } = 
+        new Dictionary&amp;lt;string, object&amp;gt;
+        {
+            [&amp;quot;MachineName&amp;quot;] = Environment.MachineName,
+            [&amp;quot;OsVersion&amp;quot;] = Environment.OSVersion
+        };
+
+    // override method to be able to output a representation of the class
+    // Now ONLY outputs the dictionary
+    public override string ToString()
+    {
+        return String.Join(Environment.NewLine, Configuration.Select(d =&amp;gt; $&amp;quot;{d.Key}: {d.Value}&amp;quot;));
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This usage of the class is now as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;try
+{
+    // force a divide by zero exception
+    var intValue = 100;
+    _ = intValue / 0;
+}
+catch(Exception ex)
+{
+    // capture the exception by expanding the Configuration initialization
+    var ei = new ExceptionInformation
+    {
+        Configuration =
+        {
+            [&amp;quot;ExceptionString&amp;quot;] = ex.ToString()
+            // any other data can be added here
+        }
+    };
+    Console.WriteLine(ei.ToString());
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Here the &lt;em&gt;Configuration&lt;/em&gt; values specified when an instance of &lt;em&gt;ExceptionInformation&lt;/em&gt; is initialized, &lt;code&gt;are added&lt;/code&gt; to the values initialized internally in the class.&lt;/p&gt;
+&lt;p&gt;The output of the above is:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;MachineName: T800
+OsVersion: Microsoft Windows NT 10.0.22000.0
+ExceptionString: System.DivideByZeroException: Attempted to divide by zero.
+   at Program.&amp;lt;Main&amp;gt;$(String[] args) in 
+    C:\Development\Projects\InitializerExpansion\Program.cs:line 5
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;One &lt;code&gt;advantage&lt;/code&gt; of the initializer expansion method, is that all data is now contained in a single place (the dictionary) and more values can be added dynamically.&lt;br /&gt;
+However, on the &lt;code&gt;negative side&lt;/code&gt;, its not apparently obvious to the developer using the &lt;em&gt;ExceptionInformation&lt;/em&gt; class, that additional items can be added to the dictionary in this manner.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;As mentioned, this has a fairly niche use case - and even though there are other methods to do the achieve the same outcome, I find this method especially appealing. Even if I never have a practical need for it in a real application - I still find it an interesting usage of the language features.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/8BitVentilator/status/1524685108606914564"&gt;8 Bit Ventilator tweet&lt;/a&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;?# DailyDrop ?&gt;114: 11-07-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/07/08-lowing-for-loop</id>
 		<title>For loop lowering in C#</title>
@@ -1141,208 +1283,6 @@ void LogRecord(int recordValue)
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://twitter.com/buhakmeh/status/1525885135727501312"&gt;Khalid Abuhakmeh Tweet&lt;/a&gt;&lt;/p&gt;
 &lt;!--?# DailyDrop ?--&gt;105: 28-06-2022&lt;!--?#/ DailyDrop ?--&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/06/27-lambda-vs-local</id>
-		<title>Lambda vs local function performance</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/06/27-lambda-vs-local" />
-		<updated>2022-06-27T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;A &lt;code&gt;local function&lt;/code&gt; will out perform a &lt;code&gt;lambda function&lt;/code&gt; by a significant margin, which can make a different especially if the function is called from within a loop.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="examples"&gt;Examples&lt;/h2&gt;
-&lt;p&gt;The use case is straight forward: &lt;code&gt;iterate through a list of 500 integers, and if the number is larger than a supplied value (y), add it to a running total&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;Below we look at a number of different ways to perform the &lt;code&gt;if the number is larger than a supplied value (y)&lt;/code&gt; check, and then benchmark the performance of each technique.&lt;/p&gt;
-&lt;h3 id="lambda"&gt;Lambda&lt;/h3&gt;
-&lt;p&gt;The first method is to use a &lt;code&gt;lambda function&lt;/code&gt; to perform the &lt;em&gt;where&lt;/em&gt; check:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public int Lambda(int y)
-{
-    int runningTotal = 0;
-
-    // define the lambda to compare two values
-    // and return true or false based on the results
-    Func&amp;lt;int, bool&amp;gt; whereFilter = x =&amp;gt; x &amp;gt; y;
-
-    for(int i = 0; i &amp;lt; 500; i++)
-    {
-        // call the lambda
-        if(whereFilter(i))
-        {
-            runningTotal += i;
-        }
-    }
-
-    return runningTotal;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;A lambda function is defined which compares two values, and is then invoked to compare the iteration value with the supplied value.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="local-function"&gt;Local function&lt;/h3&gt;
-&lt;p&gt;Next, instead of using a lambda, we will define a &lt;code&gt;local function&lt;/code&gt; to perform the &lt;em&gt;where&lt;/em&gt; check:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public int LocalFunction(int y)
-{
-    int runningTotal = 0;
-
-    // define the local function expression
-    // with the same functionality as the above lambda
-    bool whereFilter(int x) =&amp;gt; x &amp;gt; y;
-
-    for (int i = 0; i &amp;lt; 500; i++)
-    {
-        // invoke the local function
-        if (whereFilter(i))
-        {
-            runningTotal += i;
-        }
-    }
-
-    return runningTotal;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;A local function, as with the lambda, is defined which compares two values, and is then invoked to compare the iteration value with the supplied value.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="function"&gt;Function&lt;/h3&gt;
-&lt;p&gt;Next, the local function will be replaced with a normal &lt;code&gt;function&lt;/code&gt; to perform the &lt;em&gt;where&lt;/em&gt; check:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public int Method(int y)
-{
-    int runningTotal = 0;
-
-    for (int i = 0; i &amp;lt; 500; i++)
-    {
-        // call the separate expression-bodied method
-        if (whereFilterMethod(i, y))
-        {
-            runningTotal += i;
-        }
-    }
-
-    return runningTotal;
-}
-
-// expression bodied method to compare two values
-private bool whereFilterMethod(int x, int y) =&amp;gt; x &amp;gt; y;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The method body is the same as the local function, but defined outside the method in question (&lt;em&gt;Method&lt;/em&gt; in this example).&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="operation"&gt;Operation&lt;/h3&gt;
-&lt;p&gt;Lastly, instead of using any variation of method, the operation will be put directly inline:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public int Operation(int y)
-{
-    int runningTotal = 0;
-
-    for (int i = 0; i &amp;lt; 500; i++)
-    {
-        // straight compare of the two value
-        if (i &amp;gt; y)
-        {
-            runningTotal += i;
-        }
-    }
-
-    return runningTotal;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;No method defined here, just the straight comparison.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="benchmarks"&gt;Benchmarks&lt;/h2&gt;
-&lt;p&gt;Finally let's benchmark all of the above techniques. &lt;strong&gt;BenchmarkDotNet&lt;/strong&gt; was used to benchmark each technique using two parameters, &lt;code&gt;17&lt;/code&gt; and &lt;code&gt;472&lt;/code&gt;, to give representation for the lower and upper bounds of the loop.&lt;/p&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;Method&lt;/th&gt;
-&lt;th&gt;y&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Ratio&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;Lambda&lt;/td&gt;
-&lt;td&gt;17&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;974.7 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;13.68 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;12.79 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;LocalFunction&lt;/td&gt;
-&lt;td&gt;17&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;135.6 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.51 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.34 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.14&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;Method&lt;/td&gt;
-&lt;td&gt;17&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;136.2 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.30 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.15 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.14&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;Operation&lt;/td&gt;
-&lt;td&gt;17&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;135.4 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.86 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.67 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.14&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;&lt;/td&gt;
-&lt;td&gt;&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;Lambda&lt;/td&gt;
-&lt;td&gt;472&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;854.0 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;9.61 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;8.99 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;LocalFunction&lt;/td&gt;
-&lt;td&gt;472&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;255.0 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;3.85 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;3.42 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.30&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;Method&lt;/td&gt;
-&lt;td&gt;472&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;263.0 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.95 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.76 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.31&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;Operation&lt;/td&gt;
-&lt;td&gt;472&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;252.2 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;4.00 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;3.74 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.30&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;As one can see from the results, a lambda is &lt;code&gt;3-6x times&lt;/code&gt; slower than any of the other methods.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;When calling the &lt;code&gt;lambda/local function/function/operation&lt;/code&gt; once off in the hot path, there probably won't be any noticeable difference depending on which method is used.&lt;br /&gt;
-However if used in a loop (such as in the example), consider moving away from a &lt;code&gt;lambda&lt;/code&gt; to any of the other techniques to see an improvement in performance.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://leveluppp.ghost.io/content/images/size/w1000/2021/07/lambda_tips1-1.png"&gt;Lambda Optimizations Tips 1&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;104: 27-06-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
