@@ -4,8 +4,147 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-07-11T04:12:09Z</updated>
+	<updated>2022-07-12T04:41:14Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/07/12-maybenullwhen-attribute</id>
+		<title>MaybeNullWhen attribute usage</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/07/12-maybenullwhen-attribute" />
+		<updated>2022-07-12T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;MaybeNullWhen&lt;/code&gt; attribute can be used to specify that when a method returns &amp;quot;ReturnValue&amp;quot;, an &lt;code&gt;out&lt;/code&gt; parameter may be &lt;code&gt;null&lt;/code&gt; even if the corresponding type does not allow it.&lt;/p&gt;
+&lt;p&gt;This is especially applicable in the &lt;code&gt;TryGet*&lt;/code&gt; methods, such as the &lt;em&gt;TryGetValue&lt;/em&gt; method on &lt;em&gt;Dictionary&lt;/em&gt;, for example.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="setup"&gt;Setup&lt;/h2&gt;
+&lt;p&gt;In all the examples below, the project has been set to allow nullable types. In the csproj file, the following is set:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-xml"&gt;&amp;lt;Nullable&amp;gt;enable&amp;lt;/Nullable&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We have also defined a &lt;em&gt;Person&lt;/em&gt; class, with a single &lt;em&gt;Name&lt;/em&gt; property:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Person
+{
+    public string Name { get; set; } 
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;A dictionary is then created of &lt;em&gt;Person&lt;/em&gt;'s, and &lt;em&gt;id&lt;/em&gt; value set for a &lt;code&gt;person which does not exist&lt;/code&gt; in the dictionary:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var people = new Dictionary&amp;lt;int, Person&amp;gt;();
+
+people.Add(1, new Person { Name = &amp;quot;Dave&amp;quot; });
+people.Add(2, new Person { Name = &amp;quot;John&amp;quot; });
+people.Add(3, new Person { Name = &amp;quot;Mike&amp;quot; });
+people.Add(4, new Person { Name = &amp;quot;Chris&amp;quot; });
+
+// This Id does not exist in the dictionary
+int id = 5;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="compiler-warning"&gt;Compiler warning&lt;/h2&gt;
+&lt;p&gt;Next, we'll write a method to &lt;code&gt;TryGet&lt;/code&gt; a person out of the dictionary - the function will return &lt;code&gt;true/false&lt;/code&gt; if the dictionary contains the id, as well as having an &lt;code&gt;out&lt;/code&gt; Person parameter which will contain the &lt;em&gt;Person&lt;/em&gt; record, if found.&lt;/p&gt;
+&lt;p&gt;This is a standard pattern used often by many core .NET libraries - &lt;em&gt;Dictionary&lt;/em&gt; already has a &lt;em&gt;TryGetValue&lt;/em&gt; method following this pattern, but for demo purposes we will write a custom method.&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// return false if the record not found in the dictionary
+// return true if found AND set the out Person to the found record
+public bool TryGetPerson(Dictionary&amp;lt;int, Person&amp;gt; d, int id, out Person p)
+{
+    // check if the dictionary contains the key
+    if (!d.ContainsKey(id))
+    {
+        // set the out parameter value to null
+        p = null;
+        return false;
+    }
+
+    // set the out parameter value to the item in the dictionary
+    p = d[id];
+    return true;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The above method will work, and performs as expected - however, the compiler gives us a warning for the line &lt;code&gt;p = null&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Cannot convert null literal to non-nullable reference type.
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This is because the code is assigning a &lt;code&gt;null&lt;/code&gt; value to the out &lt;em&gt;Person&lt;/em&gt; p object, when the parameter hasn't been marked as explicitly allowing nulls.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="nullable-type"&gt;Nullable type&lt;/h2&gt;
+&lt;p&gt;Let's address the warning - the compiler is telling us we are assigning a &lt;code&gt;null&lt;/code&gt; value to a &lt;code&gt;non-nullable&lt;/code&gt; type, so let's make the type &lt;code&gt;nullable&lt;/code&gt;. This is done by adding a question mark (&lt;code&gt;?&lt;/code&gt;) after the type:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// Person has changed to nullable, Person?
+public bool TryGetPerson(Dictionary&amp;lt;int, Person&amp;gt; d, int id, out Person? p)
+{
+    // check if the dictionary contains the key
+    if (!d.ContainsKey(id))
+    {
+        // set the out parameter value to null
+        p = null;
+        return false;
+    }
+
+    // set the out parameter value to the item in the dictionary
+    p = d[id];
+    return true;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Making the above update will resolve the initial warning - however the usage of the above method has now introduced another warning:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;if(!TryGetPerson(people, id, out var person))
+{
+    return;
+}
+
+Console.WriteLine(person.Name);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The &lt;code&gt;Console.WriteLine(person.Name);&lt;/code&gt; line of code results in the warning:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Dereference of a possibly null reference.
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The compiler is informing us that the code is referencing the &lt;em&gt;Name&lt;/em&gt; property on a possibly null object (resulting in an exception).&lt;/p&gt;
+&lt;p&gt;This can be solved by checking if &lt;em&gt;person&lt;/em&gt; is null, again using the question mark:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;Console.WriteLine(person?.Name);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="maybenullwhen-usage"&gt;MaybeNullWhen usage&lt;/h2&gt;
+&lt;p&gt;Another option is, instead of making the &lt;em&gt;Person&lt;/em&gt; out parameter nullable, to make use of the &lt;code&gt;MaybeNullWhen&lt;/code&gt; attribute:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// The attribute is added to the parameter
+public bool TryGetPerson(Dictionary&amp;lt;int, Person&amp;gt; d, int id, 
+    [MaybeNullWhen(returnValue: false)]out Person p)
+{
+    // check if the dictionary contains the key
+    if (!d.ContainsKey(id))
+    {
+        // set the out parameter value to null
+        p = null;
+        return false;
+    }
+
+    // set the out parameter value to the item in the dictionary
+    p = d[id];
+    return true;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The addition of the parameter is an indicator to the compiler that &lt;code&gt;the out Person parameter can maybe be NULL when the return value is false&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;The usage of the method is the same as before, but now no longer results in any warnings!&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;if(!TryGetPerson(people, id, out var person))
+{
+    return;
+}
+
+Console.WriteLine(person.Name);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If however &lt;em&gt;person&lt;/em&gt; is reference in a path where it could be null, then the warning occurs again:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;if(!TryGetPerson(people, id, out var person))
+{
+    // person is null here
+    Console.WriteLine(person.Name);
+
+    return;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In the above code snippet, &lt;em&gt;person.Name&lt;/em&gt; is being used in a path where &lt;em&gt;person&lt;/em&gt; is null (when &lt;em&gt;TryGetPerson&lt;/em&gt; returns false) - thanks to the &lt;code&gt;MaybeNullWhen&lt;/code&gt; attribute, the compiler has enough information to know this will most likely result in a null reference and so the warning occurs.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;Whether writing a line of business application or a reusable library, if applicable, the &lt;code&gt;MaybeNullWhen&lt;/code&gt; attribute should be used to give more information to the compiler about the intention of the code, thus improving developer experience.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://www.reddit.com/r/csharp/comments/uxlkub/nullable_types_dictionaries_and_magic/"&gt;Nullable types, dictionaries and magic&lt;/a&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;?# DailyDrop ?&gt;115: 12-07-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/07/11-initializer-expansion</id>
 		<title>Expanding on an property initializer</title>
@@ -1167,122 +1306,6 @@ void LogRecord(int recordValue)
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://www.smashingmagazine.com/2022/05/lesser-known-underused-css-features-2022/#all-property"&gt;all Property&lt;/a&gt;&lt;/p&gt;
 &lt;!--?# DailyDrop ?--&gt;106: 29-06-2022&lt;!--?#/ DailyDrop ?--&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/06/28-dictionary-tuple</id>
-		<title>Destructing a Dictionary record into a Tuple</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/06/28-dictionary-tuple" />
-		<updated>2022-06-28T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;A &lt;code&gt;Dictionary&lt;/code&gt; record can be destructed into a &lt;code&gt;Tuple&lt;/code&gt; - specifically the &lt;code&gt;KeyValuePair&lt;/code&gt; type representing a dictionary record can be destructed into a &lt;code&gt;Tuple&lt;/code&gt;. In addition, as the &lt;code&gt;Dictionary&lt;/code&gt; type contains a &lt;em&gt;GetEnumerator&lt;/em&gt; method, &lt;a href="https://alwaysdeveloping.net/03/03-getenumerator"&gt;it can be iterated over&lt;/a&gt; into a &lt;code&gt;Tuple&lt;/code&gt;.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="examples"&gt;Examples&lt;/h2&gt;
-&lt;p&gt;In all of the below examples, &lt;em&gt;numberDictionary&lt;/em&gt; is of type &lt;code&gt;Dictionary&amp;lt;string, int&amp;gt;&lt;/code&gt;.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h3 id="key-iteration"&gt;Key iteration&lt;/h3&gt;
-&lt;p&gt;One way to iterate through all entries in a &lt;code&gt;Dictionary&lt;/code&gt; is to loop through each &lt;code&gt;Key&lt;/code&gt; and then use the &lt;em&gt;Key&lt;/em&gt; to retrieve the entry &lt;code&gt;Value&lt;/code&gt;.&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public void IterateKeyValue()
-{
-    var sum = 0;
-
-    // iterate of each key in the dictionary
-    foreach (var key in numberDictionary.Keys)
-    {
-        // get the int value based on the key
-        sum += numberDictionary[key];
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Here the &lt;code&gt;Dictionary&lt;/code&gt; is accessed twice, once to get the &lt;em&gt;Key&lt;/em&gt; and a second time to get the &lt;em&gt;Value&lt;/em&gt; for the specific Key.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h3 id="keyvalue-iteration"&gt;KeyValue iteration&lt;/h3&gt;
-&lt;p&gt;The next method for iteration, is to iterate through each &lt;code&gt;Dictionary&lt;/code&gt; record, a &lt;code&gt;KeyValuePair&lt;/code&gt;. This is possible because Dictionary contains a &lt;em&gt;GetEnumerator&lt;/em&gt; method.&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public void IterateKVPair()
-{
-    var sum = 0;
-
-    // iterate of each KeyValuePair in the dictionary
-    foreach (KeyValuePair&amp;lt;string, int&amp;gt; kv in numberDictionary)
-    {
-        // get the value part of the KeyValuePair
-        sum += kv.Value;
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Simpler than the previous method, and here the Dictionary itself is only accessed only once to get the &lt;code&gt;KeyValuePair&lt;/code&gt; which in turn contains all the information for the entry.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h3 id="tuple"&gt;Tuple&lt;/h3&gt;
-&lt;p&gt;The last method for iteration, is to iterate through each &lt;code&gt;Dictionary&lt;/code&gt; item, but &lt;code&gt;destruct the KeyValuePair into a Tuple&lt;/code&gt;.&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public void IterateTuple()
-{
-    var sum = 0;
-
-    // iterate and destruct into a tuple
-    foreach (var (key, value) in numberDictionary)
-    {
-        // access the value directly
-        sum += value;
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;One could argue whether this version is easier to read than the previous &lt;em&gt;KeyValuePair&lt;/em&gt; version - personally I do find this version more readable. An added benefit is that the name of the &lt;code&gt;Tuple&lt;/code&gt; items can be customized to make it obvious to the reader as to what they contains. So instead of &lt;em&gt;Key&lt;/em&gt; and &lt;em&gt;Value&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public void IterateProducts()
-{
-    var sum = 0;
-    foreach (var (productName, price) in productDictionary)
-    {
-        sum += intValue;
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr&gt;
-&lt;h2 id="benchmarks"&gt;Benchmarks&lt;/h2&gt;
-&lt;p&gt;So we've looked at three ways to get the information from a Dictionary, but how to each of them perform?&lt;/p&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;Method&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Ratio&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;IterateKeyValue&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;14.827 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.1774 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.1659 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;IterateTuple&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;3.529 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0468 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0438 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.24&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;IterateKVPair&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;3.519 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0296 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0262 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.24&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;The &lt;code&gt;KeyValuePair&lt;/code&gt; and &lt;code&gt;Tuple&lt;/code&gt; versions are comparable, while iterating through each &lt;em&gt;Key&lt;/em&gt; and then getting the &lt;em&gt;Value&lt;/em&gt; is &lt;code&gt;4 times slower&lt;/code&gt;.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;Iterating through &lt;em&gt;Keys&lt;/em&gt;, to then retrieve the &lt;em&gt;Value&lt;/em&gt; shouldn't ever be the default method for iteration - especially when there are other more performant and easier to read methods available.&lt;br&gt;
-&lt;em&gt;KeyValuePair&lt;/em&gt; and &lt;em&gt;Tuple&lt;/em&gt; iteration are comparable, and usage comes down to personal preference - personally I prefer the &lt;code&gt;Tuple&lt;/code&gt; with its added benefit of being able to accurately name the &lt;em&gt;Key&lt;/em&gt; and &lt;em&gt;Value&lt;/em&gt;.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://twitter.com/buhakmeh/status/1525885135727501312"&gt;Khalid Abuhakmeh Tweet&lt;/a&gt;&lt;/p&gt;
-&lt;!--?# DailyDrop ?--&gt;105: 28-06-2022&lt;!--?#/ DailyDrop ?--&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
