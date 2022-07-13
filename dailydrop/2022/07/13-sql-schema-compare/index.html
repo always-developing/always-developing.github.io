@@ -7,9 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <meta name="description" content="always learning | always growing">
 
-    <title>Always Developing - Lambda vs local function performance</title>
+    <title>Always Developing - Visual Studio Schema Compare</title>
 
-    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/06/27-lambda-vs-local">
+    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/07/13-sql-schema-compare">
 
             <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
             <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
@@ -18,9 +18,9 @@
     <meta name="msapplication-tooltip" content="Always Developing" />
     <meta name="msapplication-starturl" content="/" />
 
-    <meta property="og:title" content="Always Developing - Lambda vs local function performance" />
+    <meta property="og:title" content="Always Developing - Visual Studio Schema Compare" />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/06/27-lambda-vs-local" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/07/13-sql-schema-compare" />
 
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
@@ -104,14 +104,14 @@
             <div class="col-md-10">
                 <div class="post-heading">
                     <h1>
-                        Lambda vs local function performance
+                        Visual Studio Schema Compare
                     </h1>
-                            <h2 class="subheading">Exploring the performance of a lambda function vs a local function</h2>
+                            <h2 class="subheading">Comparing two database schemas using Visual Studio Schema Compare feature</h2>
                         <p class="post-meta">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
                                 <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
                                 <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
-                            </svg> Published on Monday, 27 June 2022
+                            </svg> Published on Wednesday, 13 July 2022
                         </p>
                 </div>
             </div>
@@ -130,198 +130,73 @@
 </div>
 
                         <h2 id="daily-knowledge-drop">Daily Knowledge Drop</h2>
-<p>A <code>local function</code> will out perform a <code>lambda function</code> by a significant margin, which can make a different especially if the function is called from within a loop.</p>
+<p>Visual Studio has a built in feature called <code>Schema Compare</code> which easily allows for the comparing of two SQL database schemas and the generation of a script to bring them in sync.</p>
+<p>In the past I've had to perform database schema comparisons numerous times (admittedly the majority of these times have been in the fairly distant past when proper CI/CD tools and DevOps practices were not in place) - and there were limited tools available. <code>Schema Compare</code> contains the all the features I've required in the past in an incredibly simple to use package.</p>
 <hr />
-<h2 id="examples">Examples</h2>
-<p>The use case is straight forward: <code>iterate through a list of 500 integers, and if the number is larger than a supplied value (y), add it to a running total</code>.</p>
-<p>Below we look at a number of different ways to perform the <code>if the number is larger than a supplied value (y)</code> check, and then benchmark the performance of each technique.</p>
-<h3 id="lambda">Lambda</h3>
-<p>The first method is to use a <code>lambda function</code> to perform the <em>where</em> check:</p>
-<pre><code class="language-csharp">public int Lambda(int y)
-{
-    int runningTotal = 0;
+<h2 id="installation">Installation</h2>
+<p>The feature is available through the installation of the <code>SQL Server Data Tools</code> Visual Studio component. One can use the <em>Visual Studio Installer</em> to confirm if the component is installed or not:</p>
+<ul>
+<li>Open <em>Visual Studio Installer</em></li>
+<li>Click <em>Modify</em> on the relevent Visual Studio installation</li>
+<li>Select the <em>Individual components</em> tab</li>
+<li>Search for &quot;sql server data tools&quot;</li>
+</ul>
+<p><img src="installation.png" alt="SQL Server Data Tools" /></p>
+<p>Once installed, the feature will be available under <code>Tools -&gt; SQL Server -&gt; New Schema Comparison</code> in Visual Studio:</p>
+<p><img src="menu-feature.png" alt="New Schema Comparison" /></p>
+<hr />
+<h2 id="usage">Usage</h2>
+<p>The usage of the feature is straightforward - when opened you will be presented with two drop down lists, one to select the <em>Source</em> database and one to select the <em>Target</em> database:</p>
+<p><img src="source-target.png" alt="Source and Target selection" /></p>
+<p>A screen with the traditional database connection settings is presented when adding the <em>Source</em> and <em>Target</em> database:</p>
+<p><img src="connection.png" alt="Source and Target selection" /></p>
+<p>Once the <em>Source</em> and <em>Target</em> databases have been set, the <code>Compare</code> button becomes available - clicking on this will perform the database comparison.</p>
+<p>A list of differences between the databases will be presented, drilling down and clicking on the specific item will then show the specific difference.</p>
+<p>In the example below, there are differences between the <em>Song</em> tables in the two databases:</p>
+<ul>
+<li>a <em>Length</em> discrepancy on the <em>Artist</em> column</li>
+<li>a <em>Nullability</em> discrepancy on the <em>LengthInSeconds</em> column</li>
+</ul>
+<p>Clicking on the <em>Length</em> item, displays the specific difference:</p>
+<p><img src="differences.png" alt="List of differences" /></p>
+<hr />
+<h2 id="application">Application</h2>
+<p>Once the differences have been identified, the next step is bring the <em>Destination</em> database in line with the <em>Source</em> database.</p>
+<p>This can be done by <code>updating the target database directly</code>:</p>
+<p><img src="update.png" alt="Update target" /></p>
+<p>This may not always be possible or feasible, so another option is to have a <code>script generated</code> to align the <em>Target</em> to the <em>Source</em>:</p>
+<p><img src="script.png" alt="Generate Script" /></p>
+<p>The script generated by the tool looks as follows (abbreviated to include only the relevent portion):</p>
+<pre><code class="language-sql">--
+--
+-- some preamble removed for brevity
+--
+--
+USE [$(DatabaseName)];
 
-    // define the lambda to compare two values
-    // and return true or false based on the results
-    Func&lt;int, bool&gt; whereFilter = x =&gt; x &gt; y;
 
-    for(int i = 0; i &lt; 500; i++)
-    {
-        // call the lambda
-        if(whereFilter(i))
-        {
-            runningTotal += i;
-        }
-    }
+GO
+PRINT N'Altering Table [dbo].[Song]...';
 
-    return runningTotal;
-}
+
+GO
+ALTER TABLE [dbo].[Song] ALTER COLUMN [Artist] NVARCHAR (500) NOT NULL;
+
+ALTER TABLE [dbo].[Song] ALTER COLUMN [LengthInSeconds] INT NULL;
+
+
+GO
+PRINT N'Update complete.';
 </code></pre>
-<p>A lambda function is defined which compares two values, and is then invoked to compare the iteration value with the supplied value.</p>
-<hr />
-<h3 id="local-function">Local function</h3>
-<p>Next, instead of using a lambda, we will define a <code>local function</code> to perform the <em>where</em> check:</p>
-<pre><code class="language-csharp">public int LocalFunction(int y)
-{
-    int runningTotal = 0;
-
-    // define the local function expression
-    // with the same functionality as the above lambda
-    bool whereFilter(int x) =&gt; x &gt; y;
-
-    for (int i = 0; i &lt; 500; i++)
-    {
-        // invoke the local function
-        if (whereFilter(i))
-        {
-            runningTotal += i;
-        }
-    }
-
-    return runningTotal;
-}
-</code></pre>
-<p>A local function, as with the lambda, is defined which compares two values, and is then invoked to compare the iteration value with the supplied value.</p>
-<hr />
-<h3 id="function">Function</h3>
-<p>Next, the local function will be replaced with a normal <code>function</code> to perform the <em>where</em> check:</p>
-<pre><code class="language-csharp">public int Method(int y)
-{
-    int runningTotal = 0;
-
-    for (int i = 0; i &lt; 500; i++)
-    {
-        // call the separate expression-bodied method
-        if (whereFilterMethod(i, y))
-        {
-            runningTotal += i;
-        }
-    }
-
-    return runningTotal;
-}
-
-// expression bodied method to compare two values
-private bool whereFilterMethod(int x, int y) =&gt; x &gt; y;
-</code></pre>
-<p>The method body is the same as the local function, but defined outside the method in question (<em>Method</em> in this example).</p>
-<hr />
-<h3 id="operation">Operation</h3>
-<p>Lastly, instead of using any variation of method, the operation will be put directly inline:</p>
-<pre><code class="language-csharp">public int Operation(int y)
-{
-    int runningTotal = 0;
-
-    for (int i = 0; i &lt; 500; i++)
-    {
-        // straight compare of the two value
-        if (i &gt; y)
-        {
-            runningTotal += i;
-        }
-    }
-
-    return runningTotal;
-}
-</code></pre>
-<p>No method defined here, just the straight comparison.</p>
-<hr />
-<h2 id="benchmarks">Benchmarks</h2>
-<p>Finally let's benchmark all of the above techniques. <strong>BenchmarkDotNet</strong> was used to benchmark each technique using two parameters, <code>17</code> and <code>472</code>, to give representation for the lower and upper bounds of the loop.</p>
-<table>
-<thead>
-<tr>
-<th>Method</th>
-<th>y</th>
-<th style="text-align: right;">Mean</th>
-<th style="text-align: right;">Error</th>
-<th style="text-align: right;">StdDev</th>
-<th style="text-align: right;">Ratio</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Lambda</td>
-<td>17</td>
-<td style="text-align: right;">974.7 ns</td>
-<td style="text-align: right;">13.68 ns</td>
-<td style="text-align: right;">12.79 ns</td>
-<td style="text-align: right;">1.00</td>
-</tr>
-<tr>
-<td>LocalFunction</td>
-<td>17</td>
-<td style="text-align: right;">135.6 ns</td>
-<td style="text-align: right;">1.51 ns</td>
-<td style="text-align: right;">1.34 ns</td>
-<td style="text-align: right;">0.14</td>
-</tr>
-<tr>
-<td>Method</td>
-<td>17</td>
-<td style="text-align: right;">136.2 ns</td>
-<td style="text-align: right;">2.30 ns</td>
-<td style="text-align: right;">2.15 ns</td>
-<td style="text-align: right;">0.14</td>
-</tr>
-<tr>
-<td>Operation</td>
-<td>17</td>
-<td style="text-align: right;">135.4 ns</td>
-<td style="text-align: right;">0.86 ns</td>
-<td style="text-align: right;">0.67 ns</td>
-<td style="text-align: right;">0.14</td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
-</tr>
-<tr>
-<td>Lambda</td>
-<td>472</td>
-<td style="text-align: right;">854.0 ns</td>
-<td style="text-align: right;">9.61 ns</td>
-<td style="text-align: right;">8.99 ns</td>
-<td style="text-align: right;">1.00</td>
-</tr>
-<tr>
-<td>LocalFunction</td>
-<td>472</td>
-<td style="text-align: right;">255.0 ns</td>
-<td style="text-align: right;">3.85 ns</td>
-<td style="text-align: right;">3.42 ns</td>
-<td style="text-align: right;">0.30</td>
-</tr>
-<tr>
-<td>Method</td>
-<td>472</td>
-<td style="text-align: right;">263.0 ns</td>
-<td style="text-align: right;">2.95 ns</td>
-<td style="text-align: right;">2.76 ns</td>
-<td style="text-align: right;">0.31</td>
-</tr>
-<tr>
-<td>Operation</td>
-<td>472</td>
-<td style="text-align: right;">252.2 ns</td>
-<td style="text-align: right;">4.00 ns</td>
-<td style="text-align: right;">3.74 ns</td>
-<td style="text-align: right;">0.30</td>
-</tr>
-</tbody>
-</table>
-<p>As one can see from the results, a lambda is <code>3-6x times</code> slower than any of the other methods.</p>
+<p>By default all differences are included in the <code>Update</code> or <code>Generate Script</code> but it is possible to uncheck specific differences if you wish to exclude them from the update.</p>
 <hr />
 <h2 id="notes">Notes</h2>
-<p>When calling the <code>lambda/local function/function/operation</code> once off in the hot path, there probably won't be any noticeable difference depending on which method is used.<br />
-However if used in a loop (such as in the example), consider moving away from a <code>lambda</code> to any of the other techniques to see an improvement in performance.</p>
+<p>In a perfect world this feature is never required as DevOps practices ensure that a dev, test and production database are always in sync (or can easily be brought in sync). However in the real world, differences sometimes occur - sometimes its easier to sync a database schema from production to dev instead of creating the dev database from scratch, for example.</p>
+<p>In these cases, the <code>Schema Compare</code> feature will prove to be invaluable in tracking down and remedying any differences.</p>
 <hr />
 <h2 id="references">References</h2>
-<p><a href="https://leveluppp.ghost.io/content/images/size/w1000/2021/07/lambda_tips1-1.png">Lambda Optimizations Tips 1</a></p>
+<p><a href="https://www.sqlshack.com/how-to-compare-two-sql-databases-from-visual-studio/">How to compare two SQL databases from Visual Studio</a></p>
+<hr />
 
 <blockquote class="daily-drop">
     <div>
@@ -334,7 +209,7 @@ However if used in a loop (such as in the example), consider moving away from a 
             </svg>
         </div>
         <div class="drop-header">
-            Daily Drop 104: 27-06-2022
+            Daily Drop 116: 13-07-2022
         </div>
         <div>
             <br>At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br> It could be anything - some.NET / C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
@@ -346,10 +221,10 @@ However if used in a loop (such as in the example), consider moving away from a 
 
                         
 <div>
-            <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
-            <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
-            <a role="button" href="/tags/lambda" class="badge badge-light"> lambda</a>
-            <a role="button" href="/tags/local" class="badge badge-light"> local</a>
+            <a role="button" href="/tags/visualstudio" class="badge badge-light"> visualstudio</a>
+            <a role="button" href="/tags/vs" class="badge badge-light"> vs</a>
+            <a role="button" href="/tags/sql" class="badge badge-light"> sql</a>
+            <a role="button" href="/tags/database" class="badge badge-light"> database</a>
 </div>
                     </div>
                     <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
@@ -359,14 +234,9 @@ However if used in a loop (such as in the example), consider moving away from a 
             <h3 class="no-anchor">On This Page</h3>
             <ul>
         <li><a href="#daily-knowledge-drop">Daily Knowledge Drop</a></li>
-        <li><a href="#examples">Examples</a></li>
-            <ul>
-        <li><a href="#lambda">Lambda</a></li>
-        <li><a href="#local-function">Local function</a></li>
-        <li><a href="#function">Function</a></li>
-        <li><a href="#operation">Operation</a></li>
-            </ul>
-        <li><a href="#benchmarks">Benchmarks</a></li>
+        <li><a href="#installation">Installation</a></li>
+        <li><a href="#usage">Usage</a></li>
+        <li><a href="#application">Application</a></li>
         <li><a href="#notes">Notes</a></li>
         <li><a href="#references">References</a></li>
             </ul>
