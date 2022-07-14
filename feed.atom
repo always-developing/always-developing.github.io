@@ -4,8 +4,287 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-07-13T04:13:02Z</updated>
+	<updated>2022-07-14T04:30:17Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/07/14-dbcontext-pooling</id>
+		<title>Entity Framework DbContext Pooling</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/07/14-dbcontext-pooling" />
+		<updated>2022-07-14T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;Entity Framework Core's &lt;code&gt;DbContext pooling&lt;/code&gt; functionality can be used to improve the performance of an application.&lt;/p&gt;
+&lt;p&gt;While generally a lightweight object, each context instance does require some internal setup of various services, which does have an overhead. &lt;code&gt;Context pooling&lt;/code&gt;, as the name implies, create a pool of DbContext instances, setup during startup of the application and reused, thus paying the setup cost only once.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="configuration"&gt;Configuration&lt;/h2&gt;
+&lt;p&gt;Configuring an application to use &lt;code&gt;DbContext pooling&lt;/code&gt; instead of the non-pooling option is incredibly simple - in fact it requires just one small change to the usual DbContext setup.&lt;/p&gt;
+&lt;p&gt;On startup of an application:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Default non-pooling configuration&lt;/strong&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;builder.Services.AddDbContext&amp;lt;DemoContext&amp;gt;(o =&amp;gt; o
+    .UseSqlServer(builder.Configuration.GetConnectionString(&amp;quot;DemoContext&amp;quot;)));
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;DbContext pooling configuration&lt;/strong&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;builder.Services.AddDbContextPool&amp;lt;DemoContext&amp;gt;(o =&amp;gt; o
+    .UseSqlServer(builder.Configuration.GetConnectionString(&amp;quot;DemoContext&amp;quot;)));
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Instead of the &lt;code&gt;AddDbContext&lt;/code&gt; method being called, the &lt;code&gt;AddDbContextPool&lt;/code&gt; method is called - thats all the configuration required.&lt;/p&gt;
+&lt;p&gt;The default pool size can also be manually specified as part of the &lt;em&gt;AddDbContextPool&lt;/em&gt; call (with the default being 1024 in EF Core 6.0 and 128 in previous versions)&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="usage"&gt;Usage&lt;/h2&gt;
+&lt;p&gt;The usage is &lt;code&gt;exactly the same&lt;/code&gt; awith our without the context pooling - inject the application &lt;em&gt;DbContext&lt;/em&gt; (DemoContext in the above examples) into the relevent constructor and use it as per normal.&lt;/p&gt;
+&lt;p&gt;Entity Framework will internally handle everything related to the pooling functionality.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="benchmarks"&gt;Benchmarks&lt;/h2&gt;
+&lt;p&gt;For the benchmarks, we have a database table with &lt;code&gt;50&lt;/code&gt; records, and will be comparing retrieving a single row (using the primary key) using:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Manually created &lt;code&gt;DbContext&lt;/code&gt; instance each time&lt;/li&gt;
+&lt;li&gt;A &lt;code&gt;DbContext&lt;/code&gt; retrieved from the context pool&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;In the below code, as dependency injection was not used, &lt;code&gt;PooledDbContextFactory&lt;/code&gt; is used to control getting an instance of a DbContext from the pool:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;
+private DbContextOptions&amp;lt;DemoContext&amp;gt; _options;
+private PooledDbContextFactory&amp;lt;DemoContext&amp;gt; _poolingFactory;
+
+public Benchmarks()
+{
+    // confiture the dbcontext options
+    _options = new DbContextOptionsBuilder&amp;lt;DemoContext&amp;gt;()
+        .UseSqlServer(&amp;#64;&amp;quot;Server=.\SQLEXPRESS;Database=EFPool;Integrated Security=True&amp;quot;)
+        .Options;
+
+    // setup the pooling factory using the options
+    _poolingFactory = new PooledDbContextFactory&amp;lt;DemoContext&amp;gt;(_options);
+}
+
+[Benchmark]
+public Song WithoutContextPooling()
+{
+    // new DbContext using the options
+    using var context = new DemoContext(_options);
+
+    return context.Songs.First(s =&amp;gt; s.Id == 1);
+}
+
+[Benchmark]
+public Song WithContextPooling()
+{
+    // new DbContext using the PooledDbContextFactory which uses the options
+    using var context = _poolingFactory.CreateDbContext();
+
+    return context.Songs.First(s =&amp;gt; s.Id == 1);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Results:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Method&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Gen 0&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Allocated&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;WithoutContextPooling&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;701.3 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;51.09 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;147.42 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;96 KB&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;WithContextPooling&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;124.9 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2.15 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2.02 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.4648&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;9 KB&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;The &lt;code&gt;context pooling results in a 5.5x speed improvement&lt;/code&gt; and &lt;code&gt;10x memory improvement!&lt;/code&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;Improvements such as the ones shown above in the benchmarks above might not be applicable in every application and use case - however my recommendation is to &lt;code&gt;default to using DbContext pooling&lt;/code&gt;. If performance is not where it should be, then benchmark the two options and revert to the option with the best performance.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/ef/core/performance/advanced-performance-topics?tabs=with-di%2Cwith-constant#dbcontext-pooling"&gt;DbContext pooling&lt;/a&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;?# DailyDrop ?&gt;116: 14-07-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/08/08-length-pattern-matching</id>
+		<title>String null or empty using pattern matching</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/08/08-length-pattern-matching" />
+		<updated>2022-07-14T00:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;Pattern matching&lt;/code&gt; syntax can be used to check the nullability and length of a string, instead of the traditional &lt;code&gt;string.IsNullOrEmpty&lt;/code&gt; method - with interesting (and promising) performance benchmarks!&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="isnullorempty"&gt;IsNullOrEmpty&lt;/h2&gt;
+&lt;p&gt;Usually the &lt;code&gt;string.IsNullOrEmpty&lt;/code&gt; method is used to check if a specific string has a value (other than null or empty) - a string is passed in and a bool value is returned.&lt;/p&gt;
+&lt;p&gt;Consider the following method which uses &lt;code&gt;string.IsNullOrEmpty&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;void IsStringNullOrEmpty(string value)
+{ 
+    if (!string.IsNullOrEmpty(value))
+    {
+        Console.WriteLine($&amp;quot;Using 'IsNullOrEmpty' the '{value}' is NOT empty or null&amp;quot;);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If the method is called with three different values:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;string checkValue = &amp;quot;www.alwaysdeveloping.net&amp;quot;;
+IsStringNullOrEmpty(checkValue);
+
+checkValue = &amp;quot;&amp;quot;;
+IsStringNullOrEmpty(checkValue);
+
+checkValue = null;
+IsStringNullOrEmpty(checkValue);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As expected, only one value triggers an output to the console:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;    Using 'IsNullOrEmpty' the value 'www.alwaysdeveloping.net' is NOT empty or null
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="pattern-matching"&gt;Pattern Matching&lt;/h2&gt;
+&lt;p&gt;However, instead of this, &lt;code&gt;string.IsNullOrEmpty&lt;/code&gt; the following &lt;code&gt;pattern matching&lt;/code&gt; syntax could be used:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;    value is { Length: &amp;gt; 0 }
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This checks if the &lt;em&gt;value&lt;/em&gt; variable has a value (not null) and has a length greater than zero.&lt;/p&gt;
+&lt;p&gt;Again, consider the following method which uses &lt;code&gt;pattern matching&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;void IsStringNullOrEmpty(string value)
+{
+    if (value is { Length: &amp;gt; 0 })
+    {
+        Console.WriteLine($&amp;quot;Using 'pattern matching' the value '{value}' is NOT empty or null&amp;quot;);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If the method is called with three different values (the same values as above):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;string checkValue = &amp;quot;www.alwaysdeveloping.net&amp;quot;;
+IsStringNullOrEmpty(checkValue);
+
+checkValue = &amp;quot;&amp;quot;;
+IsStringNullOrEmpty(checkValue);
+
+checkValue = null;
+IsStringNullOrEmpty(checkValue);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Again, as expected, the same values as when using &lt;code&gt;IsNullOrEmpty&lt;/code&gt; are picked up as valid or not:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;    Using 'pattern matching' the value 'www.alwaysdeveloping.net' is NOT empty or null
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="benchmarks"&gt;Benchmarks&lt;/h2&gt;
+&lt;p&gt;So there doesn't appear to be any difference in the output of the two methods. Next let's see how each performs using BenchmarkDotNet.&lt;/p&gt;
+&lt;p&gt;The two different methods were compared, using the same three values as above: a string with a &lt;code&gt;value&lt;/code&gt;, and &lt;code&gt;empty&lt;/code&gt; string and a &lt;code&gt;null&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;[MemoryDiagnoser]
+public class Benchmarks
+{
+    [Params(&amp;quot;alwaysdeveloping.net&amp;quot;, &amp;quot;&amp;quot;, null)]
+    public string? strValue { get; set; }
+
+    [Benchmark]
+    public void IsNullOrEmpty()
+    {
+        _ = !string.IsNullOrEmpty(strValue);
+    }
+
+    [Benchmark]
+    public void PatternMatching()
+    {
+        _ = strValue is { Length: &amp;gt; 0 };
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The results:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Method&lt;/th&gt;
+&lt;th&gt;strValue&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Median&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Allocated&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;IsNullOrEmpty&lt;/td&gt;
+&lt;td&gt;?&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.2562 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0367 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0307 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.2615 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;PatternMatching&lt;/td&gt;
+&lt;td&gt;?&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.2592 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0203 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0190 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.2627 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;IsNullOrEmpty&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0158 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0148 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0123 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0133 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;PatternMatching&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0150 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0144 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0127 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0163 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;IsNullOrEmpty&lt;/td&gt;
+&lt;td&gt;alwaysdeveloping.net&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0355 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0298 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0279 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0296 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;PatternMatching&lt;/td&gt;
+&lt;td&gt;alwaysdeveloping.net&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0093 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0113 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0105 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0056 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;From the result, when the string is &lt;code&gt;null or empty performance is pretty much equivalent&lt;/code&gt;, however when the string &lt;code&gt;has a value, pattern matching is about 4x faster&lt;/code&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;pattern matching&lt;/code&gt; syntax is definitely interesting and intriguing, however is definitely not as intuitive or informative to the developer as to what it does. If micro-optimization is required, this is definitely something to look into, however for most applications the performance improvement would be unnoticeable.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/buhakmeh/status/1545094497138360323"&gt;Khalid Abuhakmeh Tweet&lt;/a&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;?# DailyDrop ?&gt;133: 08-08-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/07/13-sql-schema-compare</id>
 		<title>Visual Studio Schema Compare</title>
@@ -975,220 +1254,6 @@ var song = context.Songs.Include(&amp;quot;Artist&amp;quot;).Single(x =&amp;gt; 
 &lt;p&gt;&lt;a href="https://twitter.com/danylaws/status/1524284247049216000"&gt;Daniel Lawson tweet&lt;/a&gt;&lt;/p&gt;
 &lt;hr /&gt;
 &lt;?# DailyDrop ?&gt;109: 04-07-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/07/01-keyset-pagination</id>
-		<title>Keyset Pagination (vs Offset pagination)</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/07/01-keyset-pagination" />
-		<updated>2022-07-01T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;In a previous daily drop post, I learn about using &lt;a href="https://alwaysdeveloping.net/03/17-sql-offset-fetch"&gt;OFFSET and FETCH&lt;/a&gt; to perform paging when retrieving data - however this is &lt;code&gt;not always a good method&lt;/code&gt; for retrieving results, especially with a large dataset.&lt;/p&gt;
-&lt;p&gt;Instead, the usage of &lt;code&gt;keyset pagination&lt;/code&gt; should be considered, as it is more performant. &lt;code&gt;Keyset pagination&lt;/code&gt; returns a subset of the dataset by using a &lt;code&gt;WHERE&lt;/code&gt; clause instead of the &lt;code&gt;OFFSET&lt;/code&gt; clause as with &lt;em&gt;offset pagination&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;There are however some limitations with the &lt;code&gt;keyset&lt;/code&gt; approach, which will be explored below.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="offset"&gt;Offset&lt;/h2&gt;
-&lt;h3 id="recap"&gt;Recap&lt;/h3&gt;
-&lt;p&gt;First, a brief recap on &lt;code&gt;offset pagination&lt;/code&gt; - this method uses the &lt;code&gt;OFFSET&lt;/code&gt; and &lt;code&gt;FETCH&lt;/code&gt; clauses to effectively skip &lt;em&gt;X&lt;/em&gt; rows, and FETCH the following &lt;em&gt;Y&lt;/em&gt; rows, ordered by the specified column(s):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;DECLARE @PageNumber INT = 5,
-        @PageSize INT = 20; 
-
--- In this example, skip 100 records
--- and return the next 20
-SELECT Id 
-FROM OffSetDemo
-ORDER BY Id ASC
-OFFSET @PageNumber * @PageSize ROWS
-FETCH NEXT @PageSize ROWS ONLY
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Based on &lt;em&gt;PageNumber&lt;/em&gt; and &lt;em&gt;PageSize&lt;/em&gt;, the appropriate number of rows and skipped, and then &lt;em&gt;PageSize&lt;/em&gt; rows retrieved.&lt;/p&gt;
-&lt;p&gt;This approach works, however might not be suitable for all use cases.&lt;/p&gt;
-&lt;h3 id="issues"&gt;Issues&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;&lt;strong&gt;Large datasets&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;One issue with the &lt;code&gt;offset pagination&lt;/code&gt; approach, is that when the &lt;code&gt;OFFSET&lt;/code&gt; clauses is used, the database is still required to go through all rows to find the correct starting record.&lt;/p&gt;
-&lt;p&gt;For example, if we have a database with 1 000 000 rows.&lt;/p&gt;
-&lt;p&gt;When the following is executed, the database still needs to go through the first 100 rows (the OFFSET value) to find the 101st row.&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT Id 
-FROM OffSetDemo
-ORDER BY Id ASC
-OFFSET 100 ROWS
-FETCH NEXT 50 ROWS ONLY
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This will probably not have a negative impact on performance, however if the following is executed:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT Id 
-FROM OffSetDemo
-ORDER BY Id ASC
-OFFSET 900 000 ROWS
-FETCH NEXT 50 ROWS ONLY
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Now the database needs to go through 900 000 rows (the OFFSET value) to find the 900 001st row, which could definitely have a performance impact.&lt;br&gt;
-&lt;br&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;&lt;strong&gt;Missing/duplicate records&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;If the dataset being used is changing while being queried, the &lt;code&gt;offset&lt;/code&gt; method could result in records either being missed, or records being duplicated as paging occurs.&lt;/p&gt;
-&lt;p&gt;With a page size of 20, when the first page is queried, the first 20 records are returned. When the second page is being queried for, the first 20 rows are skipped (with &lt;code&gt;OFFSET&lt;/code&gt;) and the next 20 rows are returned. Consider however, if between loading the first and second page, a record in the first 20 is deleted. The record which was number 21 when the first page loaded, is record 20 when the second page is loaded - this is missed when loading page 1 and page 2.&lt;/p&gt;
-&lt;p&gt;The same applied if a record is added which falls into the first 20 - the record which previously was number 20, would become record number 21, and thus would appear on page 1 and page 2.&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;code&gt;Keyset pagination&lt;/code&gt; solves aims to solve these problems (while introducing a different set of limitations).&lt;/p&gt;
-&lt;h2 id="keyset"&gt;Keyset&lt;/h2&gt;
-&lt;p&gt;With &lt;code&gt;keyset&lt;/code&gt; pagination, instead of using the &lt;code&gt;OFFSET&lt;/code&gt; clause to skip rows to determine where the returned dataset should start, a &lt;code&gt;WHERE&lt;/code&gt; clause is used to determine where the returned dataset should start.&lt;/p&gt;
-&lt;p&gt;A few examples will make it clearer - again consider a database with 1 000 000 rows, with an int &lt;em&gt;Id&lt;/em&gt; primary key column on which the data is sorted.&lt;/p&gt;
-&lt;p&gt;To retrieve the first page:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;-- OFFSET pagination
-SELECT Id 
-FROM OffSetDemo
-ORDER BY Id ASC
-OFFSET 0 ROWS
-FETCH NEXT 50 ROWS ONLY
-
--- KEYSET pagination
-SELECT TOP 50 Id 
-FROM OffSetDemo
-WHERE Id &amp;gt; 0
-ORDER BY Id ASC
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;To retrieve the 10th page (for example):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;-- OFFSET pagination
-SELECT Id 
-FROM OffSetDemo
-ORDER BY Id ASC
-OFFSET 500 ROWS -- 50 x 10
-FETCH NEXT 50 ROWS ONLY
-
--- KEYSET pagination
-SELECT TOP 50 Id 
-FROM OffSetDemo
-WHERE Id &amp;gt; 500
-ORDER BY Id ASC
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;In terms of performance, the keyset version is a lot more performant - assuming there are indexes created on the &lt;code&gt;WHERE&lt;/code&gt; clause columns. Using the WHERE clause and the index, SQL does not need to go through &lt;em&gt;X&lt;/em&gt; number rows to find the correct starting point&lt;/p&gt;
-&lt;p&gt;This also solves the problem of records being duplicated or being missed as absolute values are being used to do the lookup and not offsets. If a record in the first 20 is deleted, it will not effect the second page of 20 records, and the same applied if a new record is added to the first 20 - the second page of 20 records is unaffected.&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;Keyset pagination&lt;/code&gt; is not without its own limitations though.&lt;/p&gt;
-&lt;h3 id="limitations"&gt;Limitations&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;&lt;code&gt;No random access&lt;/code&gt; - with &lt;em&gt;keyset pagination&lt;/em&gt; one is unable to get, for example, the 15th page. To get a page of data, the last &lt;em&gt;Id&lt;/em&gt; (in the above example) of the previous page is required.&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;&lt;code&gt;Complicated multi-column filtering&lt;/code&gt; - with the above examples, the &lt;code&gt;WHERE&lt;/code&gt; clause is straightforward, but this can get complicated. Consider if the data is going to be sorted by a &lt;em&gt;CreatedDate&lt;/em&gt; column, and if two record have the same &lt;em&gt;CreatedDate&lt;/em&gt;, then they should be sorted by &lt;em&gt;Id&lt;/em&gt;.&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT TOP 50 DateCreated, Id 
-FROM OffSetDemo
-WHERE ((DateCreated &amp;gt; '2022/06/12') OR (DateCreated = '2022/06/12' AND Id &amp;gt; 500))
-ORDER BY DateCreated, Id ASC
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Depending on how many filter conditions there are, the &lt;code&gt;WHERE&lt;/code&gt; clause could become complex.&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;The choice between the two methods (and any other), as always, comes down to the specific use case.&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Need random access to any page? Use offset&lt;/li&gt;
-&lt;li&gt;Large dataset, and no random access required? Use keyset&lt;/li&gt;
-&lt;li&gt;Large dataset, but do require random access? Why not both? - offset for the random access, and keyset for the &lt;em&gt;next/previous&lt;/em&gt; functionality&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.youtube.com/watch?v=DIKH-q-gJNU"&gt;.NET Data Community Standup - Database Pagination&lt;/a&gt;&lt;/p&gt;
-&lt;!--?# DailyDrop ?--&gt;108: 01-07-2022&lt;!--?#/ DailyDrop ?--&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/06/30-for-multi-operations</id>
-		<title>Multiple statements in a for loop</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/06/30-for-multi-operations" />
-		<updated>2022-06-30T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;Not only can the &lt;em&gt;iterator section&lt;/em&gt; (the last section) in a &lt;code&gt;for loop&lt;/code&gt; contain &lt;code&gt;multiple operations&lt;/code&gt;, but it can also contain &lt;code&gt;statements&lt;/code&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="iterator-section"&gt;Iterator section&lt;/h2&gt;
-&lt;p&gt;Generally, when defining and using a &lt;code&gt;for loop&lt;/code&gt;, the &lt;em&gt;iterator section&lt;/em&gt; only increases (or decreased) the initializer variable, &lt;code&gt;loopCount&lt;/code&gt; in the below example:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;for (var loopCount = 0; loopCount &amp;lt; 100; loopCount++) 
-{ 
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This &lt;em&gt;iterator section&lt;/em&gt; &lt;code&gt;can actually contain statements, separated by a comma!&lt;/code&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="operations"&gt;Operations&lt;/h3&gt;
-&lt;p&gt;In this simple example, each loop handles its iterations with the &lt;code&gt;i&lt;/code&gt; variable, but also decreases a shared &lt;code&gt;progress&lt;/code&gt; variable representing overall progress:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var valueArray = new int[] { 100, 25, 70 };
-var progress = valueArray.Sum();
-
-for (int i = 0; i &amp;lt; valueArray[0]; i++, progress--)
-{
-    // Simulate some processing
-    Thread.Sleep(10);
-    
-    Console.Clear();
-    Console.WriteLine($&amp;quot;{progress} items remaining to be processed&amp;quot;);
-}
-
-for (int i = 0; i &amp;lt; valueArray[1]; i++, progress--)
-{
-    // Simulate some processing
-    Thread.Sleep(10);
-    
-    Console.Clear();
-    Console.WriteLine($&amp;quot;{progress} items remaining to be processed&amp;quot;);
-}
-
-for (int i = 0; i &amp;lt;= valueArray[2]; i++, progress--)
-{
-    // Simulate some processing
-    Thread.Sleep(10);
-    
-    Console.Clear();
-    Console.WriteLine($&amp;quot;{progress} items remaining to be processed&amp;quot;);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h3 id="statements"&gt;Statements&lt;/h3&gt;
-&lt;p&gt;The &lt;em&gt;iterator section&lt;/em&gt; can doesn't only have to contain operations, but can also contain statements.&lt;/p&gt;
-&lt;p&gt;For example purposes, consider logging is to be performed for each record being processed - you might do it as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;for (int i = 1; i &amp;lt;= recordsToProcess.Count(); i++)
-{
-    // log some information about the record
-    Console.WriteLine($&amp;quot;Current value of process record: {recordsToProcess[i]}&amp;quot;);
-
-    // Simulate some processing
-    Thread.Sleep(10);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The keep the code contained within the for loop block clear, one could move the log statement into the &lt;code&gt;for loop iterator section&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// logging moved to into the for loop statement
-for (int i = 1; i &amp;lt;= recordsToProcess.Count(); 
-    Console.WriteLine($&amp;quot;Current value of process record: {recordsToProcess[i]}&amp;quot;), i++)
-{
-    // actual code block is cleaner
-
-    // Simulate some processing
-    Thread.Sleep(10);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h3 id="methods"&gt;Methods&lt;/h3&gt;
-&lt;p&gt;Expanding on the previous example, methods can also be invoked in the &lt;em&gt;iterator section&lt;/em&gt; - the logging can be moved to its own method to keep the code slightly cleaner:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;for (int i = 0; i &amp;lt;= recordsToProcess.Count(); LogRecord(recordsToProcess[i]), i++)
-{
-    // Simulate some processing
-    Thread.Sleep(10);
-}
-
-// ---------------------
-
-void LogRecord(int recordValue)
-{
-    Console.WriteLine($&amp;quot;Current value of process record: {recordValue}&amp;quot;);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;This bit of knowledge does have limited practical application, and one could argue that it makes the code &lt;em&gt;harder&lt;/em&gt; to read - however it does have it's place, and I think could be especially useful in the first example to keep track of multiple &amp;quot;progress-type&amp;quot; counters.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://twitter.com/buhakmeh/status/1526275436140961805"&gt;Khalid Abuhakmeh Tweet&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;107: 30-06-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
