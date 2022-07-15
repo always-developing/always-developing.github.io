@@ -5,8 +5,278 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Thu, 14 Jul 2022 04:30:17 GMT</pubDate>
-		<lastBuildDate>Thu, 14 Jul 2022 04:30:17 GMT</lastBuildDate>
+		<pubDate>Fri, 15 Jul 2022 04:46:13 GMT</pubDate>
+		<lastBuildDate>Fri, 15 Jul 2022 04:46:13 GMT</lastBuildDate>
+		<item>
+			<title>Unit testing a protected method</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/07/15-testing-protected</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/07/15-testing-protected</guid>
+			<pubDate>Fri, 15 Jul 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;To unit test a &lt;code&gt;protected&lt;/code&gt; method of a class, inheritance and a public method wrapper can be used.&lt;/p&gt;
+&lt;p&gt;Consider a class, (called, for example, &lt;em&gt;CustomClass&lt;/em&gt;) with a protected member - a &lt;em&gt;test&lt;/em&gt; class (&lt;em&gt;TestCustomClass&lt;/em&gt;) can be created which inherits from &lt;em&gt;CustomClass&lt;/em&gt; Then a public wrapper method created on &lt;em&gt;TestCustomClass&lt;/em&gt; can be created, which in turn invokes the &lt;code&gt;protected&lt;/code&gt; method on &lt;em&gt;CustomClass&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;This pattern enables the &lt;code&gt;protected&lt;/code&gt; member to be accessed and tested through the &lt;em&gt;public test wrapper&lt;/em&gt; method.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="protected-keyword"&gt;Protected keyword&lt;/h2&gt;
+&lt;p&gt;A quick recap of the &lt;code&gt;protected&lt;/code&gt; keyword - a &lt;code&gt;protected member is accessible within its class and by derived class instances&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;For testing, the &lt;code&gt;&amp;quot;&amp;quot;derived class instance&amp;quot;&amp;quot;&lt;/code&gt; is the relevent and important piece of information.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="problem"&gt;Problem&lt;/h2&gt;
+&lt;p&gt;We have a library which performs some business logic, some of it &lt;code&gt;publicly&lt;/code&gt; exposed, and some of it &lt;code&gt;protected&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;namespace CustomLibrary;
+
+public class CustomClass
+{
+    public int PerformPublicLibraryLogic()
+    {
+        // do some processing
+        return 0;
+    }
+
+    protected int PerformProtectedLibraryLogic()
+    {
+        // do processing
+        return 0;
+    }
+
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We want to unit test these two methods, so a separate test project is created (a &lt;em&gt;MSTest&lt;/em&gt; test project in this example):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;namespace CustomApplication.UnitTest;
+
+[TestClass]
+public class CustomLibraryUnitTests
+{
+    [TestMethod]
+    // Tests the public method
+    public void TestPublic()
+    {
+        // create an instance and call the public method
+        var customclass = new CustomClass();
+        var result = customclass.PerformPublicLibraryLogic();
+
+        // check the results
+        Assert.AreEqual(0, result);
+    }
+
+    [TestMethod]
+    // Try test the protected method
+    public void TestProtectedBroken()
+    {
+        var customclass = new CustomClass();
+        // THIS WILL NOT COMPILE
+        // PerformProtectedLibraryLogic is not accessible
+        var result = customclass.PerformProtectedLibraryLogic();
+        
+        Assert.AreEqual(0, result);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The above code will &lt;code&gt;NOT compile&lt;/code&gt;, as the &lt;em&gt;PerformProtectedLibraryLogic&lt;/em&gt; is &lt;code&gt;not accessible from the test project&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="solution"&gt;Solution&lt;/h2&gt;
+&lt;p&gt;As mentioned above, the important piece of information related to the &lt;code&gt;protected&lt;/code&gt; keyword, is that a protected member is accessible from a &lt;code&gt;derived class instance&lt;/code&gt; - so let's create a derived class.&lt;/p&gt;
+&lt;p&gt;In the test project:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;namespace CustomApplication.UnitTest;
+
+// inherit from the class in question
+public class TestCustomClass : CustomClass
+{
+    // create a public method, which wraps the protected method
+    public int WrappedPerformProtectedLibraryLogic()
+    {
+        // as this code is inside a derived class, it has accessibility
+        // to the PerformProtectedLibraryLogic method
+        return PerformProtectedLibraryLogic();
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Instead of testing the protected method on the &lt;em&gt;CustomClass&lt;/em&gt; directly, it can now be tested through &lt;em&gt;public&lt;/em&gt; method on &lt;em&gt;TestCustomClass&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;[TestMethod]
+// Tests the protected method
+public void TestProtectedWorking()
+{
+    // used the TestCustomClass instead of CustomClass 
+    var customclass = new TestCustomClass();
+    // invoke the wrapper method
+    var result = customclass.WrappedPerformProtectedLibraryLogic();
+
+    Assert.AreEqual(0, result);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;What's important here is that the &lt;em&gt;TestCustomClass&lt;/em&gt; and &lt;em&gt;wrapper method&lt;/em&gt; &lt;code&gt;add no additional logic or complexity&lt;/code&gt;. We do not want the test class to interfere with the goal of testing the underlying protected method.&lt;/p&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;The technique mentioned here is not a ground-breaking revelation, but it is very useful. Personally, I've recently started writing more unit tests in earnest (after not having done any for 5+ years) this was one of the first issues I encountered, I had not experienced before, which needed to be solved.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;?# DailyDrop ?&gt;117: 15-07-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
+		<item>
+			<title>Accurate, regular scheduling with PeriodicTimer</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/08/09-periodic-timer</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/08/09-periodic-timer</guid>
+			<pubDate>Fri, 15 Jul 2022 00:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;.NET 6 introduced a new timer, the &lt;code&gt;PeriodicTimer&lt;/code&gt; which provides a more regular, accurate and reliable way to run code on a specific interval when compared with previous methods.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="task.delay"&gt;Task.Delay&lt;/h2&gt;
+&lt;p&gt;Consider a simple background process which needs to run every second:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;async Task StartJobAsync(CancellationToken token)
+{
+    while (!token.IsCancellationRequested)
+    {
+        Console.WriteLine(DateTime.Now.ToString(&amp;quot;O&amp;quot;));
+        
+        // Do work
+        
+        await Task.Delay(1000, token);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The method is started, and while a cancellation is not requested via the &lt;em&gt;CancellationToken&lt;/em&gt;, the date time is output, and &lt;em&gt;work&lt;/em&gt; is done.&lt;/p&gt;
+&lt;p&gt;Executing the above as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var cancelSource = new CancellationTokenSource();
+var jobTask = StartJobAsync(cancelSource.Token);
+
+Console.ReadKey();
+cancelSource.Cancel();
+Console.ReadKey();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Provides the following output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;2022-07-13T19:48:38.9682679+02:00
+2022-07-13T19:48:39.9743395+02:00
+2022-07-13T19:48:40.9755190+02:00
+2022-07-13T19:48:41.9913331+02:00
+2022-07-13T19:48:42.9977149+02:00
+2022-07-13T19:48:44.0130672+02:00
+2022-07-13T19:48:45.0289959+02:00
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Even without any work being done in the iteration, the loop does not iterate every second - in &lt;code&gt;second 43 no work is done at all&lt;/code&gt;. At time goes on the divergence from the start time will just grow larger.&lt;/p&gt;
+&lt;p&gt;This divergence is even more evident if a job is executed and takes longer than the interval:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;async Task StartJobAsync(CancellationToken token)
+{
+    while (!token.IsCancellationRequested)
+    {
+        Console.WriteLine(DateTime.Now.ToString(&amp;quot;O&amp;quot;));
+
+        // generate a random number between 0 and 3
+        var random = new Random();
+        if (random.Next(3) == 1)
+        {
+            // if the random number was 1, simulate a long 
+            // running job
+            Console.WriteLine(&amp;quot;Running long&amp;quot;);
+            await Task.Delay(1500);
+        }
+
+        await Task.Delay(1000, token);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Here the random &lt;em&gt;work&lt;/em&gt; being performed takes &lt;code&gt;1.5 second&lt;/code&gt;, so instead of the loop taking &lt;code&gt;1 second&lt;/code&gt;, it becomes &lt;code&gt;2.5 seconds&lt;/code&gt;. If the work being done is variable in time, then the interval also becomes varied and irregular:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;2022-07-13T19:54:18.5637838+02:00
+2022-07-13T19:54:19.6099211+02:00
+2022-07-13T19:54:20.6106040+02:00
+Running long
+2022-07-13T19:54:23.1278907+02:00
+2022-07-13T19:54:24.1338937+02:00
+2022-07-13T19:54:25.1360588+02:00
+2022-07-13T19:54:26.1519535+02:00
+Running long
+2022-07-13T19:54:28.6815481+02:00
+2022-07-13T19:54:29.6844306+02:00
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This might be sufficient, however if a more regular, consistent interval is required, look no further than the &lt;code&gt;PeriodicTimer&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="periodic-timer"&gt;Periodic Timer&lt;/h2&gt;
+&lt;p&gt;.NET 6 introduce the &lt;code&gt;PeriodicTimer&lt;/code&gt; which runs on a more regular, predictable schedule, using more modern practices:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;async Task StartJobAsync(CancellationToken token)
+{
+    // define the timer to tick every second
+    var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(1000));
+
+    // loop every tick while the token has not been cancelled
+    while (await timer.WaitForNextTickAsync() &amp;amp;&amp;amp; !token.IsCancellationRequested)
+    {
+        Console.WriteLine(DateTime.Now.ToString(&amp;quot;O&amp;quot;));
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;With the &lt;code&gt;PeriodicTimer&lt;/code&gt; the interval period is defined when the timer is declared, and the &lt;em&gt;WaitForNextTickAsync&lt;/em&gt; method will return true every interval period.&lt;/p&gt;
+&lt;p&gt;Executing the above as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var cancelSource = new CancellationTokenSource();
+var jobTask = StartJobAsync(cancelSource.Token);
+
+Console.ReadKey();
+cancelSource.Cancel();
+Console.ReadKey();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Provides the following output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;2022-07-14T07:23:29.1553510+02:00
+2022-07-14T07:23:30.1430203+02:00
+2022-07-14T07:23:31.1502777+02:00
+2022-07-14T07:23:32.1522676+02:00
+2022-07-14T07:23:33.1541686+02:00
+2022-07-14T07:23:34.1603689+02:00
+2022-07-14T07:23:35.1475597+02:00
+2022-07-14T07:23:36.1498775+02:00
+2022-07-14T07:23:37.1561782+02:00
+2022-07-14T07:23:38.1425797+02:00
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;There are variations on the milliseconds, but the &lt;code&gt;PeriodicTimer&lt;/code&gt; will adjust to keep it as regular as possible.&lt;/p&gt;
+&lt;p&gt;When introducing &lt;em&gt;work&lt;/em&gt; which exceeds the interval period, the &lt;code&gt;PeriodTimer&lt;/code&gt; will still try to adjust to keep the ticks as regular as it can:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;async Task StartJobAsync(CancellationToken token)
+{
+    var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(1000));
+
+    while (await timer.WaitForNextTickAsync() &amp;amp;&amp;amp; !token.IsCancellationRequested)
+    {
+        Console.WriteLine(DateTime.Now.ToString(&amp;quot;O&amp;quot;));
+
+        // randomly perform some work which takes 1.5 seconds
+        var random = new Random();
+        if (random.Next(3) == 1)
+        {
+            Console.WriteLine(&amp;quot;Running long&amp;quot;);
+            await Task.Delay(1500);
+        }
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;From the results one can see that if a tick gets skipped due to the work running long, the next tick will &lt;code&gt;align with the starting tick&lt;/code&gt; and not when the previous tick completed:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;2022-07-14T07:27:22.2437461+02:00
+Running long
+2022-07-14T07:27:23.7708051+02:00
+2022-07-14T07:27:24.2487034+02:00
+2022-07-14T07:27:25.2491709+02:00
+Running long
+2022-07-14T07:27:26.7629854+02:00
+2022-07-14T07:27:27.2392793+02:00
+Running long
+2022-07-14T07:27:28.7631133+02:00
+2022-07-14T07:27:29.2430825+02:00
+Running long
+2022-07-14T07:27:30.7529474+02:00
+2022-07-14T07:27:31.2606374+02:00
+Running long
+2022-07-14T07:27:32.7737681+02:00
+2022-07-14T07:27:33.2500507+02:00
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The timer will always execute on a regular, predictable schedule, even if the work runs long.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;Periodic Timer&lt;/code&gt; is a great addition to the ecosystem. Reliable and easy to use, for simple background processing, this should be the go-to mechanism going forward. For more complex scheduling and processing, something like &lt;a href="https://www.hangfire.io/"&gt;Hangfire&lt;/a&gt; will still have its place for a while to come.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://www.youtube.com/watch?v=J4JL4zR_l-0"&gt;Scheduling repeating tasks with .NET 6’s NEW Timer&lt;/a&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;?# DailyDrop ?&gt;134: 09-08-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Entity Framework DbContext Pooling</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/07/14-dbcontext-pooling</link>
@@ -119,172 +389,6 @@ public Song WithContextPooling()
 &lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/ef/core/performance/advanced-performance-topics?tabs=with-di%2Cwith-constant#dbcontext-pooling"&gt;DbContext pooling&lt;/a&gt;&lt;/p&gt;
 &lt;hr /&gt;
 &lt;?# DailyDrop ?&gt;116: 14-07-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>String null or empty using pattern matching</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/08/08-length-pattern-matching</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/08/08-length-pattern-matching</guid>
-			<pubDate>Thu, 14 Jul 2022 00:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;&lt;code&gt;Pattern matching&lt;/code&gt; syntax can be used to check the nullability and length of a string, instead of the traditional &lt;code&gt;string.IsNullOrEmpty&lt;/code&gt; method - with interesting (and promising) performance benchmarks!&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="isnullorempty"&gt;IsNullOrEmpty&lt;/h2&gt;
-&lt;p&gt;Usually the &lt;code&gt;string.IsNullOrEmpty&lt;/code&gt; method is used to check if a specific string has a value (other than null or empty) - a string is passed in and a bool value is returned.&lt;/p&gt;
-&lt;p&gt;Consider the following method which uses &lt;code&gt;string.IsNullOrEmpty&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;void IsStringNullOrEmpty(string value)
-{ 
-    if (!string.IsNullOrEmpty(value))
-    {
-        Console.WriteLine($&amp;quot;Using 'IsNullOrEmpty' the '{value}' is NOT empty or null&amp;quot;);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;If the method is called with three different values:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;string checkValue = &amp;quot;www.alwaysdeveloping.net&amp;quot;;
-IsStringNullOrEmpty(checkValue);
-
-checkValue = &amp;quot;&amp;quot;;
-IsStringNullOrEmpty(checkValue);
-
-checkValue = null;
-IsStringNullOrEmpty(checkValue);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;As expected, only one value triggers an output to the console:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;    Using 'IsNullOrEmpty' the value 'www.alwaysdeveloping.net' is NOT empty or null
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="pattern-matching"&gt;Pattern Matching&lt;/h2&gt;
-&lt;p&gt;However, instead of this, &lt;code&gt;string.IsNullOrEmpty&lt;/code&gt; the following &lt;code&gt;pattern matching&lt;/code&gt; syntax could be used:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;    value is { Length: &amp;gt; 0 }
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This checks if the &lt;em&gt;value&lt;/em&gt; variable has a value (not null) and has a length greater than zero.&lt;/p&gt;
-&lt;p&gt;Again, consider the following method which uses &lt;code&gt;pattern matching&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;void IsStringNullOrEmpty(string value)
-{
-    if (value is { Length: &amp;gt; 0 })
-    {
-        Console.WriteLine($&amp;quot;Using 'pattern matching' the value '{value}' is NOT empty or null&amp;quot;);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;If the method is called with three different values (the same values as above):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;string checkValue = &amp;quot;www.alwaysdeveloping.net&amp;quot;;
-IsStringNullOrEmpty(checkValue);
-
-checkValue = &amp;quot;&amp;quot;;
-IsStringNullOrEmpty(checkValue);
-
-checkValue = null;
-IsStringNullOrEmpty(checkValue);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Again, as expected, the same values as when using &lt;code&gt;IsNullOrEmpty&lt;/code&gt; are picked up as valid or not:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;    Using 'pattern matching' the value 'www.alwaysdeveloping.net' is NOT empty or null
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="benchmarks"&gt;Benchmarks&lt;/h2&gt;
-&lt;p&gt;So there doesn't appear to be any difference in the output of the two methods. Next let's see how each performs using BenchmarkDotNet.&lt;/p&gt;
-&lt;p&gt;The two different methods were compared, using the same three values as above: a string with a &lt;code&gt;value&lt;/code&gt;, and &lt;code&gt;empty&lt;/code&gt; string and a &lt;code&gt;null&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;[MemoryDiagnoser]
-public class Benchmarks
-{
-    [Params(&amp;quot;alwaysdeveloping.net&amp;quot;, &amp;quot;&amp;quot;, null)]
-    public string? strValue { get; set; }
-
-    [Benchmark]
-    public void IsNullOrEmpty()
-    {
-        _ = !string.IsNullOrEmpty(strValue);
-    }
-
-    [Benchmark]
-    public void PatternMatching()
-    {
-        _ = strValue is { Length: &amp;gt; 0 };
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The results:&lt;/p&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;Method&lt;/th&gt;
-&lt;th&gt;strValue&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Median&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Allocated&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;IsNullOrEmpty&lt;/td&gt;
-&lt;td&gt;?&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.2562 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0367 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0307 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.2615 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;PatternMatching&lt;/td&gt;
-&lt;td&gt;?&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.2592 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0203 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0190 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.2627 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;IsNullOrEmpty&lt;/td&gt;
-&lt;td&gt;&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0158 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0148 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0123 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0133 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;PatternMatching&lt;/td&gt;
-&lt;td&gt;&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0150 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0144 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0127 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0163 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;IsNullOrEmpty&lt;/td&gt;
-&lt;td&gt;alwaysdeveloping.net&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0355 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0298 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0279 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0296 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;PatternMatching&lt;/td&gt;
-&lt;td&gt;alwaysdeveloping.net&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0093 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0113 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0105 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0056 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;From the result, when the string is &lt;code&gt;null or empty performance is pretty much equivalent&lt;/code&gt;, however when the string &lt;code&gt;has a value, pattern matching is about 4x faster&lt;/code&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;pattern matching&lt;/code&gt; syntax is definitely interesting and intriguing, however is definitely not as intuitive or informative to the developer as to what it does. If micro-optimization is required, this is definitely something to look into, however for most applications the performance improvement would be unnoticeable.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://twitter.com/buhakmeh/status/1545094497138360323"&gt;Khalid Abuhakmeh Tweet&lt;/a&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;?# DailyDrop ?&gt;133: 08-08-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
@@ -1128,143 +1232,6 @@ ServiceCredentials:
 &lt;p&gt;&lt;a href="https://dunnhq.com/posts/2022/viewing-configuration-values/"&gt;Viewing .NET configuration values&lt;/a&gt;&lt;/p&gt;
 &lt;hr /&gt;
 &lt;?# DailyDrop ?&gt;110: 05-07-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>EF Find vs First performance </title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/07/04-ef-find-vs-single</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/07/04-ef-find-vs-single</guid>
-			<pubDate>Mon, 04 Jul 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;When retrieving a single record from the database using Entity Framework, the &lt;code&gt;Single (or SingleOrDefault)&lt;/code&gt; method can be used - however the &lt;code&gt;Find&lt;/code&gt; method on the DbSet is potentially more efficient, however it comes with some limitations.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="first"&gt;First&lt;/h2&gt;
-&lt;p&gt;The first method is using &lt;code&gt;First (or FirstOrDefault)&lt;/code&gt; - this is an extension method on &lt;em&gt;Queryable&lt;/em&gt; (an important factor when comparing it to the &lt;em&gt;Find&lt;/em&gt; method)&lt;/p&gt;
-&lt;p&gt;As &lt;em&gt;DbSet&lt;/em&gt; implement &lt;em&gt;IQueryable&lt;/em&gt;, this method can be use directly on the &lt;em&gt;DbSet&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;Assuming we have a &lt;em&gt;DbContext&lt;/em&gt; with a &amp;quot;Song&amp;quot; &lt;em&gt;DbSet&lt;/em&gt;, a single record can be retrieved as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;using var context = new DemoContext();
-
-// using Single
-var song = context.Songs.Single(x =&amp;gt; x.Id == 43);
-
-// using SingleOrDefault
-var song2 = context.Songs.SingleOrDefault(x =&amp;gt; x.Id == 43);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="find"&gt;Find&lt;/h2&gt;
-&lt;p&gt;The next method is using &lt;code&gt;Find&lt;/code&gt; - this is an extension method on &lt;em&gt;DBset&lt;/em&gt; itself.&lt;/p&gt;
-&lt;p&gt;Again, assuming we have a &lt;em&gt;DbContext&lt;/em&gt; with a &amp;quot;Song&amp;quot; &lt;em&gt;DbSet&lt;/em&gt;, a record can be retrieved as follows using &lt;em&gt;Find&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;using var context = new DemoContext();
-
-var song = context.Songs.Find(43);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h3 id="limitation"&gt;Limitation&lt;/h3&gt;
-&lt;p&gt;As mentioned above, having &lt;code&gt;Find&lt;/code&gt; as an extension method on &lt;strong&gt;DbSet&lt;/strong&gt; does limit its usage. It cannot be used in conjunction with other &lt;em&gt;IQueryable&lt;/em&gt; extension methods.&lt;/p&gt;
-&lt;p&gt;The following examples are &lt;strong&gt;NOT&lt;/strong&gt; valid and will &lt;strong&gt;NOT&lt;/strong&gt; compile:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// Find() returns a 'Song' and as such Include()
-// cannot be used in this example
-var song = context.Songs.Find(43).Include(&amp;quot;Artist&amp;quot;);
-
-// Include() returns a 'IQueryable' and as such Find()
-// cannot be used in this example
-var song2 = context.Songs.Include(&amp;quot;Artist&amp;quot;).Find(43);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;However, the following using &lt;code&gt;Single&lt;/code&gt; &lt;strong&gt;is VALID&lt;/strong&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// Include() returns a 'IQueryable' and as Single is
-// an extension method on 'IQueryable' it CAN be used
-var song = context.Songs.Include(&amp;quot;Artist&amp;quot;).Single(x =&amp;gt; x.Id == 43);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="benchmark"&gt;Benchmark&lt;/h2&gt;
-&lt;p&gt;The different methods where benchmarked, with a:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;Shared DbContext&lt;/code&gt; - defined in the constructor once, and reused&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;Single-use DbContext&lt;/code&gt; - a new DbContext is declared for each database call&lt;/li&gt;
-&lt;/ul&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;Method&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Median&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Ratio&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;RatioSD&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;FindSharedContext&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;14.93 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.845 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;8.071 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;12.00 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.14&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.07&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;SingleDefaultSharedContext&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;123.26 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.294 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.146 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;123.22 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.98&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.05&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;SingleSharedContext&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;123.78 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.320 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;4.242 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;122.09 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.00&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;FindOneUseContext&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;488.81 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;9.539 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;10.207 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;487.06 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;3.91&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.20&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;SingleDefaultOneUseContext&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;261.49 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;5.098 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;5.236 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;260.91 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.09&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.11&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;SingleOneUseContext&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;259.93 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;5.166 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;10.317 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;257.45 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.11&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.11&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;br&gt;
-&lt;p&gt;The &lt;em&gt;Find&lt;/em&gt; method is &lt;code&gt;substantially quicker&lt;/code&gt; when reusing the DbContext (as one should).&lt;/p&gt;
-&lt;p&gt;However, interestingly, with a single-use DbContext, the &lt;em&gt;Single/SingleOrDefault&lt;/em&gt; method is almost twice as quick as the &lt;em&gt;Find&lt;/em&gt; method.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;While &lt;em&gt;Find&lt;/em&gt; is approximately &lt;code&gt;7 times&lt;/code&gt; faster than the equivalent &lt;em&gt;Single&lt;/em&gt; method, it does come with considerable limitations. If performance is critical, it might be worth finding a way to work around the limitations - however keep in mind that the differences are being measured in microseconds, so the performance gain might not be worth the potential additional effort.&lt;/p&gt;
-&lt;p&gt;Be aware of the performance differences, and the limitations - and for each specific use case, apply the more appropriate technique.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://twitter.com/danylaws/status/1524284247049216000"&gt;Daniel Lawson tweet&lt;/a&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;?# DailyDrop ?&gt;109: 04-07-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
