@@ -7,9 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <meta name="description" content="always learning | always growing">
 
-    <title>Always Developing - Accurate, regular scheduling with PeriodicTimer</title>
+    <title>Always Developing - Tuples for class value equality</title>
 
-    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/08/09-periodic-timer">
+    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/07/18-tuple-equality">
 
             <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
             <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
@@ -18,9 +18,9 @@
     <meta name="msapplication-tooltip" content="Always Developing" />
     <meta name="msapplication-starturl" content="/" />
 
-    <meta property="og:title" content="Always Developing - Accurate, regular scheduling with PeriodicTimer" />
+    <meta property="og:title" content="Always Developing - Tuples for class value equality" />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/08/09-periodic-timer" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/07/18-tuple-equality" />
 
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
@@ -104,14 +104,14 @@
             <div class="col-md-10">
                 <div class="post-heading">
                     <h1>
-                        Accurate, regular scheduling with PeriodicTimer
+                        Tuples for class value equality
                     </h1>
-                            <h2 class="subheading">Using PeriodicTimer to build an accurate, reliable background service</h2>
+                            <h2 class="subheading">Using a tuple to check the equality of two class instances</h2>
                         <p class="post-meta">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
                                 <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
                                 <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
-                            </svg> Published on Friday, 15 July 2022
+                            </svg> Published on Monday, 18 July 2022
                         </p>
                 </div>
             </div>
@@ -130,158 +130,120 @@
 </div>
 
                         <h2 id="daily-knowledge-drop">Daily Knowledge Drop</h2>
-<p>.NET 6 introduced a new timer, the <code>PeriodicTimer</code> which provides a more regular, accurate and reliable way to run code on a specific interval when compared with previous methods.</p>
+<p>A <code>tuple</code> can be used to check the <code>value equality</code> of two instances of the same class.</p>
+<p>When comparing classes, the equality operator (<code>==</code>) will check that the two instances are actually the same instance, not that the values of the two instances are the same. There are a <a href="https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/statements-expressions-operators/how-to-define-value-equality-for-a-type">number of different techniques</a> to define value equality for a class, but they all ultimately have the same underlying logic - each property of the instances being compared need to individually be compared.</p>
+<p>The usage of <code>tuples</code> can be used to simplify this comparison.</p>
 <hr />
-<h2 id="task.delay">Task.Delay</h2>
-<p>Consider a simple background process which needs to run every second:</p>
-<pre><code class="language-csharp">async Task StartJobAsync(CancellationToken token)
+<h2 id="setup">Setup</h2>
+<p>In this post we will be using a <code>Song</code> class, which has three properties:</p>
+<pre><code class="language-csharp">public class Song
 {
-    while (!token.IsCancellationRequested)
-    {
-        Console.WriteLine(DateTime.Now.ToString(&quot;O&quot;));
-        
-        // Do work
-        
-        await Task.Delay(1000, token);
-    }
+    public string Name { get; init; }
+
+    public string Artist { get; init; }
+
+    public int LengthInSeconds { get; init; }
 }
 </code></pre>
-<p>The method is started, and while a cancellation is not requested via the <em>CancellationToken</em>, the date time is output, and <em>work</em> is done.</p>
-<p>Executing the above as follows:</p>
-<pre><code class="language-csharp">var cancelSource = new CancellationTokenSource();
-var jobTask = StartJobAsync(cancelSource.Token);
-
-Console.ReadKey();
-cancelSource.Cancel();
-Console.ReadKey();
-</code></pre>
-<p>Provides the following output:</p>
-<pre><code class="language-terminal">2022-07-13T19:48:38.9682679+02:00
-2022-07-13T19:48:39.9743395+02:00
-2022-07-13T19:48:40.9755190+02:00
-2022-07-13T19:48:41.9913331+02:00
-2022-07-13T19:48:42.9977149+02:00
-2022-07-13T19:48:44.0130672+02:00
-2022-07-13T19:48:45.0289959+02:00
-</code></pre>
-<p>Even without any work being done in the iteration, the loop does not iterate every second - in <code>second 43 no work is done at all</code>. At time goes on the divergence from the start time will just grow larger.</p>
-<p>This divergence is even more evident if a job is executed and takes longer than the interval:</p>
-<pre><code class="language-csharp">async Task StartJobAsync(CancellationToken token)
-{
-    while (!token.IsCancellationRequested)
-    {
-        Console.WriteLine(DateTime.Now.ToString(&quot;O&quot;));
-
-        // generate a random number between 0 and 3
-        var random = new Random();
-        if (random.Next(3) == 1)
-        {
-            // if the random number was 1, simulate a long 
-            // running job
-            Console.WriteLine(&quot;Running long&quot;);
-            await Task.Delay(1500);
-        }
-
-        await Task.Delay(1000, token);
-    }
-}
-</code></pre>
-<p>Here the random <em>work</em> being performed takes <code>1.5 second</code>, so instead of the loop taking <code>1 second</code>, it becomes <code>2.5 seconds</code>. If the work being done is variable in time, then the interval also becomes varied and irregular:</p>
-<pre><code class="language-terminal">2022-07-13T19:54:18.5637838+02:00
-2022-07-13T19:54:19.6099211+02:00
-2022-07-13T19:54:20.6106040+02:00
-Running long
-2022-07-13T19:54:23.1278907+02:00
-2022-07-13T19:54:24.1338937+02:00
-2022-07-13T19:54:25.1360588+02:00
-2022-07-13T19:54:26.1519535+02:00
-Running long
-2022-07-13T19:54:28.6815481+02:00
-2022-07-13T19:54:29.6844306+02:00
-</code></pre>
-<p>This might be sufficient, however if a more regular, consistent interval is required, look no further than the <code>PeriodicTimer</code>.</p>
+<p>For two <em>Song</em> instances to be equal, each of the three properties for the two instances need to be equal.</p>
 <hr />
-<h2 id="periodic-timer">Periodic Timer</h2>
-<p>.NET 6 introduce the <code>PeriodicTimer</code> which runs on a more regular, predictable schedule, using more modern practices:</p>
-<pre><code class="language-csharp">async Task StartJobAsync(CancellationToken token)
+<h2 id="equality">Equality</h2>
+<h3 id="equality-operator">Equality operator</h3>
+<p>As mentioned above, using the default equality operator for classes will test if the two instances are actually the same instance, not check the values of the two instances:</p>
+<pre><code class="language-csharp">
+// two Song instances, both with the same values
+var song = new Song
 {
-    // define the timer to tick every second
-    var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(1000));
+    Artist = &quot;Foo Fighters&quot;,
+    Name = &quot;Everlong&quot;,
+    LengthInSeconds = 250
+};
 
-    // loop every tick while the token has not been cancelled
-    while (await timer.WaitForNextTickAsync() &amp;&amp; !token.IsCancellationRequested)
-    {
-        Console.WriteLine(DateTime.Now.ToString(&quot;O&quot;));
-    }
-}
-</code></pre>
-<p>With the <code>PeriodicTimer</code> the interval period is defined when the timer is declared, and the <em>WaitForNextTickAsync</em> method will return true every interval period.</p>
-<p>Executing the above as follows:</p>
-<pre><code class="language-csharp">var cancelSource = new CancellationTokenSource();
-var jobTask = StartJobAsync(cancelSource.Token);
-
-Console.ReadKey();
-cancelSource.Cancel();
-Console.ReadKey();
-</code></pre>
-<p>Provides the following output:</p>
-<pre><code class="language-terminal">2022-07-14T07:23:29.1553510+02:00
-2022-07-14T07:23:30.1430203+02:00
-2022-07-14T07:23:31.1502777+02:00
-2022-07-14T07:23:32.1522676+02:00
-2022-07-14T07:23:33.1541686+02:00
-2022-07-14T07:23:34.1603689+02:00
-2022-07-14T07:23:35.1475597+02:00
-2022-07-14T07:23:36.1498775+02:00
-2022-07-14T07:23:37.1561782+02:00
-2022-07-14T07:23:38.1425797+02:00
-</code></pre>
-<p>There are variations on the milliseconds, but the <code>PeriodicTimer</code> will adjust to keep it as regular as possible.</p>
-<p>When introducing <em>work</em> which exceeds the interval period, the <code>PeriodTimer</code> will still try to adjust to keep the ticks as regular as it can:</p>
-<pre><code class="language-csharp">async Task StartJobAsync(CancellationToken token)
+var song1 = new Song
 {
-    var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(1000));
+    Artist = &quot;Foo Fighters&quot;,
+    Name = &quot;Everlong&quot;,
+    LengthInSeconds = 250
+};
 
-    while (await timer.WaitForNextTickAsync() &amp;&amp; !token.IsCancellationRequested)
-    {
-        Console.WriteLine(DateTime.Now.ToString(&quot;O&quot;));
+// a 3rd instance, set to the first instance
+var song2 = song;
 
-        // randomly perform some work which takes 1.5 seconds
-        var random = new Random();
-        if (random.Next(3) == 1)
-        {
-            Console.WriteLine(&quot;Running long&quot;);
-            await Task.Delay(1500);
-        }
-    }
-}
+// comparing two different instances
+Console.WriteLine(song == song1);
+// comparing two instances, which are the &quot;same&quot; instance
+Console.WriteLine(song == song2);
+
+// comparing two different instances
+Console.WriteLine(song.Equals(song1));
+// comparing two instances, which are the &quot;same&quot; instance
+Console.WriteLine(song.Equals(song2));
+
 </code></pre>
-<p>From the results one can see that if a tick gets skipped due to the work running long, the next tick will <code>align with the starting tick</code> and not when the previous tick completed:</p>
-<pre><code class="language-terminal">2022-07-14T07:27:22.2437461+02:00
-Running long
-2022-07-14T07:27:23.7708051+02:00
-2022-07-14T07:27:24.2487034+02:00
-2022-07-14T07:27:25.2491709+02:00
-Running long
-2022-07-14T07:27:26.7629854+02:00
-2022-07-14T07:27:27.2392793+02:00
-Running long
-2022-07-14T07:27:28.7631133+02:00
-2022-07-14T07:27:29.2430825+02:00
-Running long
-2022-07-14T07:27:30.7529474+02:00
-2022-07-14T07:27:31.2606374+02:00
-Running long
-2022-07-14T07:27:32.7737681+02:00
-2022-07-14T07:27:33.2500507+02:00
+<p>The output of the above is:</p>
+<pre><code class="language-terminal">False
+True
+False
+True
 </code></pre>
-<p>The timer will always execute on a regular, predictable schedule, even if the work runs long.</p>
+<hr />
+<h3 id="manual-comparison">Manual comparison</h3>
+<p>To compare a value comparison of the two classes (instead of using one of <a href="https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/statements-expressions-operators/how-to-define-value-equality-for-a-type">these techniques</a>) we are going to write a method to do the comparison:</p>
+<pre><code class="language-csharp">bool Compare(Song s1, Song s2) =&gt;
+    s1.Artist == s2.Artist &amp;&amp; // compare artist
+    s1.Name == s2.Name &amp;&amp;  // and Name
+    s1.LengthInSeconds == s2.LengthInSeconds; // and song Length
+</code></pre>
+<p>Only if all three properties are equal, are the two instances equal:</p>
+<pre><code class="language-csharp">Console.WriteLine(Compare(song, song1));
+Console.WriteLine(Compare(song, song2));
+Console.WriteLine(Compare(song1, song2));
+</code></pre>
+<p>The output being:</p>
+<pre><code class="language-terminal">True
+True
+True
+</code></pre>
+<p>The above will function correctly, adequately doing a value comparison of the two instance - however a simpler and cleaner technique is to use a <code>tuple</code> for the value comparison.</p>
+<hr />
+<h3 id="tuple-equality">Tuple equality</h3>
+<p>One feature of the <code>Tuple</code> is that using the equality operator on it <strong>does</strong> compare the values:</p>
+<pre><code class="language-csharp">var tuple = (1, 2, 3);
+var tuple1 = (1, 2, 3);
+
+Console.WriteLine(tuple == tuple1);
+Console.WriteLine(tuple.Equals(tuple1));
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-terminal">True
+True
+</code></pre>
+<p>This fact can be leverage to compare two class instances by <code>creating tuples with the class values, and then comparing the tuples!</code></p>
+<hr />
+<h3 id="tuple-comparison">Tuple comparison</h3>
+<p>If we rework the <em>Compare</em> method defined above, to use a <code>Tuple</code> instead:</p>
+<pre><code class="language-csharp">// Use the properties of each instance to create a tuple
+// and compare the two tuples
+bool CompareTuple(Song s1, Song s2) =&gt;
+    (s1.Artist, s1.Name, s1.LengthInSeconds) == (s2.Artist, s2.Name, s2.LengthInSeconds);
+</code></pre>
+<p>Executing the same comparisons as above using the new method:</p>
+<pre><code class="language-csharp">Console.WriteLine(CompareTuple(song, song1));
+Console.WriteLine(CompareTuple(song, song2));
+Console.WriteLine(CompareTuple(song1, song1));
+</code></pre>
+<p>Yields the following output:</p>
+<pre><code class="language-terminal">True
+True
+True
+</code></pre>
 <hr />
 <h2 id="notes">Notes</h2>
-<p>The <code>Periodic Timer</code> is a great addition to the ecosystem. Reliable and easy to use, for simple background processing, this should be the go-to mechanism going forward. For more complex scheduling and processing, something like <a href="https://www.hangfire.io/">Hangfire</a> will still have its place for a while to come.</p>
+<p>While the results of the two methods are the same, the tuple version is more <em>concise, cleaner and less prone to developer error</em>, especially if there are a large number of fields being compare.</p>
+<p>The tuple method can also be used in conjunction with the <a href="https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/statements-expressions-operators/how-to-define-value-equality-for-a-type">techniques already mentioned</a> - for example by overriding the <em>equals operator</em> (==) and performing the tuples equality check in that method.</p>
 <hr />
 <h2 id="references">References</h2>
-<p><a href="https://www.youtube.com/watch?v=J4JL4zR_l-0">Scheduling repeating tasks with .NET 6’s NEW Timer</a></p>
+<p><a href="https://www.youtube.com/watch?v=aUbXGs7YTGo&amp;t=569s">Change your habits: Modern techniques for modern C# - Bill Wagner</a></p>
 <hr />
 
 <blockquote class="daily-drop">
@@ -295,7 +257,7 @@ Running long
             </svg>
         </div>
         <div class="drop-header">
-            Daily Drop 134: 09-08-2022
+            Daily Drop 118: 18-07-2022
         </div>
         <div>
             <br>At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br> It could be anything - some.NET / C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
@@ -309,9 +271,9 @@ Running long
 <div>
             <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
             <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
-            <a role="button" href="/tags/timer" class="badge badge-light"> timer</a>
-            <a role="button" href="/tags/schedule" class="badge badge-light"> schedule</a>
-            <a role="button" href="/tags/interval" class="badge badge-light"> interval</a>
+            <a role="button" href="/tags/equality" class="badge badge-light"> equality</a>
+            <a role="button" href="/tags/equals" class="badge badge-light"> equals</a>
+            <a role="button" href="/tags/tuple" class="badge badge-light"> tuple</a>
 </div>
                     </div>
                     <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
@@ -321,8 +283,14 @@ Running long
             <h3 class="no-anchor">On This Page</h3>
             <ul>
         <li><a href="#daily-knowledge-drop">Daily Knowledge Drop</a></li>
-        <li><a href="#task.delay">Task.Delay</a></li>
-        <li><a href="#periodic-timer">Periodic Timer</a></li>
+        <li><a href="#setup">Setup</a></li>
+        <li><a href="#equality">Equality</a></li>
+            <ul>
+        <li><a href="#equality-operator">Equality operator</a></li>
+        <li><a href="#manual-comparison">Manual comparison</a></li>
+        <li><a href="#tuple-equality">Tuple equality</a></li>
+        <li><a href="#tuple-comparison">Tuple comparison</a></li>
+            </ul>
         <li><a href="#notes">Notes</a></li>
         <li><a href="#references">References</a></li>
             </ul>

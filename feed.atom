@@ -4,8 +4,259 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-07-15T04:46:13Z</updated>
+	<updated>2022-07-18T04:30:25Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/07/18-tuple-equality</id>
+		<title>Tuples for class value equality</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/07/18-tuple-equality" />
+		<updated>2022-07-18T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;A &lt;code&gt;tuple&lt;/code&gt; can be used to check the &lt;code&gt;value equality&lt;/code&gt; of two instances of the same class.&lt;/p&gt;
+&lt;p&gt;When comparing classes, the equality operator (&lt;code&gt;==&lt;/code&gt;) will check that the two instances are actually the same instance, not that the values of the two instances are the same. There are a &lt;a href="https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/statements-expressions-operators/how-to-define-value-equality-for-a-type"&gt;number of different techniques&lt;/a&gt; to define value equality for a class, but they all ultimately have the same underlying logic - each property of the instances being compared need to individually be compared.&lt;/p&gt;
+&lt;p&gt;The usage of &lt;code&gt;tuples&lt;/code&gt; can be used to simplify this comparison.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="setup"&gt;Setup&lt;/h2&gt;
+&lt;p&gt;In this post we will be using a &lt;code&gt;Song&lt;/code&gt; class, which has three properties:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Song
+{
+    public string Name { get; init; }
+
+    public string Artist { get; init; }
+
+    public int LengthInSeconds { get; init; }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;For two &lt;em&gt;Song&lt;/em&gt; instances to be equal, each of the three properties for the two instances need to be equal.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="equality"&gt;Equality&lt;/h2&gt;
+&lt;h3 id="equality-operator"&gt;Equality operator&lt;/h3&gt;
+&lt;p&gt;As mentioned above, using the default equality operator for classes will test if the two instances are actually the same instance, not check the values of the two instances:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;
+// two Song instances, both with the same values
+var song = new Song
+{
+    Artist = &amp;quot;Foo Fighters&amp;quot;,
+    Name = &amp;quot;Everlong&amp;quot;,
+    LengthInSeconds = 250
+};
+
+var song1 = new Song
+{
+    Artist = &amp;quot;Foo Fighters&amp;quot;,
+    Name = &amp;quot;Everlong&amp;quot;,
+    LengthInSeconds = 250
+};
+
+// a 3rd instance, set to the first instance
+var song2 = song;
+
+// comparing two different instances
+Console.WriteLine(song == song1);
+// comparing two instances, which are the &amp;quot;same&amp;quot; instance
+Console.WriteLine(song == song2);
+
+// comparing two different instances
+Console.WriteLine(song.Equals(song1));
+// comparing two instances, which are the &amp;quot;same&amp;quot; instance
+Console.WriteLine(song.Equals(song2));
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output of the above is:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;False
+True
+False
+True
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="manual-comparison"&gt;Manual comparison&lt;/h3&gt;
+&lt;p&gt;To compare a value comparison of the two classes (instead of using one of &lt;a href="https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/statements-expressions-operators/how-to-define-value-equality-for-a-type"&gt;these techniques&lt;/a&gt;) we are going to write a method to do the comparison:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;bool Compare(Song s1, Song s2) =&amp;gt;
+    s1.Artist == s2.Artist &amp;amp;&amp;amp; // compare artist
+    s1.Name == s2.Name &amp;amp;&amp;amp;  // and Name
+    s1.LengthInSeconds == s2.LengthInSeconds; // and song Length
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Only if all three properties are equal, are the two instances equal:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;Console.WriteLine(Compare(song, song1));
+Console.WriteLine(Compare(song, song2));
+Console.WriteLine(Compare(song1, song2));
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output being:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;True
+True
+True
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The above will function correctly, adequately doing a value comparison of the two instance - however a simpler and cleaner technique is to use a &lt;code&gt;tuple&lt;/code&gt; for the value comparison.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="tuple-equality"&gt;Tuple equality&lt;/h3&gt;
+&lt;p&gt;One feature of the &lt;code&gt;Tuple&lt;/code&gt; is that using the equality operator on it &lt;strong&gt;does&lt;/strong&gt; compare the values:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var tuple = (1, 2, 3);
+var tuple1 = (1, 2, 3);
+
+Console.WriteLine(tuple == tuple1);
+Console.WriteLine(tuple.Equals(tuple1));
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;True
+True
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This fact can be leverage to compare two class instances by &lt;code&gt;creating tuples with the class values, and then comparing the tuples!&lt;/code&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="tuple-comparison"&gt;Tuple comparison&lt;/h3&gt;
+&lt;p&gt;If we rework the &lt;em&gt;Compare&lt;/em&gt; method defined above, to use a &lt;code&gt;Tuple&lt;/code&gt; instead:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// Use the properties of each instance to create a tuple
+// and compare the two tuples
+bool CompareTuple(Song s1, Song s2) =&amp;gt;
+    (s1.Artist, s1.Name, s1.LengthInSeconds) == (s2.Artist, s2.Name, s2.LengthInSeconds);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Executing the same comparisons as above using the new method:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;Console.WriteLine(CompareTuple(song, song1));
+Console.WriteLine(CompareTuple(song, song2));
+Console.WriteLine(CompareTuple(song1, song1));
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Yields the following output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;True
+True
+True
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;While the results of the two methods are the same, the tuple version is more &lt;em&gt;concise, cleaner and less prone to developer error&lt;/em&gt;, especially if there are a large number of fields being compare.&lt;/p&gt;
+&lt;p&gt;The tuple method can also be used in conjunction with the &lt;a href="https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/statements-expressions-operators/how-to-define-value-equality-for-a-type"&gt;techniques already mentioned&lt;/a&gt; - for example by overriding the &lt;em&gt;equals operator&lt;/em&gt; (==) and performing the tuples equality check in that method.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://www.youtube.com/watch?v=aUbXGs7YTGo&amp;amp;t=569s"&gt;Change your habits: Modern techniques for modern C# - Bill Wagner&lt;/a&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;?# DailyDrop ?&gt;118: 18-07-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/08/15-pattern-keywords</id>
+		<title>Complex Pattern Matching</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/08/15-pattern-keywords" />
+		<updated>2022-07-18T00:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;Pattern matching&lt;/code&gt; can use the &lt;code&gt;is&lt;/code&gt;, &lt;code&gt;not&lt;/code&gt;, &lt;code&gt;and&lt;/code&gt; and &lt;code&gt;or&lt;/code&gt; keywords individually in a statement, but also use the keywords together to form an enhanced, more complex statement.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="individual"&gt;Individual&lt;/h2&gt;
+&lt;h3 id="is-keyword"&gt;is keyword&lt;/h3&gt;
+&lt;p&gt;Common usages of the &lt;code&gt;is&lt;/code&gt; keyword is for &lt;code&gt;null checks&lt;/code&gt; and &lt;code&gt;type tests&lt;/code&gt;:&lt;/p&gt;
+&lt;p&gt;A &lt;code&gt;null check&lt;/code&gt; being performed:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;int? age = 12;
+
+// check if the value of age
+// is a valid number (i.e. not null)
+if (age is int number)
+{
+    Console.WriteLine($&amp;quot;'age' has the value of:{number}&amp;quot;);
+}
+else
+{
+    Console.WriteLine(&amp;quot;'age' has no value&amp;quot;);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;A &lt;code&gt;type check&lt;/code&gt; being performed (for performance improvements in this example):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public int SumListChecked(IEnumerable&amp;lt;int&amp;gt; enumerable)
+{
+    var runningSum = 0;
+
+    // Check the type 
+    if (enumerable is List&amp;lt;int&amp;gt; list)
+    {
+        foreach (var item in list)
+        {
+            runningSum += item;
+        }
+        return runningSum;
+    }
+    
+    // all others
+    foreach (var item in enumerable)
+    {
+        runningSum += item;
+    }
+
+    return runningSum;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id="not-keyword"&gt;not keyword&lt;/h3&gt;
+&lt;p&gt;The &lt;code&gt;not&lt;/code&gt; keyword can be used in conjunction with the &lt;code&gt;is&lt;/code&gt; keyword to perform a &lt;code&gt;null check&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;string? outputMessage = &amp;quot;This message should be output!&amp;quot;;
+
+// explicitly check that the string is not null
+if (outputMessage is not null)
+{
+    Console.WriteLine(outputMessage);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="and-or-keywords"&gt;and, or keywords&lt;/h3&gt;
+&lt;p&gt;The &lt;code&gt;and&lt;/code&gt; and &lt;code&gt;or&lt;/code&gt; keywords are commonly used in a &lt;code&gt;switch expression&lt;/code&gt; for &lt;code&gt;pattern matching&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;string GetGrade(int percentage) =&amp;gt;
+    percentage switch
+    {
+        (&amp;lt; 0) or (&amp;gt; 100) =&amp;gt; &amp;quot;Invalid&amp;quot;,
+        (&amp;gt;= 0) and (&amp;lt; 40) =&amp;gt; &amp;quot;Fail&amp;quot;,
+        (&amp;gt;= 40) and (&amp;lt; 70) =&amp;gt; &amp;quot;Average&amp;quot;,
+        (&amp;gt;= 70) =&amp;gt; &amp;quot;Excellent&amp;quot;,
+    };
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="enhanced-matching"&gt;Enhanced matching&lt;/h2&gt;
+&lt;p&gt;All the keywords can be used together for a more complex pattern matching expression - in this example to &lt;code&gt;validate an email address&lt;/code&gt; (there are definitely better, more comprehensive ways to validate an email address than using pattern matching, and although the below is not a complete and entirely valid way to validate an email address, it is sufficient for this demo)&lt;/p&gt;
+&lt;p&gt;The first step is to loop through each character in the email address to determine if its valid for an email address:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;bool IsValidEmailAddress(string email)
+{
+    foreach (var c in email)
+    {
+        var result = IsValidChar(c);
+        if (!result)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If any of the characters are invalid according to the &lt;code&gt;IsValidChar&lt;/code&gt; method, then the &lt;em&gt;email string&lt;/em&gt; as a whole is invalid.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;IsValidChar&lt;/code&gt; is where the enhanced, more complex pattern matching takes place. The method is an &lt;code&gt;expression-bodied method&lt;/code&gt; which in turn used &lt;code&gt;pattern matching&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;bool IsValidChar(char c) =&amp;gt;
+    c is ((&amp;gt;= 'A' and &amp;lt;= 'Z') // capital letters
+      or (&amp;gt;= 'a' and &amp;lt;= 'z') // lower case
+      or (&amp;gt;= '0' and &amp;lt;= '9') // numbers
+      or '&amp;#64;' // allowed symbols
+      or '.'
+      or '-'
+      or '+'
+      and not ' ');
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Executing the above code with the following example:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var emailToValidate = &amp;quot;learn&amp;#64;alwaysdeveloping.com&amp;quot;;
+Console.WriteLine($&amp;quot;'{emailToValidate}' a valid email &amp;quot; +
+    $&amp;quot;address?: {IsValidEmailAddress(emailToValidate)}&amp;quot;);
+
+var anotherEmailToValidate = &amp;quot;invalid123, invalid&amp;quot;;
+Console.WriteLine($&amp;quot;'{anotherEmailToValidate}' a valid email &amp;quot; +
+    $&amp;quot;address?: {IsValidEmailAddress(anotherEmailToValidate)}&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;'learn&amp;#64;alwaysdeveloping.com' a valid email address?: True
+'invalid123, invalid' a valid email address?: False
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;As &lt;code&gt;Pattern matching&lt;/code&gt; is a fairly new addition to C#, I have not seen it extensively used, and have no extensively used it myself. However the more I learn about the usages of it, the more it gets incorporated into my coding daily.&lt;br /&gt;
+In this demo &lt;code&gt;pattern matching&lt;/code&gt; is certainly more readable and easier to understand than some other methods (regex for example) - but what one gains in maintainability and readability, one might lose in performance. However, the important thing to know is there are options, and being better informed about each option allows for the best technique to be chosen for each use case.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/buhakmeh/status/1543278994069544962"&gt;Khalid Abuhakmeh Tweet&lt;/a&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;?# DailyDrop ?&gt;138: 15-08-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/07/15-testing-protected</id>
 		<title>Unit testing a protected method</title>
@@ -108,169 +359,6 @@ public void TestProtectedWorking()
 &lt;p&gt;The technique mentioned here is not a ground-breaking revelation, but it is very useful. Personally, I've recently started writing more unit tests in earnest (after not having done any for 5+ years) this was one of the first issues I encountered, I had not experienced before, which needed to be solved.&lt;/p&gt;
 &lt;hr /&gt;
 &lt;?# DailyDrop ?&gt;117: 15-07-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/08/09-periodic-timer</id>
-		<title>Accurate, regular scheduling with PeriodicTimer</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/08/09-periodic-timer" />
-		<updated>2022-07-15T00:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;.NET 6 introduced a new timer, the &lt;code&gt;PeriodicTimer&lt;/code&gt; which provides a more regular, accurate and reliable way to run code on a specific interval when compared with previous methods.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="task.delay"&gt;Task.Delay&lt;/h2&gt;
-&lt;p&gt;Consider a simple background process which needs to run every second:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;async Task StartJobAsync(CancellationToken token)
-{
-    while (!token.IsCancellationRequested)
-    {
-        Console.WriteLine(DateTime.Now.ToString(&amp;quot;O&amp;quot;));
-        
-        // Do work
-        
-        await Task.Delay(1000, token);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The method is started, and while a cancellation is not requested via the &lt;em&gt;CancellationToken&lt;/em&gt;, the date time is output, and &lt;em&gt;work&lt;/em&gt; is done.&lt;/p&gt;
-&lt;p&gt;Executing the above as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var cancelSource = new CancellationTokenSource();
-var jobTask = StartJobAsync(cancelSource.Token);
-
-Console.ReadKey();
-cancelSource.Cancel();
-Console.ReadKey();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Provides the following output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;2022-07-13T19:48:38.9682679+02:00
-2022-07-13T19:48:39.9743395+02:00
-2022-07-13T19:48:40.9755190+02:00
-2022-07-13T19:48:41.9913331+02:00
-2022-07-13T19:48:42.9977149+02:00
-2022-07-13T19:48:44.0130672+02:00
-2022-07-13T19:48:45.0289959+02:00
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Even without any work being done in the iteration, the loop does not iterate every second - in &lt;code&gt;second 43 no work is done at all&lt;/code&gt;. At time goes on the divergence from the start time will just grow larger.&lt;/p&gt;
-&lt;p&gt;This divergence is even more evident if a job is executed and takes longer than the interval:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;async Task StartJobAsync(CancellationToken token)
-{
-    while (!token.IsCancellationRequested)
-    {
-        Console.WriteLine(DateTime.Now.ToString(&amp;quot;O&amp;quot;));
-
-        // generate a random number between 0 and 3
-        var random = new Random();
-        if (random.Next(3) == 1)
-        {
-            // if the random number was 1, simulate a long 
-            // running job
-            Console.WriteLine(&amp;quot;Running long&amp;quot;);
-            await Task.Delay(1500);
-        }
-
-        await Task.Delay(1000, token);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Here the random &lt;em&gt;work&lt;/em&gt; being performed takes &lt;code&gt;1.5 second&lt;/code&gt;, so instead of the loop taking &lt;code&gt;1 second&lt;/code&gt;, it becomes &lt;code&gt;2.5 seconds&lt;/code&gt;. If the work being done is variable in time, then the interval also becomes varied and irregular:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;2022-07-13T19:54:18.5637838+02:00
-2022-07-13T19:54:19.6099211+02:00
-2022-07-13T19:54:20.6106040+02:00
-Running long
-2022-07-13T19:54:23.1278907+02:00
-2022-07-13T19:54:24.1338937+02:00
-2022-07-13T19:54:25.1360588+02:00
-2022-07-13T19:54:26.1519535+02:00
-Running long
-2022-07-13T19:54:28.6815481+02:00
-2022-07-13T19:54:29.6844306+02:00
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This might be sufficient, however if a more regular, consistent interval is required, look no further than the &lt;code&gt;PeriodicTimer&lt;/code&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="periodic-timer"&gt;Periodic Timer&lt;/h2&gt;
-&lt;p&gt;.NET 6 introduce the &lt;code&gt;PeriodicTimer&lt;/code&gt; which runs on a more regular, predictable schedule, using more modern practices:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;async Task StartJobAsync(CancellationToken token)
-{
-    // define the timer to tick every second
-    var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(1000));
-
-    // loop every tick while the token has not been cancelled
-    while (await timer.WaitForNextTickAsync() &amp;amp;&amp;amp; !token.IsCancellationRequested)
-    {
-        Console.WriteLine(DateTime.Now.ToString(&amp;quot;O&amp;quot;));
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;With the &lt;code&gt;PeriodicTimer&lt;/code&gt; the interval period is defined when the timer is declared, and the &lt;em&gt;WaitForNextTickAsync&lt;/em&gt; method will return true every interval period.&lt;/p&gt;
-&lt;p&gt;Executing the above as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var cancelSource = new CancellationTokenSource();
-var jobTask = StartJobAsync(cancelSource.Token);
-
-Console.ReadKey();
-cancelSource.Cancel();
-Console.ReadKey();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Provides the following output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;2022-07-14T07:23:29.1553510+02:00
-2022-07-14T07:23:30.1430203+02:00
-2022-07-14T07:23:31.1502777+02:00
-2022-07-14T07:23:32.1522676+02:00
-2022-07-14T07:23:33.1541686+02:00
-2022-07-14T07:23:34.1603689+02:00
-2022-07-14T07:23:35.1475597+02:00
-2022-07-14T07:23:36.1498775+02:00
-2022-07-14T07:23:37.1561782+02:00
-2022-07-14T07:23:38.1425797+02:00
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;There are variations on the milliseconds, but the &lt;code&gt;PeriodicTimer&lt;/code&gt; will adjust to keep it as regular as possible.&lt;/p&gt;
-&lt;p&gt;When introducing &lt;em&gt;work&lt;/em&gt; which exceeds the interval period, the &lt;code&gt;PeriodTimer&lt;/code&gt; will still try to adjust to keep the ticks as regular as it can:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;async Task StartJobAsync(CancellationToken token)
-{
-    var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(1000));
-
-    while (await timer.WaitForNextTickAsync() &amp;amp;&amp;amp; !token.IsCancellationRequested)
-    {
-        Console.WriteLine(DateTime.Now.ToString(&amp;quot;O&amp;quot;));
-
-        // randomly perform some work which takes 1.5 seconds
-        var random = new Random();
-        if (random.Next(3) == 1)
-        {
-            Console.WriteLine(&amp;quot;Running long&amp;quot;);
-            await Task.Delay(1500);
-        }
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;From the results one can see that if a tick gets skipped due to the work running long, the next tick will &lt;code&gt;align with the starting tick&lt;/code&gt; and not when the previous tick completed:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;2022-07-14T07:27:22.2437461+02:00
-Running long
-2022-07-14T07:27:23.7708051+02:00
-2022-07-14T07:27:24.2487034+02:00
-2022-07-14T07:27:25.2491709+02:00
-Running long
-2022-07-14T07:27:26.7629854+02:00
-2022-07-14T07:27:27.2392793+02:00
-Running long
-2022-07-14T07:27:28.7631133+02:00
-2022-07-14T07:27:29.2430825+02:00
-Running long
-2022-07-14T07:27:30.7529474+02:00
-2022-07-14T07:27:31.2606374+02:00
-Running long
-2022-07-14T07:27:32.7737681+02:00
-2022-07-14T07:27:33.2500507+02:00
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The timer will always execute on a regular, predictable schedule, even if the work runs long.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;Periodic Timer&lt;/code&gt; is a great addition to the ecosystem. Reliable and easy to use, for simple background processing, this should be the go-to mechanism going forward. For more complex scheduling and processing, something like &lt;a href="https://www.hangfire.io/"&gt;Hangfire&lt;/a&gt; will still have its place for a while to come.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.youtube.com/watch?v=J4JL4zR_l-0"&gt;Scheduling repeating tasks with .NET 6’s NEW Timer&lt;/a&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;?# DailyDrop ?&gt;134: 09-08-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
@@ -1102,125 +1190,6 @@ value
 &lt;a href="https://docs.microsoft.com/en-us/sql/t-sql/functions/json-object-transact-sql?view=sql-server-ver16"&gt;JSON_OBJECT (Transact-SQL)&lt;/a&gt;&lt;/p&gt;
 &lt;hr /&gt;
 &lt;?# DailyDrop ?&gt;111: 06-07-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/07/05-getdebugview</id>
-		<title>View config values with GetDebugView</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/07/05-getdebugview" />
-		<updated>2022-07-05T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;All configuration values for an aapplication, as well &lt;code&gt;as their source&lt;/code&gt;, can be viewed with the &lt;code&gt;GetDebugView&lt;/code&gt; method on &lt;em&gt;IConfigurationRoot&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;While this core functionality has been available since .NET Core 3, enhancements are also coming with .NET7 (currently in preview) to allow for confidential values to be masked.&lt;/p&gt;
-&lt;p&gt;All of this in more detail below.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="getdebugview-current"&gt;GetDebugView: Current&lt;/h2&gt;
-&lt;p&gt;To retrieve the configuration information is fairly straightforward - all one needs is the &lt;em&gt;IConfiguration&lt;/em&gt; implementation.&lt;/p&gt;
-&lt;p&gt;The below uses top-level statements and minimal API to expose a &lt;em&gt;config&lt;/em&gt; endpoint:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// inject IConfiguration from dependency injection container
-app.MapGet(&amp;quot;/config&amp;quot;, (IConfiguration config) =&amp;gt;
-{
-    // convert to IConfigurationRoot
-    var root = config as IConfigurationRoot;
-
-    return root.GetDebugView();
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;With a &lt;em&gt;appsettings.json&lt;/em&gt; file which contains the following:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-json"&gt;{
-  &amp;quot;Logging&amp;quot;: {
-    &amp;quot;LogLevel&amp;quot;: {
-      &amp;quot;Default&amp;quot;: &amp;quot;Information&amp;quot;,
-      &amp;quot;Microsoft.AspNetCore&amp;quot;: &amp;quot;Warning&amp;quot;
-    }
-  },
-  &amp;quot;AllowedHosts&amp;quot;: &amp;quot;*&amp;quot;,
-  &amp;quot;ServiceCredentials&amp;quot;: {
-    &amp;quot;username&amp;quot;: &amp;quot;admin123&amp;quot;,
-    &amp;quot;password&amp;quot; : &amp;quot;admin456&amp;quot;
-  }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Browsing to the endpoint will return the following &lt;em&gt;relevent configuration values&lt;/em&gt; (along with numerous other system environment variables):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-powershell"&gt;AllowedHosts=* (JsonConfigurationProvider for 'appsettings.json' (Optional))
-ASPNETCORE_ENVIRONMENT=Development (EnvironmentVariablesConfigurationProvider Prefix: '')
-Logging:
-  LogLevel:
-    Default=Information (JsonConfigurationProvider for 'appsettings.Development.json' (Optional))
-    Microsoft.AspNetCore=Warning (JsonConfigurationProvider for 'appsettings.Development.json' (Optional))
-ServiceCredentials:
-  password=admin456 (JsonConfigurationProvider for 'appsettings.json' (Optional))
-  username=admin123 (JsonConfigurationProvider for 'appsettings.json' (Optional))
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The configuration from the &lt;em&gt;appsettings.json&lt;/em&gt; config file are displayed, with the corresponding provider source (&lt;em&gt;JsonConfigurationProvider&lt;/em&gt;) as well as a configuration value sourced from the environment variable provider (&lt;em&gt;EnvironmentVariablesConfigurationProvider&lt;/em&gt;).&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="secrets-exposed"&gt;Secrets exposed&lt;/h3&gt;
-&lt;p&gt;One limitation of the current (.NET Core 3 to .NET 6) implementation, which is demonstrated above - is that configuration values which are secrets (keys, passwords, etc.) are included in the output.&lt;/p&gt;
-&lt;p&gt;In my example the password was stored in the &lt;em&gt;appsettings.json&lt;/em&gt;, which ideally shouldn't happen - however even if injected at runtime as an environment variable, the same would occur, and the value would still be exposed (just coming from a different provider source).&lt;/p&gt;
-&lt;p&gt;The enhancements in .NET7 aim to improve this.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="getdebugview-preview"&gt;GetDebugView: Preview&lt;/h2&gt;
-&lt;p&gt;Bear in mind, that the following is done using a &lt;em&gt;Preview&lt;/em&gt; version of .NET7, and may change by the time it is officially release.&lt;/p&gt;
-&lt;p&gt;The &lt;code&gt;GetDebugView&lt;/code&gt; now has an overload which accepts a &lt;em&gt;Func&lt;/em&gt; and allows for custom processing and manipulation of the configuration values for display:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// inject IConfiguration from dependency injection container
-app.MapGet(&amp;quot;/config&amp;quot;, (IConfiguration config) =&amp;gt;
-{
-    // convert to IConfigurationRoot
-    var root = config as IConfigurationRoot;
-
-    return root.GetDebugView(context =&amp;gt;
-    {
-        // this Func keys called for each Key in the configuration
-
-        // if the key is one we know contains a password
-        if(context.Key == &amp;quot;ServiceCredentials:password&amp;quot;)
-        {
-            // return a masked value
-            return &amp;quot;***&amp;quot;;
-        }
-        
-        // otherwise return the original configuration value
-        return context.Value;
-    });
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;With a &lt;em&gt;appsettings.json&lt;/em&gt; file the same as before&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-json"&gt;{
-  &amp;quot;Logging&amp;quot;: {
-    &amp;quot;LogLevel&amp;quot;: {
-      &amp;quot;Default&amp;quot;: &amp;quot;Information&amp;quot;,
-      &amp;quot;Microsoft.AspNetCore&amp;quot;: &amp;quot;Warning&amp;quot;
-    }
-  },
-  &amp;quot;AllowedHosts&amp;quot;: &amp;quot;*&amp;quot;,
-  &amp;quot;ServiceCredentials&amp;quot;: {
-    &amp;quot;username&amp;quot;: &amp;quot;admin123&amp;quot;,
-    &amp;quot;password&amp;quot; : &amp;quot;admin456&amp;quot;
-  }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Browsing to the endpoint will return the same as before, but with one small adjustment:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-powershell"&gt;AllowedHosts=* (JsonConfigurationProvider for 'appsettings.json' (Optional))
-ASPNETCORE_ENVIRONMENT=Development (EnvironmentVariablesConfigurationProvider Prefix: '')
-Logging:
-  LogLevel:
-    Default=Information (JsonConfigurationProvider for 'appsettings.Development.json' (Optional))
-    Microsoft.AspNetCore=Warning (JsonConfigurationProvider for 'appsettings.Development.json' (Optional))
-ServiceCredentials:
-  password=*** (JsonConfigurationProvider for 'appsettings.json' (Optional))
-  username=admin123 (JsonConfigurationProvider for 'appsettings.json' (Optional))
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The password returned is now the &lt;code&gt;masked value&lt;/code&gt; specified in the &lt;em&gt;Func&lt;/em&gt;!&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;Having the ability to expose all configuration values can definitely save time and effort - it eliminates the need to remote into other machines or containers and get a list of environment variables when doing investigations. However the fact that confidential information could be exposed is far from ideal, and depending on how serious security is taken, could render the functionality unusable.&lt;/p&gt;
-&lt;p&gt;However the .NET7 enhancements provides a working solution for this, which I look forward to being able to leverage.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://dunnhq.com/posts/2022/viewing-configuration-values/"&gt;Viewing .NET configuration values&lt;/a&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;?# DailyDrop ?&gt;110: 05-07-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
