@@ -5,8 +5,258 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Mon, 18 Jul 2022 04:30:25 GMT</pubDate>
-		<lastBuildDate>Mon, 18 Jul 2022 04:30:25 GMT</lastBuildDate>
+		<pubDate>Tue, 19 Jul 2022 04:51:14 GMT</pubDate>
+		<lastBuildDate>Tue, 19 Jul 2022 04:51:14 GMT</lastBuildDate>
+		<item>
+			<title>nameof usage for better code quality</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/07/19-nameof-constants</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/07/19-nameof-constants</guid>
+			<pubDate>Tue, 19 Jul 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;When defining string with constants (in particular, but other situations also apply) the &lt;code&gt;nameof operator&lt;/code&gt; can be leveraged to remove explicitly set values, ensuring more consistent, cleaner and less error prone code is produced.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="nameof-expression"&gt;nameof expression&lt;/h2&gt;
+&lt;p&gt;So briefly, what does &lt;code&gt;nameof&lt;/code&gt; do? - it &lt;em&gt;produces the name of a variable type, or member as the string constant&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;Consider the following code:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var fibonacci = new List&amp;lt;int&amp;gt; { 0, 1, 1, 2, 3, 5 } ;
+Console.WriteLine(nameof(List&amp;lt;int&amp;gt;));  // outputs the type
+Console.WriteLine(nameof(fibonacci)); // outputs the variable name
+Console.WriteLine(nameof(fibonacci.Count)); // outputs the method name
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output is:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;List
+fibonacci
+Count
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;So let's see how we can leverage &lt;code&gt;nameof&lt;/code&gt; in the following use cases.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="constants"&gt;Constants&lt;/h2&gt;
+&lt;h3 id="issue"&gt;Issue&lt;/h3&gt;
+&lt;p&gt;Suppose our application has a list of &lt;em&gt;system statuses&lt;/em&gt; stored as &lt;code&gt;string constants&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class SystemStatus
+{
+    public const string Starting = &amp;quot;Starting&amp;quot;;
+    public const string Running = &amp;quot;Running&amp;quot;;
+    public const string ShuttingDown = &amp;quot;ShuttingDown&amp;quot;;
+    public const string Offline = &amp;quot;Offline&amp;quot;;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;With the usage and output being:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;Console.WriteLine(SystemStatus.ShuttingDown); // outputs &amp;quot;ShuttingDown&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Is there anything &lt;code&gt;inherently wrong&lt;/code&gt; with this approach? Not really, it still functions as expected.&lt;/p&gt;
+&lt;p&gt;However, suppose we need to &lt;code&gt;change the &amp;quot;ShuttingDown&amp;quot; status to &amp;quot;Terminating&amp;quot;&lt;/code&gt;. Navigating to one of the usages of &lt;em&gt;SystemStatus.ShuttingDown&lt;/em&gt;, we rename the &lt;code&gt;const&lt;/code&gt; (using F2 &lt;em&gt;Rename&lt;/em&gt;, for example).&lt;/p&gt;
+&lt;p&gt;We now have this:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;Console.WriteLine(SystemStatus.Terminating); // still outputs &amp;quot;ShuttingDown&amp;quot;!
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;However the output is still &lt;code&gt;&amp;quot;ShuttingDown&amp;quot;&lt;/code&gt;, even though the &lt;code&gt;const&lt;/code&gt; name has been changed to &lt;em&gt;Terminating&lt;/em&gt;! We now either have &lt;code&gt;misleading code at best or a bug at worst.&lt;/code&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="resolution"&gt;Resolution&lt;/h3&gt;
+&lt;p&gt;As this post implies, the solution is to use the &lt;code&gt;nameof&lt;/code&gt; operator instead of a hard-coded string!&lt;/p&gt;
+&lt;p&gt;Replacing the string values, with &lt;code&gt;nameof&lt;/code&gt; referencing the same variable:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class SystemStatus
+{
+    public const string Starting = nameof(Starting);
+    public const string Running = nameof(Running);
+    public const string ShuttingDown = nameof(ShuttingDown);
+    public const string Offline = nameof(Offline);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This for example will set the value of the &lt;em&gt;Starting&lt;/em&gt; constants to the name of the constant, &amp;quot;Starting&amp;quot;.&lt;/p&gt;
+&lt;p&gt;Now when renaming one of the &lt;code&gt;const&lt;/code&gt; names, it's value will be kept consistent - the same as the &lt;code&gt;const&lt;/code&gt; name. If manually renaming one of the &lt;code&gt;const&lt;/code&gt; names, but forgetting to rename its usage in &lt;code&gt;nameof&lt;/code&gt; will result in a compiler error:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class SystemStatus
+{
+    public const string Starting = nameof(Starting);
+    public const string Running = nameof(Running);
+    // Compiler error &amp;quot;ShuttingDown&amp;quot; does not exist
+    public const string Terminating = nameof(ShuttingDown);
+    public const string Offline = nameof(Offline);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The result - cleaner, more consistent and less error prone code!&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="parameters"&gt;Parameters&lt;/h2&gt;
+&lt;h3 id="issue-1"&gt;Issue&lt;/h3&gt;
+&lt;p&gt;A similar issue can be experience in instances where a &lt;code&gt;parameter name is used&lt;/code&gt;, in an exception message, for example.&lt;/p&gt;
+&lt;p&gt;If we have this method, with the parameter name hardcoded in the exception string message:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public int Division(int dividend, int div)
+{
+    if(div == 0)
+    {
+        // string value is hardcoded with the parameter name
+        throw new ArgumentException($&amp;quot;Parameter 'div' cannot be zero&amp;quot;);
+    }
+
+    return dividend / div;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We realize the &lt;code&gt;div&lt;/code&gt; parameter is not a good parameter name, and should be renamed to &lt;code&gt;divisor&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public int Division(int dividend, int divisor)
+{
+    if(divisor == 0)
+    {
+        // string value is hardcoded with the INCORRECT parameter name
+        throw new ArgumentException($&amp;quot;Parameter 'div' cannot be zero&amp;quot;);
+    }
+
+    return dividend / divisor;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Its very easy to miss the hardcoded string when refactoring, especially if using an IDE rename feature, which won't automatically rename the hand-coded parameter name within the string.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="resolution-1"&gt;Resolution&lt;/h3&gt;
+&lt;p&gt;Again, the remedy is to use the &lt;code&gt;nameof&lt;/code&gt; operator:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public int Division(int dividend, int divisor)
+{
+    if (divisor == 0)
+    {
+        throw new ArgumentException($&amp;quot;Parameter '{nameof(divisor)}' cannot be zero&amp;quot;);
+    }
+
+    return dividend / divisor;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now if renaming the parameter name, the exception message is automatically updated as well (or will throw a compiler error if not all usages of the parameter are not updated):&lt;/p&gt;
+&lt;p&gt;The result - cleaner, more consistent and less error prone code!&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;A small, simple technique to incorporate into daily coding, which may not have any obvious immediate benefit - but if/when it comes time to do any refactoring, will definitely save time and effort due to its cleaner, more consistent approach.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://www.reddit.com/r/csharp/comments/v81c13/can_anyone_tell_me_the_point_of_this_syntax_im/"&gt;Reddit CSharp post&lt;/a&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;?# DailyDrop ?&gt;119: 19-07-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
+		<item>
+			<title>Complex Pattern Matching</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/08/15-pattern-keywords</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/08/15-pattern-keywords</guid>
+			<pubDate>Tue, 19 Jul 2022 00:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;Pattern matching&lt;/code&gt; can use the &lt;code&gt;is&lt;/code&gt;, &lt;code&gt;not&lt;/code&gt;, &lt;code&gt;and&lt;/code&gt; and &lt;code&gt;or&lt;/code&gt; keywords individually in a statement, but also use the keywords together to form an enhanced, more complex statement.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="individual"&gt;Individual&lt;/h2&gt;
+&lt;h3 id="is-keyword"&gt;is keyword&lt;/h3&gt;
+&lt;p&gt;Common usages of the &lt;code&gt;is&lt;/code&gt; keyword is for &lt;code&gt;null checks&lt;/code&gt; and &lt;code&gt;type tests&lt;/code&gt;:&lt;/p&gt;
+&lt;p&gt;A &lt;code&gt;null check&lt;/code&gt; being performed:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;int? age = 12;
+
+// check if the value of age
+// is a valid number (i.e. not null)
+if (age is int number)
+{
+    Console.WriteLine($&amp;quot;'age' has the value of:{number}&amp;quot;);
+}
+else
+{
+    Console.WriteLine(&amp;quot;'age' has no value&amp;quot;);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;A &lt;code&gt;type check&lt;/code&gt; being performed (for performance improvements in this example):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public int SumListChecked(IEnumerable&amp;lt;int&amp;gt; enumerable)
+{
+    var runningSum = 0;
+
+    // Check the type 
+    if (enumerable is List&amp;lt;int&amp;gt; list)
+    {
+        foreach (var item in list)
+        {
+            runningSum += item;
+        }
+        return runningSum;
+    }
+    
+    // all others
+    foreach (var item in enumerable)
+    {
+        runningSum += item;
+    }
+
+    return runningSum;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id="not-keyword"&gt;not keyword&lt;/h3&gt;
+&lt;p&gt;The &lt;code&gt;not&lt;/code&gt; keyword can be used in conjunction with the &lt;code&gt;is&lt;/code&gt; keyword to perform a &lt;code&gt;null check&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;string? outputMessage = &amp;quot;This message should be output!&amp;quot;;
+
+// explicitly check that the string is not null
+if (outputMessage is not null)
+{
+    Console.WriteLine(outputMessage);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="and-or-keywords"&gt;and, or keywords&lt;/h3&gt;
+&lt;p&gt;The &lt;code&gt;and&lt;/code&gt; and &lt;code&gt;or&lt;/code&gt; keywords are commonly used in a &lt;code&gt;switch expression&lt;/code&gt; for &lt;code&gt;pattern matching&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;string GetGrade(int percentage) =&amp;gt;
+    percentage switch
+    {
+        (&amp;lt; 0) or (&amp;gt; 100) =&amp;gt; &amp;quot;Invalid&amp;quot;,
+        (&amp;gt;= 0) and (&amp;lt; 40) =&amp;gt; &amp;quot;Fail&amp;quot;,
+        (&amp;gt;= 40) and (&amp;lt; 70) =&amp;gt; &amp;quot;Average&amp;quot;,
+        (&amp;gt;= 70) =&amp;gt; &amp;quot;Excellent&amp;quot;,
+    };
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="enhanced-matching"&gt;Enhanced matching&lt;/h2&gt;
+&lt;p&gt;All the keywords can be used together for a more complex pattern matching expression - in this example to &lt;code&gt;validate an email address&lt;/code&gt; (there are definitely better, more comprehensive ways to validate an email address than using pattern matching, and although the below is not a complete and entirely valid way to validate an email address, it is sufficient for this demo)&lt;/p&gt;
+&lt;p&gt;The first step is to loop through each character in the email address to determine if its valid for an email address:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;bool IsValidEmailAddress(string email)
+{
+    foreach (var c in email)
+    {
+        var result = IsValidChar(c);
+        if (!result)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If any of the characters are invalid according to the &lt;code&gt;IsValidChar&lt;/code&gt; method, then the &lt;em&gt;email string&lt;/em&gt; as a whole is invalid.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;IsValidChar&lt;/code&gt; is where the enhanced, more complex pattern matching takes place. The method is an &lt;code&gt;expression-bodied method&lt;/code&gt; which in turn used &lt;code&gt;pattern matching&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;bool IsValidChar(char c) =&amp;gt;
+    c is ((&amp;gt;= 'A' and &amp;lt;= 'Z') // capital letters
+      or (&amp;gt;= 'a' and &amp;lt;= 'z') // lower case
+      or (&amp;gt;= '0' and &amp;lt;= '9') // numbers
+      or '&amp;#64;' // allowed symbols
+      or '.'
+      or '-'
+      or '+'
+      and not ' ');
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Executing the above code with the following example:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var emailToValidate = &amp;quot;learn&amp;#64;alwaysdeveloping.com&amp;quot;;
+Console.WriteLine($&amp;quot;'{emailToValidate}' a valid email &amp;quot; +
+    $&amp;quot;address?: {IsValidEmailAddress(emailToValidate)}&amp;quot;);
+
+var anotherEmailToValidate = &amp;quot;invalid123, invalid&amp;quot;;
+Console.WriteLine($&amp;quot;'{anotherEmailToValidate}' a valid email &amp;quot; +
+    $&amp;quot;address?: {IsValidEmailAddress(anotherEmailToValidate)}&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;'learn&amp;#64;alwaysdeveloping.com' a valid email address?: True
+'invalid123, invalid' a valid email address?: False
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;As &lt;code&gt;Pattern matching&lt;/code&gt; is a fairly new addition to C#, I have not seen it extensively used, and have no extensively used it myself. However the more I learn about the usages of it, the more it gets incorporated into my coding daily.&lt;br /&gt;
+In this demo &lt;code&gt;pattern matching&lt;/code&gt; is certainly more readable and easier to understand than some other methods (regex for example) - but what one gains in maintainability and readability, one might lose in performance. However, the important thing to know is there are options, and being better informed about each option allows for the best technique to be chosen for each use case.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/buhakmeh/status/1543278994069544962"&gt;Khalid Abuhakmeh Tweet&lt;/a&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;?# DailyDrop ?&gt;138: 15-08-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Tuples for class value equality</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/07/18-tuple-equality</link>
@@ -130,133 +380,6 @@ True
 &lt;p&gt;&lt;a href="https://www.youtube.com/watch?v=aUbXGs7YTGo&amp;amp;t=569s"&gt;Change your habits: Modern techniques for modern C# - Bill Wagner&lt;/a&gt;&lt;/p&gt;
 &lt;hr /&gt;
 &lt;?# DailyDrop ?&gt;118: 18-07-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Complex Pattern Matching</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/08/15-pattern-keywords</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/08/15-pattern-keywords</guid>
-			<pubDate>Mon, 18 Jul 2022 00:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;&lt;code&gt;Pattern matching&lt;/code&gt; can use the &lt;code&gt;is&lt;/code&gt;, &lt;code&gt;not&lt;/code&gt;, &lt;code&gt;and&lt;/code&gt; and &lt;code&gt;or&lt;/code&gt; keywords individually in a statement, but also use the keywords together to form an enhanced, more complex statement.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="individual"&gt;Individual&lt;/h2&gt;
-&lt;h3 id="is-keyword"&gt;is keyword&lt;/h3&gt;
-&lt;p&gt;Common usages of the &lt;code&gt;is&lt;/code&gt; keyword is for &lt;code&gt;null checks&lt;/code&gt; and &lt;code&gt;type tests&lt;/code&gt;:&lt;/p&gt;
-&lt;p&gt;A &lt;code&gt;null check&lt;/code&gt; being performed:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;int? age = 12;
-
-// check if the value of age
-// is a valid number (i.e. not null)
-if (age is int number)
-{
-    Console.WriteLine($&amp;quot;'age' has the value of:{number}&amp;quot;);
-}
-else
-{
-    Console.WriteLine(&amp;quot;'age' has no value&amp;quot;);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;A &lt;code&gt;type check&lt;/code&gt; being performed (for performance improvements in this example):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public int SumListChecked(IEnumerable&amp;lt;int&amp;gt; enumerable)
-{
-    var runningSum = 0;
-
-    // Check the type 
-    if (enumerable is List&amp;lt;int&amp;gt; list)
-    {
-        foreach (var item in list)
-        {
-            runningSum += item;
-        }
-        return runningSum;
-    }
-    
-    // all others
-    foreach (var item in enumerable)
-    {
-        runningSum += item;
-    }
-
-    return runningSum;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id="not-keyword"&gt;not keyword&lt;/h3&gt;
-&lt;p&gt;The &lt;code&gt;not&lt;/code&gt; keyword can be used in conjunction with the &lt;code&gt;is&lt;/code&gt; keyword to perform a &lt;code&gt;null check&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;string? outputMessage = &amp;quot;This message should be output!&amp;quot;;
-
-// explicitly check that the string is not null
-if (outputMessage is not null)
-{
-    Console.WriteLine(outputMessage);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h3 id="and-or-keywords"&gt;and, or keywords&lt;/h3&gt;
-&lt;p&gt;The &lt;code&gt;and&lt;/code&gt; and &lt;code&gt;or&lt;/code&gt; keywords are commonly used in a &lt;code&gt;switch expression&lt;/code&gt; for &lt;code&gt;pattern matching&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;string GetGrade(int percentage) =&amp;gt;
-    percentage switch
-    {
-        (&amp;lt; 0) or (&amp;gt; 100) =&amp;gt; &amp;quot;Invalid&amp;quot;,
-        (&amp;gt;= 0) and (&amp;lt; 40) =&amp;gt; &amp;quot;Fail&amp;quot;,
-        (&amp;gt;= 40) and (&amp;lt; 70) =&amp;gt; &amp;quot;Average&amp;quot;,
-        (&amp;gt;= 70) =&amp;gt; &amp;quot;Excellent&amp;quot;,
-    };
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="enhanced-matching"&gt;Enhanced matching&lt;/h2&gt;
-&lt;p&gt;All the keywords can be used together for a more complex pattern matching expression - in this example to &lt;code&gt;validate an email address&lt;/code&gt; (there are definitely better, more comprehensive ways to validate an email address than using pattern matching, and although the below is not a complete and entirely valid way to validate an email address, it is sufficient for this demo)&lt;/p&gt;
-&lt;p&gt;The first step is to loop through each character in the email address to determine if its valid for an email address:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;bool IsValidEmailAddress(string email)
-{
-    foreach (var c in email)
-    {
-        var result = IsValidChar(c);
-        if (!result)
-        {
-            return false;
-        }
-    }
-
-    return true;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;If any of the characters are invalid according to the &lt;code&gt;IsValidChar&lt;/code&gt; method, then the &lt;em&gt;email string&lt;/em&gt; as a whole is invalid.&lt;/p&gt;
-&lt;p&gt;The &lt;code&gt;IsValidChar&lt;/code&gt; is where the enhanced, more complex pattern matching takes place. The method is an &lt;code&gt;expression-bodied method&lt;/code&gt; which in turn used &lt;code&gt;pattern matching&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;bool IsValidChar(char c) =&amp;gt;
-    c is ((&amp;gt;= 'A' and &amp;lt;= 'Z') // capital letters
-      or (&amp;gt;= 'a' and &amp;lt;= 'z') // lower case
-      or (&amp;gt;= '0' and &amp;lt;= '9') // numbers
-      or '&amp;#64;' // allowed symbols
-      or '.'
-      or '-'
-      or '+'
-      and not ' ');
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Executing the above code with the following example:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var emailToValidate = &amp;quot;learn&amp;#64;alwaysdeveloping.com&amp;quot;;
-Console.WriteLine($&amp;quot;'{emailToValidate}' a valid email &amp;quot; +
-    $&amp;quot;address?: {IsValidEmailAddress(emailToValidate)}&amp;quot;);
-
-var anotherEmailToValidate = &amp;quot;invalid123, invalid&amp;quot;;
-Console.WriteLine($&amp;quot;'{anotherEmailToValidate}' a valid email &amp;quot; +
-    $&amp;quot;address?: {IsValidEmailAddress(anotherEmailToValidate)}&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;'learn&amp;#64;alwaysdeveloping.com' a valid email address?: True
-'invalid123, invalid' a valid email address?: False
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;As &lt;code&gt;Pattern matching&lt;/code&gt; is a fairly new addition to C#, I have not seen it extensively used, and have no extensively used it myself. However the more I learn about the usages of it, the more it gets incorporated into my coding daily.&lt;br /&gt;
-In this demo &lt;code&gt;pattern matching&lt;/code&gt; is certainly more readable and easier to understand than some other methods (regex for example) - but what one gains in maintainability and readability, one might lose in performance. However, the important thing to know is there are options, and being better informed about each option allows for the best technique to be chosen for each use case.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://twitter.com/buhakmeh/status/1543278994069544962"&gt;Khalid Abuhakmeh Tweet&lt;/a&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;?# DailyDrop ?&gt;138: 15-08-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
@@ -1091,116 +1214,6 @@ One potentially drawback of the &lt;code&gt;implicit operator&lt;/code&gt;, depe
 &lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/operators/user-defined-conversion-operators"&gt;User-defined conversion operators (C# reference)&lt;/a&gt;&lt;/p&gt;
 &lt;hr /&gt;
 &lt;?# DailyDrop ?&gt;112: 07-07-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>T-SQL enhancements in SQL Server 2022</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/07/06-sql-2022-enhancements</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/07/06-sql-2022-enhancements</guid>
-			<pubDate>Wed, 06 Jul 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;There are a number of very useful T-SQL enhancements coming with SQL Server 2022 (currently in preview). Some of these include:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;STRING_SPLIT&lt;/code&gt; - splits a string into rows of substrings, based on a specified separator character, now with &lt;strong&gt;ordinal support&lt;/strong&gt;&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;GREATEST/LEAST&lt;/code&gt; - Similar to &lt;em&gt;MAX/MIN&lt;/em&gt;, but operates across columns instead of across rows&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;GENERATE_SERIES&lt;/code&gt; - Produces a set-based sequence of numeric values&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;JSON functions&lt;/code&gt; - Including functions to test whether a string is valid JSON, construct a JSON object and construct a JSON array&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;DATE_BUCKET&lt;/code&gt; - Returns the date-time value corresponding to the start of each date-time bucket from the timestamp defined&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Below we'll explore some of the enhancements I will find most useful (based on my previous experiences and requirements), while additional details on the other enhancements can be found in the references below.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="string_split"&gt;STRING_SPLIT&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;SPLIT_STRING&lt;/code&gt; function, first introduced with SQL Server 2016, allows for the splitting a string into rows of substrings - especially useful for developers making extensive use of stored procedures (for example, with SQL Server Reporting Services)&lt;/p&gt;
-&lt;p&gt;For example, executing the following SQL:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT * from STRING_SPLIT('one,two,three,four,five', ',')
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Results in the following output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;value
------------------------
-one
-two
-three
-four
-five
-&lt;/code&gt;&lt;/pre&gt;
-&lt;br&gt;
-&lt;p&gt;Coming in SQL Server 2022, is the ability to &lt;em&gt;determine the nth item of the list&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;For example, executing the following SQL:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT * from STRING_SPLIT('one,two,three,four,five', ',' , 1) WHERE ordinal = 3
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Results in the following output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;value                   ordinal
------------------------ --------------------
-three                   3
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;An additional parameter, &lt;em&gt;enable_ordinal&lt;/em&gt; is available which will return an &lt;em&gt;ordinal&lt;/em&gt; column - which can then be used as part of a WHERE clause.&lt;/p&gt;
-&lt;p&gt;One limitation of the &lt;code&gt;SPLIT_STRING&lt;/code&gt; remains, and that is that the delimiter can only be a single character, and not a string.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="greatestleast"&gt;GREATEST/LEAST&lt;/h2&gt;
-&lt;p&gt;The new &lt;code&gt;GREATEST and LEAST&lt;/code&gt; functions, are similar to the existing  &lt;em&gt;MAX and MIN&lt;/em&gt; functions, but operates across columns instead of across rows.&lt;/p&gt;
-&lt;p&gt;Consider the following &lt;em&gt;VisitorsPerMonth&lt;/em&gt; table which stores the number of unique visitors to a website, per month, per year.&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT * FROM VisitorsPerMonth
-
-Year        Jan         Feb         March
------------ ----------- ----------- -----------
-2020        435         643         763
-2021        893         1121        1327
-2022        1923        2107        2782
-
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We can use &lt;em&gt;Max&lt;/em&gt; to determine &lt;em&gt;maximum number of visitors in any January&lt;/em&gt; (a max across rows):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT MAX(Jan)
-FROM VisitorsPerMonth
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;However, what if we wanted the &lt;em&gt;max number of visitors in any particular month in a year&lt;/em&gt; - this requires an operation across columns, which is where the &lt;code&gt;GREATEST&lt;/code&gt; function comes into play.&lt;/p&gt;
-&lt;p&gt;A number of &lt;em&gt;columns&lt;/em&gt; are supplied to the function, and the greatest value will be returned:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT Year, GREATEST(Jan, Feb, March) as HighestVisitors
-FROM VisitorsPerMonth
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This results in the following output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;Year        HighestVisitors
------------ ---------------
-2020        763
-2021        1327
-2022        2782
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We now know how many visitors the site had in its most popular month in each year.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="generate_series"&gt;GENERATE_SERIES&lt;/h2&gt;
-&lt;p&gt;This new function produces a set-based sequence of numeric values based on specified &lt;em&gt;START&lt;/em&gt;, &lt;em&gt;STOP&lt;/em&gt; and &lt;em&gt;STEP&lt;/em&gt; values.&lt;/p&gt;
-&lt;p&gt;The usage is fairly straightforward:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT value FROM GENERATE_SERIES(START = 1, STOP = 3);
-SELECT value FROM GENERATE_SERIES(START = 0, STOP = 25, STEP = 5);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Which results in the output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;value
------------
-1
-2
-3
-
-value
------------
-0
-5
-10
-15
-20
-25
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;If no &lt;em&gt;STEP&lt;/em&gt; value is specified, a value of &lt;strong&gt;1&lt;/strong&gt; is used.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;As a C# developer, in recent years, my focus has been more on using Entity Framework Core and less on raw SQL usage - however, knowledge of these enhancement will come in useful when the need arises to do raw SQL (a custom query through EF, or Dapper, or a report stored procedure, for example).&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.mssqltips.com/sqlservertip/7265/sql-server-2022-t-sql-enhancements/"&gt;My Favorite T-SQL Enhancements in SQL Server 2022&lt;/a&gt;&lt;br /&gt;
-&lt;a href="https://docs.microsoft.com/en-us/sql/t-sql/functions/date-bucket-transact-sql?view=sql-server-ver16"&gt;DATE_BUCKET (Transact-SQL)&lt;/a&gt;&lt;br /&gt;
-&lt;a href="https://docs.microsoft.com/en-us/sql/t-sql/functions/json-object-transact-sql?view=sql-server-ver16"&gt;JSON_OBJECT (Transact-SQL)&lt;/a&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;?# DailyDrop ?&gt;111: 06-07-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
