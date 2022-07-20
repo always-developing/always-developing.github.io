@@ -7,9 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <meta name="description" content="always learning | always growing">
 
-    <title>Always Developing - Complex Pattern Matching</title>
+    <title>Always Developing - SQL wildcard characters</title>
 
-    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/08/15-pattern-keywords">
+    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/07/20-sql-wildcards">
 
             <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
             <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
@@ -18,9 +18,9 @@
     <meta name="msapplication-tooltip" content="Always Developing" />
     <meta name="msapplication-starturl" content="/" />
 
-    <meta property="og:title" content="Always Developing - Complex Pattern Matching" />
+    <meta property="og:title" content="Always Developing - SQL wildcard characters" />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/08/15-pattern-keywords" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/07/20-sql-wildcards" />
 
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
@@ -104,14 +104,14 @@
             <div class="col-md-10">
                 <div class="post-heading">
                     <h1>
-                        Complex Pattern Matching
+                        SQL wildcard characters
                     </h1>
-                            <h2 class="subheading">Pattern matching can contain IS, NOT, AND and OR keywords for more complex statements</h2>
+                            <h2 class="subheading">Diving into the SQL wildcard characters (beyond %)</h2>
                         <p class="post-meta">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
                                 <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
                                 <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
-                            </svg> Published on Tuesday, 19 July 2022
+                            </svg> Published on Wednesday, 20 July 2022
                         </p>
                 </div>
             </div>
@@ -130,121 +130,106 @@
 </div>
 
                         <h2 id="daily-knowledge-drop">Daily Knowledge Drop</h2>
-<p><code>Pattern matching</code> can use the <code>is</code>, <code>not</code>, <code>and</code> and <code>or</code> keywords individually in a statement, but also use the keywords together to form an enhanced, more complex statement.</p>
+<p>There are a number of SQL wildcard characters, apart from the commonly used (at least in my case) <code>zero or more characters, %</code> wildcard. These include:</p>
+<ul>
+<li><code>_</code> - representing a single character</li>
+<li><code>[]</code> - representing any single character within the brackets</li>
+<li><code>^</code> - representing any character not in the brackets</li>
+<li><code>-</code> - representing any single character in the specified range</li>
+</ul>
 <hr />
-<h2 id="individual">Individual</h2>
-<h3 id="is-keyword">is keyword</h3>
-<p>Common usages of the <code>is</code> keyword is for <code>null checks</code> and <code>type tests</code>:</p>
-<p>A <code>null check</code> being performed:</p>
-<pre><code class="language-csharp">int? age = 12;
-
-// check if the value of age
-// is a valid number (i.e. not null)
-if (age is int number)
-{
-    Console.WriteLine($&quot;'age' has the value of:{number}&quot;);
-}
-else
-{
-    Console.WriteLine(&quot;'age' has no value&quot;);
-}
-</code></pre>
-<p>A <code>type check</code> being performed (for performance improvements in this example):</p>
-<pre><code class="language-csharp">public int SumListChecked(IEnumerable&lt;int&gt; enumerable)
-{
-    var runningSum = 0;
-
-    // Check the type 
-    if (enumerable is List&lt;int&gt; list)
-    {
-        foreach (var item in list)
-        {
-            runningSum += item;
-        }
-        return runningSum;
-    }
-    
-    // all others
-    foreach (var item in enumerable)
-    {
-        runningSum += item;
-    }
-
-    return runningSum;
-}
-</code></pre>
-<h3 id="not-keyword">not keyword</h3>
-<p>The <code>not</code> keyword can be used in conjunction with the <code>is</code> keyword to perform a <code>null check</code>:</p>
-<pre><code class="language-csharp">string? outputMessage = &quot;This message should be output!&quot;;
-
-// explicitly check that the string is not null
-if (outputMessage is not null)
-{
-    Console.WriteLine(outputMessage);
-}
+<h2 id="table-setup">Table setup</h2>
+<p>We have a simple <code>Word</code> table, with one column, also called <code>Word</code>. The table is populated with 5 records:</p>
+<pre><code class="language-terminal">flout
+hit
+hot
+hut
+shout
 </code></pre>
 <hr />
-<h3 id="and-or-keywords">and, or keywords</h3>
-<p>The <code>and</code> and <code>or</code> keywords are commonly used in a <code>switch expression</code> for <code>pattern matching</code>:</p>
-<pre><code class="language-csharp">string GetGrade(int percentage) =&gt;
-    percentage switch
-    {
-        (&lt; 0) or (&gt; 100) =&gt; &quot;Invalid&quot;,
-        (&gt;= 0) and (&lt; 40) =&gt; &quot;Fail&quot;,
-        (&gt;= 40) and (&lt; 70) =&gt; &quot;Average&quot;,
-        (&gt;= 70) =&gt; &quot;Excellent&quot;,
-    };
+<h2 id="usage">Usage</h2>
+<h3 id="single-character">Single character</h3>
+<p>The <code>_</code> is used to represent a single character.</p>
+<p>The following will select any <code>three letter words which start with an 'h' and end with a 't'</code>:</p>
+<pre><code class="language-sql">SELECT * 
+FROM Word
+WHERE Word LIKE 'h_t'
+</code></pre>
+<p>The result:</p>
+<pre><code class="language-terminal">hit
+hot
+hut
 </code></pre>
 <hr />
-<h2 id="enhanced-matching">Enhanced matching</h2>
-<p>All the keywords can be used together for a more complex pattern matching expression - in this example to <code>validate an email address</code> (there are definitely better, more comprehensive ways to validate an email address than using pattern matching, and although the below is not a complete and entirely valid way to validate an email address, it is sufficient for this demo)</p>
-<p>The first step is to loop through each character in the email address to determine if its valid for an email address:</p>
-<pre><code class="language-csharp">bool IsValidEmailAddress(string email)
-{
-    foreach (var c in email)
-    {
-        var result = IsValidChar(c);
-        if (!result)
-        {
-            return false;
-        }
-    }
-
-    return true;
-}
+<h3 id="single-character-array">Single character array</h3>
+<p>The <code>[]</code> characters are used to represent any single character specified within the brackets.</p>
+<p>The following will select any <code>three letter words which start with an 'h', have an 'o' OR 'u' as the middle letter, and which end with a 't'</code>:</p>
+<pre><code class="language-sql">SELECT * 
+FROM Word
+WHERE Word LIKE 'h[ou]t'
 </code></pre>
-<p>If any of the characters are invalid according to the <code>IsValidChar</code> method, then the <em>email string</em> as a whole is invalid.</p>
-<p>The <code>IsValidChar</code> is where the enhanced, more complex pattern matching takes place. The method is an <code>expression-bodied method</code> which in turn used <code>pattern matching</code>:</p>
-<pre><code class="language-csharp">bool IsValidChar(char c) =&gt;
-    c is ((&gt;= 'A' and &lt;= 'Z') // capital letters
-      or (&gt;= 'a' and &lt;= 'z') // lower case
-      or (&gt;= '0' and &lt;= '9') // numbers
-      or '&#64;' // allowed symbols
-      or '.'
-      or '-'
-      or '+'
-      and not ' ');
+<p>The result:</p>
+<pre><code class="language-terminal">hot
+hut
 </code></pre>
-<p>Executing the above code with the following example:</p>
-<pre><code class="language-csharp">var emailToValidate = &quot;learn&#64;alwaysdeveloping.com&quot;;
-Console.WriteLine($&quot;'{emailToValidate}' a valid email &quot; +
-    $&quot;address?: {IsValidEmailAddress(emailToValidate)}&quot;);
-
-var anotherEmailToValidate = &quot;invalid123, invalid&quot;;
-Console.WriteLine($&quot;'{anotherEmailToValidate}' a valid email &quot; +
-    $&quot;address?: {IsValidEmailAddress(anotherEmailToValidate)}&quot;);
+<p>To reiterate,  only a <code>single character</code> from within the brackets is matched. For example</p>
+<pre><code class="language-sql">SELECT * 
+FROM Word
+WHERE Word LIKE 'sh[ou]t'
 </code></pre>
-<p>The output:</p>
-<pre><code class="language-terminal">'learn&#64;alwaysdeveloping.com' a valid email address?: True
-'invalid123, invalid' a valid email address?: False
+<p>No rows will be returned, as <code>shout</code> is NOT a match. Only <code>shot</code> and <code>shut</code> would be matched.</p>
+<hr />
+<h3 id="character-array-negation">Character array negation</h3>
+<p>The <code>^</code> character is used, in conjunction with the characters in the brackets <code>[]</code>, as a negation.</p>
+<p>The following will select any <code>three letter words which end in 'out', but NOT preceded by an 'l'</code>:</p>
+<pre><code class="language-sql">SELECT * 
+FROM Word
+WHERE Word LIKE '%[^l]out'
+</code></pre>
+<p>The result:</p>
+<pre><code class="language-terminal">shout
+</code></pre>
+<p>The negation applies to all character in the brackets.</p>
+<p>The following will select <code>any three letter word, which starts with an 'h', does NOT contain 'o' or 'u' as the middle letter, and ends in 't'</code>.</p>
+<pre><code class="language-sql">SELECT * 
+FROM Word
+WHERE Word LIKE 'h[^ou]t'
+</code></pre>
+<p>The result:</p>
+<pre><code class="language-terminal">hit
+</code></pre>
+<hr />
+<h3 id="character-range">Character range</h3>
+<p>The <code>-</code> character is used in conjunction with the characters in the brackets <code>[]</code>, as a range specifier.</p>
+<p>The following will select any <code>three letter words starting with 'h', has any character in the alphabet between, and including, 'o' and 'u' in the middle, and ending in 't'</code>:</p>
+<pre><code class="language-sql">SELECT * 
+FROM Word
+WHERE Word LIKE 'h[o-u]t'
+</code></pre>
+<p>The result:</p>
+<pre><code class="language-terminal">hot
+hut
+</code></pre>
+<hr />
+<h3 id="multiple-characters">Multiple characters</h3>
+<p>A quick look at the more common <code>%</code> character, which is used to represent zero or more characters.</p>
+<p>The following will select any <code>words starting with zero or more of any characters, followed by an 'h', followed by zero or more of any characters, and finally ending with a 't'</code>:</p>
+<pre><code class="language-sql">SELECT * 
+FROM Word
+WHERE Word LIKE '%h%t'
+</code></pre>
+<p>The result:</p>
+<pre><code class="language-terminal">hit
+hot
+hut
+shout
 </code></pre>
 <hr />
 <h2 id="notes">Notes</h2>
-<p>As <code>Pattern matching</code> is a fairly new addition to C#, I have not seen it extensively used, and have no extensively used it myself. However the more I learn about the usages of it, the more it gets incorporated into my coding daily.<br />
-In this demo <code>pattern matching</code> is certainly more readable and easier to understand than some other methods (regex for example) - but what one gains in maintainability and readability, one might lose in performance. However, the important thing to know is there are options, and being better informed about each option allows for the best technique to be chosen for each use case.</p>
+<p>Personally, I've never had any specific need or requirement for any of these wildcards, apart from <code>%</code> -  however, they all have their place. With the knowledge of their existence, one is at least equipped to determine if any can add any value with each specific use case or requirement.</p>
 <hr />
 <h2 id="references">References</h2>
-<p><a href="https://twitter.com/buhakmeh/status/1543278994069544962">Khalid Abuhakmeh Tweet</a></p>
+<p><a href="https://www.w3schools.com/sql/sql_wildcards.asp">SQL Wildcard Characters</a></p>
 <hr />
 
 <blockquote class="daily-drop">
@@ -258,7 +243,7 @@ In this demo <code>pattern matching</code> is certainly more readable and easier
             </svg>
         </div>
         <div class="drop-header">
-            Daily Drop 138: 15-08-2022
+            Daily Drop 120: 20-07-2022
         </div>
         <div>
             <br>At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br> It could be anything - some.NET / C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
@@ -270,10 +255,8 @@ In this demo <code>pattern matching</code> is certainly more readable and easier
 
                         
 <div>
-            <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
-            <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
-            <a role="button" href="/tags/patternmatching" class="badge badge-light"> patternmatching</a>
-            <a role="button" href="/tags/keywords" class="badge badge-light"> keywords</a>
+            <a role="button" href="/tags/sql" class="badge badge-light"> sql</a>
+            <a role="button" href="/tags/wildcard" class="badge badge-light"> wildcard</a>
 </div>
                     </div>
                     <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
@@ -283,13 +266,15 @@ In this demo <code>pattern matching</code> is certainly more readable and easier
             <h3 class="no-anchor">On This Page</h3>
             <ul>
         <li><a href="#daily-knowledge-drop">Daily Knowledge Drop</a></li>
-        <li><a href="#individual">Individual</a></li>
+        <li><a href="#table-setup">Table setup</a></li>
+        <li><a href="#usage">Usage</a></li>
             <ul>
-        <li><a href="#is-keyword">is keyword</a></li>
-        <li><a href="#not-keyword">not keyword</a></li>
-        <li><a href="#and-or-keywords">and, or keywords</a></li>
+        <li><a href="#single-character">Single character</a></li>
+        <li><a href="#single-character-array">Single character array</a></li>
+        <li><a href="#character-array-negation">Character array negation</a></li>
+        <li><a href="#character-range">Character range</a></li>
+        <li><a href="#multiple-characters">Multiple characters</a></li>
             </ul>
-        <li><a href="#enhanced-matching">Enhanced matching</a></li>
         <li><a href="#notes">Notes</a></li>
         <li><a href="#references">References</a></li>
             </ul>
