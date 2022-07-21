@@ -1,0 +1,459 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="always learning | always growing">
+
+    <title>Always Developing - Configuration from memory with AddJsonStream</title>
+
+    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/07/21-addjsonstream">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
+
+    <meta name="application-name" content="Always Developing" />
+    <meta name="msapplication-tooltip" content="Always Developing" />
+    <meta name="msapplication-starturl" content="/" />
+
+    <meta property="og:title" content="Always Developing - Configuration from memory with AddJsonStream" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/07/21-addjsonstream" />
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Bootstrap core CSS -->
+    <link href="/vendor/bootstrap/scss/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom fonts for this template -->
+    <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="/vendor/fontawesome-free/css/brands.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css' data-no-mirror>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css' data-no-mirror>
+
+    <!-- Custom styles for this template -->
+    <link href="/scss/always-developing-blog.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/plugins/autoloader/prism-autoloader.min.js" data-no-mirror></script>
+    <script src="https://cdn.jsdelivr.net/npm/quicklink@2.0.0/dist/quicklink.umd.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/themes/prism.css">
+
+    <!-- Lunr search -->
+        <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/pako@2.0.3/dist/pako_inflate.min.js"></script>
+        <script src="/search.js"></script>
+
+    
+
+
+    
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand"  href="/">
+            <img src="/images/ad_logo.png" alt="" width="25" height="25" class="d-inline-block align-text-top">
+            Always Developing
+        </a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            Menu
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/software">Software</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/tags">Tags</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/posts">Posts</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/about">About</a>
+            </li>
+</ul>
+                <form class="form-inline my-2 my-lg-0" action="/search" method="GET">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="query">
+                    <input type="submit" hidden />
+                </form>
+        </div>
+    </div>
+</nav>
+
+    <!-- Page Header -->
+    <header class="masthead">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 align-middle">
+                <div class="post-header-image">
+                    <a href="/">
+                        <img src="/images/ad_logo.png" class="header-image">
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="post-heading">
+                    <h1>
+                        Configuration from memory with AddJsonStream
+                    </h1>
+                            <h2 class="subheading">Using AddJsonStream to load configuration in a unit test</h2>
+                        <p class="post-meta">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
+                                <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
+                            </svg> Published on Thursday, 21 July 2022
+                        </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <!-- Main Content -->
+    <div class="container">
+            <div class="row ">
+                    <div id="content" class="col-md-9 post-with-toc post-block">
+                        
+<div class="post-header-category">
+    <a class="btn btn-primary btn-sm btn-default btn-home" href="\" role="button"><i class="fas fa-angle-double-left"></i> Home</a>
+            <a class="btn btn-primary btn-sm category-btn" href="/categories/dailydrop" role="button">DailyDrop</a>
+</div>
+
+                        <h2 id="daily-knowledge-drop">Daily Knowledge Drop</h2>
+<p>When writing <code>unit test</code> which require application configuration through <code>IConfiguration</code>, the <code>AddJsonStream</code> method can be used to load different application settings configuration from memory (instead of from an appsettings.json file).</p>
+<hr />
+<h2 id="setup">Setup</h2>
+<p>The setup is a fairly common pattern I've experienced when writing <code>shared, reusable, packaged libraries</code> - a piece of functionality is packaged into a library (not shown in this post, but published to a NuGet store). This library functionality is configured and added to the dependency injection container at startup using an extension method, with the configuration options for the library (optionally) specified in the appsettings.json file.</p>
+<p>A <code>class library</code> is created for the shared component.</p>
+<p>An <code>interface</code> is created as an abstraction for the logic:</p>
+<pre><code class="language-csharp">public interface IDoWork
+{
+    int DoSomeWork();
+}
+</code></pre>
+<p>And we also have an <code>options</code>/settings/configuration class which contains the settings for the library:</p>
+<pre><code class="language-csharp">public class DoWorkOptions
+{
+    public bool IsEnabled { get; set; }
+}
+</code></pre>
+<p>Then there is the implementation of the interface, the logic for the library (incredibly simple in this demo):</p>
+<pre><code class="language-csharp">public class DoWork : IDoWork
+{
+    /// &lt;summary&gt;
+    /// Stores the configuration options
+    /// &lt;/summary&gt;
+    private readonly DoWorkOptions _options;
+
+    /// &lt;summary&gt;
+    /// Constructor
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;options&quot;&gt;The configuration options&lt;/param&gt;
+    public DoWork(DoWorkOptions options)
+    {
+        _options = options;
+    }
+
+    /// &lt;summary&gt;
+    /// Executes the functionality of the library
+    /// &lt;/summary&gt;
+    /// &lt;returns&gt;1 if enabled, 0 if disabled&lt;/returns&gt;
+    public int DoSomeWork()
+    {
+        if(_options.IsEnabled)
+        {
+            return 1;
+        }
+
+        return 0;
+    }
+}
+</code></pre>
+<p>And finally an extension method on <code>IServiceCollection</code> to configure all the pieces with the dependency injection container:</p>
+<pre><code class="language-csharp">public static class DoWorkExtensions
+{
+    /// &lt;summary&gt;
+    /// Configure the library with the DI container
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;services&quot;&gt;The IServiceCollection implementation&lt;/param&gt;
+    /// &lt;param name=&quot;configuration&quot;&gt;The IConfiguration implementation&lt;/param&gt;
+    /// &lt;returns&gt;&lt;/returns&gt;
+    public static IServiceCollection AddDoWork(this IServiceCollection services, 
+        IConfiguration configuration)
+    {
+        // load the options from the configuration implementation
+        var options = new DoWorkOptions();
+        configuration.GetSection(&quot;doWorkOptions&quot;).Bind(options);
+
+        // add the functionality to DI
+        services.AddTransient(typeof(IDoWork), typeof(DoWork));
+        // add the options to DI
+        services.AddSingleton(options);
+
+        return services;
+    }
+}
+</code></pre>
+<p>To recap - we have:</p>
+<ul>
+<li>an interface for the functionality (<em>IDoWork</em>)</li>
+<li>with an implementation of the functionality (<em>DoWork</em>)</li>
+<li>which is configured using options (<em>DoWorkOptions</em>)</li>
+<li>and setup with the dependency injection container using an extension method (<em>DoWorkExtensions</em>)</li>
+</ul>
+<p>Our very simple shared library is now <code>complete and ready to be used</code>!</p>
+<hr />
+<h2 id="web-api">Web api</h2>
+<p>First a look at how this would be used in an <code>minimal web api</code>.</p>
+<p>With the necessary references in place, the extension method can be invoked on startup, which then allows for the the <em>IDoWork</em> interface to be injected into the endpoint handler delegate:</p>
+<pre><code class="language-csharp">var builder = WebApplication.CreateBuilder(args);
+
+// this line is not explicitly needed as its automatically done 
+// if not specified here, but the configuration get loaded from the 
+// appsettings.json file
+builder.Configuration.AddJsonFile(&quot;appsettings.json&quot;);
+
+// configured with dependency injection container
+builder.Services.AddDoWork(builder.Configuration);
+
+var app = builder.Build();
+
+// injected IDoWork
+app.MapGet(&quot;/work&quot;, (IDoWork worker) =&gt;
+{
+    // execute the logic
+    return worker.DoSomeWork();
+});
+
+app.Run();
+</code></pre>
+<p>With the appsettings.json being as follows:</p>
+<pre><code class="language-json">{
+  &quot;DoWorkOptions&quot;: {
+    &quot;IsEnabled&quot; :  true
+  }
+}
+</code></pre>
+<p>Calling the <code>/work</code> endpoint will return a <code>1 or 0</code> dependant on if the <em>DoWorkOptions -&gt; IsEnabled</em> flag is set to <code>true or false</code></p>
+<p>So how do we unit test a piece of code which is dependant on json configuration? - with the <code>AddJsonStream</code> method!</p>
+<hr />
+<h2 id="unit-test">Unit Test</h2>
+<p><code>AddJsonStream</code> is an extension method on <em>ConfigurationBuilder</em>, which as the name implies, allows for loading of JSON configuration data from memory, instead of from file as is the the case with <code>AddJsonFile</code> above.</p>
+<p>We can leverage this to write unit tests with different setups of configuration.</p>
+<p>A note - there are other/better ways of performing endpoint testing, <code>WebApplicationFactory</code> for example, but these are intentionally simple and the logic is being tested directly (from the DI container), and not through an endpoint.</p>
+<p>Test when the option is <em><strong>enabled</strong></em>:</p>
+<pre><code class="language-csharp">[TestMethod]
+public void Test_Enabled_Config()
+{
+    // create a memory stream with the json configuration
+    var sr = new MemoryStream(Encoding.ASCII.GetBytes(&#64;&quot;
+{
+&quot;&quot;DoWorkOptions&quot;&quot; : {
+    &quot;&quot;IsEnabled&quot;&quot; : true
+}
+}&quot;));
+
+    // setup host
+    var host = Host.CreateDefaultBuilder()
+        .ConfigureAppConfiguration((hostingContext, config) =&gt;
+        {
+            // load from the memory stream, and not from file
+            config.AddJsonStream(sr);
+        })
+        .ConfigureServices((context, services) =&gt; services
+            .AddDoWork(context.Configuration)
+        ).Build();
+
+    // get the implementation from the DI container
+    var worker = (IDoWork)host.Services.GetService(typeof(IDoWork));
+
+    // invoke and assert the result
+    Assert.AreEqual(1, worker.DoSomeWork());
+}
+</code></pre>
+<p>Test when the option is <em><strong>disabled</strong></em>:</p>
+<pre><code class="language-csharp">[TestMethod]
+public void Test_Disabled_Config()
+{
+    // create a memory stream with the json configuration
+    var sr = new MemoryStream(Encoding.ASCII.GetBytes(&#64;&quot;
+{
+&quot;&quot;DoWorkOptions&quot;&quot; : {
+    &quot;&quot;IsEnabled&quot;&quot; : false
+}
+}&quot;));
+
+    // setup host
+    var host = Host.CreateDefaultBuilder()
+        .ConfigureAppConfiguration((hostingContext, config) =&gt;
+        {
+            // load from the memory stream, and not from file
+            config.AddJsonStream(sr);
+        })
+        .ConfigureServices((context, services) =&gt; services
+            .AddDoWork(context.Configuration)
+        ).Build();
+
+    // get the implementation from the DI container
+    var worker = (IDoWork)host.Services.GetService(typeof(IDoWork));
+
+    // invoke and assert the result
+    Assert.AreEqual(0, worker.DoSomeWork());
+}
+</code></pre>
+<p>Additional tests can obviously be included for additional use cases (empty configuration file, invalid name or value in the file etc.) - and these are easy and quick to add and configure with <code>AddJsonStream</code>.</p>
+<hr />
+<h2 id="notes">Notes</h2>
+<p><code>AddJsonStream</code> is a very useful method when writing unit tests - I'm not sure how useful it would be outside of a unit test, during the normal execution of an application, but its available if required.</p>
+<hr />
+
+<blockquote class="daily-drop">
+    <div>
+        <div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px; ">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="50" height="50" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffec00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+              <path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+              <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+              <line x1="9.7" y1="17" x2="14.3" y2="17" />
+            </svg>
+        </div>
+        <div class="drop-header">
+            Daily Drop 121: 21-07-2022
+        </div>
+        <div>
+            <br>At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br> It could be anything - some.NET / C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
+            The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+        <div>
+    </div>
+</blockquote>
+
+
+                        
+<div>
+            <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
+            <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
+            <a role="button" href="/tags/json" class="badge badge-light"> json</a>
+            <a role="button" href="/tags/configuration" class="badge badge-light"> configuration</a>
+            <a role="button" href="/tags/iconfiguration" class="badge badge-light"> iconfiguration</a>
+            <a role="button" href="/tags/unittest" class="badge badge-light"> unittest</a>
+</div>
+                    </div>
+                    <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
+                        
+
+        <div class="box sticky-top toc-block">
+            <h3 class="no-anchor">On This Page</h3>
+            <ul>
+        <li><a href="#daily-knowledge-drop">Daily Knowledge Drop</a></li>
+        <li><a href="#setup">Setup</a></li>
+        <li><a href="#web-api">Web api</a></li>
+        <li><a href="#unit-test">Unit Test</a></li>
+        <li><a href="#notes">Notes</a></li>
+            </ul>
+        </div>
+
+                    </div>
+            </div>
+            <div class="row ">
+                    <div id="content" class="col-md-9">
+                        <div>
+    <script src="https://giscus.app/client.js"
+            data-repo="always-developing/always-developing.github.io"
+            data-repo-id="R_kgDOGQJLBQ"
+            data-category="Comments"
+            data-category-id="DIC_kwDOGQJLBc4B_pUA"
+            data-mapping="pathname"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="bottom"
+            data-theme="transparent_dark"
+            data-lang="en"
+            crossorigin="anonymous"
+            async>
+    </script>
+</div>
+                    </div>
+            </div>
+    </div>
+
+    <hr class="horizontal-rule" />
+
+    <!-- Footer -->
+    <footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <ul class="list-inline text-center">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://www.linkedin.com/in/jean-pierre-seini">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-linkedin fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                <div>
+                    <p class="copyright text-footer">
+                        Copyright © 2022 Always Developing</a>.
+                    </p>
+                </div>
+                <ul class="list-inline text-center small text-feeds">
+                        <li class="list-inline-item">
+                            <a href="/feed.rss"><i class="fa fa-rss"></i> RSS Feed</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="/feed.atom"><i class="fa fa-rss"></i> Atom Feed</a>
+                        </li>
+                </ul>
+                <div class="small text-footer">
+                    <a href="https://github.com/always-developing/alwaysdeveloping-website-src"><i class="fab fa-github"></i> This site on GitHub</a>
+                </div>
+                <div class="small text-footer">
+                    <a href="https://statiq.dev">Generated by Statiq</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="/vendor/jquery/jquery.min.js"></script>
+    <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CXPLFS7K38"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){window.dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  //gtag('config', 'G-CXPLFS7K38');
+</script>
+
+    
+
+    <!-- Custom scripts for this template -->
+    <script src="/js/always-developing-blog.js"></script>
+
+</body>
+
+</html>

@@ -4,8 +4,204 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-07-20T04:21:52Z</updated>
+	<updated>2022-07-21T04:22:24Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/07/21-addjsonstream</id>
+		<title>Configuration from memory with AddJsonStream</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/07/21-addjsonstream" />
+		<updated>2022-07-21T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;When writing &lt;code&gt;unit test&lt;/code&gt; which require application configuration through &lt;code&gt;IConfiguration&lt;/code&gt;, the &lt;code&gt;AddJsonStream&lt;/code&gt; method can be used to load different application settings configuration from memory (instead of from an appsettings.json file).&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="setup"&gt;Setup&lt;/h2&gt;
+&lt;p&gt;The setup is a fairly common pattern I've experienced when writing &lt;code&gt;shared, reusable, packaged libraries&lt;/code&gt; - a piece of functionality is packaged into a library (not shown in this post, but published to a NuGet store). This library functionality is configured and added to the dependency injection container at startup using an extension method, with the configuration options for the library (optionally) specified in the appsettings.json file.&lt;/p&gt;
+&lt;p&gt;A &lt;code&gt;class library&lt;/code&gt; is created for the shared component.&lt;/p&gt;
+&lt;p&gt;An &lt;code&gt;interface&lt;/code&gt; is created as an abstraction for the logic:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public interface IDoWork
+{
+    int DoSomeWork();
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And we also have an &lt;code&gt;options&lt;/code&gt;/settings/configuration class which contains the settings for the library:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class DoWorkOptions
+{
+    public bool IsEnabled { get; set; }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Then there is the implementation of the interface, the logic for the library (incredibly simple in this demo):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class DoWork : IDoWork
+{
+    /// &amp;lt;summary&amp;gt;
+    /// Stores the configuration options
+    /// &amp;lt;/summary&amp;gt;
+    private readonly DoWorkOptions _options;
+
+    /// &amp;lt;summary&amp;gt;
+    /// Constructor
+    /// &amp;lt;/summary&amp;gt;
+    /// &amp;lt;param name=&amp;quot;options&amp;quot;&amp;gt;The configuration options&amp;lt;/param&amp;gt;
+    public DoWork(DoWorkOptions options)
+    {
+        _options = options;
+    }
+
+    /// &amp;lt;summary&amp;gt;
+    /// Executes the functionality of the library
+    /// &amp;lt;/summary&amp;gt;
+    /// &amp;lt;returns&amp;gt;1 if enabled, 0 if disabled&amp;lt;/returns&amp;gt;
+    public int DoSomeWork()
+    {
+        if(_options.IsEnabled)
+        {
+            return 1;
+        }
+
+        return 0;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And finally an extension method on &lt;code&gt;IServiceCollection&lt;/code&gt; to configure all the pieces with the dependency injection container:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public static class DoWorkExtensions
+{
+    /// &amp;lt;summary&amp;gt;
+    /// Configure the library with the DI container
+    /// &amp;lt;/summary&amp;gt;
+    /// &amp;lt;param name=&amp;quot;services&amp;quot;&amp;gt;The IServiceCollection implementation&amp;lt;/param&amp;gt;
+    /// &amp;lt;param name=&amp;quot;configuration&amp;quot;&amp;gt;The IConfiguration implementation&amp;lt;/param&amp;gt;
+    /// &amp;lt;returns&amp;gt;&amp;lt;/returns&amp;gt;
+    public static IServiceCollection AddDoWork(this IServiceCollection services, 
+        IConfiguration configuration)
+    {
+        // load the options from the configuration implementation
+        var options = new DoWorkOptions();
+        configuration.GetSection(&amp;quot;doWorkOptions&amp;quot;).Bind(options);
+
+        // add the functionality to DI
+        services.AddTransient(typeof(IDoWork), typeof(DoWork));
+        // add the options to DI
+        services.AddSingleton(options);
+
+        return services;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;To recap - we have:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;an interface for the functionality (&lt;em&gt;IDoWork&lt;/em&gt;)&lt;/li&gt;
+&lt;li&gt;with an implementation of the functionality (&lt;em&gt;DoWork&lt;/em&gt;)&lt;/li&gt;
+&lt;li&gt;which is configured using options (&lt;em&gt;DoWorkOptions&lt;/em&gt;)&lt;/li&gt;
+&lt;li&gt;and setup with the dependency injection container using an extension method (&lt;em&gt;DoWorkExtensions&lt;/em&gt;)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Our very simple shared library is now &lt;code&gt;complete and ready to be used&lt;/code&gt;!&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="web-api"&gt;Web api&lt;/h2&gt;
+&lt;p&gt;First a look at how this would be used in an &lt;code&gt;minimal web api&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;With the necessary references in place, the extension method can be invoked on startup, which then allows for the the &lt;em&gt;IDoWork&lt;/em&gt; interface to be injected into the endpoint handler delegate:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
+
+// this line is not explicitly needed as its automatically done 
+// if not specified here, but the configuration get loaded from the 
+// appsettings.json file
+builder.Configuration.AddJsonFile(&amp;quot;appsettings.json&amp;quot;);
+
+// configured with dependency injection container
+builder.Services.AddDoWork(builder.Configuration);
+
+var app = builder.Build();
+
+// injected IDoWork
+app.MapGet(&amp;quot;/work&amp;quot;, (IDoWork worker) =&amp;gt;
+{
+    // execute the logic
+    return worker.DoSomeWork();
+});
+
+app.Run();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;With the appsettings.json being as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-json"&gt;{
+  &amp;quot;DoWorkOptions&amp;quot;: {
+    &amp;quot;IsEnabled&amp;quot; :  true
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Calling the &lt;code&gt;/work&lt;/code&gt; endpoint will return a &lt;code&gt;1 or 0&lt;/code&gt; dependant on if the &lt;em&gt;DoWorkOptions -&amp;gt; IsEnabled&lt;/em&gt; flag is set to &lt;code&gt;true or false&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;So how do we unit test a piece of code which is dependant on json configuration? - with the &lt;code&gt;AddJsonStream&lt;/code&gt; method!&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="unit-test"&gt;Unit Test&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;AddJsonStream&lt;/code&gt; is an extension method on &lt;em&gt;ConfigurationBuilder&lt;/em&gt;, which as the name implies, allows for loading of JSON configuration data from memory, instead of from file as is the the case with &lt;code&gt;AddJsonFile&lt;/code&gt; above.&lt;/p&gt;
+&lt;p&gt;We can leverage this to write unit tests with different setups of configuration.&lt;/p&gt;
+&lt;p&gt;A note - there are other/better ways of performing endpoint testing, &lt;code&gt;WebApplicationFactory&lt;/code&gt; for example, but these are intentionally simple and the logic is being tested directly (from the DI container), and not through an endpoint.&lt;/p&gt;
+&lt;p&gt;Test when the option is &lt;em&gt;&lt;strong&gt;enabled&lt;/strong&gt;&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;[TestMethod]
+public void Test_Enabled_Config()
+{
+    // create a memory stream with the json configuration
+    var sr = new MemoryStream(Encoding.ASCII.GetBytes(&amp;#64;&amp;quot;
+{
+&amp;quot;&amp;quot;DoWorkOptions&amp;quot;&amp;quot; : {
+    &amp;quot;&amp;quot;IsEnabled&amp;quot;&amp;quot; : true
+}
+}&amp;quot;));
+
+    // setup host
+    var host = Host.CreateDefaultBuilder()
+        .ConfigureAppConfiguration((hostingContext, config) =&amp;gt;
+        {
+            // load from the memory stream, and not from file
+            config.AddJsonStream(sr);
+        })
+        .ConfigureServices((context, services) =&amp;gt; services
+            .AddDoWork(context.Configuration)
+        ).Build();
+
+    // get the implementation from the DI container
+    var worker = (IDoWork)host.Services.GetService(typeof(IDoWork));
+
+    // invoke and assert the result
+    Assert.AreEqual(1, worker.DoSomeWork());
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Test when the option is &lt;em&gt;&lt;strong&gt;disabled&lt;/strong&gt;&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;[TestMethod]
+public void Test_Disabled_Config()
+{
+    // create a memory stream with the json configuration
+    var sr = new MemoryStream(Encoding.ASCII.GetBytes(&amp;#64;&amp;quot;
+{
+&amp;quot;&amp;quot;DoWorkOptions&amp;quot;&amp;quot; : {
+    &amp;quot;&amp;quot;IsEnabled&amp;quot;&amp;quot; : false
+}
+}&amp;quot;));
+
+    // setup host
+    var host = Host.CreateDefaultBuilder()
+        .ConfigureAppConfiguration((hostingContext, config) =&amp;gt;
+        {
+            // load from the memory stream, and not from file
+            config.AddJsonStream(sr);
+        })
+        .ConfigureServices((context, services) =&amp;gt; services
+            .AddDoWork(context.Configuration)
+        ).Build();
+
+    // get the implementation from the DI container
+    var worker = (IDoWork)host.Services.GetService(typeof(IDoWork));
+
+    // invoke and assert the result
+    Assert.AreEqual(0, worker.DoSomeWork());
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Additional tests can obviously be included for additional use cases (empty configuration file, invalid name or value in the file etc.) - and these are easy and quick to add and configure with &lt;code&gt;AddJsonStream&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;AddJsonStream&lt;/code&gt; is a very useful method when writing unit tests - I'm not sure how useful it would be outside of a unit test, during the normal execution of an application, but its available if required.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;?# DailyDrop ?&gt;121: 21-07-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/07/20-sql-wildcards</id>
 		<title>SQL wildcard characters</title>
@@ -1056,138 +1252,6 @@ However, on the &lt;code&gt;negative side&lt;/code&gt;, its not apparently obvio
 &lt;p&gt;&lt;a href="https://sharplab.io/"&gt;sharplab.io&lt;/a&gt;&lt;/p&gt;
 &lt;hr&gt;
 &lt;!--?# DailyDrop ?--&gt;113: 08-07-2022&lt;!--?#/ DailyDrop ?--&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/07/07-implicit-type-conversion</id>
-		<title>Type conversion with the implicit operator</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/07/07-implicit-type-conversion" />
-		<updated>2022-07-07T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;implicit operator&lt;/code&gt; keywords can be used to define a method to perform an implicit conversion from one type to another.&lt;/p&gt;
-&lt;p&gt;Effectively this is a mapper function, which is implicitly invoked without any special syntax - making its usage automatic and more natural.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="setup"&gt;Setup&lt;/h2&gt;
-&lt;p&gt;In this simple example, we have two types, &lt;em&gt;SourceType&lt;/em&gt; and &lt;em&gt;DestinationType&lt;/em&gt; - &lt;em&gt;SourceType&lt;/em&gt; contains an &lt;strong&gt;int&lt;/strong&gt; field, while &lt;em&gt;DestinationType&lt;/em&gt; contains a &lt;strong&gt;string&lt;/strong&gt; field. We require the ability to convert an instance of &lt;em&gt;SourceType&lt;/em&gt; to an instance of &lt;em&gt;DestinationType&lt;/em&gt;.&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class SourceType
-{
-    public int Value { get; set; }
-}
-
-public class DestinationType
-{
-    public string Name { get; set; }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="mapper"&gt;Mapper&lt;/h2&gt;
-&lt;p&gt;A conversion between the two types can be performed with a &lt;em&gt;mapper&lt;/em&gt; method. There are a number of places this method could be defined, including (but not limited to):&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;a method inside source type&lt;/li&gt;
-&lt;li&gt;the constructor of the destination type&lt;/li&gt;
-&lt;li&gt;a method outside of the source or destination types&lt;/li&gt;
-&lt;/ol&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class SourceType
-{
-    // 1. Method inside SourceType to return
-    // an instance of DestinationType
-    DestinationType ToDestinationType()
-    {
-        return new DestinationType
-        {
-            Name = this.Value.ToString()
-        };
-    }
-
-    public int Value { get; set; }
-}
-
-public class DestinationType
-{
-    public DestinationType() { }
-
-    // 2. Constructor which takes a parameter of SourceType
-    public DestinationType(SourceType sourceType)
-    {
-        this.Name = sourceType.Value.ToString();
-    }
-
-    public string Name { get; set; }
-}
-
-// 3. External method to do the mapping between SourceType 
-// and DestinationType
-DestinationType SourceToDestinationMapper(SourceType sourceType)
-{
-    return new DestinationType
-    {
-        Name = sourceType.Value.ToString()
-    };
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Any of the above will work, however they are required to be invoked explicitly for the conversion to take place.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="implicit"&gt;Implicit&lt;/h2&gt;
-&lt;p&gt;Instead of one of the mapper methods described above, another technique is to use the &lt;code&gt;implicit operator&lt;/code&gt; keywords. Effectively this is a mapper method - but is implicitly invoked under certain conditions, instead of having to explicitly be invoked as with a mapper method.&lt;/p&gt;
-&lt;p&gt;The operator is added to the &lt;em&gt;SourceType&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class SourceType
-{
-    public int Value { get; set; }
-
-    public static implicit operator DestinationType(SourceType t) =&amp;gt; 
-        new DestinationType { Name = t.Value.ToString() };
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;As you can see, the operator has the same logic as the mapper methods above - a &lt;em&gt;SourceType&lt;/em&gt; is accepted as a parameter, and a &lt;em&gt;DestinationType&lt;/em&gt; is returned.&lt;/p&gt;
-&lt;p&gt;Next'll we'll look at how the operator is implicitly invoked.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="usage"&gt;Usage&lt;/h2&gt;
-&lt;p&gt;There are a number of scenarios in which the implicit operator is automatically invoked.&lt;/p&gt;
-&lt;p&gt;Assigning a &lt;em&gt;SourceType&lt;/em&gt; to a &lt;em&gt;DestinationType&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var source = new SourceType { Value = 100 };
-
-// implicit operator code is called for this line
-DestinationType destination = source;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;A &lt;em&gt;cast&lt;/em&gt; from one type to the other:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var source = new SourceType { Value = 100 };
-
-// implicit operator code is called for this line
-// x is of type DestinationType
-var x = (DestinationType)source;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;When calling a method:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var source = new SourceType { Value = 100 };
-
-// pass SourceType to the method
-DoProcessing(source);
-
-// method accepts DestinationType
-// implicit operator code is called for this line
-public void DoProcessing(DestinationType dest)
-{
-    Console.WriteLine($&amp;quot;Doing processing on '{dest.Name}'&amp;quot;);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;As you can see, no mapper functions are required to be called - the conversion &lt;em&gt;implicitly&lt;/em&gt; occurs, resulting in cleaner code.&lt;/p&gt;
-&lt;h2 id="limitations"&gt;Limitations&lt;/h2&gt;
-&lt;p&gt;One limitation of this &lt;code&gt;implicit operator&lt;/code&gt; keywords, is that is not considered by the &lt;code&gt;is&lt;/code&gt; or &lt;code&gt;as&lt;/code&gt; operators. A &lt;em&gt;cast&lt;/em&gt; should be invoked to the explicit conversion.&lt;/p&gt;
-&lt;p&gt;The following will &lt;strong&gt;NOT&lt;/strong&gt; compile:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// NOT ALLOWED
-var destination = source as DestinationType;
-Console.WriteLine(destination.Name);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;Personally, I find this simplifies the usage and readability of the code and is something I will try to implement more where it makes sense.&lt;br /&gt;
-One potentially drawback of the &lt;code&gt;implicit operator&lt;/code&gt;, depending on the specific code architecture, is that &lt;em&gt;SourceType&lt;/em&gt; now requires a reference to &lt;em&gt;DestinationType&lt;/em&gt; which may not make sense or be practical (if &lt;em&gt;SourceType&lt;/em&gt; is from a 3rd party for example).&lt;/p&gt;
-&lt;p&gt;As always, consider your own use case, and which method will work best for that use case.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/operators/user-defined-conversion-operators"&gt;User-defined conversion operators (C# reference)&lt;/a&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;?# DailyDrop ?&gt;112: 07-07-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
