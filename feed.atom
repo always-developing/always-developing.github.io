@@ -4,8 +4,117 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-07-22T04:28:08Z</updated>
+	<updated>2022-07-25T04:31:24Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/07/25-environment-configuration</id>
+		<title>Environment specific startup Configure methods</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/07/25-environment-configuration" />
+		<updated>2022-07-25T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;When using the &lt;code&gt;Startup&lt;/code&gt; class approach for application startup (vs the top level minimal api approach introduced in .NET6), instead of the normal &lt;em&gt;Configure&lt;/em&gt; method used to configure the middleware pipeline, a method can be specified &lt;code&gt;per environment&lt;/code&gt;. This environment specific &lt;em&gt;Configure&lt;/em&gt; method is automatically invoked depending on the &lt;strong&gt;ASPNETCORE_ENVIRONMENT&lt;/strong&gt; environment variable value.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="startup"&gt;Startup&lt;/h2&gt;
+&lt;p&gt;Prior to .NET 6, when creating an ASP.NET Core web API project, a &lt;code&gt;Program.cs&lt;/code&gt; file is created containing the &lt;em&gt;Main&lt;/em&gt; method, and a separate &lt;code&gt;Startup.cs&lt;/code&gt; file is created containing the dependency injection setup method (&lt;em&gt;ConfigureServices&lt;/em&gt;) as well as the middleware pipeline setup method &lt;strong&gt;&lt;em&gt;Configure&lt;/em&gt;&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;The Host setup in &lt;code&gt;Program.cs&lt;/code&gt; is configured to use the &lt;em&gt;Startup&lt;/em&gt; class in &lt;code&gt;Startup.cs&lt;/code&gt; to get its configuration:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public static IHostBuilder CreateHostBuilder(string[] args) =&amp;gt;
+    Host.CreateDefaultBuilder(args)
+        .ConfigureWebHostDefaults(webBuilder =&amp;gt;
+        {
+            // Use the Startup class
+            webBuilder.UseStartup&amp;lt;Startup&amp;gt;();
+        });
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In .NET6 the default changes to contain only a &lt;code&gt;Program.cs&lt;/code&gt;, and instead of a instance of &lt;em&gt;HostBuilder&lt;/em&gt; being used, an instance of &lt;em&gt;WebApplicationBuilder&lt;/em&gt; is used:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The .NET6 default can be retro-fitted to use the same approach as prior versions (Startup class), but this post is mainly focused on versions prior to .NET6.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="default-configuration"&gt;Default Configuration&lt;/h3&gt;
+&lt;p&gt;By default in the &lt;code&gt;Startup.cs&lt;/code&gt; the &lt;em&gt;Configure&lt;/em&gt; method which is used to setup the middleware pipeline. This method is automatically invoked by the runtime:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// This method gets called by the runtime. Use this method to 
+// configure the HTTP request pipeline.
+public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+{
+    if (env.IsDevelopment())
+    {
+        app.UseDeveloperExceptionPage();
+    }
+
+    app.UseRouting();
+
+    app.UseAuthorization();
+
+    app.UseEndpoints(endpoints =&amp;gt;
+    {
+        endpoints.MapControllers();
+    });
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If the pipeline needs to differ per environment, then checks, such as the one below, need to be implemented:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// Check if we are running in a development environment
+if (env.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Here the developer exception page is only configured if the application is running in &lt;em&gt;Development&lt;/em&gt; - when the &lt;strong&gt;ASPNETCORE_ENVIRONMENT&lt;/strong&gt; is set to &lt;strong&gt;Development&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;Using these checks is the default technique to configure the pipeline per environment - however, especially if the pipelines differ greatly per environment, these checks could become complicated and potentially confusing.&lt;/p&gt;
+&lt;p&gt;An alternative technique is to setup a &lt;code&gt;configure method per environment&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="environment-configuration"&gt;Environment Configuration&lt;/h3&gt;
+&lt;p EnvironmentName=""&gt;Setting up a &lt;em&gt;Configure&lt;/em&gt; method per environment is very simple - in the &lt;em&gt;Startup&lt;/em&gt; class, just create a new method called &lt;em&gt;Configure&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;For example, the &lt;em&gt;ConfigureTest&lt;/em&gt; method will be called when running in &lt;strong&gt;Test&lt;/strong&gt;, instead of the default &lt;em&gt;Configure&lt;/em&gt; method, and the &lt;em&gt;ConfigureProduction&lt;/em&gt; method will be called when running in &lt;strong&gt;Production&lt;/strong&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;
+public void ConfigureTest(IApplicationBuilder app, IWebHostEnvironment env)
+{
+    app.UseRouting();
+
+    app.UseAuthorization();
+
+    app.UseEndpoints(endpoints =&amp;gt;
+    {
+        endpoints.MapGet(&amp;quot;/&amp;quot;, async (HttpContext ctx) =&amp;gt; 
+            await ctx.Response.WriteAsync(&amp;quot;In Test environment&amp;quot;));
+        endpoints.MapControllers();
+    });
+}
+
+public void ConfigureProduction(IApplicationBuilder app, IWebHostEnvironment env)
+{
+    app.UseRouting();
+
+    app.UseAuthorization();
+
+    app.UseEndpoints(endpoints =&amp;gt;
+    {
+        endpoints.MapControllers();
+    });
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;It no environment specific method could be found, then the default &lt;em&gt;Configure&lt;/em&gt; method is called.&lt;/p&gt;
+&lt;p&gt;The same process can be applied to &amp;quot;non-built-in&amp;quot; environments (Development, Test, Production) - if when running locally, the &lt;strong&gt;ASPNETCORE_ENVIRONMENT&lt;/strong&gt; environment variable is set to &lt;strong&gt;LocalDevelopment&lt;/strong&gt;, for example, then the following method will be called:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// Method named Configure{EnvironmentName}
+ public void ConfigureLocalDevelopment(IApplicationBuilder app, IWebHostEnvironment env)
+{
+    app.UseRouting();
+    app.UseEndpoints(endpoints =&amp;gt;
+    {
+        endpoints.MapGet(&amp;quot;/debug&amp;quot;, async (HttpContext ctx) =&amp;gt; 
+            await ctx.Response.WriteAsync(&amp;quot;Special debug information&amp;quot;));
+        endpoints.MapControllers();
+
+    });
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;Perhaps not especially relevent if working with the latest version of .NET (6 and above), or if there is not major differences in middleware pipelines between difference environments - this is still an interesting technique available if one requires it to ensure cleaner and easier to understand code.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;?# DailyDrop ?&gt;123: 25-07-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/07/22-require-property</id>
 		<title>Exploring the new required properties</title>
@@ -1099,148 +1208,6 @@ Console.WriteLine(person.Name);
 &lt;p&gt;&lt;a href="https://www.reddit.com/r/csharp/comments/uxlkub/nullable_types_dictionaries_and_magic/"&gt;Nullable types, dictionaries and magic&lt;/a&gt;&lt;/p&gt;
 &lt;hr /&gt;
 &lt;?# DailyDrop ?&gt;115: 12-07-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/07/11-initializer-expansion</id>
-		<title>Expanding on an property initializer</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/07/11-initializer-expansion" />
-		<updated>2022-07-11T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;A class &lt;code&gt;property initializer can be expanded on in the class declaration&lt;/code&gt; (assuming the property type supports it, such as Dictionary) to a have additional values added.&lt;/p&gt;
-&lt;p&gt;This technique (explained further below) does have fairly limited practical application and is quite niche - but it does have its place, and practical or not, is very interesting.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="use-case"&gt;Use case&lt;/h2&gt;
-&lt;p&gt;In our use case, when an exception occurs, we want to capture some generic information about the PC on which the exception occurred (machine name, operating system), as well as the actual exception.&lt;/p&gt;
-&lt;p&gt;If we have an &lt;code&gt;ExceptionInformation&lt;/code&gt; class to capture all this information:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Static information such as the &lt;em&gt;machine name&lt;/em&gt; can be &lt;code&gt;automatically initialized&lt;/code&gt; on instantiation of an &lt;em&gt;ExceptionInformation&lt;/em&gt; instance&lt;/li&gt;
-&lt;li&gt;Dynamic information such as the &lt;em&gt;exception&lt;/em&gt; must be &lt;code&gt;manually supplied&lt;/code&gt; to our capture class&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id="constructor"&gt;Constructor&lt;/h3&gt;
-&lt;p&gt;One way of &lt;em&gt;manually&lt;/em&gt; supplying the exception information is pass it to the &lt;code&gt;ExceptionInformation&lt;/code&gt; instance in the constructor:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class ExceptionInformation
-{
-    // string representation of the exception
-    private readonly string _exceptionString;
-
-    // set the exception in the constructor
-    public ExceptionInformation(string exceptionString)
-    {
-        _exceptionString = exceptionString;
-    }
-
-    // A dictionary to contain all the relevent information about the exception
-    // initialize it with the information on class initialization
-    public Dictionary&amp;lt;string, object&amp;gt; Configuration { get; } = 
-        new Dictionary&amp;lt;string, object&amp;gt;
-        {
-            [&amp;quot;MachineName&amp;quot;] = Environment.MachineName,
-            [&amp;quot;OsVersion&amp;quot;] = Environment.OSVersion
-        };
-
-    // override method to be able to output a representation of the class
-    public override string ToString()
-    {
-        return $&amp;quot;{_exceptionString}{Environment.NewLine}&amp;quot; +
-            $&amp;quot;{String.Join(Environment.NewLine, Configuration.Select(d =&amp;gt; $&amp;quot;{d.Key}: { d.Value}&amp;quot;))}&amp;quot;;
-    }
-}
-
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The usage of the class would be as follows (with an exception being forced to occur):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;try
-{
-    // force a divide by zero exception
-    var intValue = 100;
-    _ = intValue / 0;
-}
-catch(Exception ex)
-{
-    // capture the exception
-    var ei = new ExceptionInformation(ex.ToString());
-    Console.WriteLine(ei.ToString());
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;And the output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;System.DivideByZeroException: Attempted to divide by zero.
-   at Program.&amp;lt;Main&amp;gt;$(String[] args) in 
-    C:\Development\Projects\InitializerExpansion\Program.cs:line 5
-MachineName: T800
-OsVersion: Microsoft Windows NT 10.0.22000.0
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;There are other options to achieve the same result - instead of a setting the private &lt;em&gt;_exceptionString&lt;/em&gt; variable, the exception string value could have been added directly to the dictionary in the constructor:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public ExceptionInformation(string exceptionString)
-{
-    this.Configuration.Add(&amp;quot;ExceptionString&amp;quot;, exceptionString);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Both of the above approaches are valid and will achieve the desired result, however another interesting approach is to &lt;em&gt;expand on the property initializer&lt;/em&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="initializer-expansion"&gt;Initializer expansion&lt;/h3&gt;
-&lt;p&gt;The initializer can be expanded to include adding custom information to the &lt;em&gt;ExceptionInformation&lt;/em&gt; instance. Similar to how the &lt;em&gt;exceptionString&lt;/em&gt; was added to the dictionary in the constructor in the above example, except this method is more dynamic and allows for any values to be added.&lt;/p&gt;
-&lt;p&gt;If we remove all references to &lt;em&gt;exceptionString&lt;/em&gt; from the &lt;em&gt;ExceptionInformation&lt;/em&gt; class, including from the constructor:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class ExceptionInformation
-{
-    // No constructor which takes the exception
-   
-    // A dictionary to contain all the relevent information about the exception
-    // initialize it with the information on class initialization
-    public Dictionary&amp;lt;string, object&amp;gt; Configuration { get; } = 
-        new Dictionary&amp;lt;string, object&amp;gt;
-        {
-            [&amp;quot;MachineName&amp;quot;] = Environment.MachineName,
-            [&amp;quot;OsVersion&amp;quot;] = Environment.OSVersion
-        };
-
-    // override method to be able to output a representation of the class
-    // Now ONLY outputs the dictionary
-    public override string ToString()
-    {
-        return String.Join(Environment.NewLine, Configuration.Select(d =&amp;gt; $&amp;quot;{d.Key}: {d.Value}&amp;quot;));
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This usage of the class is now as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;try
-{
-    // force a divide by zero exception
-    var intValue = 100;
-    _ = intValue / 0;
-}
-catch(Exception ex)
-{
-    // capture the exception by expanding the Configuration initialization
-    var ei = new ExceptionInformation
-    {
-        Configuration =
-        {
-            [&amp;quot;ExceptionString&amp;quot;] = ex.ToString()
-            // any other data can be added here
-        }
-    };
-    Console.WriteLine(ei.ToString());
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Here the &lt;em&gt;Configuration&lt;/em&gt; values specified when an instance of &lt;em&gt;ExceptionInformation&lt;/em&gt; is initialized, &lt;code&gt;are added&lt;/code&gt; to the values initialized internally in the class.&lt;/p&gt;
-&lt;p&gt;The output of the above is:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;MachineName: T800
-OsVersion: Microsoft Windows NT 10.0.22000.0
-ExceptionString: System.DivideByZeroException: Attempted to divide by zero.
-   at Program.&amp;lt;Main&amp;gt;$(String[] args) in 
-    C:\Development\Projects\InitializerExpansion\Program.cs:line 5
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;One &lt;code&gt;advantage&lt;/code&gt; of the initializer expansion method, is that all data is now contained in a single place (the dictionary) and more values can be added dynamically.&lt;br /&gt;
-However, on the &lt;code&gt;negative side&lt;/code&gt;, its not apparently obvious to the developer using the &lt;em&gt;ExceptionInformation&lt;/em&gt; class, that additional items can be added to the dictionary in this manner.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;As mentioned, this has a fairly niche use case - and even though there are other methods to do the achieve the same outcome, I find this method especially appealing. Even if I never have a practical need for it in a real application - I still find it an interesting usage of the language features.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://twitter.com/8BitVentilator/status/1524685108606914564"&gt;8 Bit Ventilator tweet&lt;/a&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;?# DailyDrop ?&gt;114: 11-07-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
