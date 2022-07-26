@@ -4,8 +4,115 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-07-25T04:31:24Z</updated>
+	<updated>2022-07-26T04:51:10Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/07/26-ienumerable-execution</id>
+		<title>IEnumerable's lazy evaluation</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/07/26-ienumerable-execution" />
+		<updated>2022-07-26T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;When executing a method which returns &lt;em&gt;IEnumerable&lt;/em&gt;, the method body is &lt;code&gt;not execute until the result is enumerated over&lt;/code&gt;. Invoking the method will not cause any of the method code to execute, including any code before the first &lt;code&gt;yield&lt;/code&gt; in the body - not until enumeration.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="ienumerable"&gt;IEnumerable&lt;/h2&gt;
+&lt;p&gt;A quick summary of &lt;code&gt;IEnumerable&lt;/code&gt; and &lt;code&gt;yield&lt;/code&gt; usage - when a method is defined to have a return type of IEnumberable&amp;lt;T&amp;gt;, it can be invoked and the results iterated over:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// call the GetNumbers method in the foreach loop
+foreach(var number in GetNumbers())
+{
+    Console.WriteLine(number);
+}
+
+public IEnumberable&amp;lt;int&amp;gt; GetNumbers()
+{
+    yield return 1;
+    yield return 2;
+    yield return 3;
+    yield return 4;
+    yield return 5;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The great benefit of IEnumerable though, comes with its usage in conjunction with the &lt;code&gt;yield&lt;/code&gt; keyword - this is used inside the method to return a value and (temporarily) yield control to the calling iterator. Once the iteration body (&lt;em&gt;Console.WriteLine&lt;/em&gt; in our example) is complete, control is then returned back to the method, which is executed until the next &lt;code&gt;yield&lt;/code&gt; is encountered.&lt;/p&gt;
+&lt;p&gt;The output for the above would be:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;1
+2
+3
+4
+5
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="lazy-evaluation"&gt;Lazy evaluation&lt;/h2&gt;
+&lt;p&gt;In the above example we saw how the &lt;em&gt;GetNumbers&lt;/em&gt; method was called as part of the iterator (as part of the &lt;code&gt;foreach&lt;/code&gt;) - but it is also possible to invoke the method, and store the returned &lt;em&gt;IEnumerable&lt;/em&gt; for later execution:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// call the GetNumbers method 
+IEnumerable&amp;lt;int&amp;gt; numbers = GetNumbers();
+
+// do more processing
+
+// iterate over the IEnumerable&amp;lt;int&amp;gt; variable
+foreach (var number in numbers)
+{
+    Console.WriteLine(number);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This results in the same output as the previous example above.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="lazy-execution"&gt;Lazy execution&lt;/h2&gt;
+&lt;p&gt;The interesting part about the lazy evaluation (and the reason for this post), is that when using &lt;code&gt;lazy evaluation&lt;/code&gt;, the method body is &lt;code&gt;not executed when the method is called&lt;/code&gt;, only when it's &lt;code&gt;iterated over&lt;/code&gt;:&lt;/p&gt;
+&lt;p&gt;Consider the following method which returns &lt;em&gt;IEnumerable&amp;lt;string&amp;gt;&lt;/em&gt;, but before it returns a value it will log which value is being returned:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;IEnumerable&amp;lt;string&amp;gt; GetStringsWithLogging()
+{
+    Console.WriteLine(&amp;quot;Executing iteration 1&amp;quot;);
+    yield return &amp;quot;Iteration 1&amp;quot;;
+
+    Console.WriteLine(&amp;quot;Executing iteration 2&amp;quot;);
+    yield return &amp;quot;Iteration 2&amp;quot;;
+
+    Console.WriteLine(&amp;quot;Executing iteration 3&amp;quot;);
+    yield return &amp;quot;Iteration 3&amp;quot;;
+
+    Console.WriteLine(&amp;quot;Executing iteration 4&amp;quot;);
+    yield return &amp;quot;Iteration 4&amp;quot;;
+
+    Console.WriteLine(&amp;quot;Executing iteration 5&amp;quot;);
+    yield return &amp;quot;Iteration 5&amp;quot;;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The method is executed as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;Console.WriteLine($&amp;quot;Before '{nameof(GetStringsWithLogging)}' called&amp;quot;);
+var deferLogging = GetStringsWithLogging();
+Console.WriteLine($&amp;quot;After '{nameof(GetStringsWithLogging)}' called&amp;quot;);
+
+foreach (var item in deferLogging)
+{
+    Console.WriteLine(item);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output of the above is:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Before 'GetStringsWithLogging' called
+After 'GetStringsWithLogging' called
+Executing iteration 1
+Iteration 1
+Executing iteration 2
+Iteration 2
+Executing iteration 3
+Iteration 3
+Executing iteration 4
+Iteration 4
+Executing iteration 5
+Iteration 5
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;From the output one can see that the body of &lt;em&gt;GetStringsWithLogging&lt;/em&gt; is &lt;code&gt;not invoked&lt;/code&gt; when it is initially called - it is only when the &lt;em&gt;deferLogging&lt;/em&gt; variable is iterated over with the &lt;em&gt;foreach&lt;/em&gt; loop, that the body of &lt;em&gt;GetStringsWithLogging&lt;/em&gt; is executed.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;My initial gut assumption with an IEnumerable method was that the body of the method in question (&lt;em&gt;GetStringsWithLogging&lt;/em&gt; here) would execute up until the first &lt;code&gt;yield&lt;/code&gt; when called, no matter if lazy or not. However working through sample examples, and understanding how the code is lowered, the deferred execution makes more sense - and I am glad my initial assumptions were incorrect.&lt;/p&gt;
+&lt;p&gt;Having the ability to defer execution of the method allows for potentially long running processes which retrieve the results data (for example), to be deferred until/if actually needed (obviously all by design, I am sure) it very valuable. The &lt;em&gt;IEnumerable&lt;/em&gt; instance can be passed around between methods, and only materialized when required - instead of passing around the (potentially larger in size) materialized data, when it might not even be needed.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://stackoverflow.blog/2022/06/15/c-ienumerable-yield-return-and-lazy-evaluation/"&gt;C#: IEnumerable, yield return, and lazy evaluation&lt;/a&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;?# DailyDrop ?&gt;124: 26-07-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/07/25-environment-configuration</id>
 		<title>Environment specific startup Configure methods</title>
@@ -1069,145 +1176,6 @@ PRINT N'Update complete.';
 &lt;p&gt;&lt;a href="https://www.sqlshack.com/how-to-compare-two-sql-databases-from-visual-studio/"&gt;How to compare two SQL databases from Visual Studio&lt;/a&gt;&lt;/p&gt;
 &lt;hr&gt;
 &lt;!--?# DailyDrop ?--&gt;116: 13-07-2022&lt;!--?#/ DailyDrop ?--&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/07/12-maybenullwhen-attribute</id>
-		<title>MaybeNullWhen attribute usage</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/07/12-maybenullwhen-attribute" />
-		<updated>2022-07-12T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;MaybeNullWhen&lt;/code&gt; attribute can be used to specify that when a method returns &amp;quot;ReturnValue&amp;quot;, an &lt;code&gt;out&lt;/code&gt; parameter may be &lt;code&gt;null&lt;/code&gt; even if the corresponding type does not allow it.&lt;/p&gt;
-&lt;p&gt;This is especially applicable in the &lt;code&gt;TryGet*&lt;/code&gt; methods, such as the &lt;em&gt;TryGetValue&lt;/em&gt; method on &lt;em&gt;Dictionary&lt;/em&gt;, for example.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="setup"&gt;Setup&lt;/h2&gt;
-&lt;p&gt;In all the examples below, the project has been set to allow nullable types. In the csproj file, the following is set:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-xml"&gt;&amp;lt;Nullable&amp;gt;enable&amp;lt;/Nullable&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We have also defined a &lt;em&gt;Person&lt;/em&gt; class, with a single &lt;em&gt;Name&lt;/em&gt; property:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Person
-{
-    public string Name { get; set; } 
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;A dictionary is then created of &lt;em&gt;Person&lt;/em&gt;'s, and &lt;em&gt;id&lt;/em&gt; value set for a &lt;code&gt;person which does not exist&lt;/code&gt; in the dictionary:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var people = new Dictionary&amp;lt;int, Person&amp;gt;();
-
-people.Add(1, new Person { Name = &amp;quot;Dave&amp;quot; });
-people.Add(2, new Person { Name = &amp;quot;John&amp;quot; });
-people.Add(3, new Person { Name = &amp;quot;Mike&amp;quot; });
-people.Add(4, new Person { Name = &amp;quot;Chris&amp;quot; });
-
-// This Id does not exist in the dictionary
-int id = 5;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="compiler-warning"&gt;Compiler warning&lt;/h2&gt;
-&lt;p&gt;Next, we'll write a method to &lt;code&gt;TryGet&lt;/code&gt; a person out of the dictionary - the function will return &lt;code&gt;true/false&lt;/code&gt; if the dictionary contains the id, as well as having an &lt;code&gt;out&lt;/code&gt; Person parameter which will contain the &lt;em&gt;Person&lt;/em&gt; record, if found.&lt;/p&gt;
-&lt;p&gt;This is a standard pattern used often by many core .NET libraries - &lt;em&gt;Dictionary&lt;/em&gt; already has a &lt;em&gt;TryGetValue&lt;/em&gt; method following this pattern, but for demo purposes we will write a custom method.&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// return false if the record not found in the dictionary
-// return true if found AND set the out Person to the found record
-public bool TryGetPerson(Dictionary&amp;lt;int, Person&amp;gt; d, int id, out Person p)
-{
-    // check if the dictionary contains the key
-    if (!d.ContainsKey(id))
-    {
-        // set the out parameter value to null
-        p = null;
-        return false;
-    }
-
-    // set the out parameter value to the item in the dictionary
-    p = d[id];
-    return true;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The above method will work, and performs as expected - however, the compiler gives us a warning for the line &lt;code&gt;p = null&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Cannot convert null literal to non-nullable reference type.
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This is because the code is assigning a &lt;code&gt;null&lt;/code&gt; value to the out &lt;em&gt;Person&lt;/em&gt; p object, when the parameter hasn't been marked as explicitly allowing nulls.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="nullable-type"&gt;Nullable type&lt;/h2&gt;
-&lt;p&gt;Let's address the warning - the compiler is telling us we are assigning a &lt;code&gt;null&lt;/code&gt; value to a &lt;code&gt;non-nullable&lt;/code&gt; type, so let's make the type &lt;code&gt;nullable&lt;/code&gt;. This is done by adding a question mark (&lt;code&gt;?&lt;/code&gt;) after the type:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// Person has changed to nullable, Person?
-public bool TryGetPerson(Dictionary&amp;lt;int, Person&amp;gt; d, int id, out Person? p)
-{
-    // check if the dictionary contains the key
-    if (!d.ContainsKey(id))
-    {
-        // set the out parameter value to null
-        p = null;
-        return false;
-    }
-
-    // set the out parameter value to the item in the dictionary
-    p = d[id];
-    return true;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Making the above update will resolve the initial warning - however the usage of the above method has now introduced another warning:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;if(!TryGetPerson(people, id, out var person))
-{
-    return;
-}
-
-Console.WriteLine(person.Name);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The &lt;code&gt;Console.WriteLine(person.Name);&lt;/code&gt; line of code results in the warning:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Dereference of a possibly null reference.
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The compiler is informing us that the code is referencing the &lt;em&gt;Name&lt;/em&gt; property on a possibly null object (resulting in an exception).&lt;/p&gt;
-&lt;p&gt;This can be solved by checking if &lt;em&gt;person&lt;/em&gt; is null, again using the question mark:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;Console.WriteLine(person?.Name);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="maybenullwhen-usage"&gt;MaybeNullWhen usage&lt;/h2&gt;
-&lt;p&gt;Another option is, instead of making the &lt;em&gt;Person&lt;/em&gt; out parameter nullable, to make use of the &lt;code&gt;MaybeNullWhen&lt;/code&gt; attribute:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// The attribute is added to the parameter
-public bool TryGetPerson(Dictionary&amp;lt;int, Person&amp;gt; d, int id, 
-    [MaybeNullWhen(returnValue: false)]out Person p)
-{
-    // check if the dictionary contains the key
-    if (!d.ContainsKey(id))
-    {
-        // set the out parameter value to null
-        p = null;
-        return false;
-    }
-
-    // set the out parameter value to the item in the dictionary
-    p = d[id];
-    return true;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The addition of the parameter is an indicator to the compiler that &lt;code&gt;the out Person parameter can maybe be NULL when the return value is false&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;The usage of the method is the same as before, but now no longer results in any warnings!&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;if(!TryGetPerson(people, id, out var person))
-{
-    return;
-}
-
-Console.WriteLine(person.Name);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;If however &lt;em&gt;person&lt;/em&gt; is reference in a path where it could be null, then the warning occurs again:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;if(!TryGetPerson(people, id, out var person))
-{
-    // person is null here
-    Console.WriteLine(person.Name);
-
-    return;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;In the above code snippet, &lt;em&gt;person.Name&lt;/em&gt; is being used in a path where &lt;em&gt;person&lt;/em&gt; is null (when &lt;em&gt;TryGetPerson&lt;/em&gt; returns false) - thanks to the &lt;code&gt;MaybeNullWhen&lt;/code&gt; attribute, the compiler has enough information to know this will most likely result in a null reference and so the warning occurs.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;Whether writing a line of business application or a reusable library, if applicable, the &lt;code&gt;MaybeNullWhen&lt;/code&gt; attribute should be used to give more information to the compiler about the intention of the code, thus improving developer experience.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.reddit.com/r/csharp/comments/uxlkub/nullable_types_dictionaries_and_magic/"&gt;Nullable types, dictionaries and magic&lt;/a&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;?# DailyDrop ?&gt;115: 12-07-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
