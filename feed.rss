@@ -5,8 +5,96 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Tue, 26 Jul 2022 04:51:10 GMT</pubDate>
-		<lastBuildDate>Tue, 26 Jul 2022 04:51:10 GMT</lastBuildDate>
+		<pubDate>Wed, 27 Jul 2022 04:34:03 GMT</pubDate>
+		<lastBuildDate>Wed, 27 Jul 2022 04:34:03 GMT</lastBuildDate>
+		<item>
+			<title>Null forgiving operator</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/07/27-null-forgiving</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/07/27-null-forgiving</guid>
+			<pubDate>Wed, 27 Jul 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;C# contains a &lt;code&gt;unary, postfix, null-forgiving&lt;/code&gt; (or null-suppression) operator &lt;code&gt;!&lt;/code&gt;, which can be used to declare that an expression of a reference type is &lt;code&gt;not null&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;The null-forgiving operator is used in a nullable enabled context, has no effect at run time, and only affects the compiler's static flow analysis by changing the null state of the expression in question.&lt;/p&gt;
+&lt;p&gt;Effectively, the operator informs the compiler that an expression which it has determined to be &lt;code&gt;null&lt;/code&gt;, is in fact not null and no diagnostic alert (a warning by default) needs to be raised.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="usage"&gt;Usage&lt;/h2&gt;
+&lt;h3 id="unit-testing"&gt;Unit testing&lt;/h3&gt;
+&lt;p&gt;A practical use of the &lt;code&gt;!&lt;/code&gt; null-forgiving operator, is when performing unit tests.&lt;/p&gt;
+&lt;p&gt;Consider the following class, which has an &lt;em&gt;Artist&lt;/em&gt; property, forced to be &lt;code&gt;non-null&lt;/code&gt; by the constructor:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Song
+{
+    public string Artist { get; }
+
+    public Song(string artist)
+    {
+        Artist = artist ?? throw new ArgumentNullException(nameof(artist));
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;When unit testing the class, one would want to test all possible combinations of &lt;em&gt;Song&lt;/em&gt; instantiation - with and without a valid &lt;em&gt;artist&lt;/em&gt; value:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// Instantiation to test created successfully
+var song = new Song(&amp;quot;Foo Fighters&amp;quot;);
+
+// Instantiation to test exception is thrown
+var exceptionSong = new Song(null);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The issue with the above, is at compile time, the compiler sees the &lt;code&gt;null&lt;/code&gt; being passed to the constructor and raises the following warning:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Cannot convert null literal to non-nullable reference type.
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In this case, we &lt;strong&gt;want&lt;/strong&gt; to pass &lt;code&gt;null&lt;/code&gt; as part of a unit test to determine the correct behavior is seen. The &lt;code&gt;null-forgiving&lt;/code&gt; operator can be used to effectively tell the compiler, that the &lt;em&gt;&lt;code&gt;null&lt;/code&gt; expression is not null, and the compiler does not need to treat is as such&lt;/em&gt; (and thus no warning is generated)&lt;/p&gt;
+&lt;p&gt;Updating the code to the following, will remove the warning:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// Instantiation to test created successfully
+var song = new Song(&amp;quot;Foo Fighters&amp;quot;);
+
+// Instantiation to test exception is thrown
+// Null-forgiving operator added
+var exceptionSong = new Song(null!);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="manual-check"&gt;Manual check&lt;/h3&gt;
+&lt;p&gt;Another practical use of the &lt;code&gt;null-forgiving operator&lt;/code&gt;, is in situations when the compiler has &lt;code&gt;incorrectly&lt;/code&gt; determined that an expression could possibly be &lt;code&gt;null&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Consider the below method to validate an instance of &lt;em&gt;Song&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;static bool IsValid(Song? song)
+    =&amp;gt; song is not null &amp;amp;&amp;amp; song.Artist is not null;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And the usage:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// get a nullable Song instance 
+// from a source
+Song? s = GetSong();
+
+// validate the song and output if valid
+if (IsValid(s))
+{
+    Console.WriteLine($&amp;quot;Song by Artist `{s.Artist}` is valid&amp;quot;);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The above code generates the following warning on the &lt;code&gt;s.Artist&lt;/code&gt; usage:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Dereference of a possibly null reference.
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This warning is due to the fact, that based on the data types, &lt;code&gt;s&lt;/code&gt; (of type &lt;code&gt;Song?&lt;/code&gt;) could contain a &lt;code&gt;null&lt;/code&gt; value, in which case &lt;code&gt;s.Artist&lt;/code&gt; would cause an exception. However, the &lt;code&gt;IsValid&lt;/code&gt; method is performing checks to ensure that &lt;code&gt;s.Artist can never be invoked when s is null&lt;/code&gt; - in this use case the warning is incorrect.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;null-forgiving&lt;/code&gt; operator can be used again to tell the compiler, that the &lt;em&gt;s&lt;/em&gt; expression in &lt;code&gt;s.Artist&lt;/code&gt; can be treated as never being null.&lt;/p&gt;
+&lt;p&gt;Updating the code to the following, will remove the warning:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// get a nullable Song instance
+Song? s = GetSong();
+
+if (IsValid(s))
+{
+    // null-forgiving operator added
+    Console.WriteLine($&amp;quot;Song by Artist `{s!.Artist}` is valid&amp;quot;);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;While not an operator for every day use for most applications, the &lt;code&gt;null-forgiving&lt;/code&gt; operator can be very useful in resolving certain inaccurate warnings. However take care when using the operator, and only implement when sure that the compiler is incorrect. While the code itself will not throw any exceptions &lt;strong&gt;because&lt;/strong&gt; of the operator usage (it's ignored at runtime), the code could throw exceptions due to the the expression in question being &lt;code&gt;null&lt;/code&gt; - which the compiler was trying to warn about (before being manually overwritten with the operator)&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/operators/null-forgiving"&gt;! (null-forgiving) operator&lt;/a&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;?# DailyDrop ?&gt;125: 27-07-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>IEnumerable's lazy evaluation</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/07/26-ienumerable-execution</link>
@@ -1109,84 +1197,6 @@ public Song WithContextPooling()
 &lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/ef/core/performance/advanced-performance-topics?tabs=with-di%2Cwith-constant#dbcontext-pooling"&gt;DbContext pooling&lt;/a&gt;&lt;/p&gt;
 &lt;hr /&gt;
 &lt;?# DailyDrop ?&gt;116: 14-07-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Visual Studio Schema Compare</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/07/13-sql-schema-compare</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/07/13-sql-schema-compare</guid>
-			<pubDate>Wed, 13 Jul 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;Visual Studio has a built in feature called &lt;code&gt;Schema Compare&lt;/code&gt; which easily allows for the comparing of two SQL database schemas and the generation of a script to bring them in sync.&lt;/p&gt;
-&lt;p&gt;In the past I've had to perform database schema comparisons numerous times (admittedly the majority of these times have been in the fairly distant past when proper CI/CD tools and DevOps practices were not in place) - and there were limited tools available. &lt;code&gt;Schema Compare&lt;/code&gt; contains the all the features I've required in the past in an incredibly simple to use package.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="installation"&gt;Installation&lt;/h2&gt;
-&lt;p&gt;The feature is available through the installation of the &lt;code&gt;SQL Server Data Tools&lt;/code&gt; Visual Studio component. One can use the &lt;em&gt;Visual Studio Installer&lt;/em&gt; to confirm if the component is installed or not:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Open &lt;em&gt;Visual Studio Installer&lt;/em&gt;&lt;/li&gt;
-&lt;li&gt;Click &lt;em&gt;Modify&lt;/em&gt; on the relevent Visual Studio installation&lt;/li&gt;
-&lt;li&gt;Select the &lt;em&gt;Individual components&lt;/em&gt; tab&lt;/li&gt;
-&lt;li&gt;Search for "sql server data tools"&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/installation.png" alt="SQL Server Data Tools"&gt;&lt;/p&gt;
-&lt;p&gt;Once installed, the feature will be available under &lt;code&gt;Tools -&amp;gt; SQL Server -&amp;gt; New Schema Comparison&lt;/code&gt; in Visual Studio:&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/menu-feature.png" alt="New Schema Comparison"&gt;&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="usage"&gt;Usage&lt;/h2&gt;
-&lt;p&gt;The usage of the feature is straightforward - when opened you will be presented with two drop down lists, one to select the &lt;em&gt;Source&lt;/em&gt; database and one to select the &lt;em&gt;Target&lt;/em&gt; database:&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/source-target.png" alt="Source and Target selection"&gt;&lt;/p&gt;
-&lt;p&gt;A screen with the traditional database connection settings is presented when adding the &lt;em&gt;Source&lt;/em&gt; and &lt;em&gt;Target&lt;/em&gt; database:&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/connection.png" alt="Source and Target selection"&gt;&lt;/p&gt;
-&lt;p&gt;Once the &lt;em&gt;Source&lt;/em&gt; and &lt;em&gt;Target&lt;/em&gt; databases have been set, the &lt;code&gt;Compare&lt;/code&gt; button becomes available - clicking on this will perform the database comparison.&lt;/p&gt;
-&lt;p&gt;A list of differences between the databases will be presented, drilling down and clicking on the specific item will then show the specific difference.&lt;/p&gt;
-&lt;p&gt;In the example below, there are differences between the &lt;em&gt;Song&lt;/em&gt; tables in the two databases:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;a &lt;em&gt;Length&lt;/em&gt; discrepancy on the &lt;em&gt;Artist&lt;/em&gt; column&lt;/li&gt;
-&lt;li&gt;a &lt;em&gt;Nullability&lt;/em&gt; discrepancy on the &lt;em&gt;LengthInSeconds&lt;/em&gt; column&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Clicking on the &lt;em&gt;Length&lt;/em&gt; item, displays the specific difference:&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/differences.png" alt="List of differences"&gt;&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="application"&gt;Application&lt;/h2&gt;
-&lt;p&gt;Once the differences have been identified, the next step is bring the &lt;em&gt;Destination&lt;/em&gt; database in line with the &lt;em&gt;Source&lt;/em&gt; database.&lt;/p&gt;
-&lt;p&gt;This can be done by &lt;code&gt;updating the target database directly&lt;/code&gt;:&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/update.png" alt="Update target"&gt;&lt;/p&gt;
-&lt;p&gt;This may not always be possible or feasible, so another option is to have a &lt;code&gt;script generated&lt;/code&gt; to align the &lt;em&gt;Target&lt;/em&gt; to the &lt;em&gt;Source&lt;/em&gt;:&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/script.png" alt="Generate Script"&gt;&lt;/p&gt;
-&lt;p&gt;The script generated by the tool looks as follows (abbreviated to include only the relevent portion):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;--
---
--- some preamble removed for brevity
---
---
-USE [$(DatabaseName)];
-
-
-GO
-PRINT N'Altering Table [dbo].[Song]...';
-
-
-GO
-ALTER TABLE [dbo].[Song] ALTER COLUMN [Artist] NVARCHAR (500) NOT NULL;
-
-ALTER TABLE [dbo].[Song] ALTER COLUMN [LengthInSeconds] INT NULL;
-
-
-GO
-PRINT N'Update complete.';
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;By default all differences are included in the &lt;code&gt;Update&lt;/code&gt; or &lt;code&gt;Generate Script&lt;/code&gt; but it is possible to uncheck specific differences if you wish to exclude them from the update.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;In a perfect world this feature is never required as DevOps practices ensure that a dev, test and production database are always in sync (or can easily be brought in sync). However in the real world, differences sometimes occur - sometimes its easier to sync a database schema from production to dev instead of creating the dev database from scratch, for example.&lt;/p&gt;
-&lt;p&gt;In these cases, the &lt;code&gt;Schema Compare&lt;/code&gt; feature will prove to be invaluable in tracking down and remedying any differences.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.sqlshack.com/how-to-compare-two-sql-databases-from-visual-studio/"&gt;How to compare two SQL databases from Visual Studio&lt;/a&gt;&lt;/p&gt;
-&lt;hr&gt;
-&lt;!--?# DailyDrop ?--&gt;116: 13-07-2022&lt;!--?#/ DailyDrop ?--&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
