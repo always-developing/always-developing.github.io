@@ -4,8 +4,123 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-07-28T04:24:57Z</updated>
+	<updated>2022-07-29T04:30:44Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/07/29-deconstruct-method</id>
+		<title>Deconstructing a class instance into multiple variables</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/07/29-deconstruct-method" />
+		<updated>2022-07-29T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;One or many &lt;code&gt;Deconstruct&lt;/code&gt; methods can be added to a class allowing the class properties to be deconstructed into one or more variables (depending on the &lt;code&gt;Deconstruct&lt;/code&gt; methods available). This helps created cleaner, more concise code.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="non-deconstruct"&gt;Non-Deconstruct&lt;/h2&gt;
+&lt;p&gt;Consider a &lt;em&gt;Song&lt;/em&gt; class, with three properties:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Song
+{
+    public string SongName { get; init; }
+
+    public string ArtistName { get; init; }
+
+    public int LengthInSeconds { get; init; }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If there is a requirement to print out all the properties of a &lt;em&gt;Song&lt;/em&gt; instance, it could be done like this:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var song1 = new Song
+{
+    ArtistName = &amp;quot;Foo Fighters&amp;quot;,
+    SongName = &amp;quot;Everlong&amp;quot;,
+    LengthInSeconds = 250
+};
+
+Console.WriteLine($&amp;quot;The song '{song1.SongName}' by '{song1.ArtistName}' &amp;quot; +
+    $&amp;quot;is {song1.LengthInSeconds} seconds long&amp;quot;);
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Nothing especially wrong with this, but if the &lt;em&gt;Song&lt;/em&gt; class had more properties, with long names, the interpolated string could get long and unwieldy.&lt;/p&gt;
+&lt;p&gt;This could be simplified by doing the following:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var song1 = new Song
+{
+    ArtistName = &amp;quot;Foo Fighters&amp;quot;,
+    SongName = &amp;quot;Everlong&amp;quot;,
+    LengthInSeconds = 250
+};
+
+var name = song1.SongName;
+var artist = song1.ArtistName;
+var length = song1.LengthInSeconds;
+
+Console.WriteLine($&amp;quot;The song '{name}' by '{artist}' is {length} seconds long&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The interpolated string is definitely more concise now, but thee extra variables have been defined and assigned. This would make sense if the values are being reused numerous times in the code - but if this is only used once-off, a lot of vertical space has been taken up for no real &amp;quot;value&amp;quot;.&lt;/p&gt;
+&lt;p&gt;However, the &lt;code&gt;Deconstruct&lt;/code&gt; method makes this process even more concise and simpler.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="deconstruct"&gt;Deconstruct&lt;/h2&gt;
+&lt;p&gt;One or many &lt;code&gt;Deconstruct&lt;/code&gt; method can be added to the &lt;em&gt;Song&lt;/em&gt; class to allow for the deconstruction of the instance into variables.&lt;/p&gt;
+&lt;p&gt;A method called &lt;code&gt;Deconstruct&lt;/code&gt; is defined on the class, with one or more &lt;code&gt;out&lt;/code&gt; parameters in the method signature:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Song
+{
+    public string SongName { get; init; }
+
+    public string ArtistName { get; init; }
+
+    public int LengthInSeconds { get; init; }
+
+    // deconstruct all three properties
+    public void Deconstruct(out string artist, out string name, out int length)
+    {
+        name = SongName;
+        artist = ArtistName;
+        length = LengthInSeconds;
+    }
+
+    // deconstruct into a string combination of song and artist
+    // as well as the length
+    public void Deconstruct(out string output, out int length)
+    {
+        output = $&amp;quot;'{SongName}' by {ArtistName}&amp;quot;;
+        length = LengthInSeconds;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The &lt;code&gt;Deconstruct&lt;/code&gt; methods can now be used as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var song1 = new Song
+{
+    ArtistName = &amp;quot;Foo Fighters&amp;quot;,
+    SongName = &amp;quot;Everlong&amp;quot;,
+    LengthInSeconds = 250
+};
+
+// deconstruct song1, into three variables
+var (artist, name, length) = song1;
+Console.WriteLine($&amp;quot;The song '{name}' by '{artist}' is {length} long&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Here, the three variables &lt;em&gt;artist&lt;/em&gt;, &lt;em&gt;name&lt;/em&gt; and &lt;em&gt;length&lt;/em&gt; are automatically defined and assigned to the &lt;code&gt;out&lt;/code&gt; parameter values of the matching corresponding &lt;code&gt;Deconstruct&lt;/code&gt; method. Definitely cleaner and more concise that previous techniques.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;Deconstruct&lt;/code&gt; methods also work with the &lt;code&gt;discard&lt;/code&gt; character. In the above example there is a second &lt;code&gt;Deconstruct&lt;/code&gt; method which returns the string &lt;em&gt;output&lt;/em&gt; and the song &lt;em&gt;length&lt;/em&gt;. If only interested in the &lt;em&gt;output&lt;/em&gt; value, but not the &lt;em&gt;length&lt;/em&gt;, then the following can be done:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var song1 = new Song
+{
+    ArtistName = &amp;quot;Foo Fighters&amp;quot;,
+    SongName = &amp;quot;Everlong&amp;quot;,
+    LengthInSeconds = 250
+};
+
+// deconstruct song1, into only one variable
+// discarding the length
+var (output, _) = song1;
+Console.WriteLine(output);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Here no memory is allocated for the &lt;em&gt;length&lt;/em&gt; out parameter where the &lt;code&gt;discard&lt;/code&gt; is used.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;There are not too many practical use cases for the &lt;code&gt;Deconstruct&lt;/code&gt; method - but where it can be applied (in cases such as the ones described above), it will definitely assist with creating cleaner, more concise code.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/csharp/fundamentals/functional/deconstruct#user-defined-types"&gt;Deconstructing tuples and other types&lt;/a&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;?# DailyDrop ?&gt;127: 29-07-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/07/28-multi-applications</id>
 		<title>Multiple applications - one host</title>
@@ -1087,111 +1202,6 @@ True
 &lt;p&gt;&lt;a href="https://www.youtube.com/watch?v=aUbXGs7YTGo&amp;amp;t=569s"&gt;Change your habits: Modern techniques for modern C# - Bill Wagner&lt;/a&gt;&lt;/p&gt;
 &lt;hr /&gt;
 &lt;?# DailyDrop ?&gt;118: 18-07-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/07/15-testing-protected</id>
-		<title>Unit testing a protected method</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/07/15-testing-protected" />
-		<updated>2022-07-15T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;To unit test a &lt;code&gt;protected&lt;/code&gt; method of a class, inheritance and a public method wrapper can be used.&lt;/p&gt;
-&lt;p&gt;Consider a class, (called, for example, &lt;em&gt;CustomClass&lt;/em&gt;) with a protected member - a &lt;em&gt;test&lt;/em&gt; class (&lt;em&gt;TestCustomClass&lt;/em&gt;) can be created which inherits from &lt;em&gt;CustomClass&lt;/em&gt; Then a public wrapper method created on &lt;em&gt;TestCustomClass&lt;/em&gt; can be created, which in turn invokes the &lt;code&gt;protected&lt;/code&gt; method on &lt;em&gt;CustomClass&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;This pattern enables the &lt;code&gt;protected&lt;/code&gt; member to be accessed and tested through the &lt;em&gt;public test wrapper&lt;/em&gt; method.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="protected-keyword"&gt;Protected keyword&lt;/h2&gt;
-&lt;p&gt;A quick recap of the &lt;code&gt;protected&lt;/code&gt; keyword - a &lt;code&gt;protected member is accessible within its class and by derived class instances&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;For testing, the &lt;code&gt;&amp;quot;&amp;quot;derived class instance&amp;quot;&amp;quot;&lt;/code&gt; is the relevent and important piece of information.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="problem"&gt;Problem&lt;/h2&gt;
-&lt;p&gt;We have a library which performs some business logic, some of it &lt;code&gt;publicly&lt;/code&gt; exposed, and some of it &lt;code&gt;protected&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;namespace CustomLibrary;
-
-public class CustomClass
-{
-    public int PerformPublicLibraryLogic()
-    {
-        // do some processing
-        return 0;
-    }
-
-    protected int PerformProtectedLibraryLogic()
-    {
-        // do processing
-        return 0;
-    }
-
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We want to unit test these two methods, so a separate test project is created (a &lt;em&gt;MSTest&lt;/em&gt; test project in this example):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;namespace CustomApplication.UnitTest;
-
-[TestClass]
-public class CustomLibraryUnitTests
-{
-    [TestMethod]
-    // Tests the public method
-    public void TestPublic()
-    {
-        // create an instance and call the public method
-        var customclass = new CustomClass();
-        var result = customclass.PerformPublicLibraryLogic();
-
-        // check the results
-        Assert.AreEqual(0, result);
-    }
-
-    [TestMethod]
-    // Try test the protected method
-    public void TestProtectedBroken()
-    {
-        var customclass = new CustomClass();
-        // THIS WILL NOT COMPILE
-        // PerformProtectedLibraryLogic is not accessible
-        var result = customclass.PerformProtectedLibraryLogic();
-        
-        Assert.AreEqual(0, result);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The above code will &lt;code&gt;NOT compile&lt;/code&gt;, as the &lt;em&gt;PerformProtectedLibraryLogic&lt;/em&gt; is &lt;code&gt;not accessible from the test project&lt;/code&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="solution"&gt;Solution&lt;/h2&gt;
-&lt;p&gt;As mentioned above, the important piece of information related to the &lt;code&gt;protected&lt;/code&gt; keyword, is that a protected member is accessible from a &lt;code&gt;derived class instance&lt;/code&gt; - so let's create a derived class.&lt;/p&gt;
-&lt;p&gt;In the test project:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;namespace CustomApplication.UnitTest;
-
-// inherit from the class in question
-public class TestCustomClass : CustomClass
-{
-    // create a public method, which wraps the protected method
-    public int WrappedPerformProtectedLibraryLogic()
-    {
-        // as this code is inside a derived class, it has accessibility
-        // to the PerformProtectedLibraryLogic method
-        return PerformProtectedLibraryLogic();
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Instead of testing the protected method on the &lt;em&gt;CustomClass&lt;/em&gt; directly, it can now be tested through &lt;em&gt;public&lt;/em&gt; method on &lt;em&gt;TestCustomClass&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;[TestMethod]
-// Tests the protected method
-public void TestProtectedWorking()
-{
-    // used the TestCustomClass instead of CustomClass 
-    var customclass = new TestCustomClass();
-    // invoke the wrapper method
-    var result = customclass.WrappedPerformProtectedLibraryLogic();
-
-    Assert.AreEqual(0, result);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;What's important here is that the &lt;em&gt;TestCustomClass&lt;/em&gt; and &lt;em&gt;wrapper method&lt;/em&gt; &lt;code&gt;add no additional logic or complexity&lt;/code&gt;. We do not want the test class to interfere with the goal of testing the underlying protected method.&lt;/p&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;The technique mentioned here is not a ground-breaking revelation, but it is very useful. Personally, I've recently started writing more unit tests in earnest (after not having done any for 5+ years) this was one of the first issues I encountered, I had not experienced before, which needed to be solved.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;?# DailyDrop ?&gt;117: 15-07-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
