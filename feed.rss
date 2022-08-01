@@ -5,8 +5,128 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Fri, 29 Jul 2022 04:30:44 GMT</pubDate>
-		<lastBuildDate>Fri, 29 Jul 2022 04:30:44 GMT</lastBuildDate>
+		<pubDate>Mon, 01 Aug 2022 04:55:43 GMT</pubDate>
+		<lastBuildDate>Mon, 01 Aug 2022 04:55:43 GMT</lastBuildDate>
+		<item>
+			<title>Readonly parameters with the in modifier</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/08/01-in-modifier</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/08/01-in-modifier</guid>
+			<pubDate>Mon, 01 Aug 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;in&lt;/code&gt; parameter modifying keyword is used to cause a parameter be passed by reference, and ensure that cannot be modified in the method.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;in&lt;/code&gt; modifier's usage is similar to the &lt;code&gt;ref&lt;/code&gt; and &lt;code&gt;out&lt;/code&gt; keywords, except &lt;code&gt;ref&lt;/code&gt; parameters can be modified and &lt;code&gt;out&lt;/code&gt; parameters must be modified/set, while the &lt;code&gt;in&lt;/code&gt; modifier effectively makes the parameter read-only.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="types"&gt;Types&lt;/h2&gt;
+&lt;h3 id="simple-value-types"&gt;Simple value types&lt;/h3&gt;
+&lt;p&gt;First lets have a look at how value types are handled in a few simple examples:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;int originalValue = 1001;
+InKeywordMethod(originalValue);
+
+// parameter used in keyword
+void InKeywordMethod(in int theValue)
+{
+    // this is not allowed and 
+    // will not compile if uncommented
+    // theValue = 999;
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If uncommented, the application will not compile with the error:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Cannot assign to variable 'in int' because it is a readonly variable
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As expected based on the introduction, with the use of the &lt;code&gt;in&lt;/code&gt; keyword, the &lt;em&gt;theValue&lt;/em&gt; variable is read-only inside the scope of the method, and cannot be modified.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="structure-value-types"&gt;Structure value types&lt;/h3&gt;
+&lt;p&gt;The &lt;code&gt;in&lt;/code&gt; keyword applied to a &lt;code&gt;struct&lt;/code&gt; (a value type) parameter, yields in the same results as in the previous example with sample value types.&lt;/p&gt;
+&lt;p&gt;Consider the following &lt;code&gt;struct&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public struct StructOptions
+{
+    public int IntValue { get; set; }
+    public string StringValue { get; set; }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And it's usage:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var sOptions = new StructOptions
+{
+    IntValue = 759,
+    StringValue = &amp;quot;StringValue&amp;quot;
+};
+InStructKeywordMethod(sOptions);
+
+void InStructKeywordMethod(in StructOptions options)
+{
+    // this is not allowed and will not compile if uncommented
+    // options.IntValue = 100;
+
+    // this is also not allowed and will result in an error
+    /*
+    options = new StructOptions
+    {
+        IntValue = 123,
+        StringValue = &amp;quot;NewStringValue!&amp;quot;
+    }
+    */
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The properties of the &lt;code&gt;struct&lt;/code&gt; as well as the &lt;code&gt;struct&lt;/code&gt; itself are both read-only.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="reference-types"&gt;Reference types&lt;/h3&gt;
+&lt;p&gt;Reference types however operate slightly differently when used with the &lt;code&gt;in&lt;/code&gt; keyword.&lt;/p&gt;
+&lt;p&gt;We will use the same &lt;em&gt;Options&lt;/em&gt; data structure as in the previous example, however this time define it as a &lt;code&gt;class&lt;/code&gt; instead of a &lt;code&gt;struct&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Options
+{
+    public int IntValue { get; set; }
+
+    public string StringValue { get; set; }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And it's usage:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var options = new Options
+{
+    IntValue = 759,
+    StringValue = &amp;quot;StringValue&amp;quot;
+};
+
+Console.WriteLine(options.IntValue);
+InClassKeywordMethod(options);
+Console.WriteLine(options.IntValue);
+
+void InClassKeywordMethod(in Options options)
+{
+    // This is allowed!
+    options.IntValue = 123;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;With the reference type, modifications of its properties are allowed. Running the above code does not result in any compiler errors, with the output as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;759
+123
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;However, modification of the &lt;code&gt;class&lt;/code&gt; instance (not it's properties) is &lt;strong&gt;NOT&lt;/strong&gt; allowed, and will result in a &lt;strong&gt;compiler error&lt;/strong&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;void InClassKeywordMethod(in Options options)
+{
+    // Cannot assign to variable 'in Options' because it is a readonly variable
+    /*
+    options = new Options
+    {
+        IntValue = 123,
+        StringValue = &amp;quot;NewStringValue&amp;quot;
+    };
+    */
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;Not a modifier which will see everyday use, but interesting all the same. If using the &lt;code&gt;in&lt;/code&gt; keyword, keep in mind that reference types properties can still be modified, and consider other options to make them readonly (removing the &lt;em&gt;set&lt;/em&gt; accessor, for example)&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/in-parameter-modifier"&gt;in parameter modifier&lt;/a&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;?# DailyDrop ?&gt;128: 01-08-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Deconstructing a class instance into multiple variables</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/07/29-deconstruct-method</link>
@@ -1087,132 +1207,6 @@ Count
 &lt;p&gt;&lt;a href="https://www.reddit.com/r/csharp/comments/v81c13/can_anyone_tell_me_the_point_of_this_syntax_im/"&gt;Reddit CSharp post&lt;/a&gt;&lt;/p&gt;
 &lt;hr /&gt;
 &lt;?# DailyDrop ?&gt;119: 19-07-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Tuples for class value equality</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/07/18-tuple-equality</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/07/18-tuple-equality</guid>
-			<pubDate>Mon, 18 Jul 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;A &lt;code&gt;tuple&lt;/code&gt; can be used to check the &lt;code&gt;value equality&lt;/code&gt; of two instances of the same class.&lt;/p&gt;
-&lt;p&gt;When comparing classes, the equality operator (&lt;code&gt;==&lt;/code&gt;) will check that the two instances are actually the same instance, not that the values of the two instances are the same. There are a &lt;a href="https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/statements-expressions-operators/how-to-define-value-equality-for-a-type"&gt;number of different techniques&lt;/a&gt; to define value equality for a class, but they all ultimately have the same underlying logic - each property of the instances being compared need to individually be compared.&lt;/p&gt;
-&lt;p&gt;The usage of &lt;code&gt;tuples&lt;/code&gt; can be used to simplify this comparison.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="setup"&gt;Setup&lt;/h2&gt;
-&lt;p&gt;In this post we will be using a &lt;code&gt;Song&lt;/code&gt; class, which has three properties:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Song
-{
-    public string Name { get; init; }
-
-    public string Artist { get; init; }
-
-    public int LengthInSeconds { get; init; }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;For two &lt;em&gt;Song&lt;/em&gt; instances to be equal, each of the three properties for the two instances need to be equal.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="equality"&gt;Equality&lt;/h2&gt;
-&lt;h3 id="equality-operator"&gt;Equality operator&lt;/h3&gt;
-&lt;p&gt;As mentioned above, using the default equality operator for classes will test if the two instances are actually the same instance, not check the values of the two instances:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;
-// two Song instances, both with the same values
-var song = new Song
-{
-    Artist = &amp;quot;Foo Fighters&amp;quot;,
-    Name = &amp;quot;Everlong&amp;quot;,
-    LengthInSeconds = 250
-};
-
-var song1 = new Song
-{
-    Artist = &amp;quot;Foo Fighters&amp;quot;,
-    Name = &amp;quot;Everlong&amp;quot;,
-    LengthInSeconds = 250
-};
-
-// a 3rd instance, set to the first instance
-var song2 = song;
-
-// comparing two different instances
-Console.WriteLine(song == song1);
-// comparing two instances, which are the &amp;quot;same&amp;quot; instance
-Console.WriteLine(song == song2);
-
-// comparing two different instances
-Console.WriteLine(song.Equals(song1));
-// comparing two instances, which are the &amp;quot;same&amp;quot; instance
-Console.WriteLine(song.Equals(song2));
-
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output of the above is:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;False
-True
-False
-True
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h3 id="manual-comparison"&gt;Manual comparison&lt;/h3&gt;
-&lt;p&gt;To compare a value comparison of the two classes (instead of using one of &lt;a href="https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/statements-expressions-operators/how-to-define-value-equality-for-a-type"&gt;these techniques&lt;/a&gt;) we are going to write a method to do the comparison:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;bool Compare(Song s1, Song s2) =&amp;gt;
-    s1.Artist == s2.Artist &amp;amp;&amp;amp; // compare artist
-    s1.Name == s2.Name &amp;amp;&amp;amp;  // and Name
-    s1.LengthInSeconds == s2.LengthInSeconds; // and song Length
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Only if all three properties are equal, are the two instances equal:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;Console.WriteLine(Compare(song, song1));
-Console.WriteLine(Compare(song, song2));
-Console.WriteLine(Compare(song1, song2));
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output being:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;True
-True
-True
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The above will function correctly, adequately doing a value comparison of the two instance - however a simpler and cleaner technique is to use a &lt;code&gt;tuple&lt;/code&gt; for the value comparison.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="tuple-equality"&gt;Tuple equality&lt;/h3&gt;
-&lt;p&gt;One feature of the &lt;code&gt;Tuple&lt;/code&gt; is that using the equality operator on it &lt;strong&gt;does&lt;/strong&gt; compare the values:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var tuple = (1, 2, 3);
-var tuple1 = (1, 2, 3);
-
-Console.WriteLine(tuple == tuple1);
-Console.WriteLine(tuple.Equals(tuple1));
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;True
-True
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This fact can be leverage to compare two class instances by &lt;code&gt;creating tuples with the class values, and then comparing the tuples!&lt;/code&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="tuple-comparison"&gt;Tuple comparison&lt;/h3&gt;
-&lt;p&gt;If we rework the &lt;em&gt;Compare&lt;/em&gt; method defined above, to use a &lt;code&gt;Tuple&lt;/code&gt; instead:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// Use the properties of each instance to create a tuple
-// and compare the two tuples
-bool CompareTuple(Song s1, Song s2) =&amp;gt;
-    (s1.Artist, s1.Name, s1.LengthInSeconds) == (s2.Artist, s2.Name, s2.LengthInSeconds);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Executing the same comparisons as above using the new method:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;Console.WriteLine(CompareTuple(song, song1));
-Console.WriteLine(CompareTuple(song, song2));
-Console.WriteLine(CompareTuple(song1, song1));
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Yields the following output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;True
-True
-True
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;While the results of the two methods are the same, the tuple version is more &lt;em&gt;concise, cleaner and less prone to developer error&lt;/em&gt;, especially if there are a large number of fields being compare.&lt;/p&gt;
-&lt;p&gt;The tuple method can also be used in conjunction with the &lt;a href="https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/statements-expressions-operators/how-to-define-value-equality-for-a-type"&gt;techniques already mentioned&lt;/a&gt; - for example by overriding the &lt;em&gt;equals operator&lt;/em&gt; (==) and performing the tuples equality check in that method.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.youtube.com/watch?v=aUbXGs7YTGo&amp;amp;t=569s"&gt;Change your habits: Modern techniques for modern C# - Bill Wagner&lt;/a&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;?# DailyDrop ?&gt;118: 18-07-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>

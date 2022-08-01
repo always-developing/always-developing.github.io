@@ -168,6 +168,12 @@ header.masthead .post-heading .meta a { color: #fff; }
 
 .post-block td { border-width: 1px; border-color: #717171; border-style: solid; padding-left: 5px; padding-right: 5px; }
 
+.post-block a { color: #fff; text-decoration: underline; }
+
+.post-block a:focus, .post-block a:hover { color: #3399ff; }
+
+.post-block .badge-light { color: #1e1e1e; }
+
 .sticky-top { top: 80px; }
 
 .post-buffer-small { height: 10px; }
