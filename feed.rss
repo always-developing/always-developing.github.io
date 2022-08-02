@@ -5,8 +5,116 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Mon, 01 Aug 2022 04:55:43 GMT</pubDate>
-		<lastBuildDate>Mon, 01 Aug 2022 04:55:43 GMT</lastBuildDate>
+		<pubDate>Tue, 02 Aug 2022 04:52:05 GMT</pubDate>
+		<lastBuildDate>Tue, 02 Aug 2022 04:52:05 GMT</lastBuildDate>
+		<item>
+			<title>ActivatorUtilities to create instances</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/08/02-activatorutilities</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/08/02-activatorutilities</guid>
+			<pubDate>Tue, 02 Aug 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;ActivatorUtilities&lt;/code&gt; static class can be used to create instances of classes &lt;code&gt;outside of the dependency injection (DI) container&lt;/code&gt;, while still &lt;code&gt;leveraging the DI container&lt;/code&gt; to create instances of the dependencies.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="examples"&gt;Examples&lt;/h2&gt;
+&lt;p&gt;Consider a business logic class, which has one dependency on &lt;code&gt;IConfiguration&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class MyBusinessLogic
+{
+    private readonly IConfiguration _configuration;
+
+    public MyBusinessLogic(IConfiguration configuration)
+    {
+        _configuration = configuration;
+    }
+    public int PerformBusinessLogic()
+    {
+        Console.WriteLine(&amp;quot;Performing business logic&amp;quot;);
+
+        return 1;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;It consists of a &lt;em&gt;Constructor&lt;/em&gt; and a single method, &lt;em&gt;PerformBusinessLogic&lt;/em&gt;, which performs some business logic, and returns the value &lt;code&gt;1&lt;/code&gt; once completed.&lt;/p&gt;
+&lt;p&gt;In all of the below examples, the &lt;em&gt;MyBusinessLogic&lt;/em&gt; class &lt;code&gt;has NOT been registered with the dependency injection container&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;The code for all the endpoints shown below is as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
+
+// endpoint definition show below goes here!
+
+app.Run();
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Thats it - nothing else being registered or configured on startup.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="default-di"&gt;Default DI&lt;/h3&gt;
+&lt;p&gt;First, we'll try getting an instance of class directly from the DI container, two different ways:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// inject directly
+app.MapGet(&amp;quot;/direct&amp;quot;, ([FromServices]MyBusinessLogic logic) =&amp;gt;
+{
+    return logic.PerformBusinessLogic();
+});
+
+// inject the service provider (the DI container)
+// and try get the service from there
+app.MapGet(&amp;quot;/provider&amp;quot;, (IServiceProvider provider) =&amp;gt;
+{
+    var logic = provider.GetRequiredService&amp;lt;MyBusinessLogic&amp;gt;();
+
+    return logic.PerformBusinessLogic();
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If you've worked with DI before, you would be unsurprised to know that the above does not work:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;InvalidOperationException: No service for type 'MyBusinessLogic' has been registered.
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The runtime doesn't know how to instantiate the &lt;em&gt;MyBusinessLogic&lt;/em&gt; class. To resolve we could register &lt;em&gt;MyBusinessLogic&lt;/em&gt; with the DI container, but for this post the assumption is this is not an option.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="manual"&gt;Manual&lt;/h3&gt;
+&lt;p&gt;Next we'll look at the ways to manually get an instance of the &lt;em&gt;MyBusinessLogic&lt;/em&gt; class:&lt;/p&gt;
+&lt;p&gt;The first way is to just manually instantiate the class directly. The constructor of &lt;em&gt;MyBusinessLogic&lt;/em&gt; requires an instance of &lt;code&gt;IConfiguration&lt;/code&gt;. In the below, &lt;code&gt;IConfiguration&lt;/code&gt; is injected via DI, and then passed to the constructor of &lt;em&gt;MyBusinessLogic&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/manual&amp;quot;, (IConfiguration config) =&amp;gt;
+{
+    var logic = new MyBusinessLogic(config);
+
+    return logic.PerformBusinessLogic();
+});
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;code&gt;This will work&lt;/code&gt;, but if &lt;em&gt;MyBusinessLogic&lt;/em&gt; had a long list of dependencies and it's constructor required many parameters, this can become messy. The endpoint would need to be modified to accept items from the DI container when it doesn't actual require them directly - they are only used to pass to &lt;em&gt;MyBusinessLogic&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;As slight improvement is to only inject the &lt;em&gt;IServiceProvider&lt;/em&gt; implementation into the endpoint and then use that to get the required items for the &lt;em&gt;MyBusinessLogic&lt;/em&gt; constructor:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/manualprovider&amp;quot;, (IServiceProvider provider) =&amp;gt;
+{
+    var logic = new MyBusinessLogic(provider.GetService&amp;lt;IConfiguration&amp;gt;());
+
+    return logic.PerformBusinessLogic();
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Again, this &lt;code&gt;will work&lt;/code&gt;, but is still not ideal, as each type required needs to manually retrieved from the DI container.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="activatorutilities"&gt;ActivatorUtilities&lt;/h3&gt;
+&lt;p&gt;Thankfully, there is a class to assist with this exact requirement - the &lt;code&gt;ActivatorUtilities&lt;/code&gt; static class. Its usage is very simple - the &lt;em&gt;CreateInstance&lt;/em&gt; method is called with the required class passed in as a generic parameter, along with the &lt;em&gt;IServiceProvider&lt;/em&gt; implementation as a parameter (any other parameters which might be required, but are not part of the DI container).&lt;br /&gt;
+&lt;code&gt;ActivatorUtilities&lt;/code&gt; will then return an instance of the require class, using the &lt;em&gt;IServiceProvider&lt;/em&gt; implementation to resolve any dependencies automatically - as would happen when using the DI container implicitly.&lt;/p&gt;
+&lt;p&gt;As the required &lt;em&gt;IConfiguration&lt;/em&gt; parameter is already in the DI container, no additional parameters need to be passed in:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/activatorutils&amp;quot;, (IServiceProvider provider) =&amp;gt;
+{
+    var logic = ActivatorUtilities.CreateInstance&amp;lt;MyBusinessLogic&amp;gt;(provider);
+
+    return logic.PerformBusinessLogic();
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Here an &lt;code&gt;instance of MyBusinessLogic is created&lt;/code&gt;, and all its dependencies are &lt;code&gt;automatically resolved from the IServiceProvider instance&lt;/code&gt;, provider.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;An incredibly useful method when working with dependency injection, but not all classes have been added to the DI container (for example, if in the processes of porting a legacy app, one controller at a time).&lt;/p&gt;
+&lt;p&gt;There are other ways of doing this using reflection (&lt;em&gt;Activator.CreateInstance&lt;/em&gt; for example) not mentioned here - this post focuses on instantiating a class when the type wanted is known at compile time.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://onthedrift.com/posts/activator-utilities/"&gt;Activator utilities: activate anything!&lt;/a&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;?# DailyDrop ?&gt;129: 02-08-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Readonly parameters with the in modifier</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/08/01-in-modifier</link>
@@ -1084,129 +1192,6 @@ shout
 &lt;p&gt;&lt;a href="https://www.w3schools.com/sql/sql_wildcards.asp"&gt;SQL Wildcard Characters&lt;/a&gt;&lt;/p&gt;
 &lt;hr /&gt;
 &lt;?# DailyDrop ?&gt;120: 20-07-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>nameof usage for better code quality</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/07/19-nameof-constants</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/07/19-nameof-constants</guid>
-			<pubDate>Tue, 19 Jul 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;When defining string with constants (in particular, but other situations also apply) the &lt;code&gt;nameof operator&lt;/code&gt; can be leveraged to remove explicitly set values, ensuring more consistent, cleaner and less error prone code is produced.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="nameof-expression"&gt;nameof expression&lt;/h2&gt;
-&lt;p&gt;So briefly, what does &lt;code&gt;nameof&lt;/code&gt; do? - it &lt;em&gt;produces the name of a variable type, or member as the string constant&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;Consider the following code:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var fibonacci = new List&amp;lt;int&amp;gt; { 0, 1, 1, 2, 3, 5 } ;
-Console.WriteLine(nameof(List&amp;lt;int&amp;gt;));  // outputs the type
-Console.WriteLine(nameof(fibonacci)); // outputs the variable name
-Console.WriteLine(nameof(fibonacci.Count)); // outputs the method name
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output is:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;List
-fibonacci
-Count
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;So let's see how we can leverage &lt;code&gt;nameof&lt;/code&gt; in the following use cases.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="constants"&gt;Constants&lt;/h2&gt;
-&lt;h3 id="issue"&gt;Issue&lt;/h3&gt;
-&lt;p&gt;Suppose our application has a list of &lt;em&gt;system statuses&lt;/em&gt; stored as &lt;code&gt;string constants&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class SystemStatus
-{
-    public const string Starting = &amp;quot;Starting&amp;quot;;
-    public const string Running = &amp;quot;Running&amp;quot;;
-    public const string ShuttingDown = &amp;quot;ShuttingDown&amp;quot;;
-    public const string Offline = &amp;quot;Offline&amp;quot;;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;With the usage and output being:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;Console.WriteLine(SystemStatus.ShuttingDown); // outputs &amp;quot;ShuttingDown&amp;quot;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Is there anything &lt;code&gt;inherently wrong&lt;/code&gt; with this approach? Not really, it still functions as expected.&lt;/p&gt;
-&lt;p&gt;However, suppose we need to &lt;code&gt;change the &amp;quot;ShuttingDown&amp;quot; status to &amp;quot;Terminating&amp;quot;&lt;/code&gt;. Navigating to one of the usages of &lt;em&gt;SystemStatus.ShuttingDown&lt;/em&gt;, we rename the &lt;code&gt;const&lt;/code&gt; (using F2 &lt;em&gt;Rename&lt;/em&gt;, for example).&lt;/p&gt;
-&lt;p&gt;We now have this:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;Console.WriteLine(SystemStatus.Terminating); // still outputs &amp;quot;ShuttingDown&amp;quot;!
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;However the output is still &lt;code&gt;&amp;quot;ShuttingDown&amp;quot;&lt;/code&gt;, even though the &lt;code&gt;const&lt;/code&gt; name has been changed to &lt;em&gt;Terminating&lt;/em&gt;! We now either have &lt;code&gt;misleading code at best or a bug at worst.&lt;/code&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="resolution"&gt;Resolution&lt;/h3&gt;
-&lt;p&gt;As this post implies, the solution is to use the &lt;code&gt;nameof&lt;/code&gt; operator instead of a hard-coded string!&lt;/p&gt;
-&lt;p&gt;Replacing the string values, with &lt;code&gt;nameof&lt;/code&gt; referencing the same variable:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class SystemStatus
-{
-    public const string Starting = nameof(Starting);
-    public const string Running = nameof(Running);
-    public const string ShuttingDown = nameof(ShuttingDown);
-    public const string Offline = nameof(Offline);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This for example will set the value of the &lt;em&gt;Starting&lt;/em&gt; constants to the name of the constant, &amp;quot;Starting&amp;quot;.&lt;/p&gt;
-&lt;p&gt;Now when renaming one of the &lt;code&gt;const&lt;/code&gt; names, it's value will be kept consistent - the same as the &lt;code&gt;const&lt;/code&gt; name. If manually renaming one of the &lt;code&gt;const&lt;/code&gt; names, but forgetting to rename its usage in &lt;code&gt;nameof&lt;/code&gt; will result in a compiler error:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class SystemStatus
-{
-    public const string Starting = nameof(Starting);
-    public const string Running = nameof(Running);
-    // Compiler error &amp;quot;ShuttingDown&amp;quot; does not exist
-    public const string Terminating = nameof(ShuttingDown);
-    public const string Offline = nameof(Offline);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The result - cleaner, more consistent and less error prone code!&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="parameters"&gt;Parameters&lt;/h2&gt;
-&lt;h3 id="issue-1"&gt;Issue&lt;/h3&gt;
-&lt;p&gt;A similar issue can be experience in instances where a &lt;code&gt;parameter name is used&lt;/code&gt;, in an exception message, for example.&lt;/p&gt;
-&lt;p&gt;If we have this method, with the parameter name hardcoded in the exception string message:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public int Division(int dividend, int div)
-{
-    if(div == 0)
-    {
-        // string value is hardcoded with the parameter name
-        throw new ArgumentException($&amp;quot;Parameter 'div' cannot be zero&amp;quot;);
-    }
-
-    return dividend / div;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We realize the &lt;code&gt;div&lt;/code&gt; parameter is not a good parameter name, and should be renamed to &lt;code&gt;divisor&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public int Division(int dividend, int divisor)
-{
-    if(divisor == 0)
-    {
-        // string value is hardcoded with the INCORRECT parameter name
-        throw new ArgumentException($&amp;quot;Parameter 'div' cannot be zero&amp;quot;);
-    }
-
-    return dividend / divisor;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Its very easy to miss the hardcoded string when refactoring, especially if using an IDE rename feature, which won't automatically rename the hand-coded parameter name within the string.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="resolution-1"&gt;Resolution&lt;/h3&gt;
-&lt;p&gt;Again, the remedy is to use the &lt;code&gt;nameof&lt;/code&gt; operator:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public int Division(int dividend, int divisor)
-{
-    if (divisor == 0)
-    {
-        throw new ArgumentException($&amp;quot;Parameter '{nameof(divisor)}' cannot be zero&amp;quot;);
-    }
-
-    return dividend / divisor;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Now if renaming the parameter name, the exception message is automatically updated as well (or will throw a compiler error if not all usages of the parameter are not updated):&lt;/p&gt;
-&lt;p&gt;The result - cleaner, more consistent and less error prone code!&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;A small, simple technique to incorporate into daily coding, which may not have any obvious immediate benefit - but if/when it comes time to do any refactoring, will definitely save time and effort due to its cleaner, more consistent approach.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.reddit.com/r/csharp/comments/v81c13/can_anyone_tell_me_the_point_of_this_syntax_im/"&gt;Reddit CSharp post&lt;/a&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;?# DailyDrop ?&gt;119: 19-07-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
