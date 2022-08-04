@@ -1,0 +1,489 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="always learning | always growing">
+
+    <title>Always Developing - Dynamically changing minimal api return type</title>
+
+    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/08/04-minimal-api-return-type">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
+
+    <meta name="application-name" content="Always Developing" />
+    <meta name="msapplication-tooltip" content="Always Developing" />
+    <meta name="msapplication-starturl" content="/" />
+
+    <meta property="og:title" content="Always Developing - Dynamically changing minimal api return type" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/08/04-minimal-api-return-type" />
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Bootstrap core CSS -->
+    <link href="/vendor/bootstrap/scss/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom fonts for this template -->
+    <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="/vendor/fontawesome-free/css/brands.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css' data-no-mirror>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css' data-no-mirror>
+
+    <!-- Custom styles for this template -->
+    <link href="/scss/always-developing-blog.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/plugins/autoloader/prism-autoloader.min.js" data-no-mirror></script>
+    <script src="https://cdn.jsdelivr.net/npm/quicklink@2.0.0/dist/quicklink.umd.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/themes/prism.css">
+
+    <!-- Lunr search -->
+        <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/pako@2.0.3/dist/pako_inflate.min.js"></script>
+        <script src="/search.js"></script>
+
+    
+
+
+    
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand"  href="/">
+            <img src="/images/ad_logo.png" alt="" width="25" height="25" class="d-inline-block align-text-top">
+            Always Developing
+        </a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            Menu
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/software">Software</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/tags">Tags</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/posts">Posts</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/about">About</a>
+            </li>
+</ul>
+                <form class="form-inline my-2 my-lg-0" action="/search" method="GET">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="query">
+                    <input type="submit" hidden />
+                </form>
+        </div>
+    </div>
+</nav>
+
+    <!-- Page Header -->
+    <header class="masthead">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 align-middle">
+                <div class="post-header-image">
+                    <a href="/">
+                        <img src="/images/ad_logo.png" class="header-image">
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="post-heading">
+                    <h1>
+                        Dynamically changing minimal api return type
+                    </h1>
+                            <h2 class="subheading">Changing minimal api return content types dynamically (including to xml)</h2>
+                        <p class="post-meta">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
+                                <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
+                            </svg> Published on Thursday, 04 August 2022
+                        </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <!-- Main Content -->
+    <div class="container">
+            <div class="row ">
+                    <div id="content" class="col-md-9 post-with-toc post-block">
+                        
+<div class="post-header-category">
+    <a class="btn btn-primary btn-sm btn-default btn-home" href="\" role="button"><i class="fas fa-angle-double-left"></i> Home</a>
+            <a class="btn btn-primary btn-sm category-btn" href="/categories/dailydrop" role="button">DailyDrop</a>
+</div>
+
+                        <h2 id="daily-knowledge-drop">Daily Knowledge Drop</h2>
+<p>Minimal apis, by default, have a JSON return type - however a custom <code>IResult</code> implementation can be used to change this return type. This same interface can be used to dynamically decide at runtime the return type, but requires some additional effort.</p>
+<hr />
+<h2 id="default-return-type">Default return type</h2>
+<p>With minimal api's, the default return type is JSON. Executing the following command, the <em>Song</em> instance is automatically serialized to JSON and the response <em>content-type</em> header automatically set to <strong>application/json</strong>:</p>
+<pre><code class="language-csharp">app.MapGet(&quot;/json&quot;, () =&gt;
+{
+    return new Song
+    {
+        ArtistName = &quot;John Mayer&quot;,
+        SongName = &quot;Bigger than my body&quot;,
+        LengthInSeconds = 245
+    };
+});
+</code></pre>
+<p>Returned JSON:</p>
+<pre><code class="language-json">{&quot;songName&quot;:&quot;Bigger than my body&quot;,&quot;artistName&quot;:&quot;John Mayer&quot;,&quot;lengthInSeconds&quot;:245}
+</code></pre>
+<p>WHat if a <code>different return type</code> is required?</p>
+<hr />
+<h2 id="xml-return-type">XML return type</h2>
+<p>As mentioned, to change the response type, instead of just returning the <em>Song</em> instance (which will then serialize to JSON), an implementation of <code>IResult</code> needs to be returned.</p>
+<p>In this endpoint an instance of the custom class <code>XmlResult</code> (full code below) is being returned:</p>
+<pre><code class="language-csharp">app.MapGet(&quot;/xml&quot;, () =&gt;
+{
+    // XML implementation of IResult 
+    return new XmlResult&lt;Song&gt;(
+        new Song
+        {
+            ArtistName = &quot;John Mayer&quot;,
+            SongName = &quot;Bigger than my body&quot;,
+            LengthInSeconds = 245
+        });
+});
+</code></pre>
+<p><code>XmlResult</code> is an implementation of the <code>IResult</code> interface, which is very simple, containing only one method to implement:</p>
+<pre><code class="language-csharp">    Task ExecuteAsync(HttpContext httpContext);
+</code></pre>
+<p>This method will accept the <em>HttpContext</em> of the request as a parameter, and modify the response body and headers as required before being returned to the called.</p>
+<p>The <code>XmlResult</code> implementation (this is by no means the most efficient method for doing XML serialization, but it's a simple demonstration for this post):</p>
+<pre><code class="language-csharp">// implement IResult
+public class XmlResult&lt;T&gt; : IResult
+{
+    // store the entity to be serialized
+    private readonly T _entity;
+
+    public XmlResult(T entity)
+    {
+        _entity = entity;
+    }
+
+    // method which needs implementing
+    public Task ExecuteAsync(HttpContext httpContext)
+    {
+        // prepare for XML serialization
+        XmlSerializer xmlSerializer = new(typeof(T));
+        using StringWriter textWriter = new();
+
+        // perform the serialization
+        xmlSerializer.Serialize(textWriter, _entity);
+
+        // modify the response content type, content length and 
+        // write the XML to the body of the response
+        httpContext.Response.ContentType = MediaTypeNames.Application.Xml;
+        httpContext.Response.ContentLength = 
+            Encoding.UTF8.GetByteCount(textWriter.ToString());
+        return httpContext.Response.WriteAsync(textWriter.ToString());
+    }
+}
+</code></pre>
+<p>Browsing to the <code>/xml</code> endpoint show above, returns the following response, with the response <em>content-type</em> set to <strong>application/xml</strong>:</p>
+<pre><code class="language-xml">&lt;Song&gt;
+    &lt;SongName&gt;Bigger than my body&lt;/SongName&gt;
+    &lt;ArtistName&gt;John Mayer&lt;/ArtistName&gt;
+    &lt;LengthInSeconds&gt;245&lt;/LengthInSeconds&gt;
+&lt;/Song&gt;
+</code></pre>
+<p>So far so good, however, the standard recommended way of returning an <code>IResult</code> implementation is via an extension method on <code>IResultExtensions</code>, and not a manual instantiation:</p>
+<pre><code class="language-csharp">public static class XmlResultsExtensions
+{
+    public static IResult Xml&lt;T&gt;(this IResultExtensions resultExtensions, T entity)
+    {
+        ArgumentNullException.ThrowIfNull(resultExtensions);
+
+        return new XmlResult&lt;T&gt;(entity);
+    }
+}
+</code></pre>
+<p>Using this extension method, the <strong>final XML endpoint</strong> now looks as follows:</p>
+<pre><code class="language-csharp">app.MapGet(&quot;/xml&quot;, () =&gt;
+{
+    // Use the extension method instead of 
+    // explicitly using XmlResult 
+    return Results.Extensions.Xml(
+        new Song
+        {
+            ArtistName = &quot;John Mayer&quot;,
+            SongName = &quot;Bigger than my body&quot;,
+            LengthInSeconds = 245
+        });
+});
+</code></pre>
+<p>Next up we explore how to allow the <code>caller to decide how they would like the data returned, using a single endpoint</code>.</p>
+<hr />
+<h2 id="dynamic-return-type">Dynamic return type</h2>
+<p>Let's explore how the return type can be changed dynamically based on an indicator from the caller. For this example we'll use the <code>content-type</code> of the <em>request</em> as the indicator (not necessarily the good option for all cases - but good enough for this demo).</p>
+<p>We'll add a parameter to the endpoint, and instruct ASPNET Core to get the value from the <code>content-type</code> header, using the <em>FromHeader</em> attribute:</p>
+<pre><code class="language-csharp">app.MapGet(&quot;/dynamic&quot;, ([FromHeader(Name = &quot;Content-Type&quot;)] string? contentType) =&gt;
+{
+    var song = new Song
+    {
+        ArtistName = &quot;John Mayer&quot;,
+        SongName = &quot;Bigger than my body&quot;,
+        LengthInSeconds = 245
+    };
+
+    return song;
+});
+</code></pre>
+<p>Progress! However this endpoint still only returns JSON. Next let's add the check on the request content type....</p>
+<pre><code class="language-csharp">app.MapGet(&quot;/dynamic&quot;, ([FromHeader(Name = &quot;Content-Type&quot;)] string? contentType) =&gt;
+{
+    var song = new Song
+    {
+        ArtistName = &quot;John Mayer&quot;,
+        SongName = &quot;Bigger than my body&quot;,
+        LengthInSeconds = 245
+    };
+
+    // if XML return XML implementation of Song
+    if (contentType == MediaTypeNames.Application.Xml)
+    {
+        return Results.Extensions.Xml(song);
+    }
+
+    return song;
+});
+</code></pre>
+<p>...which <code>results in an error!</code></p>
+<pre><code class="language-terminal">Cannot convert lambda expression to type 'RequestDelegate' because 
+    the parameter types do not match the delegate parameter types
+</code></pre>
+<p>Our endpoint is trying trying to return two different types - an <code>IResult</code> implementation when XML, and a <code>Song</code> instance when not.</p>
+<p>This is easy enough to resolve - change the endpoint to <code>always returns an IResult</code> implementation. To do this however, we now need a <code>custom IResult implementation for JSON</code>. It operates exactly the same as the XML implementation, but serializes to JSON instead of XML:</p>
+<pre><code class="language-csharp">public class JsonResult&lt;T&gt; : IResult
+{
+    private readonly T _entity;
+
+    public JsonResult(T entity)
+    {
+        _entity = entity;
+    }
+
+    public Task ExecuteAsync(HttpContext httpContext)
+    {
+        using StringWriter textWriter = new StringWriter();
+        var jsonResult = System.Text.Json.JsonSerializer.Serialize&lt;T&gt;(_entity);
+
+        httpContext.Response.ContentType = MediaTypeNames.Application.Json;
+        httpContext.Response.ContentLength = Encoding.UTF8.GetByteCount(jsonResult);
+        return httpContext.Response.WriteAsync(jsonResult);
+    }
+}
+</code></pre>
+<p>And the corresponding extension method:</p>
+<pre><code class="language-csharp">public static class JsonResultsExtensions
+{
+    public static IResult Json&lt;T&gt;(this IResultExtensions resultExtensions, T entity)
+    {
+        ArgumentNullException.ThrowIfNull(resultExtensions);
+
+        return new JsonResult&lt;T&gt;(entity);
+    }
+}
+</code></pre>
+<p>Lastly, we update the <em>dynamic</em> endpoint so the <strong>final endpoint</strong> now looks as follows:</p>
+<pre><code class="language-csharp">app.MapGet(&quot;/dynamic&quot;, ([FromHeader(Name = &quot;Content-Type&quot;)] string? contentType) =&gt;
+{
+    var song = new Song
+    {
+        ArtistName = &quot;John Mayer&quot;,
+        SongName = &quot;Bigger than my body&quot;,
+        LengthInSeconds = 245
+    };
+
+    // if XML return XML implementation of Song
+    if (contentType == MediaTypeNames.Application.Xml)
+    {
+        return Results.Extensions.Xml(song);
+    }
+
+    // In all other cases return JSON
+    return Results.Extensions.Json(song);
+});
+</code></pre>
+<p>The endpoint can now be invoked with a <code>content-type</code> header value <code>application/xml</code> to get the results in XML and in all other cases, get the result as JSON.</p>
+<hr />
+<h2 id="notes">Notes</h2>
+<p>This is a fair amount of code just to change the response type - but it is a piece of code which only needs to be written once and can then be reused across all endpoints. All endpoints can then benefit from bug fixes or performance improvements in the <code>IResult</code> implementation.</p>
+<hr />
+<h2 id="references">References</h2>
+<p><a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis?view=aspnetcore-6.0#responses">Minimal APIs overview - responses</a></p>
+<hr />
+
+<blockquote class="daily-drop">
+    <div>
+        <div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px; ">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="50" height="50" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffec00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+              <path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+              <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+              <line x1="9.7" y1="17" x2="14.3" y2="17" />
+            </svg>
+        </div>
+        <div class="drop-header">
+            Daily Drop 131: 04-08-2022
+        </div>
+        <div>
+            <br>At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br> It could be anything - some.NET / C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
+            The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+        <div>
+    </div>
+</blockquote>
+
+
+                        
+<div>
+            <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
+            <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
+            <a role="button" href="/tags/api" class="badge badge-light"> api</a>
+            <a role="button" href="/tags/minimalapi" class="badge badge-light"> minimalapi</a>
+            <a role="button" href="/tags/contenttype" class="badge badge-light"> contenttype</a>
+</div>
+                    </div>
+                    <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
+                        
+
+        <div class="box sticky-top toc-block">
+            <h3 class="no-anchor">On This Page</h3>
+            <ul>
+        <li><a href="#daily-knowledge-drop">Daily Knowledge Drop</a></li>
+        <li><a href="#default-return-type">Default return type</a></li>
+        <li><a href="#xml-return-type">XML return type</a></li>
+        <li><a href="#dynamic-return-type">Dynamic return type</a></li>
+        <li><a href="#notes">Notes</a></li>
+        <li><a href="#references">References</a></li>
+            </ul>
+        </div>
+
+                    </div>
+            </div>
+            <div class="row ">
+                    <div id="content" class="col-md-9">
+                        <div>
+    <script src="https://giscus.app/client.js"
+            data-repo="always-developing/always-developing.github.io"
+            data-repo-id="R_kgDOGQJLBQ"
+            data-category="Comments"
+            data-category-id="DIC_kwDOGQJLBc4B_pUA"
+            data-mapping="pathname"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="bottom"
+            data-theme="transparent_dark"
+            data-lang="en"
+            crossorigin="anonymous"
+            async>
+    </script>
+</div>
+                    </div>
+            </div>
+    </div>
+
+    <hr class="horizontal-rule" />
+
+    <!-- Footer -->
+    <footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <ul class="list-inline text-center">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://www.linkedin.com/in/jean-pierre-seini">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-linkedin fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                <div>
+                    <p class="copyright text-footer">
+                        Copyright © 2022 Always Developing</a>.
+                    </p>
+                </div>
+                <ul class="list-inline text-center small text-feeds">
+                        <li class="list-inline-item">
+                            <a href="/feed.rss"><i class="fa fa-rss"></i> RSS Feed</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="/feed.atom"><i class="fa fa-rss"></i> Atom Feed</a>
+                        </li>
+                </ul>
+                <ul class="list-inline text-center small">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing/alwaysdeveloping-website-src"><i class="fab fa-github"></i> This site on GitHub</a>                    
+                    </li>
+                    <li class="list-inline-item">
+                        |
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing/alwaysdeveloping-website-src/tree/main/theme"><i class="fa fa-code"></i> Custom Always-Developing theme</a>
+                    </li>
+                    <li class="list-inline-item">
+                        |
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://github.com/statiqdev/CleanBlog"><i class="fa fa-blog"></i> Adapted from Clean Blog theme</a>
+                    </li>
+                </ul>
+                <div class="small text-footer">
+                    <a href="https://statiq.dev"><i class="fa fa-cogs"></i> Generated by Statiq</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="/vendor/jquery/jquery.min.js"></script>
+    <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CXPLFS7K38"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){window.dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  //gtag('config', 'G-CXPLFS7K38');
+</script>
+
+    
+
+    <!-- Custom scripts for this template -->
+    <script src="/js/always-developing-blog.js"></script>
+
+</body>
+
+</html>

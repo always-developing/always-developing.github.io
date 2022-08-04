@@ -4,8 +4,220 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-08-03T04:45:02Z</updated>
+	<updated>2022-08-04T04:13:13Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/08/04-minimal-api-return-type</id>
+		<title>Dynamically changing minimal api return type</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/08/04-minimal-api-return-type" />
+		<updated>2022-08-04T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;Minimal apis, by default, have a JSON return type - however a custom &lt;code&gt;IResult&lt;/code&gt; implementation can be used to change this return type. This same interface can be used to dynamically decide at runtime the return type, but requires some additional effort.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="default-return-type"&gt;Default return type&lt;/h2&gt;
+&lt;p&gt;With minimal api's, the default return type is JSON. Executing the following command, the &lt;em&gt;Song&lt;/em&gt; instance is automatically serialized to JSON and the response &lt;em&gt;content-type&lt;/em&gt; header automatically set to &lt;strong&gt;application/json&lt;/strong&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/json&amp;quot;, () =&amp;gt;
+{
+    return new Song
+    {
+        ArtistName = &amp;quot;John Mayer&amp;quot;,
+        SongName = &amp;quot;Bigger than my body&amp;quot;,
+        LengthInSeconds = 245
+    };
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Returned JSON:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-json"&gt;{&amp;quot;songName&amp;quot;:&amp;quot;Bigger than my body&amp;quot;,&amp;quot;artistName&amp;quot;:&amp;quot;John Mayer&amp;quot;,&amp;quot;lengthInSeconds&amp;quot;:245}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;WHat if a &lt;code&gt;different return type&lt;/code&gt; is required?&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="xml-return-type"&gt;XML return type&lt;/h2&gt;
+&lt;p&gt;As mentioned, to change the response type, instead of just returning the &lt;em&gt;Song&lt;/em&gt; instance (which will then serialize to JSON), an implementation of &lt;code&gt;IResult&lt;/code&gt; needs to be returned.&lt;/p&gt;
+&lt;p&gt;In this endpoint an instance of the custom class &lt;code&gt;XmlResult&lt;/code&gt; (full code below) is being returned:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/xml&amp;quot;, () =&amp;gt;
+{
+    // XML implementation of IResult 
+    return new XmlResult&amp;lt;Song&amp;gt;(
+        new Song
+        {
+            ArtistName = &amp;quot;John Mayer&amp;quot;,
+            SongName = &amp;quot;Bigger than my body&amp;quot;,
+            LengthInSeconds = 245
+        });
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;code&gt;XmlResult&lt;/code&gt; is an implementation of the &lt;code&gt;IResult&lt;/code&gt; interface, which is very simple, containing only one method to implement:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;    Task ExecuteAsync(HttpContext httpContext);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This method will accept the &lt;em&gt;HttpContext&lt;/em&gt; of the request as a parameter, and modify the response body and headers as required before being returned to the called.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;XmlResult&lt;/code&gt; implementation (this is by no means the most efficient method for doing XML serialization, but it's a simple demonstration for this post):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// implement IResult
+public class XmlResult&amp;lt;T&amp;gt; : IResult
+{
+    // store the entity to be serialized
+    private readonly T _entity;
+
+    public XmlResult(T entity)
+    {
+        _entity = entity;
+    }
+
+    // method which needs implementing
+    public Task ExecuteAsync(HttpContext httpContext)
+    {
+        // prepare for XML serialization
+        XmlSerializer xmlSerializer = new(typeof(T));
+        using StringWriter textWriter = new();
+
+        // perform the serialization
+        xmlSerializer.Serialize(textWriter, _entity);
+
+        // modify the response content type, content length and 
+        // write the XML to the body of the response
+        httpContext.Response.ContentType = MediaTypeNames.Application.Xml;
+        httpContext.Response.ContentLength = 
+            Encoding.UTF8.GetByteCount(textWriter.ToString());
+        return httpContext.Response.WriteAsync(textWriter.ToString());
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Browsing to the &lt;code&gt;/xml&lt;/code&gt; endpoint show above, returns the following response, with the response &lt;em&gt;content-type&lt;/em&gt; set to &lt;strong&gt;application/xml&lt;/strong&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-xml"&gt;&amp;lt;Song&amp;gt;
+    &amp;lt;SongName&amp;gt;Bigger than my body&amp;lt;/SongName&amp;gt;
+    &amp;lt;ArtistName&amp;gt;John Mayer&amp;lt;/ArtistName&amp;gt;
+    &amp;lt;LengthInSeconds&amp;gt;245&amp;lt;/LengthInSeconds&amp;gt;
+&amp;lt;/Song&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;So far so good, however, the standard recommended way of returning an &lt;code&gt;IResult&lt;/code&gt; implementation is via an extension method on &lt;code&gt;IResultExtensions&lt;/code&gt;, and not a manual instantiation:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public static class XmlResultsExtensions
+{
+    public static IResult Xml&amp;lt;T&amp;gt;(this IResultExtensions resultExtensions, T entity)
+    {
+        ArgumentNullException.ThrowIfNull(resultExtensions);
+
+        return new XmlResult&amp;lt;T&amp;gt;(entity);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Using this extension method, the &lt;strong&gt;final XML endpoint&lt;/strong&gt; now looks as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/xml&amp;quot;, () =&amp;gt;
+{
+    // Use the extension method instead of 
+    // explicitly using XmlResult 
+    return Results.Extensions.Xml(
+        new Song
+        {
+            ArtistName = &amp;quot;John Mayer&amp;quot;,
+            SongName = &amp;quot;Bigger than my body&amp;quot;,
+            LengthInSeconds = 245
+        });
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Next up we explore how to allow the &lt;code&gt;caller to decide how they would like the data returned, using a single endpoint&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="dynamic-return-type"&gt;Dynamic return type&lt;/h2&gt;
+&lt;p&gt;Let's explore how the return type can be changed dynamically based on an indicator from the caller. For this example we'll use the &lt;code&gt;content-type&lt;/code&gt; of the &lt;em&gt;request&lt;/em&gt; as the indicator (not necessarily the good option for all cases - but good enough for this demo).&lt;/p&gt;
+&lt;p&gt;We'll add a parameter to the endpoint, and instruct ASPNET Core to get the value from the &lt;code&gt;content-type&lt;/code&gt; header, using the &lt;em&gt;FromHeader&lt;/em&gt; attribute:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/dynamic&amp;quot;, ([FromHeader(Name = &amp;quot;Content-Type&amp;quot;)] string? contentType) =&amp;gt;
+{
+    var song = new Song
+    {
+        ArtistName = &amp;quot;John Mayer&amp;quot;,
+        SongName = &amp;quot;Bigger than my body&amp;quot;,
+        LengthInSeconds = 245
+    };
+
+    return song;
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Progress! However this endpoint still only returns JSON. Next let's add the check on the request content type....&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/dynamic&amp;quot;, ([FromHeader(Name = &amp;quot;Content-Type&amp;quot;)] string? contentType) =&amp;gt;
+{
+    var song = new Song
+    {
+        ArtistName = &amp;quot;John Mayer&amp;quot;,
+        SongName = &amp;quot;Bigger than my body&amp;quot;,
+        LengthInSeconds = 245
+    };
+
+    // if XML return XML implementation of Song
+    if (contentType == MediaTypeNames.Application.Xml)
+    {
+        return Results.Extensions.Xml(song);
+    }
+
+    return song;
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;...which &lt;code&gt;results in an error!&lt;/code&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Cannot convert lambda expression to type 'RequestDelegate' because 
+    the parameter types do not match the delegate parameter types
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Our endpoint is trying trying to return two different types - an &lt;code&gt;IResult&lt;/code&gt; implementation when XML, and a &lt;code&gt;Song&lt;/code&gt; instance when not.&lt;/p&gt;
+&lt;p&gt;This is easy enough to resolve - change the endpoint to &lt;code&gt;always returns an IResult&lt;/code&gt; implementation. To do this however, we now need a &lt;code&gt;custom IResult implementation for JSON&lt;/code&gt;. It operates exactly the same as the XML implementation, but serializes to JSON instead of XML:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class JsonResult&amp;lt;T&amp;gt; : IResult
+{
+    private readonly T _entity;
+
+    public JsonResult(T entity)
+    {
+        _entity = entity;
+    }
+
+    public Task ExecuteAsync(HttpContext httpContext)
+    {
+        using StringWriter textWriter = new StringWriter();
+        var jsonResult = System.Text.Json.JsonSerializer.Serialize&amp;lt;T&amp;gt;(_entity);
+
+        httpContext.Response.ContentType = MediaTypeNames.Application.Json;
+        httpContext.Response.ContentLength = Encoding.UTF8.GetByteCount(jsonResult);
+        return httpContext.Response.WriteAsync(jsonResult);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And the corresponding extension method:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public static class JsonResultsExtensions
+{
+    public static IResult Json&amp;lt;T&amp;gt;(this IResultExtensions resultExtensions, T entity)
+    {
+        ArgumentNullException.ThrowIfNull(resultExtensions);
+
+        return new JsonResult&amp;lt;T&amp;gt;(entity);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Lastly, we update the &lt;em&gt;dynamic&lt;/em&gt; endpoint so the &lt;strong&gt;final endpoint&lt;/strong&gt; now looks as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/dynamic&amp;quot;, ([FromHeader(Name = &amp;quot;Content-Type&amp;quot;)] string? contentType) =&amp;gt;
+{
+    var song = new Song
+    {
+        ArtistName = &amp;quot;John Mayer&amp;quot;,
+        SongName = &amp;quot;Bigger than my body&amp;quot;,
+        LengthInSeconds = 245
+    };
+
+    // if XML return XML implementation of Song
+    if (contentType == MediaTypeNames.Application.Xml)
+    {
+        return Results.Extensions.Xml(song);
+    }
+
+    // In all other cases return JSON
+    return Results.Extensions.Json(song);
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The endpoint can now be invoked with a &lt;code&gt;content-type&lt;/code&gt; header value &lt;code&gt;application/xml&lt;/code&gt; to get the results in XML and in all other cases, get the result as JSON.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;This is a fair amount of code just to change the response type - but it is a piece of code which only needs to be written once and can then be reused across all endpoints. All endpoints can then benefit from bug fixes or performance improvements in the &lt;code&gt;IResult&lt;/code&gt; implementation.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis?view=aspnetcore-6.0#responses"&gt;Minimal APIs overview - responses&lt;/a&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;?# DailyDrop ?&gt;131: 04-08-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/08/03-string-interpolation-alignment</id>
 		<title>String interpolation with alignment</title>
@@ -961,202 +1173,6 @@ Console.WriteLine(song.Name);
 &lt;p&gt;&lt;a href="https://www.youtube.com/watch?v=9CDgPgWF9IY"&gt;Nick Chapsas - Why I won’t need constructors anymore in C# 11&lt;/a&gt;&lt;/p&gt;
 &lt;hr /&gt;
 &lt;?# DailyDrop ?&gt;122: 22-07-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/07/21-addjsonstream</id>
-		<title>Configuration from memory with AddJsonStream</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/07/21-addjsonstream" />
-		<updated>2022-07-21T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;When writing &lt;code&gt;unit test&lt;/code&gt; which require application configuration through &lt;code&gt;IConfiguration&lt;/code&gt;, the &lt;code&gt;AddJsonStream&lt;/code&gt; method can be used to load different application settings configuration from memory (instead of from an appsettings.json file).&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="setup"&gt;Setup&lt;/h2&gt;
-&lt;p&gt;The setup is a fairly common pattern I've experienced when writing &lt;code&gt;shared, reusable, packaged libraries&lt;/code&gt; - a piece of functionality is packaged into a library (not shown in this post, but published to a NuGet store). This library functionality is configured and added to the dependency injection container at startup using an extension method, with the configuration options for the library (optionally) specified in the appsettings.json file.&lt;/p&gt;
-&lt;p&gt;A &lt;code&gt;class library&lt;/code&gt; is created for the shared component.&lt;/p&gt;
-&lt;p&gt;An &lt;code&gt;interface&lt;/code&gt; is created as an abstraction for the logic:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public interface IDoWork
-{
-    int DoSomeWork();
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;And we also have an &lt;code&gt;options&lt;/code&gt;/settings/configuration class which contains the settings for the library:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class DoWorkOptions
-{
-    public bool IsEnabled { get; set; }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Then there is the implementation of the interface, the logic for the library (incredibly simple in this demo):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class DoWork : IDoWork
-{
-    /// &amp;lt;summary&amp;gt;
-    /// Stores the configuration options
-    /// &amp;lt;/summary&amp;gt;
-    private readonly DoWorkOptions _options;
-
-    /// &amp;lt;summary&amp;gt;
-    /// Constructor
-    /// &amp;lt;/summary&amp;gt;
-    /// &amp;lt;param name=&amp;quot;options&amp;quot;&amp;gt;The configuration options&amp;lt;/param&amp;gt;
-    public DoWork(DoWorkOptions options)
-    {
-        _options = options;
-    }
-
-    /// &amp;lt;summary&amp;gt;
-    /// Executes the functionality of the library
-    /// &amp;lt;/summary&amp;gt;
-    /// &amp;lt;returns&amp;gt;1 if enabled, 0 if disabled&amp;lt;/returns&amp;gt;
-    public int DoSomeWork()
-    {
-        if(_options.IsEnabled)
-        {
-            return 1;
-        }
-
-        return 0;
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;And finally an extension method on &lt;code&gt;IServiceCollection&lt;/code&gt; to configure all the pieces with the dependency injection container:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public static class DoWorkExtensions
-{
-    /// &amp;lt;summary&amp;gt;
-    /// Configure the library with the DI container
-    /// &amp;lt;/summary&amp;gt;
-    /// &amp;lt;param name=&amp;quot;services&amp;quot;&amp;gt;The IServiceCollection implementation&amp;lt;/param&amp;gt;
-    /// &amp;lt;param name=&amp;quot;configuration&amp;quot;&amp;gt;The IConfiguration implementation&amp;lt;/param&amp;gt;
-    /// &amp;lt;returns&amp;gt;&amp;lt;/returns&amp;gt;
-    public static IServiceCollection AddDoWork(this IServiceCollection services, 
-        IConfiguration configuration)
-    {
-        // load the options from the configuration implementation
-        var options = new DoWorkOptions();
-        configuration.GetSection(&amp;quot;doWorkOptions&amp;quot;).Bind(options);
-
-        // add the functionality to DI
-        services.AddTransient(typeof(IDoWork), typeof(DoWork));
-        // add the options to DI
-        services.AddSingleton(options);
-
-        return services;
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;To recap - we have:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;an interface for the functionality (&lt;em&gt;IDoWork&lt;/em&gt;)&lt;/li&gt;
-&lt;li&gt;with an implementation of the functionality (&lt;em&gt;DoWork&lt;/em&gt;)&lt;/li&gt;
-&lt;li&gt;which is configured using options (&lt;em&gt;DoWorkOptions&lt;/em&gt;)&lt;/li&gt;
-&lt;li&gt;and setup with the dependency injection container using an extension method (&lt;em&gt;DoWorkExtensions&lt;/em&gt;)&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Our very simple shared library is now &lt;code&gt;complete and ready to be used&lt;/code&gt;!&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="web-api"&gt;Web api&lt;/h2&gt;
-&lt;p&gt;First a look at how this would be used in an &lt;code&gt;minimal web api&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;With the necessary references in place, the extension method can be invoked on startup, which then allows for the the &lt;em&gt;IDoWork&lt;/em&gt; interface to be injected into the endpoint handler delegate:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
-
-// this line is not explicitly needed as its automatically done 
-// if not specified here, but the configuration get loaded from the 
-// appsettings.json file
-builder.Configuration.AddJsonFile(&amp;quot;appsettings.json&amp;quot;);
-
-// configured with dependency injection container
-builder.Services.AddDoWork(builder.Configuration);
-
-var app = builder.Build();
-
-// injected IDoWork
-app.MapGet(&amp;quot;/work&amp;quot;, (IDoWork worker) =&amp;gt;
-{
-    // execute the logic
-    return worker.DoSomeWork();
-});
-
-app.Run();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;With the appsettings.json being as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-json"&gt;{
-  &amp;quot;DoWorkOptions&amp;quot;: {
-    &amp;quot;IsEnabled&amp;quot; :  true
-  }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Calling the &lt;code&gt;/work&lt;/code&gt; endpoint will return a &lt;code&gt;1 or 0&lt;/code&gt; dependant on if the &lt;em&gt;DoWorkOptions -&amp;gt; IsEnabled&lt;/em&gt; flag is set to &lt;code&gt;true or false&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;So how do we unit test a piece of code which is dependant on json configuration? - with the &lt;code&gt;AddJsonStream&lt;/code&gt; method!&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="unit-test"&gt;Unit Test&lt;/h2&gt;
-&lt;p&gt;&lt;code&gt;AddJsonStream&lt;/code&gt; is an extension method on &lt;em&gt;ConfigurationBuilder&lt;/em&gt;, which as the name implies, allows for loading of JSON configuration data from memory, instead of from file as is the the case with &lt;code&gt;AddJsonFile&lt;/code&gt; above.&lt;/p&gt;
-&lt;p&gt;We can leverage this to write unit tests with different setups of configuration.&lt;/p&gt;
-&lt;p&gt;A note - there are other/better ways of performing endpoint testing, &lt;code&gt;WebApplicationFactory&lt;/code&gt; for example, but these are intentionally simple and the logic is being tested directly (from the DI container), and not through an endpoint.&lt;/p&gt;
-&lt;p&gt;Test when the option is &lt;em&gt;&lt;strong&gt;enabled&lt;/strong&gt;&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;[TestMethod]
-public void Test_Enabled_Config()
-{
-    // create a memory stream with the json configuration
-    var sr = new MemoryStream(Encoding.ASCII.GetBytes(&amp;#64;&amp;quot;
-{
-&amp;quot;&amp;quot;DoWorkOptions&amp;quot;&amp;quot; : {
-    &amp;quot;&amp;quot;IsEnabled&amp;quot;&amp;quot; : true
-}
-}&amp;quot;));
-
-    // setup host
-    var host = Host.CreateDefaultBuilder()
-        .ConfigureAppConfiguration((hostingContext, config) =&amp;gt;
-        {
-            // load from the memory stream, and not from file
-            config.AddJsonStream(sr);
-        })
-        .ConfigureServices((context, services) =&amp;gt; services
-            .AddDoWork(context.Configuration)
-        ).Build();
-
-    // get the implementation from the DI container
-    var worker = (IDoWork)host.Services.GetService(typeof(IDoWork));
-
-    // invoke and assert the result
-    Assert.AreEqual(1, worker.DoSomeWork());
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Test when the option is &lt;em&gt;&lt;strong&gt;disabled&lt;/strong&gt;&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;[TestMethod]
-public void Test_Disabled_Config()
-{
-    // create a memory stream with the json configuration
-    var sr = new MemoryStream(Encoding.ASCII.GetBytes(&amp;#64;&amp;quot;
-{
-&amp;quot;&amp;quot;DoWorkOptions&amp;quot;&amp;quot; : {
-    &amp;quot;&amp;quot;IsEnabled&amp;quot;&amp;quot; : false
-}
-}&amp;quot;));
-
-    // setup host
-    var host = Host.CreateDefaultBuilder()
-        .ConfigureAppConfiguration((hostingContext, config) =&amp;gt;
-        {
-            // load from the memory stream, and not from file
-            config.AddJsonStream(sr);
-        })
-        .ConfigureServices((context, services) =&amp;gt; services
-            .AddDoWork(context.Configuration)
-        ).Build();
-
-    // get the implementation from the DI container
-    var worker = (IDoWork)host.Services.GetService(typeof(IDoWork));
-
-    // invoke and assert the result
-    Assert.AreEqual(0, worker.DoSomeWork());
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Additional tests can obviously be included for additional use cases (empty configuration file, invalid name or value in the file etc.) - and these are easy and quick to add and configure with &lt;code&gt;AddJsonStream&lt;/code&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;&lt;code&gt;AddJsonStream&lt;/code&gt; is a very useful method when writing unit tests - I'm not sure how useful it would be outside of a unit test, during the normal execution of an application, but its available if required.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;?# DailyDrop ?&gt;121: 21-07-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
