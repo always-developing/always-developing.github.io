@@ -5,8 +5,184 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Thu, 04 Aug 2022 04:13:13 GMT</pubDate>
-		<lastBuildDate>Thu, 04 Aug 2022 04:13:13 GMT</lastBuildDate>
+		<pubDate>Fri, 05 Aug 2022 04:27:48 GMT</pubDate>
+		<lastBuildDate>Fri, 05 Aug 2022 04:27:48 GMT</lastBuildDate>
+		<item>
+			<title>Windows services with .NET Core</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/08/05-windows-service</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/08/05-windows-service</guid>
+			<pubDate>Fri, 05 Aug 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;Configuring code to run as a &lt;code&gt;Windows Service&lt;/code&gt; in .NET is simple and fairly straight-forward (at least simpler and more straight forward than I was expecting). The &lt;code&gt;Windows Service&lt;/code&gt; specific configuration only required a NuGet package and a few lines of code.&lt;/p&gt;
+&lt;p&gt;This post will describe the &lt;code&gt;code changes&lt;/code&gt; required to make the code ready to be hosted as a Windows Service, but will not go into specifics on how the Windows Service is configured.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="background-service"&gt;Background Service&lt;/h2&gt;
+&lt;p&gt;Whether hosted as a &lt;code&gt;Windows Service&lt;/code&gt; or not, the logic needs to be executed in the background, usually on a schedule or at specific intervals. This is done with the .NET &lt;em&gt;BackgroundService&lt;/em&gt; class.&lt;/p&gt;
+&lt;p&gt;To start creating this background process, a class is created which inherits from &lt;em&gt;BackgroundService&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class RandomWorker : BackgroundService
+{
+    private readonly ILogger&amp;lt;RandomWorker&amp;gt; _logger;
+
+    public RandomWorker(ILogger&amp;lt;RandomWorker&amp;gt; logger)
+    {
+        _logger = logger;
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        // continually run until cancelled
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            _logger.LogInformation(&amp;quot;RandomWorker Service running &amp;quot; +
+                &amp;quot;as Windows Service at: {currentTime}&amp;quot;, DateTime.Now);
+
+            var random = new Random();
+            var randomValue = random.Next(10);
+
+            if(randomValue &amp;gt; 5)
+            {
+                _logger.LogError(&amp;quot;RandomWorker running as Windows &amp;quot; +
+                    &amp;quot;Service threw an exception at: {currentTime}&amp;quot;, DateTime.Now);
+            }
+
+            // wait for 10 seconds
+            await Task.Delay(10000, stoppingToken);
+        }
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;ul&gt;
+&lt;li&gt;The class operates with &lt;code&gt;dependency injection&lt;/code&gt;, so any registered services can be injected (&lt;em&gt;ILogger&lt;/em&gt; in this example)&lt;/li&gt;
+&lt;li&gt;The &lt;code&gt;ExecuteAsync&lt;/code&gt; method is called once the background service is started - the &lt;code&gt;while&lt;/code&gt; loop in conjunction with the &lt;code&gt;Task.Delay&lt;/code&gt; call, ensures that the method is forever looping effectively executing every 10 seconds (roughly), until cancelled via the &lt;em&gt;CancellationToken&lt;/em&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Now that we have a &lt;em&gt;BackgroundService&lt;/em&gt; which runs our logic, we need to host it so that it can be executed.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="hosting"&gt;Hosting&lt;/h2&gt;
+&lt;h3 id="console-hosting"&gt;Console hosting&lt;/h3&gt;
+&lt;p&gt;The simplest option is to host it in a &lt;em&gt;Console Application&lt;/em&gt; - this is an exe which needs to be executed, and will run until the console windows is closed.&lt;/p&gt;
+&lt;p&gt;A top-level statement &lt;em&gt;Console Application&lt;/em&gt; is shown below, with the &lt;code&gt;RandomWorker&lt;/code&gt; class added as a &lt;em&gt;Hosted Service&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;IHost host = Host.CreateDefaultBuilder(args)
+    .ConfigureServices(services =&amp;gt;
+    {
+        // Add the RandomWorker as a hosted service
+        services.AddHostedService&amp;lt;RandomWorker&amp;gt;();
+    })
+    .Build();
+
+await host.RunAsync();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;A sample output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;info: WindowsServiceDemo.RandomWorker[0]
+      RandomWorker Service running as Windows Service at: 07/10/2022 16:40:20
+info: WindowsServiceDemo.RandomWorker[0]
+      RandomWorker Service running as Windows Service at: 07/10/2022 16:40:30
+info: WindowsServiceDemo.RandomWorker[0]
+      RandomWorker Service running as Windows Service at: 07/10/2022 16:40:40
+info: WindowsServiceDemo.RandomWorker[0]
+      RandomWorker Service running as Windows Service at: 07/10/2022 16:40:50
+info: WindowsServiceDemo.RandomWorker[0]
+      RandomWorker Service running as Windows Service at: 07/10/2022 16:41:00
+fail: WindowsServiceDemo.RandomWorker[0]
+      RandomWorker running as Windows Service threw an exception at: 07/10/2022 16:41:00
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now that we have the building blocks for a background service, running on an interval in a console we can look at how to turn this into a &lt;code&gt;Windows Service&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="windows-services-hosting"&gt;Windows Services hosting&lt;/h3&gt;
+&lt;p&gt;Enhancing a traditional &lt;em&gt;Console Application&lt;/em&gt; to be able to be used as a &lt;code&gt;Windows Service&lt;/code&gt; is fairly straight forward:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;Reference the &lt;code&gt;Microsoft.Extensions.Hosting.WindowsService&lt;/code&gt; NuGet package&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Update the startup to include additional &lt;code&gt;Windows Service&lt;/code&gt; specific configuration:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;using WindowsServiceDemo;
+
+IHost host = Host.CreateDefaultBuilder(args)
+    // configure to be able to be used in Windows Service
+    .UseWindowsService(options =&amp;gt;
+    {
+        // with the name
+        options.ServiceName = &amp;quot;RandomWorker Service&amp;quot;;
+    })
+    .ConfigureServices(services =&amp;gt;
+    {
+        services.AddHostedService&amp;lt;RandomWorker&amp;gt;();
+    })
+    .Build();
+
+await host.RunAsync();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Optionally configure &lt;code&gt;Event Viewer&lt;/code&gt; logging - this step can be skipped if logging to the Event Viewer is not required.
+The default logging level for &lt;code&gt;Event Viewer&lt;/code&gt; is &lt;em&gt;Warning&lt;/em&gt;, so for development purposes the default log level can be set to &lt;em&gt;Information&lt;/em&gt;.
+In &lt;code&gt;appsettings.json&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-json"&gt;{
+    &amp;quot;Logging&amp;quot;: {
+        &amp;quot;EventLog&amp;quot;: {
+        &amp;quot;LogLevel&amp;quot;: {
+            &amp;quot;Default&amp;quot;: &amp;quot;Information&amp;quot;
+        }
+        },
+        &amp;quot;LogLevel&amp;quot;: {
+        &amp;quot;Default&amp;quot;: &amp;quot;Information&amp;quot;,
+        &amp;quot;Microsoft.Hosting.Lifetime&amp;quot;: &amp;quot;Information&amp;quot;
+        }
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;That's it! (from a code configuration point of view). The application can now be run as a normal console application, but is also &lt;em&gt;ready&lt;/em&gt; to be hosted as a &lt;code&gt;Windows Service&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;This post will not go into detail around &lt;em&gt;how&lt;/em&gt; to configure the &lt;code&gt;Windows Service&lt;/code&gt; - but a brief summary:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The application needs to be &lt;a href="https://docs.microsoft.com/en-us/dotnet/core/extensions/windows-service#publish-the-app"&gt;published&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;A &lt;code&gt;Windows Service&lt;/code&gt; needs to be created using the &lt;code&gt;sc.exe&lt;/code&gt; tool. The tool creates the Windows Service and &lt;a href="https://docs.microsoft.com/en-us/dotnet/core/extensions/windows-service#create-the-windows-service"&gt;links it to the exe created in the above step&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Optionally &lt;a href="https://docs.microsoft.com/en-us/dotnet/core/extensions/windows-service#configure-the-windows-service"&gt;configure the Windows Service&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Ideally all of the above steps are done in a CI/CD pipeline, with all the steps automated.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="api-hosting"&gt;Api hosting&lt;/h3&gt;
+&lt;p&gt;A note on the &lt;code&gt;BackgroundService&lt;/code&gt; inherited class, &lt;code&gt;RandomWorker&lt;/code&gt; - in the above example it was hosted in a &lt;em&gt;Console Application&lt;/em&gt; using:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;    services.AddHostedService&amp;lt;RandomWorker&amp;gt;();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The great thing about the &lt;code&gt;BackgroundService&lt;/code&gt;, is that it can be hosted in an API if required - allowing the service logic to become &lt;code&gt;cross platform&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Below is top level statement API, using a minimal api - but also &lt;code&gt;hosting the background service&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddHostedService&amp;lt;RandomWorker&amp;gt;();
+
+var app = builder.Build();
+
+app.MapGet(&amp;quot;/randomservice&amp;quot;, (ILogger&amp;lt;RandomWorker&amp;gt; logger) =&amp;gt;
+{
+     logger.LogInformation(&amp;quot;Endpoint called and executed &amp;quot; +
+        &amp;quot;while background service is running&amp;quot;);
+});
+
+app.Run();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Running this API now executes the service in the background, while still allowing endpoints to be called:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;info: WindowsServiceDemo.RandomWorker[0]
+      RandomWorker Service running as Windows Service at: 07/10/2022 17:15:13
+fail: WindowsServiceDemo.RandomWorker[0]
+      RandomWorker running as Windows Service threw an exception at: 07/10/2022 17:15:13
+info: WindowsServiceDemo.RandomWorker[0]
+      Endpoint called and executed while background service is running
+info: WindowsServiceDemo.RandomWorker[0]
+      RandomWorker Service running as Windows Service at: 07/10/2022 17:15:23
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;In my personal experience, in the last few years &lt;code&gt;Windows Services&lt;/code&gt; have seen a decline in usage in favour of more cross-platform solutions, such as hosting the background service in an API, or using other scheduling solutions such as &lt;a href="https://www.hangfire.io/"&gt;HangFire&lt;/a&gt;.
+However, in the case when hosting the code as a &lt;code&gt;Windows Service&lt;/code&gt; is unavoidable - it's good to know that its fairly simple and straightforward to configure .NET Core (and beyond) code to function as a Windows Service.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/core/extensions/windows-service"&gt;Create a Windows Service using BackgroundService&lt;/a&gt;&lt;br /&gt;
+&lt;a href="https://code-maze.com/aspnetcore-running-applications-as-windows-service/"&gt;Running .NET Core Applications as a Windows Service&lt;/a&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;?# DailyDrop ?&gt;132: 05-08-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Dynamically changing minimal api return type</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/08/04-minimal-api-return-type</link>
@@ -1076,114 +1252,6 @@ public void ConfigureProduction(IApplicationBuilder app, IWebHostEnvironment env
 &lt;p&gt;Perhaps not especially relevent if working with the latest version of .NET (6 and above), or if there is not major differences in middleware pipelines between difference environments - this is still an interesting technique available if one requires it to ensure cleaner and easier to understand code.&lt;/p&gt;
 &lt;hr /&gt;
 &lt;?# DailyDrop ?&gt;123: 25-07-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Exploring the new required properties</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/07/22-require-property</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/07/22-require-property</guid>
-			<pubDate>Fri, 22 Jul 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;As part of C#11 release later this year (2022), is a potential new keyword, &lt;code&gt;required&lt;/code&gt; (potential as it's still currently in preview and is not guaranteed to be included in the final release).&lt;/p&gt;
-&lt;p&gt;The &lt;code&gt;required&lt;/code&gt; keyword is applied to a &lt;em&gt;property&lt;/em&gt; and will force the property value to be set in the &lt;em&gt;object initializer&lt;/em&gt;. The compiler will generate an error and prevent compilation if the property is not set.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="current"&gt;Current&lt;/h2&gt;
-&lt;p&gt;In our example we have a &lt;em&gt;Song&lt;/em&gt; class, which has three fields. We require that these three fields always be set, and cannot be updated:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Song
-{
-    public string Name { get; init; }
-
-    public string Artist { get; init; }
-
-    public int LengthInSeconds { get; init; }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The &lt;code&gt;init&lt;/code&gt; keyword is used to specify that the values of the properties can only be set on &lt;em&gt;initialization&lt;/em&gt; of the class, and after that they are read only. However, just doing the above &lt;code&gt;does not enforce the values be set&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;The following is completely valid:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var song = new Song
-{
-    Artist = &amp;quot;Foo Fighters&amp;quot;,
-    LengthInSeconds = 250
-};
-
-// Name will be NULL here.
-Console.WriteLine(song.Name);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The only way with the current versions of C#, is to use a &lt;code&gt;constructor&lt;/code&gt; to enforce the property values be set:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Song
-{
-    public string Name { get; init; }
-
-    public string Artist { get; init; }
-
-    public int LengthInSeconds { get; init; }
-
-    // new constructor taking all three required arguments
-    public Song(string name, string artist, int lengthInSeconds)
-    {
-        Name = name;
-        Artist = artist;
-        LengthInSeconds = lengthInSeconds;
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Using the &lt;em&gt;object initializer syntax&lt;/em&gt; (the syntax in the previous initialization of &lt;em&gt;Song&lt;/em&gt;) is now invalid - the compiler error:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;There is no argument given that corresponds to the required formal parameter 'name' of 'Song.Song(string, string, int)'	
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The &lt;code&gt;constructor&lt;/code&gt; now needs to be used to initialize an instance of &lt;em&gt;Song&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var song = new Song(&amp;quot;Foo Fighters&amp;quot;, &amp;quot;Everlong&amp;quot;, 250);
-Console.WriteLine(song.Name);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;So we've fulfilled our requirement - the three fields always be set, and cannot be updated? Yes! ...but....&lt;/p&gt;
-&lt;p&gt;Imagine you have a class with &lt;code&gt;20 require properties&lt;/code&gt;, in conjunction with &lt;code&gt;10 optional properties&lt;/code&gt; - you'd end up with at least one constructor with at least 20 parameters. In addition, the 10 optional properties can either be set in a constructor resulting in a 30 parameter constructor, or using the &lt;em&gt;object initializer syntax&lt;/em&gt;, which forces the use of two different methods to set values when initializing a class.&lt;/p&gt;
-&lt;p&gt;In the below, the optional &lt;em&gt;YearReleased&lt;/em&gt; &lt;code&gt;init&lt;/code&gt; only property has been added (but not added to the constructor):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var song = new Song(&amp;quot;Foo Fighters&amp;quot;, &amp;quot;Everlong&amp;quot;, 250)
-{
-    YearReleased = 1997
-};
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;All of this will &lt;em&gt;function&lt;/em&gt;, but it is not very intuitive or developer friendly - enter the &lt;code&gt;required&lt;/code&gt; keyword.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="required-keyword"&gt;Required keyword&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;required&lt;/code&gt; keyword is applied to the property:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Song
-{
-    public required string Name { get; init; }
-
-    public required string Artist { get; init; }
-
-    public required int LengthInSeconds { get; init; }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;And enforces that the property is set on object initialization.&lt;/p&gt;
-&lt;p&gt;The following does &lt;strong&gt;NOT&lt;/strong&gt; compile:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var song = new Song
-{
-    Artist = &amp;quot;Foo Fighters&amp;quot;,
-    LengthInSeconds = 250
-};
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Generating the compiler error:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Required member 'Song.Name' must be set in the object initializer or attribute constructor.
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Now there is &lt;code&gt;no need for the constructor&lt;/code&gt; as the compiler will enforce that &lt;code&gt;required&lt;/code&gt; properties are set:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var song = new Song
-{
-    Artist = &amp;quot;Foo Fighters&amp;quot;,
-    Name = &amp;quot;Everlong&amp;quot;,
-    LengthInSeconds = 250
-};
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This results in cleaner code, as there are no constructors with numerous arguments, and there is a single standard way in which required and optional properties can be initialized.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;I'm looking forward to this feature, and hoping that it is included in C#11. It will be interesting to explore how this can replace or mostly likely, work with the &lt;code&gt;Required&lt;/code&gt; attribute data annotation to perform the necessary checks at compile time, and not only at runtime.&lt;/p&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.youtube.com/watch?v=9CDgPgWF9IY"&gt;Nick Chapsas - Why I won’t need constructors anymore in C# 11&lt;/a&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;?# DailyDrop ?&gt;122: 22-07-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>

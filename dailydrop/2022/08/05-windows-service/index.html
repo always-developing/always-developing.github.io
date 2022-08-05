@@ -1,0 +1,456 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="always learning | always growing">
+
+    <title>Always Developing - Windows services with .NET Core</title>
+
+    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/08/05-windows-service">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
+
+    <meta name="application-name" content="Always Developing" />
+    <meta name="msapplication-tooltip" content="Always Developing" />
+    <meta name="msapplication-starturl" content="/" />
+
+    <meta property="og:title" content="Always Developing - Windows services with .NET Core" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/08/05-windows-service" />
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Bootstrap core CSS -->
+    <link href="/vendor/bootstrap/scss/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom fonts for this template -->
+    <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="/vendor/fontawesome-free/css/brands.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css' data-no-mirror>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css' data-no-mirror>
+
+    <!-- Custom styles for this template -->
+    <link href="/scss/always-developing-blog.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/plugins/autoloader/prism-autoloader.min.js" data-no-mirror></script>
+    <script src="https://cdn.jsdelivr.net/npm/quicklink@2.0.0/dist/quicklink.umd.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/themes/prism.css">
+
+    <!-- Lunr search -->
+        <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/pako@2.0.3/dist/pako_inflate.min.js"></script>
+        <script src="/search.js"></script>
+
+    
+
+
+    
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand"  href="/">
+            <img src="/images/ad_logo.png" alt="" width="25" height="25" class="d-inline-block align-text-top">
+            Always Developing
+        </a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            Menu
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/software">Software</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/tags">Tags</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/posts">Posts</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/about">About</a>
+            </li>
+</ul>
+                <form class="form-inline my-2 my-lg-0" action="/search" method="GET">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="query">
+                    <input type="submit" hidden />
+                </form>
+        </div>
+    </div>
+</nav>
+
+    <!-- Page Header -->
+    <header class="masthead">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 align-middle">
+                <div class="post-header-image">
+                    <a href="/">
+                        <img src="/images/ad_logo.png" class="header-image">
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="post-heading">
+                    <h1>
+                        Windows services with .NET Core
+                    </h1>
+                            <h2 class="subheading">Configuring a background service to run as a Windows Service</h2>
+                        <p class="post-meta">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
+                                <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
+                            </svg> Published on Friday, 05 August 2022
+                        </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <!-- Main Content -->
+    <div class="container">
+            <div class="row ">
+                    <div id="content" class="col-md-9 post-with-toc post-block">
+                        
+<div class="post-header-category">
+    <a class="btn btn-primary btn-sm btn-default btn-home" href="\" role="button"><i class="fas fa-angle-double-left"></i> Home</a>
+            <a class="btn btn-primary btn-sm category-btn" href="/categories/dailydrop" role="button">DailyDrop</a>
+</div>
+
+                        <h2 id="daily-knowledge-drop">Daily Knowledge Drop</h2>
+<p>Configuring code to run as a <code>Windows Service</code> in .NET is simple and fairly straight-forward (at least simpler and more straight forward than I was expecting). The <code>Windows Service</code> specific configuration only required a NuGet package and a few lines of code.</p>
+<p>This post will describe the <code>code changes</code> required to make the code ready to be hosted as a Windows Service, but will not go into specifics on how the Windows Service is configured.</p>
+<hr />
+<h2 id="background-service">Background Service</h2>
+<p>Whether hosted as a <code>Windows Service</code> or not, the logic needs to be executed in the background, usually on a schedule or at specific intervals. This is done with the .NET <em>BackgroundService</em> class.</p>
+<p>To start creating this background process, a class is created which inherits from <em>BackgroundService</em>:</p>
+<pre><code class="language-csharp">public class RandomWorker : BackgroundService
+{
+    private readonly ILogger&lt;RandomWorker&gt; _logger;
+
+    public RandomWorker(ILogger&lt;RandomWorker&gt; logger)
+    {
+        _logger = logger;
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        // continually run until cancelled
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            _logger.LogInformation(&quot;RandomWorker Service running &quot; +
+                &quot;as Windows Service at: {currentTime}&quot;, DateTime.Now);
+
+            var random = new Random();
+            var randomValue = random.Next(10);
+
+            if(randomValue &gt; 5)
+            {
+                _logger.LogError(&quot;RandomWorker running as Windows &quot; +
+                    &quot;Service threw an exception at: {currentTime}&quot;, DateTime.Now);
+            }
+
+            // wait for 10 seconds
+            await Task.Delay(10000, stoppingToken);
+        }
+    }
+}
+</code></pre>
+<ul>
+<li>The class operates with <code>dependency injection</code>, so any registered services can be injected (<em>ILogger</em> in this example)</li>
+<li>The <code>ExecuteAsync</code> method is called once the background service is started - the <code>while</code> loop in conjunction with the <code>Task.Delay</code> call, ensures that the method is forever looping effectively executing every 10 seconds (roughly), until cancelled via the <em>CancellationToken</em>.</li>
+</ul>
+<p>Now that we have a <em>BackgroundService</em> which runs our logic, we need to host it so that it can be executed.</p>
+<hr />
+<h2 id="hosting">Hosting</h2>
+<h3 id="console-hosting">Console hosting</h3>
+<p>The simplest option is to host it in a <em>Console Application</em> - this is an exe which needs to be executed, and will run until the console windows is closed.</p>
+<p>A top-level statement <em>Console Application</em> is shown below, with the <code>RandomWorker</code> class added as a <em>Hosted Service</em>:</p>
+<pre><code class="language-csharp">IHost host = Host.CreateDefaultBuilder(args)
+    .ConfigureServices(services =&gt;
+    {
+        // Add the RandomWorker as a hosted service
+        services.AddHostedService&lt;RandomWorker&gt;();
+    })
+    .Build();
+
+await host.RunAsync();
+</code></pre>
+<p>A sample output:</p>
+<pre><code class="language-terminal">info: WindowsServiceDemo.RandomWorker[0]
+      RandomWorker Service running as Windows Service at: 07/10/2022 16:40:20
+info: WindowsServiceDemo.RandomWorker[0]
+      RandomWorker Service running as Windows Service at: 07/10/2022 16:40:30
+info: WindowsServiceDemo.RandomWorker[0]
+      RandomWorker Service running as Windows Service at: 07/10/2022 16:40:40
+info: WindowsServiceDemo.RandomWorker[0]
+      RandomWorker Service running as Windows Service at: 07/10/2022 16:40:50
+info: WindowsServiceDemo.RandomWorker[0]
+      RandomWorker Service running as Windows Service at: 07/10/2022 16:41:00
+fail: WindowsServiceDemo.RandomWorker[0]
+      RandomWorker running as Windows Service threw an exception at: 07/10/2022 16:41:00
+</code></pre>
+<p>Now that we have the building blocks for a background service, running on an interval in a console we can look at how to turn this into a <code>Windows Service</code>.</p>
+<hr />
+<h3 id="windows-services-hosting">Windows Services hosting</h3>
+<p>Enhancing a traditional <em>Console Application</em> to be able to be used as a <code>Windows Service</code> is fairly straight forward:</p>
+<ol>
+<li><p>Reference the <code>Microsoft.Extensions.Hosting.WindowsService</code> NuGet package</p>
+</li>
+<li><p>Update the startup to include additional <code>Windows Service</code> specific configuration:</p>
+<pre><code class="language-csharp">using WindowsServiceDemo;
+
+IHost host = Host.CreateDefaultBuilder(args)
+    // configure to be able to be used in Windows Service
+    .UseWindowsService(options =&gt;
+    {
+        // with the name
+        options.ServiceName = &quot;RandomWorker Service&quot;;
+    })
+    .ConfigureServices(services =&gt;
+    {
+        services.AddHostedService&lt;RandomWorker&gt;();
+    })
+    .Build();
+
+await host.RunAsync();
+</code></pre>
+</li>
+<li><p>Optionally configure <code>Event Viewer</code> logging - this step can be skipped if logging to the Event Viewer is not required.
+The default logging level for <code>Event Viewer</code> is <em>Warning</em>, so for development purposes the default log level can be set to <em>Information</em>.
+In <code>appsettings.json</code>:</p>
+<pre><code class="language-json">{
+    &quot;Logging&quot;: {
+        &quot;EventLog&quot;: {
+        &quot;LogLevel&quot;: {
+            &quot;Default&quot;: &quot;Information&quot;
+        }
+        },
+        &quot;LogLevel&quot;: {
+        &quot;Default&quot;: &quot;Information&quot;,
+        &quot;Microsoft.Hosting.Lifetime&quot;: &quot;Information&quot;
+        }
+    }
+}
+</code></pre>
+</li>
+</ol>
+<p>That's it! (from a code configuration point of view). The application can now be run as a normal console application, but is also <em>ready</em> to be hosted as a <code>Windows Service</code>.</p>
+<p>This post will not go into detail around <em>how</em> to configure the <code>Windows Service</code> - but a brief summary:</p>
+<ul>
+<li>The application needs to be <a href="https://docs.microsoft.com/en-us/dotnet/core/extensions/windows-service#publish-the-app">published</a></li>
+<li>A <code>Windows Service</code> needs to be created using the <code>sc.exe</code> tool. The tool creates the Windows Service and <a href="https://docs.microsoft.com/en-us/dotnet/core/extensions/windows-service#create-the-windows-service">links it to the exe created in the above step</a></li>
+<li>Optionally <a href="https://docs.microsoft.com/en-us/dotnet/core/extensions/windows-service#configure-the-windows-service">configure the Windows Service</a></li>
+</ul>
+<p>Ideally all of the above steps are done in a CI/CD pipeline, with all the steps automated.</p>
+<hr />
+<h3 id="api-hosting">Api hosting</h3>
+<p>A note on the <code>BackgroundService</code> inherited class, <code>RandomWorker</code> - in the above example it was hosted in a <em>Console Application</em> using:</p>
+<pre><code class="language-csharp">    services.AddHostedService&lt;RandomWorker&gt;();
+</code></pre>
+<p>The great thing about the <code>BackgroundService</code>, is that it can be hosted in an API if required - allowing the service logic to become <code>cross platform</code>.</p>
+<p>Below is top level statement API, using a minimal api - but also <code>hosting the background service</code>:</p>
+<pre><code class="language-csharp">var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddHostedService&lt;RandomWorker&gt;();
+
+var app = builder.Build();
+
+app.MapGet(&quot;/randomservice&quot;, (ILogger&lt;RandomWorker&gt; logger) =&gt;
+{
+     logger.LogInformation(&quot;Endpoint called and executed &quot; +
+        &quot;while background service is running&quot;);
+});
+
+app.Run();
+</code></pre>
+<p>Running this API now executes the service in the background, while still allowing endpoints to be called:</p>
+<pre><code class="language-terminal">info: WindowsServiceDemo.RandomWorker[0]
+      RandomWorker Service running as Windows Service at: 07/10/2022 17:15:13
+fail: WindowsServiceDemo.RandomWorker[0]
+      RandomWorker running as Windows Service threw an exception at: 07/10/2022 17:15:13
+info: WindowsServiceDemo.RandomWorker[0]
+      Endpoint called and executed while background service is running
+info: WindowsServiceDemo.RandomWorker[0]
+      RandomWorker Service running as Windows Service at: 07/10/2022 17:15:23
+</code></pre>
+<hr />
+<h2 id="notes">Notes</h2>
+<p>In my personal experience, in the last few years <code>Windows Services</code> have seen a decline in usage in favour of more cross-platform solutions, such as hosting the background service in an API, or using other scheduling solutions such as <a href="https://www.hangfire.io/">HangFire</a>.
+However, in the case when hosting the code as a <code>Windows Service</code> is unavoidable - it's good to know that its fairly simple and straightforward to configure .NET Core (and beyond) code to function as a Windows Service.</p>
+<hr />
+<h2 id="references">References</h2>
+<p><a href="https://docs.microsoft.com/en-us/dotnet/core/extensions/windows-service">Create a Windows Service using BackgroundService</a><br />
+<a href="https://code-maze.com/aspnetcore-running-applications-as-windows-service/">Running .NET Core Applications as a Windows Service</a></p>
+<hr />
+
+<blockquote class="daily-drop">
+    <div>
+        <div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px; ">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="50" height="50" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffec00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+              <path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+              <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+              <line x1="9.7" y1="17" x2="14.3" y2="17" />
+            </svg>
+        </div>
+        <div class="drop-header">
+            Daily Drop 132: 05-08-2022
+        </div>
+        <div>
+            <br>At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br> It could be anything - some.NET / C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
+            The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+        <div>
+    </div>
+</blockquote>
+
+
+                        
+<div>
+            <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
+            <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
+            <a role="button" href="/tags/api" class="badge badge-light"> api</a>
+            <a role="button" href="/tags/minimalapi" class="badge badge-light"> minimalapi</a>
+            <a role="button" href="/tags/contenttype" class="badge badge-light"> contenttype</a>
+</div>
+                    </div>
+                    <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
+                        
+
+        <div class="box sticky-top toc-block">
+            <h3 class="no-anchor">On This Page</h3>
+            <ul>
+        <li><a href="#daily-knowledge-drop">Daily Knowledge Drop</a></li>
+        <li><a href="#background-service">Background Service</a></li>
+        <li><a href="#hosting">Hosting</a></li>
+            <ul>
+        <li><a href="#console-hosting">Console hosting</a></li>
+        <li><a href="#windows-services-hosting">Windows Services hosting</a></li>
+        <li><a href="#api-hosting">Api hosting</a></li>
+            </ul>
+        <li><a href="#notes">Notes</a></li>
+        <li><a href="#references">References</a></li>
+            </ul>
+        </div>
+
+                    </div>
+            </div>
+            <div class="row ">
+                    <div id="content" class="col-md-9">
+                        <div>
+    <script src="https://giscus.app/client.js"
+            data-repo="always-developing/always-developing.github.io"
+            data-repo-id="R_kgDOGQJLBQ"
+            data-category="Comments"
+            data-category-id="DIC_kwDOGQJLBc4B_pUA"
+            data-mapping="pathname"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="bottom"
+            data-theme="transparent_dark"
+            data-lang="en"
+            crossorigin="anonymous"
+            async>
+    </script>
+</div>
+                    </div>
+            </div>
+    </div>
+
+    <hr class="horizontal-rule" />
+
+    <!-- Footer -->
+    <footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <ul class="list-inline text-center">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://www.linkedin.com/in/jean-pierre-seini">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-linkedin fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                <div>
+                    <p class="copyright text-footer">
+                        Copyright © 2022 Always Developing</a>.
+                    </p>
+                </div>
+                <ul class="list-inline text-center small text-feeds">
+                        <li class="list-inline-item">
+                            <a href="/feed.rss"><i class="fa fa-rss"></i> RSS Feed</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="/feed.atom"><i class="fa fa-rss"></i> Atom Feed</a>
+                        </li>
+                </ul>
+                <ul class="list-inline text-center small">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing/alwaysdeveloping-website-src"><i class="fab fa-github"></i> This site on GitHub</a>                    
+                    </li>
+                    <li class="list-inline-item">
+                        |
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing/alwaysdeveloping-website-src/tree/main/theme"><i class="fa fa-code"></i> Custom Always-Developing theme</a>
+                    </li>
+                    <li class="list-inline-item">
+                        |
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://github.com/statiqdev/CleanBlog"><i class="fa fa-blog"></i> Adapted from Clean Blog theme</a>
+                    </li>
+                </ul>
+                <div class="small text-footer">
+                    <a href="https://statiq.dev"><i class="fa fa-cogs"></i> Generated by Statiq</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="/vendor/jquery/jquery.min.js"></script>
+    <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CXPLFS7K38"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){window.dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  //gtag('config', 'G-CXPLFS7K38');
+</script>
+
+    
+
+    <!-- Custom scripts for this template -->
+    <script src="/js/always-developing-blog.js"></script>
+
+</body>
+
+</html>
