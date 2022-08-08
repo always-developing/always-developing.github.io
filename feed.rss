@@ -5,8 +5,174 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Fri, 05 Aug 2022 04:27:48 GMT</pubDate>
-		<lastBuildDate>Fri, 05 Aug 2022 04:27:48 GMT</lastBuildDate>
+		<pubDate>Mon, 08 Aug 2022 04:11:21 GMT</pubDate>
+		<lastBuildDate>Mon, 08 Aug 2022 04:11:21 GMT</lastBuildDate>
+		<item>
+			<title>String null or empty using pattern matching</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/08/08-length-pattern-matching</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/08/08-length-pattern-matching</guid>
+			<pubDate>Mon, 08 Aug 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;Pattern matching&lt;/code&gt; syntax can be used to check the nullability and length of a string, instead of the traditional &lt;code&gt;string.IsNullOrEmpty&lt;/code&gt; method - with interesting (and promising) performance benchmarks!&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="isnullorempty"&gt;IsNullOrEmpty&lt;/h2&gt;
+&lt;p&gt;Usually the &lt;code&gt;string.IsNullOrEmpty&lt;/code&gt; method is used to check if a specific string has a value (other than null or empty) - a string is passed in and a bool value is returned.&lt;/p&gt;
+&lt;p&gt;Consider the following method which uses &lt;code&gt;string.IsNullOrEmpty&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;void IsStringNullOrEmpty(string value)
+{ 
+    if (!string.IsNullOrEmpty(value))
+    {
+        Console.WriteLine($&amp;quot;Using 'IsNullOrEmpty' the '{value}' is NOT empty or null&amp;quot;);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If the method is called with three different values:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;string checkValue = &amp;quot;www.alwaysdeveloping.net&amp;quot;;
+IsStringNullOrEmpty(checkValue);
+
+checkValue = &amp;quot;&amp;quot;;
+IsStringNullOrEmpty(checkValue);
+
+checkValue = null;
+IsStringNullOrEmpty(checkValue);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As expected, only one value triggers an output to the console:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;    Using 'IsNullOrEmpty' the value 'www.alwaysdeveloping.net' is NOT empty or null
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="pattern-matching"&gt;Pattern Matching&lt;/h2&gt;
+&lt;p&gt;However, instead of this, &lt;code&gt;string.IsNullOrEmpty&lt;/code&gt; the following &lt;code&gt;pattern matching&lt;/code&gt; syntax could be used:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;    value is { Length: &amp;gt; 0 }
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This checks if the &lt;em&gt;value&lt;/em&gt; variable has a value (not null) and has a length greater than zero.&lt;/p&gt;
+&lt;p&gt;Again, consider the following method which uses &lt;code&gt;pattern matching&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;void IsStringNullOrEmpty(string value)
+{
+    if (value is { Length: &amp;gt; 0 })
+    {
+        Console.WriteLine($&amp;quot;Using 'pattern matching' the value '{value}' is NOT empty or null&amp;quot;);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If the method is called with three different values (the same values as above):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;string checkValue = &amp;quot;www.alwaysdeveloping.net&amp;quot;;
+IsStringNullOrEmpty(checkValue);
+
+checkValue = &amp;quot;&amp;quot;;
+IsStringNullOrEmpty(checkValue);
+
+checkValue = null;
+IsStringNullOrEmpty(checkValue);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Again, as expected, the same values as when using &lt;code&gt;IsNullOrEmpty&lt;/code&gt; are picked up as valid or not:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;    Using 'pattern matching' the value 'www.alwaysdeveloping.net' is NOT empty or null
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="benchmarks"&gt;Benchmarks&lt;/h2&gt;
+&lt;p&gt;So there doesn't appear to be any difference in the output of the two methods. Next let's see how each performs using BenchmarkDotNet.&lt;/p&gt;
+&lt;p&gt;The two different methods were compared, using the same three values as above: a string with a &lt;code&gt;value&lt;/code&gt;, and &lt;code&gt;empty&lt;/code&gt; string and a &lt;code&gt;null&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;[MemoryDiagnoser]
+public class Benchmarks
+{
+    [Params(&amp;quot;alwaysdeveloping.net&amp;quot;, &amp;quot;&amp;quot;, null)]
+    public string? strValue { get; set; }
+
+    [Benchmark]
+    public void IsNullOrEmpty()
+    {
+        _ = !string.IsNullOrEmpty(strValue);
+    }
+
+    [Benchmark]
+    public void PatternMatching()
+    {
+        _ = strValue is { Length: &amp;gt; 0 };
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The results:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Method&lt;/th&gt;
+&lt;th&gt;strValue&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Median&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Allocated&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;IsNullOrEmpty&lt;/td&gt;
+&lt;td&gt;?&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.2562 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0367 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0307 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.2615 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;PatternMatching&lt;/td&gt;
+&lt;td&gt;?&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.2592 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0203 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0190 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.2627 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;IsNullOrEmpty&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0158 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0148 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0123 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0133 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;PatternMatching&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0150 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0144 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0127 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0163 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;IsNullOrEmpty&lt;/td&gt;
+&lt;td&gt;alwaysdeveloping.net&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0355 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0298 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0279 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0296 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;PatternMatching&lt;/td&gt;
+&lt;td&gt;alwaysdeveloping.net&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0093 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0113 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0105 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0056 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;From the result, when the string is &lt;code&gt;null or empty performance is pretty much equivalent&lt;/code&gt;, however when the string &lt;code&gt;has a value, pattern matching is about 4x faster&lt;/code&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;pattern matching&lt;/code&gt; syntax is definitely interesting and intriguing, however is definitely not as intuitive or informative to the developer as to what it does. If micro-optimization is required, this is definitely something to look into, however for most applications the performance improvement would be unnoticeable.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/buhakmeh/status/1545094497138360323"&gt;Khalid Abuhakmeh Tweet&lt;/a&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;?# DailyDrop ?&gt;133: 08-08-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Windows services with .NET Core</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/08/05-windows-service</link>
@@ -1142,116 +1308,6 @@ Iteration 5
 &lt;p&gt;&lt;a href="https://stackoverflow.blog/2022/06/15/c-ienumerable-yield-return-and-lazy-evaluation/"&gt;C#: IEnumerable, yield return, and lazy evaluation&lt;/a&gt;&lt;/p&gt;
 &lt;hr /&gt;
 &lt;?# DailyDrop ?&gt;124: 26-07-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Environment specific startup Configure methods</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/07/25-environment-configuration</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/07/25-environment-configuration</guid>
-			<pubDate>Mon, 25 Jul 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;When using the &lt;code&gt;Startup&lt;/code&gt; class approach for application startup (vs the top level minimal api approach introduced in .NET6), instead of the normal &lt;em&gt;Configure&lt;/em&gt; method used to configure the middleware pipeline, a method can be specified &lt;code&gt;per environment&lt;/code&gt;. This environment specific &lt;em&gt;Configure&lt;/em&gt; method is automatically invoked depending on the &lt;strong&gt;ASPNETCORE_ENVIRONMENT&lt;/strong&gt; environment variable value.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="startup"&gt;Startup&lt;/h2&gt;
-&lt;p&gt;Prior to .NET 6, when creating an ASP.NET Core web API project, a &lt;code&gt;Program.cs&lt;/code&gt; file is created containing the &lt;em&gt;Main&lt;/em&gt; method, and a separate &lt;code&gt;Startup.cs&lt;/code&gt; file is created containing the dependency injection setup method (&lt;em&gt;ConfigureServices&lt;/em&gt;) as well as the middleware pipeline setup method &lt;strong&gt;&lt;em&gt;Configure&lt;/em&gt;&lt;/strong&gt;.&lt;/p&gt;
-&lt;p&gt;The Host setup in &lt;code&gt;Program.cs&lt;/code&gt; is configured to use the &lt;em&gt;Startup&lt;/em&gt; class in &lt;code&gt;Startup.cs&lt;/code&gt; to get its configuration:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public static IHostBuilder CreateHostBuilder(string[] args) =&amp;gt;
-    Host.CreateDefaultBuilder(args)
-        .ConfigureWebHostDefaults(webBuilder =&amp;gt;
-        {
-            // Use the Startup class
-            webBuilder.UseStartup&amp;lt;Startup&amp;gt;();
-        });
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;In .NET6 the default changes to contain only a &lt;code&gt;Program.cs&lt;/code&gt;, and instead of a instance of &lt;em&gt;HostBuilder&lt;/em&gt; being used, an instance of &lt;em&gt;WebApplicationBuilder&lt;/em&gt; is used:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The .NET6 default can be retro-fitted to use the same approach as prior versions (Startup class), but this post is mainly focused on versions prior to .NET6.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="default-configuration"&gt;Default Configuration&lt;/h3&gt;
-&lt;p&gt;By default in the &lt;code&gt;Startup.cs&lt;/code&gt; the &lt;em&gt;Configure&lt;/em&gt; method which is used to setup the middleware pipeline. This method is automatically invoked by the runtime:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// This method gets called by the runtime. Use this method to 
-// configure the HTTP request pipeline.
-public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-{
-    if (env.IsDevelopment())
-    {
-        app.UseDeveloperExceptionPage();
-    }
-
-    app.UseRouting();
-
-    app.UseAuthorization();
-
-    app.UseEndpoints(endpoints =&amp;gt;
-    {
-        endpoints.MapControllers();
-    });
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;If the pipeline needs to differ per environment, then checks, such as the one below, need to be implemented:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// Check if we are running in a development environment
-if (env.IsDevelopment())
-{
-    app.UseDeveloperExceptionPage();
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Here the developer exception page is only configured if the application is running in &lt;em&gt;Development&lt;/em&gt; - when the &lt;strong&gt;ASPNETCORE_ENVIRONMENT&lt;/strong&gt; is set to &lt;strong&gt;Development&lt;/strong&gt;.&lt;/p&gt;
-&lt;p&gt;Using these checks is the default technique to configure the pipeline per environment - however, especially if the pipelines differ greatly per environment, these checks could become complicated and potentially confusing.&lt;/p&gt;
-&lt;p&gt;An alternative technique is to setup a &lt;code&gt;configure method per environment&lt;/code&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="environment-configuration"&gt;Environment Configuration&lt;/h3&gt;
-&lt;p EnvironmentName=""&gt;Setting up a &lt;em&gt;Configure&lt;/em&gt; method per environment is very simple - in the &lt;em&gt;Startup&lt;/em&gt; class, just create a new method called &lt;em&gt;Configure&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;For example, the &lt;em&gt;ConfigureTest&lt;/em&gt; method will be called when running in &lt;strong&gt;Test&lt;/strong&gt;, instead of the default &lt;em&gt;Configure&lt;/em&gt; method, and the &lt;em&gt;ConfigureProduction&lt;/em&gt; method will be called when running in &lt;strong&gt;Production&lt;/strong&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;
-public void ConfigureTest(IApplicationBuilder app, IWebHostEnvironment env)
-{
-    app.UseRouting();
-
-    app.UseAuthorization();
-
-    app.UseEndpoints(endpoints =&amp;gt;
-    {
-        endpoints.MapGet(&amp;quot;/&amp;quot;, async (HttpContext ctx) =&amp;gt; 
-            await ctx.Response.WriteAsync(&amp;quot;In Test environment&amp;quot;));
-        endpoints.MapControllers();
-    });
-}
-
-public void ConfigureProduction(IApplicationBuilder app, IWebHostEnvironment env)
-{
-    app.UseRouting();
-
-    app.UseAuthorization();
-
-    app.UseEndpoints(endpoints =&amp;gt;
-    {
-        endpoints.MapControllers();
-    });
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;It no environment specific method could be found, then the default &lt;em&gt;Configure&lt;/em&gt; method is called.&lt;/p&gt;
-&lt;p&gt;The same process can be applied to &amp;quot;non-built-in&amp;quot; environments (Development, Test, Production) - if when running locally, the &lt;strong&gt;ASPNETCORE_ENVIRONMENT&lt;/strong&gt; environment variable is set to &lt;strong&gt;LocalDevelopment&lt;/strong&gt;, for example, then the following method will be called:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// Method named Configure{EnvironmentName}
- public void ConfigureLocalDevelopment(IApplicationBuilder app, IWebHostEnvironment env)
-{
-    app.UseRouting();
-    app.UseEndpoints(endpoints =&amp;gt;
-    {
-        endpoints.MapGet(&amp;quot;/debug&amp;quot;, async (HttpContext ctx) =&amp;gt; 
-            await ctx.Response.WriteAsync(&amp;quot;Special debug information&amp;quot;));
-        endpoints.MapControllers();
-
-    });
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;Perhaps not especially relevent if working with the latest version of .NET (6 and above), or if there is not major differences in middleware pipelines between difference environments - this is still an interesting technique available if one requires it to ensure cleaner and easier to understand code.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;?# DailyDrop ?&gt;123: 25-07-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
