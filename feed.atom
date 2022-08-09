@@ -4,8 +4,171 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-08-08T04:11:21Z</updated>
+	<updated>2022-08-09T04:23:22Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/08/09-periodic-timer</id>
+		<title>Accurate, regular scheduling with PeriodicTimer</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/08/09-periodic-timer" />
+		<updated>2022-08-09T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;.NET 6 introduced a new timer, the &lt;code&gt;PeriodicTimer&lt;/code&gt; which provides a more regular, accurate and reliable way to run code on a specific interval when compared with previous methods.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="task.delay"&gt;Task.Delay&lt;/h2&gt;
+&lt;p&gt;Consider a simple background process which needs to run every second:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;async Task StartJobAsync(CancellationToken token)
+{
+    while (!token.IsCancellationRequested)
+    {
+        Console.WriteLine(DateTime.Now.ToString(&amp;quot;O&amp;quot;));
+        
+        // Do work
+        
+        await Task.Delay(1000, token);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The method is started, and while a cancellation is not requested via the &lt;em&gt;CancellationToken&lt;/em&gt;, the date time is output, and &lt;em&gt;work&lt;/em&gt; is done.&lt;/p&gt;
+&lt;p&gt;Executing the above as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var cancelSource = new CancellationTokenSource();
+var jobTask = StartJobAsync(cancelSource.Token);
+
+Console.ReadKey();
+cancelSource.Cancel();
+Console.ReadKey();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Provides the following output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;2022-07-13T19:48:38.9682679+02:00
+2022-07-13T19:48:39.9743395+02:00
+2022-07-13T19:48:40.9755190+02:00
+2022-07-13T19:48:41.9913331+02:00
+2022-07-13T19:48:42.9977149+02:00
+2022-07-13T19:48:44.0130672+02:00
+2022-07-13T19:48:45.0289959+02:00
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Even without any work being done in the iteration, the loop does not iterate every second - in &lt;code&gt;second 43 no work is done at all&lt;/code&gt;. At time goes on the divergence from the start time will just grow larger.&lt;/p&gt;
+&lt;p&gt;This divergence is even more evident if a job is executed and takes longer than the interval:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;async Task StartJobAsync(CancellationToken token)
+{
+    while (!token.IsCancellationRequested)
+    {
+        Console.WriteLine(DateTime.Now.ToString(&amp;quot;O&amp;quot;));
+
+        // generate a random number between 0 and 3
+        var random = new Random();
+        if (random.Next(3) == 1)
+        {
+            // if the random number was 1, simulate a long 
+            // running job
+            Console.WriteLine(&amp;quot;Running long&amp;quot;);
+            await Task.Delay(1500);
+        }
+
+        await Task.Delay(1000, token);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Here the random &lt;em&gt;work&lt;/em&gt; being performed takes &lt;code&gt;1.5 second&lt;/code&gt;, so instead of the loop taking &lt;code&gt;1 second&lt;/code&gt;, it becomes &lt;code&gt;2.5 seconds&lt;/code&gt;. If the work being done is variable in time, then the interval also becomes varied and irregular:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;2022-07-13T19:54:18.5637838+02:00
+2022-07-13T19:54:19.6099211+02:00
+2022-07-13T19:54:20.6106040+02:00
+Running long
+2022-07-13T19:54:23.1278907+02:00
+2022-07-13T19:54:24.1338937+02:00
+2022-07-13T19:54:25.1360588+02:00
+2022-07-13T19:54:26.1519535+02:00
+Running long
+2022-07-13T19:54:28.6815481+02:00
+2022-07-13T19:54:29.6844306+02:00
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This might be sufficient, however if a more regular, consistent interval is required, look no further than the &lt;code&gt;PeriodicTimer&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="periodic-timer"&gt;Periodic Timer&lt;/h2&gt;
+&lt;p&gt;.NET 6 introduce the &lt;code&gt;PeriodicTimer&lt;/code&gt; which runs on a more regular, predictable schedule, using more modern practices:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;async Task StartJobAsync(CancellationToken token)
+{
+    // define the timer to tick every second
+    var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(1000));
+
+    // loop every tick while the token has not been cancelled
+    while (await timer.WaitForNextTickAsync() &amp;amp;&amp;amp; !token.IsCancellationRequested)
+    {
+        Console.WriteLine(DateTime.Now.ToString(&amp;quot;O&amp;quot;));
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;With the &lt;code&gt;PeriodicTimer&lt;/code&gt; the interval period is defined when the timer is declared, and the &lt;em&gt;WaitForNextTickAsync&lt;/em&gt; method will return true every interval period.&lt;/p&gt;
+&lt;p&gt;Executing the above as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var cancelSource = new CancellationTokenSource();
+var jobTask = StartJobAsync(cancelSource.Token);
+
+Console.ReadKey();
+cancelSource.Cancel();
+Console.ReadKey();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Provides the following output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;2022-07-14T07:23:29.1553510+02:00
+2022-07-14T07:23:30.1430203+02:00
+2022-07-14T07:23:31.1502777+02:00
+2022-07-14T07:23:32.1522676+02:00
+2022-07-14T07:23:33.1541686+02:00
+2022-07-14T07:23:34.1603689+02:00
+2022-07-14T07:23:35.1475597+02:00
+2022-07-14T07:23:36.1498775+02:00
+2022-07-14T07:23:37.1561782+02:00
+2022-07-14T07:23:38.1425797+02:00
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;There are variations on the milliseconds, but the &lt;code&gt;PeriodicTimer&lt;/code&gt; will adjust to keep it as regular as possible.&lt;/p&gt;
+&lt;p&gt;When introducing &lt;em&gt;work&lt;/em&gt; which exceeds the interval period, the &lt;code&gt;PeriodTimer&lt;/code&gt; will still try to adjust to keep the ticks as regular as it can:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;async Task StartJobAsync(CancellationToken token)
+{
+    var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(1000));
+
+    while (await timer.WaitForNextTickAsync() &amp;amp;&amp;amp; !token.IsCancellationRequested)
+    {
+        Console.WriteLine(DateTime.Now.ToString(&amp;quot;O&amp;quot;));
+
+        // randomly perform some work which takes 1.5 seconds
+        var random = new Random();
+        if (random.Next(3) == 1)
+        {
+            Console.WriteLine(&amp;quot;Running long&amp;quot;);
+            await Task.Delay(1500);
+        }
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;From the results one can see that if a tick gets skipped due to the work running long, the next tick will &lt;code&gt;align with the starting tick&lt;/code&gt; and not when the previous tick completed:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;2022-07-14T07:27:22.2437461+02:00
+Running long
+2022-07-14T07:27:23.7708051+02:00
+2022-07-14T07:27:24.2487034+02:00
+2022-07-14T07:27:25.2491709+02:00
+Running long
+2022-07-14T07:27:26.7629854+02:00
+2022-07-14T07:27:27.2392793+02:00
+Running long
+2022-07-14T07:27:28.7631133+02:00
+2022-07-14T07:27:29.2430825+02:00
+Running long
+2022-07-14T07:27:30.7529474+02:00
+2022-07-14T07:27:31.2606374+02:00
+Running long
+2022-07-14T07:27:32.7737681+02:00
+2022-07-14T07:27:33.2500507+02:00
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The timer will always execute on a regular, predictable schedule, even if the work runs long.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;Periodic Timer&lt;/code&gt; is a great addition to the ecosystem. Reliable and easy to use, for simple background processing, this should be the go-to mechanism going forward. For more complex scheduling and processing, something like &lt;a href="https://www.hangfire.io/"&gt;Hangfire&lt;/a&gt; will still have its place for a while to come.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://www.youtube.com/watch?v=J4JL4zR_l-0"&gt;Scheduling repeating tasks with .NET 6’s NEW Timer&lt;/a&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;?# DailyDrop ?&gt;134: 09-08-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/08/08-length-pattern-matching</id>
 		<title>String null or empty using pattern matching</title>
@@ -1190,113 +1353,6 @@ if (IsValid(s))
 &lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/operators/null-forgiving"&gt;! (null-forgiving) operator&lt;/a&gt;&lt;/p&gt;
 &lt;hr /&gt;
 &lt;?# DailyDrop ?&gt;125: 27-07-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/07/26-ienumerable-execution</id>
-		<title>IEnumerable's lazy evaluation</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/07/26-ienumerable-execution" />
-		<updated>2022-07-26T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;When executing a method which returns &lt;em&gt;IEnumerable&lt;/em&gt;, the method body is &lt;code&gt;not execute until the result is enumerated over&lt;/code&gt;. Invoking the method will not cause any of the method code to execute, including any code before the first &lt;code&gt;yield&lt;/code&gt; in the body - not until enumeration.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="ienumerable"&gt;IEnumerable&lt;/h2&gt;
-&lt;p&gt;A quick summary of &lt;code&gt;IEnumerable&lt;/code&gt; and &lt;code&gt;yield&lt;/code&gt; usage - when a method is defined to have a return type of IEnumberable&amp;lt;T&amp;gt;, it can be invoked and the results iterated over:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// call the GetNumbers method in the foreach loop
-foreach(var number in GetNumbers())
-{
-    Console.WriteLine(number);
-}
-
-public IEnumberable&amp;lt;int&amp;gt; GetNumbers()
-{
-    yield return 1;
-    yield return 2;
-    yield return 3;
-    yield return 4;
-    yield return 5;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The great benefit of IEnumerable though, comes with its usage in conjunction with the &lt;code&gt;yield&lt;/code&gt; keyword - this is used inside the method to return a value and (temporarily) yield control to the calling iterator. Once the iteration body (&lt;em&gt;Console.WriteLine&lt;/em&gt; in our example) is complete, control is then returned back to the method, which is executed until the next &lt;code&gt;yield&lt;/code&gt; is encountered.&lt;/p&gt;
-&lt;p&gt;The output for the above would be:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;1
-2
-3
-4
-5
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="lazy-evaluation"&gt;Lazy evaluation&lt;/h2&gt;
-&lt;p&gt;In the above example we saw how the &lt;em&gt;GetNumbers&lt;/em&gt; method was called as part of the iterator (as part of the &lt;code&gt;foreach&lt;/code&gt;) - but it is also possible to invoke the method, and store the returned &lt;em&gt;IEnumerable&lt;/em&gt; for later execution:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// call the GetNumbers method 
-IEnumerable&amp;lt;int&amp;gt; numbers = GetNumbers();
-
-// do more processing
-
-// iterate over the IEnumerable&amp;lt;int&amp;gt; variable
-foreach (var number in numbers)
-{
-    Console.WriteLine(number);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This results in the same output as the previous example above.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="lazy-execution"&gt;Lazy execution&lt;/h2&gt;
-&lt;p&gt;The interesting part about the lazy evaluation (and the reason for this post), is that when using &lt;code&gt;lazy evaluation&lt;/code&gt;, the method body is &lt;code&gt;not executed when the method is called&lt;/code&gt;, only when it's &lt;code&gt;iterated over&lt;/code&gt;:&lt;/p&gt;
-&lt;p&gt;Consider the following method which returns &lt;em&gt;IEnumerable&amp;lt;string&amp;gt;&lt;/em&gt;, but before it returns a value it will log which value is being returned:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;IEnumerable&amp;lt;string&amp;gt; GetStringsWithLogging()
-{
-    Console.WriteLine(&amp;quot;Executing iteration 1&amp;quot;);
-    yield return &amp;quot;Iteration 1&amp;quot;;
-
-    Console.WriteLine(&amp;quot;Executing iteration 2&amp;quot;);
-    yield return &amp;quot;Iteration 2&amp;quot;;
-
-    Console.WriteLine(&amp;quot;Executing iteration 3&amp;quot;);
-    yield return &amp;quot;Iteration 3&amp;quot;;
-
-    Console.WriteLine(&amp;quot;Executing iteration 4&amp;quot;);
-    yield return &amp;quot;Iteration 4&amp;quot;;
-
-    Console.WriteLine(&amp;quot;Executing iteration 5&amp;quot;);
-    yield return &amp;quot;Iteration 5&amp;quot;;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The method is executed as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;Console.WriteLine($&amp;quot;Before '{nameof(GetStringsWithLogging)}' called&amp;quot;);
-var deferLogging = GetStringsWithLogging();
-Console.WriteLine($&amp;quot;After '{nameof(GetStringsWithLogging)}' called&amp;quot;);
-
-foreach (var item in deferLogging)
-{
-    Console.WriteLine(item);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output of the above is:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Before 'GetStringsWithLogging' called
-After 'GetStringsWithLogging' called
-Executing iteration 1
-Iteration 1
-Executing iteration 2
-Iteration 2
-Executing iteration 3
-Iteration 3
-Executing iteration 4
-Iteration 4
-Executing iteration 5
-Iteration 5
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;From the output one can see that the body of &lt;em&gt;GetStringsWithLogging&lt;/em&gt; is &lt;code&gt;not invoked&lt;/code&gt; when it is initially called - it is only when the &lt;em&gt;deferLogging&lt;/em&gt; variable is iterated over with the &lt;em&gt;foreach&lt;/em&gt; loop, that the body of &lt;em&gt;GetStringsWithLogging&lt;/em&gt; is executed.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;My initial gut assumption with an IEnumerable method was that the body of the method in question (&lt;em&gt;GetStringsWithLogging&lt;/em&gt; here) would execute up until the first &lt;code&gt;yield&lt;/code&gt; when called, no matter if lazy or not. However working through sample examples, and understanding how the code is lowered, the deferred execution makes more sense - and I am glad my initial assumptions were incorrect.&lt;/p&gt;
-&lt;p&gt;Having the ability to defer execution of the method allows for potentially long running processes which retrieve the results data (for example), to be deferred until/if actually needed (obviously all by design, I am sure) it very valuable. The &lt;em&gt;IEnumerable&lt;/em&gt; instance can be passed around between methods, and only materialized when required - instead of passing around the (potentially larger in size) materialized data, when it might not even be needed.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://stackoverflow.blog/2022/06/15/c-ienumerable-yield-return-and-lazy-evaluation/"&gt;C#: IEnumerable, yield return, and lazy evaluation&lt;/a&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;?# DailyDrop ?&gt;124: 26-07-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
