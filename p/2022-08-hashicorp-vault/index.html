@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="always learning | always growing">
+
+    <title>Always Developing - HashiCorp Vault with C#</title>
+
+    <link rel="canonical" href="https://alwaysdeveloping.net/p/2022-08-hashicorp-vault">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
+
+    <meta name="application-name" content="Always Developing" />
+    <meta name="msapplication-tooltip" content="Always Developing" />
+    <meta name="msapplication-starturl" content="/" />
+
+    <meta property="og:title" content="Always Developing - HashiCorp Vault with C#" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/p/2022-08-hashicorp-vault" />
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Bootstrap core CSS -->
+    <link href="/vendor/bootstrap/scss/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom fonts for this template -->
+    <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="/vendor/fontawesome-free/css/brands.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css' data-no-mirror>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css' data-no-mirror>
+
+    <!-- Custom styles for this template -->
+    <link href="/scss/always-developing-blog.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/plugins/autoloader/prism-autoloader.min.js" data-no-mirror></script>
+    <script src="https://cdn.jsdelivr.net/npm/quicklink@2.0.0/dist/quicklink.umd.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/themes/prism.css">
+
+    <!-- Lunr search -->
+        <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/pako@2.0.3/dist/pako_inflate.min.js"></script>
+        <script src="/search.js"></script>
+
+    
+
+
+    
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand"  href="/">
+            <img src="/images/ad_logo.png" alt="" width="25" height="25" class="d-inline-block align-text-top">
+            Always Developing
+        </a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            Menu
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/software">Software</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/tags">Tags</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/posts">Posts</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/about">About</a>
+            </li>
+</ul>
+                <form class="form-inline my-2 my-lg-0" action="/search" method="GET">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="query">
+                    <input type="submit" hidden />
+                </form>
+        </div>
+    </div>
+</nav>
+
+    <!-- Page Header -->
+    <header class="masthead">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 align-middle">
+                <div class="post-header-image">
+                    <a href="/">
+                        <img src="/images/ad_logo.png" class="header-image">
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="post-heading">
+                    <h1>
+                        HashiCorp Vault with C#
+                    </h1>
+                            <h2 class="subheading">A step by step guide to integrating into HashiCorp vault with C#</h2>
+                        <p class="post-meta">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
+                                <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
+                            </svg> Published on Wednesday, 10 August 2022
+                        </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <!-- Main Content -->
+    <div class="container">
+            <div class="row ">
+                    <div id="content" class="col-md-9 post-with-toc post-block">
+                        
+<div class="post-header-category">
+    <a class="btn btn-primary btn-sm btn-default btn-home" href="\" role="button"><i class="fas fa-angle-double-left"></i> Home</a>
+            <a class="btn btn-primary btn-sm category-btn" href="/categories/blog" role="button">Blog</a>
+</div>
+
+                        <h2 id="introduction">Introduction</h2>
+<p>The requirement was very simple (or so I thought) - create a locally running <a href="https://www.vaultproject.io/">HashiCorp Vault</a> instance, setup a simple C# client to connect to the vault, and get an understanding how how the Vault operates. At almost every step of the process I ran into issue - which lead me to putting together this guide.</p>
+<p>This guide will go through step by step:</p>
+<ul>
+<li>How to configure the Vault for local development</li>
+<li>Connect to the Vault using VaultSharp</li>
+<li>Connect to the Vault using the REST api</li>
+</ul>
+<p>This is a long guide, but will go through each aspect step by step and by the end you should have an up and running local Vault instance, and be able to connect via the CLI, the C# <em>VaultSharp</em> library as well as the HTTP API using C#.</p>
+<hr />
+<h3 id="why">Why?</h3>
+<p>So why did I struggle at almost every step, and why did I feel this guide could help?</p>
+<ul>
+<li><code>Documentation is inaccurate</code>: Sometimes the guide and sample code snippets are just inaccurate or don't work. Some manual correction is required</li>
+<li><code>Documentation is incomplete</code>: In some cases it was difficult to track down comprehensive documentation on what I was trying to perform. If there was documentation, it sometimes didn't adequately</li>
+<li><code>VaultSharp has missing functionality</code>: This is not a criticism of the great work done by the contributors to this free library, but there is some functionality available via the Vault CLI, not available via <em>VaultSharp</em> (if it is is available, I could not find it, or documentation of it anywhere)</li>
+<li><code>Few C# REST api examples available</code>: This wasn't the biggest issue, but it did take a few attempts to get the C# HttpClient to successfully perform operations on the Vault. This was mostly down to having to translate the working <em>curl</em> and <em>CLI</em> examples into C# http requests.</li>
+</ul>
+<hr />
+<h2 id="hashicorp-vault">HashiCorp Vault</h2>
+<p>In short, <a href="https://www.vaultproject.io/">HashiCorp Vault</a> (also referred to as the <em>Vault</em> in the rest of this post) allows for <em>secure, store and tightly control access to tokens, passwords, certificates, encryption keys for protecting secrets and other sensitive data using a UI, CLI, or HTTP API</em>.</p>
+<p>There are other key vaults available on the market (Azure Key Vault, AWS KMS, GCP KMS) - but Hashicorp Vault is the defacto standard.</p>
+<p>In this post we'll explore accessing the Vault using all three methods - the UI, CLI and HTTP api.</p>
+<hr />
+<h3 id="prerequisites">Prerequisites</h3>
+<p>The guide below was written on a machine running Windows 11, so the requirements mentioned below will differ if working on another OS.</p>
+<ul>
+<li><p><code>HashiCorp Vault download</code>: The exe is <a href="https://www.vaultproject.io/downloads">available here</a> and is a requirement for this guide. This executable serves two purposes:</p>
+<ul>
+<li>Allows for a dev instance of the Vault server to be run</li>
+<li>Serves as a CLI tool to connect to the Vault server instance</li>
+</ul>
+<p>Once downloaded, is is recommended (but not required) making the <code>Vault binary</code> available on the <code>PATH</code> (so it can be executed from any directory when working in the command prompt/Powershell). The steps to perform this are <a href="https://stackoverflow.com/questions/1618280/where-can-i-set-path-to-make-exe-on-windows">available here</a>.</p>
+</li>
+<li><p><code>Docker Desktop</code>: This is not a requirement, as the Vault server can be run from the above mentioned download. However the guide also covers running a <em>container instance</em> of the Vault and if using this method then <a href="https://www.docker.com/products/docker-desktop/">Docker Desktop</a> (or similar) is require to be installed.</p>
+</li>
+</ul>
+<hr />
+<h3 id="vault-startup">Vault Startup</h3>
+<p>The below guides will demonstrate how to get a Vault instance up and running - it will not go into detail on persisting the Vault information to a permanent store. This guide is primarily aimed at getting a Vault up and running for <em>development</em> purposes.</p>
+<hr />
+<h4 id="binary">Binary</h4>
+<p>This is by far the easiest method to get an instance of the Vault up and running. This is <strong>not</strong> the route I initially took, as I was interested in getting the <em>container version</em> up and running - however I <strong>highly</strong> recommend this as a starting point if te goal is to just get a working, integrated sample up and running.</p>
+<p>To stand a Vault Server instance, from either the <em>Command Prompt</em> or <em>PowerShell</em>, execute the following:</p>
+<pre><code class="language-powershell">vault server -dev
+</code></pre>
+<p>The output should look something like this:</p>
+<pre><code class="language-terminal">WARNING! dev mode is enabled! In this mode, Vault runs entirely in-memory
+and starts unsealed with a single unseal key. The root token is already
+authenticated to the CLI, so you can immediately begin using Vault.
+
+You may need to set the following environment variable:
+
+PowerShell:
+    $env:VAULT_ADDR=&quot;http://127.0.0.1:8200&quot;
+cmd.exe:
+    set VAULT_ADDR=http://127.0.0.1:8200
+
+The unseal key and root token are displayed below in case you want to
+seal/unseal the Vault or re-authenticate.
+
+Unseal Key: ANYzmKrmlp3eO4skaJFjmhKE2dEVLzbKSxecR+XGb0o=
+Root Token: hvs.9kouFib30HrpNSxDWTCzmczk
+
+Development mode should NOT be used in production installations!
+</code></pre>
+<p>The Vault instance should now be available by browsing to <code>http://127.0.0.1:8200</code>, and you should be able to login using the <code>Root Token</code> provided in the output.</p>
+<p>Keep in mind, this instance does NOT use any persistent storage, and if the server is stopped (by closing the prompt, or pressing <em>Ctrl-C</em>) then any information saved to the Vault will be lost.</p>
+<hr />
+<h4 id="docker">Docker</h4>
+<p>Trying to get a <em>Docker</em> version of the Vault up and running proved trickier than I thought or expected it to be. All of the below attempts were executed with the Windows version of <a href="https://www.docker.com/products/docker-desktop/">Docker Desktop</a> installed, configured to use Linux containers.</p>
+<ul>
+<li><p><code>Attempt 1:</code></p>
+<p>The <a href="https://hub.docker.com/_/vault">Vault page on DockerHub</a> gives the below command as an example for running the vault with a completely in-memory server:</p>
+<pre><code class="language-terminal">docker run --cap-add=IPC_LOCK -e 'VAULT_DEV_ROOT_TOKEN_ID=myroot' -e 'VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:1234' vault
+</code></pre>
+<p>While this command did successfully startup a Vault container instance, no ports were exposed, so the vault URL wasn't accessible (or if it was, I couldn't figure it out). At this point I probably should have explored how to expose the ports - but I did not, I was hoping to find something that <em>just worked</em>.</p>
+</li>
+<li><p><code>Attempt 2:</code></p>
+<p>While reading through the various documentation, I had also came across this official <a href="hhttps://learn.hashicorp.com/tutorials/vault/dotnet-httpclient">using HashiCorp Vault C# client with .NET Core Guide</a> which contained a link to a <a href="https://github.com/hashicorp/vault-guides">Vault Guide repository</a>. As part of the guide and repository is a <a href="https://github.com/hashicorp/vault-guides/blob/master/secrets/dotnet-vault/demo_setup.sh">demo_setup.sh file</a>. Exactly what I needed! (or so I thought)</p>
+<p>However, executing the <code>demo_setup.sh</code> script, resulted in ...nothing. No error messages, but also no positive responses from the prompt. Looking at the contents of the script, a <a href="https://github.com/hashicorp/vault-guides/blob/master/secrets/dotnet-vault/docker-compose.yml">docker-compose</a> is invoked.</p>
+<p>I tried running the docker-compose independently which resulted in ...a timeout. The <em>docker-compose</em> tries to startup and instance of <code>Vault</code> and <code>MS SQL Server</code> (for persistent storage) - however the it seems like the <code>MS SQL Server</code> image in the <em>docker-compose</em> is no longer valid.</p>
+</li>
+<li><p><code>Successful Attempt:</code></p>
+<p>For development purposes, I didn't need a persistent store, so the sample <em>docker-compose.yml</em> was modified, removing the requirement for the MS SQL database.</p>
+<p>The result was this <em>docker-compose.yml</em>:</p>
+<pre><code class="language-yml">version: &quot;3.3&quot;
+services:
+vault:
+    image: vault:1.6.1
+    restart: always
+    command: [ 'vault', 'server', '-dev', '-dev-listen-address=0.0.0.0:8200']
+    environment:
+    VAULT_DEV_ROOT_TOKEN_ID: &quot;some-root-token&quot;
+    ports:
+    - &quot;8200:8200&quot;
+    cap_add:
+    - IPC_LOCK
+    networks:
+    vpcbr:
+        ipv4_address: 10.5.0.2
+
+networks:
+vpcbr:
+    driver: bridge
+    ipam:
+    config:
+        - subnet: 10.5.0.0/16
+</code></pre>
+<p>Executing this with:</p>
+<pre><code class="language-terminal">docker-compose up -d
+</code></pre>
+<p>We finally have a result!</p>
+<pre><code class="language-terminal">[+] Running 6/6
+- vault Pulled                              13.1s
+- 21c83c524219 Pull complete                5.2s
+- 2552eed26cd4 Pull complete                5.3s
+- b6096191328a Pull complete                7.2s
+- 63cf312915ed Pull complete                7.3s
+- ba2ada45d14d Pull complete                7.3s
+[+] Running 2/2
+- Network vaultpoc_vpcbr      Created       0.9s
+- Container vaultpoc-vault-1  Started       1.3s   
+</code></pre>
+<p>Browsing to <code>http://localhost:8200</code> (the port specified in the docker-compose) - the Vault logon screen can be accessed! Using the default root token specified (<code>some-root-token</code> if using the above yml), allowed access into the Vault.</p>
+</li>
+</ul>
+<p>We now had a repeatable container based process which <em>just works!</em></p>
+<hr />
+<h3 id="vault-configuration">Vault Configuration</h3>
+<p>Now that the Vault is up and running, the next step is to configure the Vault, as well as create and configure credentials for our application. At this point there is only one <em>root</em> user configured, which has full access to all areas of the Vault. Using the root credentials might be fine for development purposes, but it is important to understand how the security in Vault works, how the future application will interact with Vault, and how permission are assigned.</p>
+<p>Some of the steps below make use of the <a href="https://www.vaultproject.io/downloads"><code>Vault Command Line Interface (CLI)</code></a> tool, which should be downloaded. It consists of a single exe which is used to invoke commands against the Vault instance.</p>
+<p>As part of using the CLI, it is also recommended to set an environment variables for the <code>vault url</code> - this is not required, but will save time later as the URL will not need to be specified for each CLI command ( specifying <code>-address=&quot;http://localhost:8200&quot;</code> on every command):</p>
+<p>To set the environment variable in <strong>Powershell</strong>, execute the following:</p>
+<pre><code class="language-powershell">$env:VAULT_ADDR='http://0.0.0.0:8200'
+</code></pre>
+<p>OR</p>
+<p>Or in <strong>Command Prompt</strong>,  execute the following:</p>
+<pre><code class="language-terminal">set VAULT_ADDR=http://0.0.0.0:8200
+</code></pre>
+<p>The steps below which use the CLI, will show the <strong>PowerShell</strong> command, but the <em>Command Prompt</em> commands would be almost identical.</p>
+<p>A note: the above will only set the environment variables for the lifetime of the shell session - if closed and reopened, the environment variable will no longer be set and the above commands will need to be run again.</p>
+<hr />
+<h4 id="key-value-engine">Key-Value Engine</h4>
+<p>This guide focuses on using the Vault <code>key-value pair functionality</code> to store application secrets - there is however other functionality available, which if required, would need to be enabled as with the <code>key-value pair</code> functionality.</p>
+<p>The first step to being able to store <code>key value pairs</code> is to enable the functionality. The following steps will essentially create a <em>path</em> (folder) in the Vault, which will store specific type of information - in this case, a folder called <code>secrets</code> is being created, which will store <code>key-value pairs</code>. A <em>path</em> can be thought of a <em>folder structure</em> within the Vault in which secrets will be stored, with each folder able to have its own permissions.</p>
+<p>This step only needs to be performed once, unless specifically deciding that additional <em>root paths</em> are required.</p>
+<p>The easiest way to enable the <em>kv-engine</em> (kv) is via the UI (although it can also be done via the CLI):</p>
+<ul>
+<li>Log into the Vault UI as the root</li>
+<li>By default, there should be a <code>secret</code> path already visible under the <code>Secrets</code> menu (the default screen once logged in), linked to a <em>kv engine</em> (the description under the name <em>secret</em> will specify <em>&quot;v2 kv_xxx&quot;</em>)
+<ul>
+<li>If there is no <code>secret</code> engine listed, OR if you would like to create another path, click <code>Enable new engine +</code> on the top right-hand corner of the grid</li>
+<li>Select <code>Generic -&gt; KV</code> (first option) and click <code>Next</code></li>
+<li>Specify the <code>Path</code> - this will be the name under which all the key-value pairs will be stored. It can be anything, but should be something which makes sense to your usage (secrets, settings etc) and click <code>Enable Engine</code></li>
+</ul>
+</li>
+</ul>
+<p>Step 1 done! - <strong>secrets engine enabled!</strong></p>
+<hr />
+<h4 id="secret">Secret</h4>
+<p>The next step is to add a test secret (key/value pair) to <code>secret</code> area (the <em>secret</em> path, or if a different path was manually in the above step, which name was specified there)</p>
+<p>For the next few steps, we'll switch to <strong>PowerShell</strong> - first a login needs to be performed:</p>
+<pre><code class="language-powershell">vault login
+</code></pre>
+<p>Type in the <code>root token</code> once prompted, and you should have success (if the address environment variable was not configured, you may need to that as a parameter as well):</p>
+<pre><code class="language-terminal">Key                  Value
+---                  -----
+token                some-root-token
+token_accessor       D8XSBVu53WTDDktgjYGdOdDg
+token_duration       ∞
+token_renewable      false
+token_policies       [&quot;root&quot;]
+identity_policies    []
+policies             [&quot;root&quot;]
+</code></pre>
+<p>Now to create the <code>key-value pair</code>:</p>
+<pre><code class="language-powershell">vault kv put secret/firstapp secretkey=mypassword
+</code></pre>
+<p>This is instructing the CLI to:</p>
+<ul>
+<li>Create/update a secret at the path <code>secret/firstapp</code> (This will be the <em>folder</em> and <em>subfolder</em> where the secrets specific to this application will be stored)</li>
+<li>With a key of <code>secretkey</code></li>
+<li>And a value of <code>mypassword</code></li>
+</ul>
+<p>Browsing to the Vault UI, there should now see a <em>path</em> (folder) under <code>secret</code> called <em>firstapp</em> which contains one secret, with the key <em>secretkey</em>.</p>
+<p>This can also be verified using the CLI, by executing:</p>
+<pre><code class="language-powershell">vault kv get secret/firstapp
+</code></pre>
+<p>The output:</p>
+<pre><code class="language-terminal">====== Data ======
+Key          Value
+---          -----
+secretkey    mypassword
+</code></pre>
+<p>The standard used by this guide, is that each separate application will have its own path under <code>secret</code> (e.g. <em>secret/appname</em>), with each path with its own permissions. If configuring secrets for another application, then the above can be executed again, replacing &quot;firstapp&quot; with the new application's name.</p>
+<p>Step 2 done! - <strong>secret created successfully!</strong></p>
+<hr />
+<h4 id="approle">AppRole</h4>
+<p>Next up is enabling the <code>approle</code> functionality - this will only need to be performed once on the Vault instance.</p>
+<p>The <code>approle</code> auth method is designed to allow machines or applications to authenticate to the Vault using a <em>roleId and secretId</em>. This step effectively just turns on this functionality in the Vault.</p>
+<p>To enable <code>approle</code> execute the following command in PowerShell:</p>
+<pre><code class="language-powershell">vault auth enable approle
+</code></pre>
+<p>The successful response:</p>
+<pre><code class="language-terminal">Success! Enabled approle auth method at: approle/
+</code></pre>
+<p>If the <code>approle</code> auth method has already been enabled, the following will be the response:</p>
+<pre><code class="language-terminal">Error enabling approle auth: Error making API request.
+
+URL: POST http://0.0.0.0:8200/v1/sys/auth/approle
+Code: 400. Errors:
+
+* path is already in use at approle/
+</code></pre>
+<p>Step 3 done! - <strong>Approle functionality enabled!</strong></p>
+<hr />
+<h4 id="policy">Policy</h4>
+<p>Permission to a specific <em>path</em> are controlled with a <code>policy</code>. The <code>policy</code> is configured, and then attached to one or more roles (roles are created in the next step), which allows an application authenticating with a specific <em>roleId and secretId</em> to have specifically controlled access to one or more <em>paths</em>.</p>
+<p>First create a <code>policy file</code> (this can be used as a template for future applications), named <code>app-policy.hcl</code> (although the name itself is not import):</p>
+<pre><code class="language-yml"># Login with AppRole 
+path &quot;auth/approle/login&quot; {
+  capabilities =  [ &quot;create&quot;, &quot;read&quot; ]
+} 
+
+# Read data from secret/firstapp
+path &quot;secret/data/firstapp&quot; {
+  capabilities =  [ &quot;read&quot; ]
+}
+</code></pre>
+<p>This policy file allows:</p>
+<ul>
+<li><em>create</em> and <em>read</em> permissions on the <em>auth/approle/login</em> path. Effectively if an <code>approle</code> is assigned this policy, it can login</li>
+<li><em>read</em> permissions on the <em>secret/data/firstapp</em> path. The user entity assigned this policy can <code>only</code> read the <em>key-value pairs</em> <code>only</code> on that specific path</li>
+</ul>
+<p>Now that we have a policy defined (in a file), it needs to be created in the Vault. Cchanging the file path to wherever the policy files is stored, execute:</p>
+<pre><code class="language-powershell">vault policy write firstapp-policy c:\app-policy.hcl
+</code></pre>
+<p>This creates a new policy called <code>firstapp-policy</code>, using the contents of the <code>app-policy.hcl</code> file.</p>
+<p>Step 4 done! - <strong>Policy create!</strong></p>
+<hr />
+<h4 id="role-with-policy">Role (with policy)</h4>
+<p>Finally, its time to <code>create the role</code> (the application user), with the above defined policy assigned to it:</p>
+<pre><code class="language-powershell">vault write auth/approle/role/firstapp-role policies=&quot;firstapp-policy&quot;
+</code></pre>
+<p>This command creates a new role called <code>firstapp-role</code>, and assigns it the policy called <code>firstapp-policy</code>.</p>
+<p>Even though the role is now created, we have no information about it (yet). What is the <em>role-Id</em> (name) and <em>secret-Id</em> (password)?</p>
+<ul>
+<li><p>Let's retrieve the <em>role-Id</em> for the role:</p>
+<pre><code class="language-powershell">vault read auth/approle/role/firstapp-role/role-id
+</code></pre>
+<p>And <em>role-Id</em> should be returned:</p>
+<pre><code class="language-terminal">Key        Value
+---        -----
+role_id    cb476d64-4614-1038-0dd5-b344700f3f3a
+</code></pre>
+</li>
+<li><p>And then the <em>secret-Id</em> for the role (notice the addition of the -f parameter):</p>
+<pre><code class="language-powershell">vault write -f auth/approle/role/firstapp-role/secret-id
+</code></pre>
+<p>And <em>secret-Id</em> should be returned:</p>
+<pre><code class="language-terminal">Key                   Value
+---                   -----
+secret_id             5c1587dc-83b0-fe15-cc8e-196e6b777150
+secret_id_accessor    256b2ca7-5bce-3ce7-45b3-ceccc53fc6a3
+</code></pre>
+</li>
+</ul>
+<p>Lastly, we can test the new credentials by using them to log in via the CLI:</p>
+<pre><code class="language-powershell">vault write auth/approle/login role_id=cb476d64-4614-1038-0dd5-b344700f3f3a secret_id=5c1587dc-83b0-fe15-cc8e-196e6b777150
+</code></pre>
+<p>Receiving back a token along with other role information:</p>
+<pre><code class="language-terminal">Key                     Value
+---                     -----
+token                   s.NWPZT9b6KuoakFfO9R9OZgPO
+token_accessor          rl4mmRW0dDvvpevDlYjnkjKO
+token_duration          768h
+token_renewable         true
+token_policies          [&quot;default&quot; &quot;firstapp-policy&quot;]
+identity_policies       []
+policies                [&quot;default&quot; &quot;firstapp-policy&quot;]
+token_meta_role_name    firstapp-role
+</code></pre>
+<p>The <em>token</em> can be used to log into the UI to confirm what the <em>application will be able to see</em>. If you try to browse to the <em>secret</em> path, you may get a <code>Not Authorized</code> message - this is because the policy linked to the application role, does not have permission to see a list of the folders under <em>secret</em>.
+If you browse directly to <code>http://localhost:8200/ui/vault/secrets/secret/show/firstapp</code> however, you should see the list of secrets on that specific path - which the policy <strong>does allow</strong>.</p>
+<p>Step 5 done! - <strong>Role successfully created!</strong> (with roleId and secretId)</p>
+<hr />
+<h3 id="configuration-wrap-up">Configuration wrap-up</h3>
+<p>We have now successfully configured the Vault instance with all the functionality we need for <code>basic integration</code>. We also looked at creating a <code>policy</code> and creating and linking an <code>app role</code> to policy.</p>
+<p>Next up, we'll look at some C# code, using <code>VaultSharp</code> to integrate with the Vault.</p>
+<hr />
+<h2 id="vaultsharp">VaultSharp</h2>
+<p><a href="https://github.com/rajanadar/VaultSharp">VaultSharp</a> describes itself as <em>the most comprehensive cross-platform .NET Library for HashiCorp's Vault</em>, and simplifies the integration into HashiCorp Vault when using .NET.</p>
+<p>For most operations performed on the Vault via code, <code>VaultSharp</code> is the easiest way, however there are some operations which I was unable to do using VaultSharp, in which case the integration needs to be handled manually (see the next section onthe REST api).</p>
+<p>For the below samples, a NuGet package reference to <code>VaultSharp 1.7.0.4</code> was added to a C# project.</p>
+<h3 id="reading-secrets">Reading secrets</h3>
+<p>Now that we finally have a correctly setup and configured Vault, with credentials for our application, we can finally try to connect via C# code.</p>
+<p>Once the Vault is configured, connecting and interacting with it via C# code is very easy:</p>
+<pre><code class="language-csharp">// Use the roleId and secretId generated
+IAuthMethodInfo authMethod = new AppRoleAuthMethodInfo(
+    &quot;cb476d64-4614-1038-0dd5-b344700f3f3a&quot;, 
+    &quot;5c1587dc-83b0-fe15-cc8e-196e6b777150&quot;);
+
+var vaultClientSettings = 
+    new VaultClientSettings(&quot;http://127.0.0.1:8200&quot;, authMethod);
+
+IVaultClient vaultClient = new VaultClient(vaultClientSettings);
+
+try
+{
+    // the &quot;mountPoint&quot; is the root path
+    // the &quot;path&quot; is the rest of the path
+    Secret&lt;SecretData&gt; secrets = await vaultClient
+        .V1.Secrets.KeyValue.V2.ReadSecretAsync(
+            path: &quot;firstapp&quot;, mountPoint: &quot;secret&quot;);
+
+    // access all the key-value pairs
+    foreach(var item in secrets.Data.Data)
+    {
+        Console.WriteLine($&quot;key:'{item.Key}' value:'{item.Value}'&quot;);
+    }
+}
+catch (Exception ex)
+{
+    // try-catch just here for now to help 
+    // debug any connection issues
+    _ = ex;
+}
+
+</code></pre>
+<p>Going through the official <em>VaultSharp</em> documentation, it wasn't immediately obvious what the values of <em>path</em> and <em>mountPoint</em> should be:</p>
+<ul>
+<li><code>mountPoint</code>: is the root path to read from, <em>secret</em> in our case. If a <code>key-value pair</code> engine was added with a different name when configuring Vault in the previous steps, then this would be that value</li>
+<li><code>path</code>: this is the path, excluding the root, from which the key-value pairs are retrieved. This allows for fine control over which <em>path</em> (or folder) to read the secrets from</li>
+</ul>
+<p>The output from executing the above:</p>
+<pre><code class="language-terminal">key:'secretkey' value:'mypassword'
+</code></pre>
+<hr />
+<h3 id="writing-secrets">Writing secrets</h3>
+<p>As it stands, <code>permission denied</code> error will occur if trying to <em>write</em> a secret - this is because our application role is linked to the <code>firstapp-policy</code>, which only has <code>read</code> permissions to the <em>firstapp</em> path.</p>
+<p>So to be able to create secrets using the approle credentials, the <code>policy linked to it need to be updated</code>. This can be done either:</p>
+<ul>
+<li>In the Vault user interface, by logging in as the root user, browsing to <code>Policies -&gt; firstapp-policy -&gt; Edit policy</code> and editing the policy directly</li>
+<li>Or by <code>updating the policy file</code>, then executing the following command again to write the update policy to the Vault (updating the existing one):
+<pre><code class="language-powershell">vault policy write firstapp-policy C:\app-policy.hcl
+</code></pre>
+</li>
+</ul>
+<p>Whether using the Vault UI or editing the file, the <code>update</code> permissions needs to be added to the policy capabilities, and the policy should look as follows:</p>
+<pre><code class="language-terminal"># Login with AppRole 
+path &quot;auth/approle/login&quot; {
+  capabilities =  [ &quot;create&quot;, &quot;read&quot; ]
+} 
+
+# Read data from secret/firstapp
+path &quot;secret/data/firstapp&quot; {
+  capabilities =  [ &quot;read&quot;, &quot;update&quot; ]
+}
+</code></pre>
+<p>With the policy updated, the role now has permissions to <code>create/write</code> secrets:</p>
+<pre><code class="language-csharp">IAuthMethodInfo authMethod = new AppRoleAuthMethodInfo(
+    &quot;cb476d64-4614-1038-0dd5-b344700f3f3a&quot;, 
+    &quot;5c1587dc-83b0-fe15-cc8e-196e6b777150&quot;);
+
+var vaultClientSettings = 
+    new VaultClientSettings(&quot;http://127.0.0.1:8200&quot;, authMethod);
+
+IVaultClient vaultClient = new VaultClient(vaultClientSettings);
+
+try
+{
+    var newSecrets = new Dictionary&lt;string, object&gt;
+    {
+        [&quot;DbPassword&quot;] = &quot;password123&quot;
+    };
+
+    // Patch method called
+    await vaultClient.V1.Secrets.KeyValue.V2.PatchSecretAsync(
+        path: &quot;firstapp&quot;, newSecrets, mountPoint: &quot;secret&quot;);
+}
+catch (Exception ex)
+{
+    _ = ex;
+}
+</code></pre>
+<hr />
+<h2 id="quirks-and-tips">Quirks and tips</h2>
+<p>These are a few quirks I've encountered working with Vault and VaultSharp, which was not obvious while initially getting the two to integrate:</p>
+<ul>
+<li><p><code>Policy path vs Code path</code>:
+Its not immediately obvious when going through documentation, but in the policy <code>data</code> (or <code>metadata</code>) is added to the path, for example, <code>secret/data/firstapp</code>:</p>
+<pre><code class="language-yml">path &quot;secret/data/firstapp&quot; {
+    capabilities =  [ &quot;read&quot;, &quot;update&quot; ]
+}
+</code></pre>
+<p>However when using <code>VaultSharp</code>, or the <code>CLI</code> to retrieve secrets, the <code>data</code> portion is dropped:</p>
+<ul>
+<li><p>Using CLI:</p>
+<pre><code class="language-powershell">    vault kv get secret/firstapp
+</code></pre>
+</li>
+<li><p>Using VaultSharp:</p>
+<pre><code class="language-csharp">    await vaultClient.V1.Secrets.KeyValue.V2.ReadSecretAsync(
+        path: &quot;firstapp&quot;, mountPoint: &quot;secret&quot;);
+</code></pre>
+</li>
+</ul>
+</li>
+<li><p><code>Write secret vs Patch secret</code>:
+In Vault, when changing the secrets in a <em>path</em> (folder), a new version of the <em>path</em> is created with the updated version of the secrets.<br />
+When <code>writing</code> or using <em>put</em> to create a secret, <code>all previous secrets will be lost</code> and a <code>new version of the path created, with just the new secret</code>.<br />
+However when <code>patching</code> then <code>all secrets in the current version are brought into the new version</code>, along with any changes.</p>
+<ul>
+<li><p><code>Write/Put</code>: Existing secrets are lost in the new version:</p>
+<p>In PowerShell:</p>
+<pre><code class="language-powershell">vault kv put secret/firstapp newkey=mynewpassword
+</code></pre>
+<p>And in C# code:</p>
+<pre><code class="language-csharp">var newSecrets = new Dictionary&lt;string, object&gt;
+{
+    [&quot;newkey&quot;] = &quot;mynewpassword&quot;
+};
+// WriteSecretAsync is used here, vs PatchSecretAsync
+await vaultClient.V1.Secrets.KeyValue.V2.WriteSecretAsync(
+    path: &quot;firstapp&quot;, newSecrets, mountPoint: &quot;secret&quot;);
+</code></pre>
+</li>
+<li><p><code>Patch</code>: Existing secrets are brought into the new version:</p>
+<p>In PowerShell:</p>
+<pre><code class="language-powershell">vault kv patch secret/firstapp newkey=mynewpassword
+</code></pre>
+<p>And in C# code:</p>
+<pre><code class="language-csharp">var newSecrets = new Dictionary&lt;string, object&gt;
+{
+    [&quot;newkey&quot;] = &quot;mynewpassword&quot;
+};
+// PatchSecretAsync is used here, vs WriteSecretAsync
+await vaultClient.V1.Secrets.KeyValue.V2.PatchSecretAsync(
+    path: &quot;firstapp&quot;, newSecrets, mountPoint: &quot;secret&quot;);
+</code></pre>
+</li>
+</ul>
+</li>
+</ul>
+<hr />
+<h2 id="rest-api">Rest API</h2>
+<p>In certain cases, <code>VaultSharp</code> does not provide functionality available via the Vault CLI (or at least, I was not able to find it amongst the VaultSharp code or documentation) - in these cases an alternative option has to be used. Luckily, Vault exposes all it's functionality via a REST api (which is what the CLI actually uses as well). This means any functionality available from the CLI can be reproduced in code by doing an HTTP call.</p>
+<p>An example of a call which <code>VaultSharp</code> does not (at the time of writing this post) support, is the ability to <code>create an app role though code</code>. This is possible via the CLI, as it was done in previous steps:</p>
+<pre><code class="language-powershell">vault write auth/approle/role/firstapp-role policies=&quot;firstapp-policy&quot;
+</code></pre>
+<p>If we want to be able to perform this functionality vai code, it'll have to be via an HTTP call. Let's write some C# code to setup the permission for a new application. It will:</p>
+<ul>
+<li>Create a policy for a new application (using VaultSharp)</li>
+<li>Create an approle for a new application (using the REST API)</li>
+<li>Get the <em>roleId</em> for the newly created role (using the REST API)</li>
+</ul>
+<hr />
+<h3 id="policy-creation">Policy creation</h3>
+<p>VaultSharp does have functionality to create policies, so VaultSharp can be leveraged for this step:</p>
+<pre><code class="language-csharp">// use the root token (or preferably another token which has permissions)
+IAuthMethodInfo authMethod = new TokenAuthMethodInfo(config.Token);
+var vaultClientSettings = new VaultClientSettings(config.Url, authMethod);
+
+IVaultClient vaultClient = new VaultClient(vaultClientSettings);
+
+// specify the application name
+var applicationName = &quot;newapplication&quot;;
+// define the policy as a string
+string appPolicy = &#64;&quot;
+    # Login with AppRole 
+    path &quot;&quot;auth/approle/login&quot;&quot; {{
+    capabilities =  [&quot;&quot;create&quot;&quot;, &quot;&quot;read&quot;&quot;]
+    }}
+
+    # Read test data (v2)
+    path &quot;&quot;secret/data/{0}&quot;&quot; {{
+    capabilities =  [&quot;&quot;read&quot;&quot;]
+    }}&quot;;
+
+    // define the policy. 
+    var policy = new ACLPolicy
+    {
+        Name = String.Format($&quot;{applicationName}-policy&quot;, applicationName),
+        Policy = String.Format(appPolicy, applicationName)
+    };
+
+    // create the policy
+    await vaultClient.V1.System.WriteACLPolicyAsync(policy);
+</code></pre>
+<p>Here a different <em>IAuthMethodInfo</em> implementation is used vs the previous examples - this is because this operation is being performed by the <em>root user</em> (or preferably another &quot;admin&quot; user/token with similar permissions). Apart from that, the usage of the VaultSharp library remains the same.</p>
+<p>Step 1 done! - <strong>Policy created successfully!</strong></p>
+<p>Now that we have a policy, let's look at using <code>HttpClient</code> to call the REST api to create an <code>approle</code>.</p>
+<hr />
+<h3 id="approle-creation">Approle creation</h3>
+<p>Invoking the REST api methods is similar to using the CLI, so the CLI command can be used as a template for the HTTP call:</p>
+<pre><code class="language-powershell">vault write auth/approle/role/firstapp-role policies=&quot;firstapp-policy&quot;
+</code></pre>
+<p>Translating this into C#:</p>
+<pre><code class="language-csharp">// specify the application name
+var applicationName = &quot;newapplication&quot;;
+
+// Ideally getting the client is done via the HttpClientFactory
+var httpClient = new HttpClient();
+httpClient.BaseAddress = new Uri(&quot;http://localhost:8200&quot;);
+
+// this is the same path as used in the CLI, just with v1 pre-pended
+HttpRequestMessage requestMessage = new(
+    HttpMethod.Post, $&quot;v1/auth/approle/role/{applicationName}-role&quot;);
+
+// add the token as a header to the request
+requestMessage.Headers.Add(&quot;X-Vault-Token&quot;, &quot;some-root-token&quot;);
+
+// set the contents of the request in json representation of the same
+// params passed in the CLI
+requestMessage.Content = new StringContent(
+    $&quot;{{\&quot;policies\&quot;: \&quot;{applicationName}-policy\&quot;}}&quot;, 
+    Encoding.UTF8, &quot;application/json&quot;);
+// send the request!
+var response = await httpClient.SendAsync(requestMessage);
+
+</code></pre>
+<p>Step 2 done! - <strong>Approle created successfully!</strong></p>
+<p>Assuming no errors have occurred, the <code>approle</code> is now created - we just need to lookup the <em>roleId</em> and <em>secretId</em>.</p>
+<hr />
+<h3 id="roleid-lookup">RoleId lookup</h3>
+<p>Performing the <em>roleId</em> follows very similar steps to the approle creation.</p>
+<p>For reference, the powershell to perform this action:</p>
+<pre><code class="language-powershell">vault read auth/approle/role/firstapp-role/role-id
+</code></pre>
+<p>And converting this into C# code:</p>
+<pre><code class="language-csharp">// specify the application name
+var applicationName = &quot;newapplication&quot;;
+
+// Ideally getting the client is done via the HttpClientFactory
+var httpClient = new HttpClient();
+httpClient.BaseAddress = new Uri(&quot;http://localhost:8200&quot;);
+
+// this is the same path as used in the CLI, just with v1 pre-pended
+HttpRequestMessage requestMessage = 
+    new(HttpMethod.Get, $&quot;v1/auth/approle/role/{applicationName}-role/role-id&quot;);
+// add the token as a header to the request
+requestMessage.Headers.Add(&quot;X-Vault-Token&quot;, &quot;some-root-token&quot;);
+
+// send the request!
+var response = await httpClient.SendAsync(requestMessage);
+
+if (!response.IsSuccessStatusCode)
+{
+    throw new HttpRequestException(
+        $&quot;Error getting role id: {response.ReasonPhrase}&quot;, 
+        null, 
+        response.StatusCode);
+}
+
+var roleResponse = await response.Content.ReadFromJsonAsync&lt;GetRoleIdResponse&gt;();
+
+</code></pre>
+<p>The <em>GetRoleIdResponse</em> entity is a custom class which is defined as follows:</p>
+<pre><code class="language-csharp">public class GetRoleIdResponse
+{
+    public GetRoleDataResponse data { get; set; }
+}
+
+public class GetRoleDataResponse
+{
+    public Guid role_id { get; set; }
+}
+</code></pre>
+<p>Step 3 done! - <strong>RoleId retrieved successfully!</strong></p>
+<p>The same process can be applied to lookup the <em>secretId</em>, as well as execute any other Vault CLI command.</p>
+<hr />
+<h2 id="in-summary">In summary</h2>
+<p>In this post we had a look at how to do the following:</p>
+<ul>
+<li>Successfully running an instance of the HashiCorp vault using
+<ul>
+<li>The Windows binary</li>
+<li>A Docker image</li>
+</ul>
+</li>
+<li>The Vault configuration steps required to be able to connect with an app level roleId and secretId:
+<ul>
+<li>Enabling the key-value pair engine</li>
+<li>Creating a <em>path</em> to hold secrets</li>
+<li>Enabling the approle authentication method</li>
+<li>Creating a policy</li>
+<li>Creating a role and linking a policy to it</li>
+</ul>
+</li>
+<li>Using VaultSharp to read secrets from, and write secrets to the Vault</li>
+<li>Using the Vault Rest API to perform functionality comparable to the Vault CLI (especially for use cases not covered by VaultSharp)</li>
+</ul>
+<p>The hope is this guide will help others not have to go through some of the struggles I encountered while integrating with, and exploring the HashiCorp Vault functionality for the first time.</p>
+<hr />
+<h2 id="references">References</h2>
+<p><a href="https://www.vaultproject.io/">HashiCorp Vault</a><br />
+<a href="https://www.vaultproject.io/downloads">HashiCorp Vault Download</a><br />
+<a href="https://www.docker.com/products/docker-desktop/">Docker Desktop</a><br />
+<a href="https://hub.docker.com/_/vault">Vault on DockerHub</a><br />
+<a href="hhttps://learn.hashicorp.com/tutorials/vault/dotnet-httpclient">HashiCorp Vault C# client with .NET Core Guide</a><br />
+<a href="https://github.com/hashicorp/vault-guides">HashiCorp Vault Guide repository</a><br />
+<a href="https://github.com/rajanadar/VaultSharp">VaultSharp</a></p>
+
+                        
+<div>
+            <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
+            <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
+            <a role="button" href="/tags/blog" class="badge badge-light"> blog</a>
+            <a role="button" href="/tags/hashicorp" class="badge badge-light"> hashicorp</a>
+            <a role="button" href="/tags/vault" class="badge badge-light"> vault</a>
+            <a role="button" href="/tags/beginner" class="badge badge-light"> beginner</a>
+</div>
+                    </div>
+                    <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
+                        
+
+        <div class="box sticky-top toc-block">
+            <h3 class="no-anchor">On This Page</h3>
+            <ul>
+        <li><a href="#introduction">Introduction</a></li>
+            <ul>
+        <li><a href="#why">Why?</a></li>
+            </ul>
+        <li><a href="#hashicorp-vault">HashiCorp Vault</a></li>
+            <ul>
+        <li><a href="#prerequisites">Prerequisites</a></li>
+        <li><a href="#vault-startup">Vault Startup</a></li>
+        <li><a href="#vault-configuration">Vault Configuration</a></li>
+        <li><a href="#configuration-wrap-up">Configuration wrap-up</a></li>
+            </ul>
+        <li><a href="#vaultsharp">VaultSharp</a></li>
+            <ul>
+        <li><a href="#reading-secrets">Reading secrets</a></li>
+        <li><a href="#writing-secrets">Writing secrets</a></li>
+            </ul>
+        <li><a href="#quirks-and-tips">Quirks and tips</a></li>
+        <li><a href="#rest-api">Rest API</a></li>
+            <ul>
+        <li><a href="#policy-creation">Policy creation</a></li>
+        <li><a href="#approle-creation">Approle creation</a></li>
+        <li><a href="#roleid-lookup">RoleId lookup</a></li>
+            </ul>
+        <li><a href="#in-summary">In summary</a></li>
+        <li><a href="#references">References</a></li>
+            </ul>
+        </div>
+
+                    </div>
+            </div>
+            <div class="row ">
+                    <div id="content" class="col-md-9">
+                        <div>
+    <script src="https://giscus.app/client.js"
+            data-repo="always-developing/always-developing.github.io"
+            data-repo-id="R_kgDOGQJLBQ"
+            data-category="Comments"
+            data-category-id="DIC_kwDOGQJLBc4B_pUA"
+            data-mapping="pathname"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="bottom"
+            data-theme="transparent_dark"
+            data-lang="en"
+            crossorigin="anonymous"
+            async>
+    </script>
+</div>
+                    </div>
+            </div>
+    </div>
+
+    <hr class="horizontal-rule" />
+
+    <!-- Footer -->
+    <footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <ul class="list-inline text-center">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://www.linkedin.com/in/jean-pierre-seini">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-linkedin fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                <div>
+                    <p class="copyright text-footer">
+                        Copyright © 2022 Always Developing</a>.
+                    </p>
+                </div>
+                <ul class="list-inline text-center small text-feeds">
+                        <li class="list-inline-item">
+                            <a href="/feed.rss"><i class="fa fa-rss"></i> RSS Feed</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="/feed.atom"><i class="fa fa-rss"></i> Atom Feed</a>
+                        </li>
+                </ul>
+                <ul class="list-inline text-center small">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing/alwaysdeveloping-website-src"><i class="fab fa-github"></i> This site on GitHub</a>                    
+                    </li>
+                    <li class="list-inline-item">
+                        |
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing/alwaysdeveloping-website-src/tree/main/theme"><i class="fa fa-code"></i> Custom Always-Developing theme</a>
+                    </li>
+                    <li class="list-inline-item">
+                        |
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://github.com/statiqdev/CleanBlog"><i class="fa fa-blog"></i> Adapted from Clean Blog theme</a>
+                    </li>
+                </ul>
+                <div class="small text-footer">
+                    <a href="https://statiq.dev"><i class="fa fa-cogs"></i> Generated by Statiq</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="/vendor/jquery/jquery.min.js"></script>
+    <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CXPLFS7K38"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){window.dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  //gtag('config', 'G-CXPLFS7K38');
+</script>
+
+    
+
+    <!-- Custom scripts for this template -->
+    <script src="/js/always-developing-blog.js"></script>
+
+</body>
+
+</html>

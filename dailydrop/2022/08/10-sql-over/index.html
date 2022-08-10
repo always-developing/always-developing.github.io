@@ -1,0 +1,501 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="always learning | always growing">
+
+    <title>Always Developing - An intro to SQL SELECT-OVER</title>
+
+    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/08/10-sql-over">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
+
+    <meta name="application-name" content="Always Developing" />
+    <meta name="msapplication-tooltip" content="Always Developing" />
+    <meta name="msapplication-starturl" content="/" />
+
+    <meta property="og:title" content="Always Developing - An intro to SQL SELECT-OVER" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/08/10-sql-over" />
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Bootstrap core CSS -->
+    <link href="/vendor/bootstrap/scss/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom fonts for this template -->
+    <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="/vendor/fontawesome-free/css/brands.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css' data-no-mirror>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css' data-no-mirror>
+
+    <!-- Custom styles for this template -->
+    <link href="/scss/always-developing-blog.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/plugins/autoloader/prism-autoloader.min.js" data-no-mirror></script>
+    <script src="https://cdn.jsdelivr.net/npm/quicklink@2.0.0/dist/quicklink.umd.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/themes/prism.css">
+
+    <!-- Lunr search -->
+        <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/pako@2.0.3/dist/pako_inflate.min.js"></script>
+        <script src="/search.js"></script>
+
+    
+
+
+    
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand"  href="/">
+            <img src="/images/ad_logo.png" alt="" width="25" height="25" class="d-inline-block align-text-top">
+            Always Developing
+        </a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            Menu
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/software">Software</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/tags">Tags</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/posts">Posts</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/about">About</a>
+            </li>
+</ul>
+                <form class="form-inline my-2 my-lg-0" action="/search" method="GET">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="query">
+                    <input type="submit" hidden />
+                </form>
+        </div>
+    </div>
+</nav>
+
+    <!-- Page Header -->
+    <header class="masthead">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 align-middle">
+                <div class="post-header-image">
+                    <a href="/">
+                        <img src="/images/ad_logo.png" class="header-image">
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="post-heading">
+                    <h1>
+                        An intro to SQL SELECT-OVER
+                    </h1>
+                            <h2 class="subheading">How the SQL SELECT-OVER clause can be used to simplify t-sql statements</h2>
+                        <p class="post-meta">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
+                                <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
+                            </svg> Published on Wednesday, 10 August 2022
+                        </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <!-- Main Content -->
+    <div class="container">
+            <div class="row ">
+                    <div id="content" class="col-md-9 post-with-toc post-block">
+                        
+<div class="post-header-category">
+    <a class="btn btn-primary btn-sm btn-default btn-home" href="\" role="button"><i class="fas fa-angle-double-left"></i> Home</a>
+            <a class="btn btn-primary btn-sm category-btn" href="/categories/dailydrop" role="button">DailyDrop</a>
+</div>
+
+                        <h2 id="daily-knowledge-drop">Daily Knowledge Drop</h2>
+<p>The SQL <code>OVER</code> clause can be used to define a window or user-specified set of rows within a result set. This effectively <code>allows computed values</code> (AVG, MAX in the below examples) to be <code>executed over different sets of data</code>, in the <code>same query</code>.</p>
+<p>Some examples below should make this clearer.</p>
+<hr />
+<h2 id="audit-table">Audit table</h2>
+<p>In our examples below, we are using an <code>Audit</code> table which stored the average execution time for a process on a server for a specific day. The table will store the server name, as well as the average execution time (in milliseconds):</p>
+<pre><code class="language-sql">SELECT * FROM Audit
+</code></pre>
+<p>A sample output of the data for a few servers:</p>
+<pre><code class="language-terminal">Id          Created                 Server          ExecutionInMs
+----------- ----------------------- --------------- -------------
+230001      2022-07-15 06:38:54.710 Server1         2420
+230002      2022-07-15 06:38:54.710 Server2         4176
+230003      2022-07-15 06:38:54.710 Server3         6291
+230004      2022-07-15 06:38:54.710 Server4         2508
+230005      2022-07-15 06:38:54.710 Server5         6690
+</code></pre>
+<h3 id="use-case">Use case</h3>
+<p>In our use case, we want to see the <code>average execution</code> time for each server along with the <code>average across all servers</code>, to determine if any specific server(s) are executing excessively above the average. Also to include is <code>MIN and MAX execution time across all servers</code>.</p>
+<p>In our example we only have 100 server, so one could potentially just manually look at the data to see the <code>MIN and MAX</code> - but imagine the same scenario at scale with hundreds or thousands of server. Not as easy to do manually.</p>
+<h2 id="without-over">Without OVER</h2>
+<h3 id="averages">Averages</h3>
+<p>First step, is to get the <code>average across all servers</code> and the following is a method to do it - using a sub query to perform the <code>average across all data</code>:</p>
+<pre><code class="language-sql">SELECT Server, ExecutionInMs,
+	(
+		SELECT AVG(ExecutionInMs) FROM Audit
+	) as TotalAverageExecutionTime
+FROM Audit
+</code></pre>
+<p>Another way could be to <em>SELECT</em> the value into a variable and then include that in the final <em>SELECT</em>:</p>
+<pre><code class="language-sql">DECLARE &#64;TotalAverageExecutionTime int
+SELECT &#64;TotalAverageExecutionTime = AVG(ExecutionInMs) FROM Audit
+
+SELECT Server, ExecutionInMs, &#64;TotalAverageExecutionTime as TotalAverageExecutionTime
+FROM Audit
+</code></pre>
+<p>Both techniques return the same result set:</p>
+<pre><code class="language-terminal">Server           ExecutionInMs TotalAverageExecutionTime
+---------------- ------------- -------------------------
+Server1          2420          4551
+Server2          4176          4551
+Server3          6291          4551
+Server4          2508          4551
+Server5          6690          4551
+</code></pre>
+<p>This approach is required as we are trying to combine operations <code>across different datasets</code> - the dataset of a set of rows and the dataset of all the information combined (the <code>AVG</code>).</p>
+<hr />
+<h3 id="min-and-max">MIN and MAX</h3>
+<p>The same problem occurs with using <code>MIN and MAX</code>. Here is a sample of what the query would look like using <code>sub-queries</code> to get all the information required:</p>
+<pre><code class="language-sql">SELECT 
+	Server, 
+        ExecutionInMs,
+	(
+		SELECT AVG(ExecutionInMs) FROM Audit
+	) as TotalAverageExecutionTime,
+	(
+		SELECT MIN(ExecutionInMs) FROM Audit
+	) as TotalMinExecutionTime,
+	(
+		SELECT Max(ExecutionInMs) FROM Audit
+	) as TotalMaxExecutionTime
+FROM Audit
+</code></pre>
+<p>With all of this, we have the information we require:</p>
+<pre><code class="language-terminal">Server          ExecutionInMs TotalAverageExecutionTime TotalMinExecutionTime TotalMaxExecutionTime
+--------------- ------------- ------------------------- --------------------- ---------------------
+Server1         2420          4551                      2027                  10600
+Server2         4176          4551                      2027                  10600
+Server3         6291          4551                      2027                  10600
+Server4         2508          4551                      2027                  10600
+Server5         6690          4551                      2027                  10600
+</code></pre>
+<p>While this is all valid, but there is a easier and simpler way, using the <code>OVER clause</code>.</p>
+<hr />
+<h2 id="with-over">With OVER</h2>
+<h3 id="averages-1">Averages</h3>
+<p>As mentioned in the intro - the <code>OVER</code> clause can be used to <em>define a window or user-specified set of rows within a result set</em>.</p>
+<p>We can select the base table information, and then use the <code>OVER</code> clause to define a separate result set to perform the <code>AVG</code> on, <code>in the same query</code>:</p>
+<pre><code class="language-sql">SELECT	
+    Server, 
+    ExecutionInMs, 
+    AVG(ExecutionInMs) OVER()
+FROM Audit
+</code></pre>
+<p>The additional of <code>OVER()</code> with no parameters passed in, means: <code>over the entire dataset</code>. So in the query the <em>Server</em> and <em>ExecutionInMs</em> is returned for each row in the base data, while the <code>AVG is executed over the entire dataset of all rows</code>.</p>
+<p>Definitely cleaner, easier and more concise than the other methods shown above without <code>OVER</code>.</p>
+<hr />
+<h3 id="min-and-max-1">MIN and MAX</h3>
+<p>The same solution can be used for <code>MIN and MAX</code>:</p>
+<pre><code class="language-sql">SELECT	
+    Server, 
+    ExecutionInMs, 
+    AVG(ExecutionInMs) OVER() as TotalAverageExecutionTime,
+    MIN(ExecutionInMs) OVER() as TotalMinExecutionTime,
+    MAX(ExecutionInMs) OVER() as TotalMaxExecutionTime
+FROM Audit
+</code></pre>
+<p>We now have our final required results:</p>
+<pre><code class="language-terminal">Server           ExecutionInMs TotalAverageExecutionTime TotalMinExecutionTime TotalMaxExecutionTime
+---------------- ------------- ------------------------- --------------------- ---------------------
+Server1          2420          4551                      2027                  10600
+Server2          4176          4551                      2027                  10600
+Server3          6291          4551                      2027                  10600
+Server4          2508          4551                      2027                  10600
+Server5          6690          4551                      2027                  10600
+</code></pre>
+<hr />
+<h2 id="calculations">Calculations</h2>
+<p>Calculations can also be performed on the data output by using <code>OVER</code>:</p>
+<p>In this example, the percentage above the total average for each server is calculated, and then each server is ranked by how far they are above the average:</p>
+<pre><code class="language-sql">SELECT	
+    Server, 
+    ExecutionInMs, 
+    AVG(ExecutionInMs) OVER() as TotalAverageExecutionTime,
+    MIN(ExecutionInMs) OVER() as TotalMinExecutionTime,
+    MAX(ExecutionInMs) OVER() as TotalMaxExecutionTime,
+    (CONVERT(decimal, ExecutionInMs) / CONVERT(decimal, AVG(ExecutionInMs) OVER())) * 100
+FROM Audit
+ORDER BY 6 DESC
+</code></pre>
+<p>From the results, we can see that <code>Server10</code> is executing over <code>two times slower than the average</code>!</p>
+<pre><code class="language-terminal">Server          ExecutionInMs TotalAverageExecutionTime TotalMinExecutionTime TotalMaxExecutionTime 
+--------------- ------------- ------------------------- --------------------- --------------------- ---------------------
+Server10        10600         4551                      2027                  10600                 232.9158426719402329
+Server50        7000          4551                      2027                  10600                 153.8123489343001538
+Server77        6950          4551                      2027                  10600                 152.7136892990551527
+Server90        6941          4551                      2027                  10600                 152.5159305647110525
+Server56        6899          4551                      2027                  10600                 151.5930564711052516
+</code></pre>
+<hr />
+<h3 id="partition">Partition</h3>
+<p>The <code>PARTITION</code> keyword can also be used in conjunction with the <code>OVER</code> to create multiple smaller datasets <em>partitioned</em> by the specified field.</p>
+<p>For the below example, suppose a requirement has come into also include the average for each <em>second</em> - that is, the <code>average for all server's where the execution time is between 4000-4999ms</code>, the average where the execution time is <code>between 5000-5999ms etc</code>. Maybe there is a threshold above which the execution jumps drastically?</p>
+<p>First, let's include a clause to get the first digit of the <em>ExecutionTimeInMs</em>:</p>
+<pre><code class="language-sql">SELECT	
+    Server, 
+    ExecutionInMs,
+    SUBSTRING(CAST(ExecutionInMs as varchar), 1, 1) as FirstDigit,
+    AVG(ExecutionInMs) OVER() as TotalAverageExecutionTime,
+    MIN(ExecutionInMs) OVER() as TotalMinExecutionTime,
+    MAX(ExecutionInMs) OVER() as TotalMaxExecutionTime,
+    (CONVERT(decimal, ExecutionInMs) / CONVERT(decimal, AVG(ExecutionInMs) OVER())) * 100
+FROM Audit
+ORDER BY 6 DESC
+</code></pre>
+<p>From there, we can now use this field to create multiple datasets on which the <code>AVG</code> is <code>PARTITIONED</code> by:</p>
+<pre><code class="language-sql">SELECT	
+    Server, 
+    ExecutionInMs,
+    SUBSTRING(CAST(ExecutionInMs as varchar), 1, 1) as FirstDigit,
+    AVG(ExecutionInMs) OVER(PARTITION BY SUBSTRING(CAST(ExecutionInMs as varchar), 1, 1)) as SecondAverageInMs,
+    AVG(ExecutionInMs) OVER() as TotalAverageExecutionTime,
+    MIN(ExecutionInMs) OVER() as TotalMinExecutionTime,
+    MAX(ExecutionInMs) OVER() as TotalMaxExecutionTime,
+    (CONVERT(decimal, ExecutionInMs) / CONVERT(decimal, AVG(ExecutionInMs) OVER())) * 100
+FROM Audit
+ORDER BY 6 DESC
+</code></pre>
+<p>A sample of the results:</p>
+<pre><code class="language-terminal">Server          ExecutionInMs FirstDigit SecondAverageInMs TotalAverageExecutionTime TotalMinExecutionTime TotalMaxExecutionTime 
+--------------- ------------- ---------- ----------------- ------------------------- --------------------- --------------------- --------------------
+Server91        2813          2          2508              4551                      2027                  10600                 61.8105910788837618
+Server92        2295          2          2508              4551                      2027                  10600                 50.4284772577455504
+Server95        2159          2          2508              4551                      2027                  10600                 47.4401230498791474
+Server96        2566          2          2508              4551                      2027                  10600                 56.3832124807734564
+Server93        3818          3          3538              4551                      2027                  10600                 83.8936497473082839
+Server100       3127          3          3538              4551                      2027                  10600                 68.7101735882223687
+Server70        3348          3          3538              4551                      2027                  10600                 73.5662491760052736
+
+</code></pre>
+<p>From the result, we now have:</p>
+<ul>
+<li>The <code>average</code> across a specific <code>partition</code> - records which start with the same digit for <em>ExecutionInMs</em> will have the same average</li>
+<li>The <code>average</code> across the entire dataset - all records will have the same average</li>
+</ul>
+<hr />
+<h2 id="row-numbering">Row Numbering</h2>
+<p>A use case which often comes up (and which I've used, without fully understanding the inner workings) - and that is to <code>number each row</code> and specifically <code>number each row over a group/partition</code>.</p>
+<p>The <code>ROW_NUMBER</code> function is used with the <code>OVER</code> and <code>ORDER BY</code> clauses to give each row a number, based on the <code>ORDER BY</code>.</p>
+<p>Here, each row is given a number, ordered by the <em>ExecutionInMs</em> from largest to smallest:</p>
+<pre><code class="language-sql">SELECT ROW_NUMBER() OVER(ORDER BY ExecutionInMs DESC), Server, ExecutionInMs
+FROM Audit
+</code></pre>
+<p>A sample of the output:</p>
+<pre><code class="language-terminal">                     Server           ExecutionInMs
+-------------------  ---------------- -------------
+1                    Server10         10600
+2                    Server50         7000
+3                    Server77         6950
+4                    Server90         6941
+5                    Server56         6899
+</code></pre>
+<p>This can also be used with the <code>PARTITION</code> clause to generate row numbers within a specific sub-dataset.</p>
+<hr />
+<h2 id="notes">Notes</h2>
+<p>If working with an ORM (such as Entity Framework), this may not be something for every day use. However, investigations and troubleshooting will still need to be performed on the data, in which case knowledge of the usage of <code>OVER</code> and <code>PARTITION</code> can prove to be invaluable. In addition if using an ORM which does generate SQL using <code>OVER</code> its important to understand the SQL and how the code effects the SQL generation.</p>
+<hr />
+<h2 id="references">References</h2>
+<p><a href="https://docs.microsoft.com/en-us/sql/t-sql/queries/select-over-clause-transact-sql?view=sql-server-ver16">SELECT - OVER Clause (Transact-SQL)</a></p>
+<hr />
+
+<blockquote class="daily-drop">
+    <div>
+        <div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px; ">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="50" height="50" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffec00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+              <path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+              <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+              <line x1="9.7" y1="17" x2="14.3" y2="17" />
+            </svg>
+        </div>
+        <div class="drop-header">
+            Daily Drop 135: 10-08-2022
+        </div>
+        <div>
+            <br>At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br> It could be anything - some.NET / C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
+            The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+        <div>
+    </div>
+</blockquote>
+
+
+                        
+<div>
+            <a role="button" href="/tags/sql" class="badge badge-light"> sql</a>
+            <a role="button" href="/tags/sqlserver" class="badge badge-light"> sqlserver</a>
+            <a role="button" href="/tags/select" class="badge badge-light"> select</a>
+            <a role="button" href="/tags/over" class="badge badge-light"> over</a>
+</div>
+                    </div>
+                    <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
+                        
+
+        <div class="box sticky-top toc-block">
+            <h3 class="no-anchor">On This Page</h3>
+            <ul>
+        <li><a href="#daily-knowledge-drop">Daily Knowledge Drop</a></li>
+        <li><a href="#audit-table">Audit table</a></li>
+            <ul>
+        <li><a href="#use-case">Use case</a></li>
+            </ul>
+        <li><a href="#without-over">Without OVER</a></li>
+            <ul>
+        <li><a href="#averages">Averages</a></li>
+        <li><a href="#min-and-max">MIN and MAX</a></li>
+            </ul>
+        <li><a href="#with-over">With OVER</a></li>
+            <ul>
+        <li><a href="#averages-1">Averages</a></li>
+        <li><a href="#min-and-max-1">MIN and MAX</a></li>
+            </ul>
+        <li><a href="#calculations">Calculations</a></li>
+            <ul>
+        <li><a href="#partition">Partition</a></li>
+            </ul>
+        <li><a href="#row-numbering">Row Numbering</a></li>
+        <li><a href="#notes">Notes</a></li>
+        <li><a href="#references">References</a></li>
+            </ul>
+        </div>
+
+                    </div>
+            </div>
+            <div class="row ">
+                    <div id="content" class="col-md-9">
+                        <div>
+    <script src="https://giscus.app/client.js"
+            data-repo="always-developing/always-developing.github.io"
+            data-repo-id="R_kgDOGQJLBQ"
+            data-category="Comments"
+            data-category-id="DIC_kwDOGQJLBc4B_pUA"
+            data-mapping="pathname"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="bottom"
+            data-theme="transparent_dark"
+            data-lang="en"
+            crossorigin="anonymous"
+            async>
+    </script>
+</div>
+                    </div>
+            </div>
+    </div>
+
+    <hr class="horizontal-rule" />
+
+    <!-- Footer -->
+    <footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <ul class="list-inline text-center">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://www.linkedin.com/in/jean-pierre-seini">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-linkedin fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                <div>
+                    <p class="copyright text-footer">
+                        Copyright © 2022 Always Developing</a>.
+                    </p>
+                </div>
+                <ul class="list-inline text-center small text-feeds">
+                        <li class="list-inline-item">
+                            <a href="/feed.rss"><i class="fa fa-rss"></i> RSS Feed</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="/feed.atom"><i class="fa fa-rss"></i> Atom Feed</a>
+                        </li>
+                </ul>
+                <ul class="list-inline text-center small">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing/alwaysdeveloping-website-src"><i class="fab fa-github"></i> This site on GitHub</a>                    
+                    </li>
+                    <li class="list-inline-item">
+                        |
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing/alwaysdeveloping-website-src/tree/main/theme"><i class="fa fa-code"></i> Custom Always-Developing theme</a>
+                    </li>
+                    <li class="list-inline-item">
+                        |
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://github.com/statiqdev/CleanBlog"><i class="fa fa-blog"></i> Adapted from Clean Blog theme</a>
+                    </li>
+                </ul>
+                <div class="small text-footer">
+                    <a href="https://statiq.dev"><i class="fa fa-cogs"></i> Generated by Statiq</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="/vendor/jquery/jquery.min.js"></script>
+    <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CXPLFS7K38"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){window.dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  //gtag('config', 'G-CXPLFS7K38');
+</script>
+
+    
+
+    <!-- Custom scripts for this template -->
+    <script src="/js/always-developing-blog.js"></script>
+
+</body>
+
+</html>
