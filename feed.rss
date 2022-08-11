@@ -5,8 +5,71 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Wed, 10 Aug 2022 03:51:59 GMT</pubDate>
-		<lastBuildDate>Wed, 10 Aug 2022 03:51:59 GMT</lastBuildDate>
+		<pubDate>Thu, 11 Aug 2022 04:00:41 GMT</pubDate>
+		<lastBuildDate>Thu, 11 Aug 2022 04:00:41 GMT</lastBuildDate>
+		<item>
+			<title>OS information via Runtime.InteropServices</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/08/11-interop-services</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/08/11-interop-services</guid>
+			<pubDate>Thu, 11 Aug 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;Runtime.InteropServices&lt;/code&gt; namespace contains the &lt;code&gt;RuntimeInformation&lt;/code&gt; static class which can be used to obtain a variety of information related to the operating system. This can be used to only execute certain code depending on the operating system on which the application is running.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="basic-information"&gt;Basic Information&lt;/h2&gt;
+&lt;p&gt;The basic operating system information is all available on the &lt;em&gt;static&lt;/em&gt; &lt;code&gt;RuntimeInformation&lt;/code&gt; class and can be accessed via public properties:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;Console.WriteLine($&amp;quot;Framework description: {RuntimeInformation.FrameworkDescription}&amp;quot;);
+Console.WriteLine($&amp;quot;OS architecture: {RuntimeInformation.OSArchitecture}&amp;quot;);
+Console.WriteLine($&amp;quot;OS description: {RuntimeInformation.OSDescription}&amp;quot;);
+Console.WriteLine($&amp;quot;Process architecture: {RuntimeInformation.ProcessArchitecture}&amp;quot;);
+Console.WriteLine($&amp;quot;Runtime identifier: {RuntimeInformation.RuntimeIdentifier}&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Executing the code in &lt;em&gt;Windows&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Framework description: .NET 6.0.5
+OS architecture: X64
+OS description: Microsoft Windows 10.0.22000
+Process architecture: X64
+Runtime identifier: win10-x64
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Executing the code on &lt;em&gt;WSL (Windows Subsystem for Linux)&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Framework description: .NET 6.0.4
+OS architecture: X64
+OS description: Linux 5.10.16.3-microsoft-standard-WSL2 #1 SMP Fri Apr 2 22:23:49 UTC 2021
+Process architecture: X64
+Runtime identifier: ubuntu.20.04-x64
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="operating-system"&gt;Operating System&lt;/h2&gt;
+&lt;p&gt;The namespace also contains a &lt;code&gt;OSPlatform&lt;/code&gt; &lt;em&gt;struct&lt;/em&gt;, which contains a list of common operating systems, and in conjunction with the &lt;code&gt;IsOSPlatform&lt;/code&gt; method on &lt;code&gt;RuntimeInformation&lt;/code&gt;, can be used to check the current operating system:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;Console.WriteLine($&amp;quot;Is Windows?: {RuntimeInformation.IsOSPlatform(OSPlatform.Windows)}&amp;quot;);
+Console.WriteLine($&amp;quot;Is Linux?: {RuntimeInformation.IsOSPlatform(OSPlatform.Linux)}&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Executing the code in &lt;em&gt;Windows&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Is Windows?: True
+Is Linux?: False
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Executing the code on &lt;em&gt;WSL (Windows Subsystem for Linux)&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Is Windows?: False
+Is Linux?: True
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This can also be used to executing specific code only when running on a certain operating system. Suppose we need to write to the Windows Event Log - this can only happen in Windows (there are better ways of handling logging, but for demo purposes, this is the requirement):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+{
+    Console.WriteLine(&amp;quot;Performing some Windows specific stuff - maybe writing to EventLog for example&amp;quot;);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Simple and  easy to use.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;A useful namespace and class to be aware of, especially if doing cross platform development, or if just required to gather information about the operating system.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/buhakmeh/status/1541104583728136192"&gt;Khalid Abuhakmeh Tweet&lt;/a&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;?# DailyDrop ?&gt;136: 11-08-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>HashiCorp Vault with C#</title>
 			<link>https://alwaysdeveloping.net/p/2022-08-hashicorp-vault</link>
@@ -1861,122 +1924,6 @@ void InClassKeywordMethod(in Options options)
 &lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/in-parameter-modifier"&gt;in parameter modifier&lt;/a&gt;&lt;/p&gt;
 &lt;hr /&gt;
 &lt;?# DailyDrop ?&gt;128: 01-08-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Deconstructing a class instance into multiple variables</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/07/29-deconstruct-method</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/07/29-deconstruct-method</guid>
-			<pubDate>Fri, 29 Jul 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;One or many &lt;code&gt;Deconstruct&lt;/code&gt; methods can be added to a class allowing the class properties to be deconstructed into one or more variables (depending on the &lt;code&gt;Deconstruct&lt;/code&gt; methods available). This helps created cleaner, more concise code.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="non-deconstruct"&gt;Non-Deconstruct&lt;/h2&gt;
-&lt;p&gt;Consider a &lt;em&gt;Song&lt;/em&gt; class, with three properties:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Song
-{
-    public string SongName { get; init; }
-
-    public string ArtistName { get; init; }
-
-    public int LengthInSeconds { get; init; }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;If there is a requirement to print out all the properties of a &lt;em&gt;Song&lt;/em&gt; instance, it could be done like this:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var song1 = new Song
-{
-    ArtistName = &amp;quot;Foo Fighters&amp;quot;,
-    SongName = &amp;quot;Everlong&amp;quot;,
-    LengthInSeconds = 250
-};
-
-Console.WriteLine($&amp;quot;The song '{song1.SongName}' by '{song1.ArtistName}' &amp;quot; +
-    $&amp;quot;is {song1.LengthInSeconds} seconds long&amp;quot;);
-
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Nothing especially wrong with this, but if the &lt;em&gt;Song&lt;/em&gt; class had more properties, with long names, the interpolated string could get long and unwieldy.&lt;/p&gt;
-&lt;p&gt;This could be simplified by doing the following:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var song1 = new Song
-{
-    ArtistName = &amp;quot;Foo Fighters&amp;quot;,
-    SongName = &amp;quot;Everlong&amp;quot;,
-    LengthInSeconds = 250
-};
-
-var name = song1.SongName;
-var artist = song1.ArtistName;
-var length = song1.LengthInSeconds;
-
-Console.WriteLine($&amp;quot;The song '{name}' by '{artist}' is {length} seconds long&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The interpolated string is definitely more concise now, but thee extra variables have been defined and assigned. This would make sense if the values are being reused numerous times in the code - but if this is only used once-off, a lot of vertical space has been taken up for no real &amp;quot;value&amp;quot;.&lt;/p&gt;
-&lt;p&gt;However, the &lt;code&gt;Deconstruct&lt;/code&gt; method makes this process even more concise and simpler.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="deconstruct"&gt;Deconstruct&lt;/h2&gt;
-&lt;p&gt;One or many &lt;code&gt;Deconstruct&lt;/code&gt; method can be added to the &lt;em&gt;Song&lt;/em&gt; class to allow for the deconstruction of the instance into variables.&lt;/p&gt;
-&lt;p&gt;A method called &lt;code&gt;Deconstruct&lt;/code&gt; is defined on the class, with one or more &lt;code&gt;out&lt;/code&gt; parameters in the method signature:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Song
-{
-    public string SongName { get; init; }
-
-    public string ArtistName { get; init; }
-
-    public int LengthInSeconds { get; init; }
-
-    // deconstruct all three properties
-    public void Deconstruct(out string artist, out string name, out int length)
-    {
-        name = SongName;
-        artist = ArtistName;
-        length = LengthInSeconds;
-    }
-
-    // deconstruct into a string combination of song and artist
-    // as well as the length
-    public void Deconstruct(out string output, out int length)
-    {
-        output = $&amp;quot;'{SongName}' by {ArtistName}&amp;quot;;
-        length = LengthInSeconds;
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The &lt;code&gt;Deconstruct&lt;/code&gt; methods can now be used as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var song1 = new Song
-{
-    ArtistName = &amp;quot;Foo Fighters&amp;quot;,
-    SongName = &amp;quot;Everlong&amp;quot;,
-    LengthInSeconds = 250
-};
-
-// deconstruct song1, into three variables
-var (artist, name, length) = song1;
-Console.WriteLine($&amp;quot;The song '{name}' by '{artist}' is {length} long&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Here, the three variables &lt;em&gt;artist&lt;/em&gt;, &lt;em&gt;name&lt;/em&gt; and &lt;em&gt;length&lt;/em&gt; are automatically defined and assigned to the &lt;code&gt;out&lt;/code&gt; parameter values of the matching corresponding &lt;code&gt;Deconstruct&lt;/code&gt; method. Definitely cleaner and more concise that previous techniques.&lt;/p&gt;
-&lt;p&gt;The &lt;code&gt;Deconstruct&lt;/code&gt; methods also work with the &lt;code&gt;discard&lt;/code&gt; character. In the above example there is a second &lt;code&gt;Deconstruct&lt;/code&gt; method which returns the string &lt;em&gt;output&lt;/em&gt; and the song &lt;em&gt;length&lt;/em&gt;. If only interested in the &lt;em&gt;output&lt;/em&gt; value, but not the &lt;em&gt;length&lt;/em&gt;, then the following can be done:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var song1 = new Song
-{
-    ArtistName = &amp;quot;Foo Fighters&amp;quot;,
-    SongName = &amp;quot;Everlong&amp;quot;,
-    LengthInSeconds = 250
-};
-
-// deconstruct song1, into only one variable
-// discarding the length
-var (output, _) = song1;
-Console.WriteLine(output);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Here no memory is allocated for the &lt;em&gt;length&lt;/em&gt; out parameter where the &lt;code&gt;discard&lt;/code&gt; is used.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;There are not too many practical use cases for the &lt;code&gt;Deconstruct&lt;/code&gt; method - but where it can be applied (in cases such as the ones described above), it will definitely assist with creating cleaner, more concise code.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/csharp/fundamentals/functional/deconstruct#user-defined-types"&gt;Deconstructing tuples and other types&lt;/a&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;?# DailyDrop ?&gt;127: 29-07-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
