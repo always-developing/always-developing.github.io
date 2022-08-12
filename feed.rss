@@ -5,8 +5,108 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Thu, 11 Aug 2022 04:00:41 GMT</pubDate>
-		<lastBuildDate>Thu, 11 Aug 2022 04:00:41 GMT</lastBuildDate>
+		<pubDate>Fri, 12 Aug 2022 04:07:24 GMT</pubDate>
+		<lastBuildDate>Fri, 12 Aug 2022 04:07:24 GMT</lastBuildDate>
+		<item>
+			<title>Modifying configuration on load</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/08/12-options-create</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/08/12-options-create</guid>
+			<pubDate>Fri, 12 Aug 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;Options.Create&lt;/code&gt; method can be used in conjunction with the &lt;code&gt;GetSection.Bind&lt;/code&gt; methods to read settings from the &lt;em&gt;Configuration&lt;/em&gt; provider(s), and modify them before adding them to the dependency injection container.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="configuring-options"&gt;Configuring options&lt;/h2&gt;
+&lt;p&gt;First we'll have a look at how to load options &lt;em&gt;without&lt;/em&gt; any modification.&lt;/p&gt;
+&lt;p&gt;We have the following section in the &lt;em&gt;appsettings.json&lt;/em&gt; file:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-json"&gt;"Credentials": {
+    "Username": "admin",
+    "Password": "logMeIn"
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The startup (using top level statements and a minimal endpoint) is as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
+
+// Get the section called "Credentials" from configuration
+var optionSection = builder.Configuration.GetSection("Credentials");
+// this line will bind the section to a Credentials class
+// and add it to the DI container automatically
+builder.Services.Configure&amp;lt;Credentials&amp;gt;(optionSection);
+
+var app = builder.Build();
+
+app.MapGet("/getoptions", (IOptions&amp;lt;Credentials&amp;gt; options) =&amp;gt;
+{
+    return options.Value;
+});
+
+app.Run();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The &lt;code&gt;builder.Services.Configure&amp;lt;Credentials&amp;gt;(optionSection);&lt;/code&gt; block of code, will convert the &lt;em&gt;optionSection&lt;/em&gt; to type &lt;em&gt;Credentials&lt;/em&gt; and automatically add it to the dependency injection container as &lt;code&gt;IOptions&amp;lt;Credentials&amp;gt;&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;It is best practice to use the &lt;a href="https://alwaysdeveloping.net/02/03-ioptions"&gt;&lt;code&gt;options Pattern&lt;/code&gt; (as described in this post)&lt;/a&gt;, over just inserting &lt;em&gt;Credentials&lt;/em&gt; as a singleton. The options pattern this is the default pattern when using &lt;em&gt;Services.Configure&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;Calling the endpoint defined above, will return the following:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-json"&gt;{"username":"admin","password":"logMeIn"}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The obvious issue with all of the above, is that we are &lt;code&gt;storing the password in plain text in the source control repository&lt;/code&gt;. Next we will look at how the settings can be:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Loaded from the configuration (without a password)&lt;/li&gt;
+&lt;li&gt;Modified (to add the password from an &lt;em&gt;environment variable&lt;/em&gt;)&lt;/li&gt;
+&lt;li&gt;Added to the dependency injection container still using &lt;em&gt;Options pattern&lt;/em&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Only the startup code will need to change, and any other code which is using &lt;code&gt;IOptions&amp;lt;Credentials&amp;gt;&lt;/code&gt; will not be affected and be required to change.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="modifying-options"&gt;Modifying options&lt;/h2&gt;
+&lt;p&gt;To repeat - we are aiming to remove the password from the &lt;em&gt;appsettings.json&lt;/em&gt;, inject it as an &lt;em&gt;environment variable&lt;/em&gt; at runtime but still have it populated on the &lt;code&gt;IOptions&amp;lt;Credentials&amp;gt;&lt;/code&gt; class added to the dependency injection container.&lt;/p&gt;
+&lt;p&gt;Step one is to remove the password from  &lt;em&gt;appsettings.json&lt;/em&gt; file:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-json"&gt;"Credentials": {
+    "Username": "admin"
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Next, we update the startup to load the configuration slightly differently:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
+
+// load the Credentials section from the configuration
+// and bind it to the credentialOptions instance
+var credentialOptions = new Credentials();
+builder.Configuration.GetSection("Credentials").Bind(credentialOptions);
+
+// modify the instance by setting the Password value from
+// the environment variables
+credentialOptions.Password = builder.Configuration["Credentials.Password"];
+
+// Create IOptions&amp;lt;Credentials&amp;gt; from an instance of Credentials
+var ioptions = Options.Create(credentialOptions);
+// manually add to the DI container
+builder.Services.AddSingleton(ioptions);
+
+var app = builder.Build();
+
+app.MapGet("/getoptions", (IOptions&amp;lt;Credentials&amp;gt; options) =&amp;gt;
+{
+    return options.Value;
+});
+
+app.Run();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Here are few more steps are involved, when compared to the first example, but its not much more complex:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Instead of using &lt;code&gt;builder.Services.Configure&lt;/code&gt; to create an &lt;em&gt;IOptions&lt;/em&gt; from the configuration directly, the &lt;code&gt;builder.Configuration.GetSection.Bind&lt;/code&gt; method is used to bind the configuration to an instance of &lt;em&gt;Credentials&lt;/em&gt; (at this point we have no &lt;em&gt;IOptions&lt;/em&gt;)&lt;/li&gt;
+&lt;li&gt;Manually update the instance using values from the &lt;em&gt;environment variable&lt;/em&gt; (in this example)&lt;/li&gt;
+&lt;li&gt;Use the &lt;code&gt;Options.Create&lt;/code&gt; method to create &lt;em&gt;IOptions&amp;lt;Credentials&amp;gt;&lt;/em&gt; from the instance of &lt;em&gt;Credentials&lt;/em&gt;&lt;/li&gt;
+&lt;li&gt;Add the &lt;em&gt;IOptions&lt;/em&gt; instance to the DI container (as a singleton)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Calling the endpoint defined above, now returns the following:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-json"&gt;{"username":"admin","password":"logMeInEnvVar"}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We have a password, which was passed in as an &lt;code&gt;environment variable&lt;/code&gt; (with the key &lt;em&gt;Credentials.Password&lt;/em&gt;), and no client code had to change, only startup code!&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;While there are better methods for dealing with passwords (such as storing them in a vault, and using a configuration provider to pull the values directly from the vault) - in some cases this is not feasible. So while this solution might not be the first choice, it definitely is a valid method to protect passwords, by not having them as part of the source code in a source control repository.&lt;/p&gt;
+&lt;hr&gt;
+&lt;!--?# DailyDrop ?--&gt;137: 12-08-2022&lt;!--?#/ DailyDrop ?--&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>OS information via Runtime.InteropServices</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/08/11-interop-services</link>
@@ -1804,126 +1904,6 @@ app.MapGet(&amp;quot;/provider&amp;quot;, (IServiceProvider provider) =&amp;gt;
 &lt;p&gt;&lt;a href="https://onthedrift.com/posts/activator-utilities/"&gt;Activator utilities: activate anything!&lt;/a&gt;&lt;/p&gt;
 &lt;hr /&gt;
 &lt;?# DailyDrop ?&gt;129: 02-08-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Readonly parameters with the in modifier</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/08/01-in-modifier</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/08/01-in-modifier</guid>
-			<pubDate>Mon, 01 Aug 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;in&lt;/code&gt; parameter modifying keyword is used to cause a parameter be passed by reference, and ensure that cannot be modified in the method.&lt;/p&gt;
-&lt;p&gt;The &lt;code&gt;in&lt;/code&gt; modifier's usage is similar to the &lt;code&gt;ref&lt;/code&gt; and &lt;code&gt;out&lt;/code&gt; keywords, except &lt;code&gt;ref&lt;/code&gt; parameters can be modified and &lt;code&gt;out&lt;/code&gt; parameters must be modified/set, while the &lt;code&gt;in&lt;/code&gt; modifier effectively makes the parameter read-only.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="types"&gt;Types&lt;/h2&gt;
-&lt;h3 id="simple-value-types"&gt;Simple value types&lt;/h3&gt;
-&lt;p&gt;First lets have a look at how value types are handled in a few simple examples:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;int originalValue = 1001;
-InKeywordMethod(originalValue);
-
-// parameter used in keyword
-void InKeywordMethod(in int theValue)
-{
-    // this is not allowed and 
-    // will not compile if uncommented
-    // theValue = 999;
-}
-
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;If uncommented, the application will not compile with the error:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Cannot assign to variable 'in int' because it is a readonly variable
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;As expected based on the introduction, with the use of the &lt;code&gt;in&lt;/code&gt; keyword, the &lt;em&gt;theValue&lt;/em&gt; variable is read-only inside the scope of the method, and cannot be modified.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="structure-value-types"&gt;Structure value types&lt;/h3&gt;
-&lt;p&gt;The &lt;code&gt;in&lt;/code&gt; keyword applied to a &lt;code&gt;struct&lt;/code&gt; (a value type) parameter, yields in the same results as in the previous example with sample value types.&lt;/p&gt;
-&lt;p&gt;Consider the following &lt;code&gt;struct&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public struct StructOptions
-{
-    public int IntValue { get; set; }
-    public string StringValue { get; set; }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;And it's usage:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var sOptions = new StructOptions
-{
-    IntValue = 759,
-    StringValue = &amp;quot;StringValue&amp;quot;
-};
-InStructKeywordMethod(sOptions);
-
-void InStructKeywordMethod(in StructOptions options)
-{
-    // this is not allowed and will not compile if uncommented
-    // options.IntValue = 100;
-
-    // this is also not allowed and will result in an error
-    /*
-    options = new StructOptions
-    {
-        IntValue = 123,
-        StringValue = &amp;quot;NewStringValue!&amp;quot;
-    }
-    */
-}
-
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The properties of the &lt;code&gt;struct&lt;/code&gt; as well as the &lt;code&gt;struct&lt;/code&gt; itself are both read-only.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="reference-types"&gt;Reference types&lt;/h3&gt;
-&lt;p&gt;Reference types however operate slightly differently when used with the &lt;code&gt;in&lt;/code&gt; keyword.&lt;/p&gt;
-&lt;p&gt;We will use the same &lt;em&gt;Options&lt;/em&gt; data structure as in the previous example, however this time define it as a &lt;code&gt;class&lt;/code&gt; instead of a &lt;code&gt;struct&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Options
-{
-    public int IntValue { get; set; }
-
-    public string StringValue { get; set; }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;And it's usage:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var options = new Options
-{
-    IntValue = 759,
-    StringValue = &amp;quot;StringValue&amp;quot;
-};
-
-Console.WriteLine(options.IntValue);
-InClassKeywordMethod(options);
-Console.WriteLine(options.IntValue);
-
-void InClassKeywordMethod(in Options options)
-{
-    // This is allowed!
-    options.IntValue = 123;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;With the reference type, modifications of its properties are allowed. Running the above code does not result in any compiler errors, with the output as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;759
-123
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;However, modification of the &lt;code&gt;class&lt;/code&gt; instance (not it's properties) is &lt;strong&gt;NOT&lt;/strong&gt; allowed, and will result in a &lt;strong&gt;compiler error&lt;/strong&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;void InClassKeywordMethod(in Options options)
-{
-    // Cannot assign to variable 'in Options' because it is a readonly variable
-    /*
-    options = new Options
-    {
-        IntValue = 123,
-        StringValue = &amp;quot;NewStringValue&amp;quot;
-    };
-    */
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;Not a modifier which will see everyday use, but interesting all the same. If using the &lt;code&gt;in&lt;/code&gt; keyword, keep in mind that reference types properties can still be modified, and consider other options to make them readonly (removing the &lt;em&gt;set&lt;/em&gt; accessor, for example)&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/in-parameter-modifier"&gt;in parameter modifier&lt;/a&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;?# DailyDrop ?&gt;128: 01-08-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>

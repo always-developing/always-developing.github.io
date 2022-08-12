@@ -1,0 +1,373 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="always learning | always growing">
+
+    <title>Always Developing - Modifying configuration on load</title>
+
+    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/08/12-options-create">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
+
+    <meta name="application-name" content="Always Developing" />
+    <meta name="msapplication-tooltip" content="Always Developing" />
+    <meta name="msapplication-starturl" content="/" />
+
+    <meta property="og:title" content="Always Developing - Modifying configuration on load" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/08/12-options-create" />
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Bootstrap core CSS -->
+    <link href="/vendor/bootstrap/scss/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom fonts for this template -->
+    <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="/vendor/fontawesome-free/css/brands.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css' data-no-mirror>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css' data-no-mirror>
+
+    <!-- Custom styles for this template -->
+    <link href="/scss/always-developing-blog.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/plugins/autoloader/prism-autoloader.min.js" data-no-mirror></script>
+    <script src="https://cdn.jsdelivr.net/npm/quicklink@2.0.0/dist/quicklink.umd.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/themes/prism.css">
+
+    <!-- Lunr search -->
+        <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/pako@2.0.3/dist/pako_inflate.min.js"></script>
+        <script src="/search.js"></script>
+
+    
+
+
+    
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand"  href="/">
+            <img src="/images/ad_logo.png" alt="" width="25" height="25" class="d-inline-block align-text-top">
+            Always Developing
+        </a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            Menu
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/software">Software</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/tags">Tags</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/posts">Posts</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/about">About</a>
+            </li>
+</ul>
+                <form class="form-inline my-2 my-lg-0" action="/search" method="GET">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="query">
+                    <input type="submit" hidden />
+                </form>
+        </div>
+    </div>
+</nav>
+
+    <!-- Page Header -->
+    <header class="masthead">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 align-middle">
+                <div class="post-header-image">
+                    <a href="/">
+                        <img src="/images/ad_logo.png" class="header-image">
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="post-heading">
+                    <h1>
+                        Modifying configuration on load
+                    </h1>
+                            <h2 class="subheading">How configuration can be modified on load but still leverage the Options pattern</h2>
+                        <p class="post-meta">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
+                                <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
+                            </svg> Published on Friday, 12 August 2022
+                        </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <!-- Main Content -->
+    <div class="container">
+            <div class="row ">
+                    <div id="content" class="col-md-9 post-with-toc post-block">
+                        
+<div class="post-header-category">
+    <a class="btn btn-primary btn-sm btn-default btn-home" href="\" role="button"><i class="fas fa-angle-double-left"></i> Home</a>
+            <a class="btn btn-primary btn-sm category-btn" href="/categories/dailydrop" role="button">DailyDrop</a>
+</div>
+
+                        <h2 id="daily-knowledge-drop">Daily Knowledge Drop</h2>
+<p>The <code>Options.Create</code> method can be used in conjunction with the <code>GetSection.Bind</code> methods to read settings from the <em>Configuration</em> provider(s), and modify them before adding them to the dependency injection container.</p>
+<hr />
+<h2 id="configuring-options">Configuring options</h2>
+<p>First we'll have a look at how to load options <em>without</em> any modification.</p>
+<p>We have the following section in the <em>appsettings.json</em> file:</p>
+<pre><code class="language-json">&quot;Credentials&quot;: {
+    &quot;Username&quot;: &quot;admin&quot;,
+    &quot;Password&quot;: &quot;logMeIn&quot;
+}
+</code></pre>
+<p>The startup (using top level statements and a minimal endpoint) is as follows:</p>
+<pre><code class="language-csharp">var builder = WebApplication.CreateBuilder(args);
+
+// Get the section called &quot;Credentials&quot; from configuration
+var optionSection = builder.Configuration.GetSection(&quot;Credentials&quot;);
+// this line will bind the section to a Credentials class
+// and add it to the DI container automatically
+builder.Services.Configure&lt;Credentials&gt;(optionSection);
+
+var app = builder.Build();
+
+app.MapGet(&quot;/getoptions&quot;, (IOptions&lt;Credentials&gt; options) =&gt;
+{
+    return options.Value;
+});
+
+app.Run();
+</code></pre>
+<p>The <code>builder.Services.Configure&lt;Credentials&gt;(optionSection);</code> block of code, will convert the <em>optionSection</em> to type <em>Credentials</em> and automatically add it to the dependency injection container as <code>IOptions&lt;Credentials&gt;</code>.</p>
+<p>It is best practice to use the <a href="../../02/03-ioptions"><code>options Pattern</code> (as described in this post)</a>, over just inserting <em>Credentials</em> as a singleton. The options pattern this is the default pattern when using <em>Services.Configure</em>.</p>
+<p>Calling the endpoint defined above, will return the following:</p>
+<pre><code class="language-json">{&quot;username&quot;:&quot;admin&quot;,&quot;password&quot;:&quot;logMeIn&quot;}
+</code></pre>
+<p>The obvious issue with all of the above, is that we are <code>storing the password in plain text in the source control repository</code>. Next we will look at how the settings can be:</p>
+<ol>
+<li>Loaded from the configuration (without a password)</li>
+<li>Modified (to add the password from an <em>environment variable</em>)</li>
+<li>Added to the dependency injection container still using <em>Options pattern</em></li>
+</ol>
+<p>Only the startup code will need to change, and any other code which is using <code>IOptions&lt;Credentials&gt;</code> will not be affected and be required to change.</p>
+<hr />
+<h2 id="modifying-options">Modifying options</h2>
+<p>To repeat - we are aiming to remove the password from the <em>appsettings.json</em>, inject it as an <em>environment variable</em> at runtime but still have it populated on the <code>IOptions&lt;Credentials&gt;</code> class added to the dependency injection container.</p>
+<p>Step one is to remove the password from  <em>appsettings.json</em> file:</p>
+<pre><code class="language-json">&quot;Credentials&quot;: {
+    &quot;Username&quot;: &quot;admin&quot;
+}
+</code></pre>
+<p>Next, we update the startup to load the configuration slightly differently:</p>
+<pre><code class="language-csharp">var builder = WebApplication.CreateBuilder(args);
+
+// load the Credentials section from the configuration
+// and bind it to the credentialOptions instance
+var credentialOptions = new Credentials();
+builder.Configuration.GetSection(&quot;Credentials&quot;).Bind(credentialOptions);
+
+// modify the instance by setting the Password value from
+// the environment variables
+credentialOptions.Password = builder.Configuration[&quot;Credentials.Password&quot;];
+
+// Create IOptions&lt;Credentials&gt; from an instance of Credentials
+var ioptions = Options.Create(credentialOptions);
+// manually add to the DI container
+builder.Services.AddSingleton(ioptions);
+
+var app = builder.Build();
+
+app.MapGet(&quot;/getoptions&quot;, (IOptions&lt;Credentials&gt; options) =&gt;
+{
+    return options.Value;
+});
+
+app.Run();
+</code></pre>
+<p>Here are few more steps are involved, when compared to the first example, but its not much more complex:</p>
+<ul>
+<li>Instead of using <code>builder.Services.Configure</code> to create an <em>IOptions</em> from the configuration directly, the <code>builder.Configuration.GetSection.Bind</code> method is used to bind the configuration to an instance of <em>Credentials</em> (at this point we have no <em>IOptions</em>)</li>
+<li>Manually update the instance using values from the <em>environment variable</em> (in this example)</li>
+<li>Use the <code>Options.Create</code> method to create <em>IOptions&lt;Credentials&gt;</em> from the instance of <em>Credentials</em></li>
+<li>Add the <em>IOptions</em> instance to the DI container (as a singleton)</li>
+</ul>
+<p>Calling the endpoint defined above, now returns the following:</p>
+<pre><code class="language-json">{&quot;username&quot;:&quot;admin&quot;,&quot;password&quot;:&quot;logMeInEnvVar&quot;}
+</code></pre>
+<p>We have a password, which was passed in as an <code>environment variable</code> (with the key <em>Credentials.Password</em>), and no client code had to change, only startup code!</p>
+<hr />
+<h2 id="notes">Notes</h2>
+<p>While there are better methods for dealing with passwords (such as storing them in a vault, and using a configuration provider to pull the values directly from the vault) - in some cases this is not feasible. So while this solution might not be the first choice, it definitely is a valid method to protect passwords, by not having them as part of the source code in a source control repository.</p>
+<hr />
+
+<blockquote class="daily-drop">
+    <div>
+        <div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px; ">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="50" height="50" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffec00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+              <path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+              <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+              <line x1="9.7" y1="17" x2="14.3" y2="17" />
+            </svg>
+        </div>
+        <div class="drop-header">
+            Daily Drop 137: 12-08-2022
+        </div>
+        <div>
+            <br>At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br> It could be anything - some.NET / C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
+            The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+        <div>
+    </div>
+</blockquote>
+
+
+                        
+<div>
+            <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
+            <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
+            <a role="button" href="/tags/options" class="badge badge-light"> options</a>
+            <a role="button" href="/tags/create" class="badge badge-light"> create</a>
+</div>
+                    </div>
+                    <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
+                        
+
+        <div class="box sticky-top toc-block">
+            <h3 class="no-anchor">On This Page</h3>
+            <ul>
+        <li><a href="#daily-knowledge-drop">Daily Knowledge Drop</a></li>
+        <li><a href="#configuring-options">Configuring options</a></li>
+        <li><a href="#modifying-options">Modifying options</a></li>
+        <li><a href="#notes">Notes</a></li>
+            </ul>
+        </div>
+
+                    </div>
+            </div>
+            <div class="row ">
+                    <div id="content" class="col-md-9">
+                        <div>
+    <script src="https://giscus.app/client.js"
+            data-repo="always-developing/always-developing.github.io"
+            data-repo-id="R_kgDOGQJLBQ"
+            data-category="Comments"
+            data-category-id="DIC_kwDOGQJLBc4B_pUA"
+            data-mapping="pathname"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="bottom"
+            data-theme="transparent_dark"
+            data-lang="en"
+            crossorigin="anonymous"
+            async>
+    </script>
+</div>
+                    </div>
+            </div>
+    </div>
+
+    <hr class="horizontal-rule" />
+
+    <!-- Footer -->
+    <footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <ul class="list-inline text-center">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://www.linkedin.com/in/jean-pierre-seini">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-linkedin fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                <div>
+                    <p class="copyright text-footer">
+                        Copyright © 2022 Always Developing</a>.
+                    </p>
+                </div>
+                <ul class="list-inline text-center small text-feeds">
+                        <li class="list-inline-item">
+                            <a href="/feed.rss"><i class="fa fa-rss"></i> RSS Feed</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="/feed.atom"><i class="fa fa-rss"></i> Atom Feed</a>
+                        </li>
+                </ul>
+                <ul class="list-inline text-center small">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing/alwaysdeveloping-website-src"><i class="fab fa-github"></i> This site on GitHub</a>                    
+                    </li>
+                    <li class="list-inline-item">
+                        |
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing/alwaysdeveloping-website-src/tree/main/theme"><i class="fa fa-code"></i> Custom Always-Developing theme</a>
+                    </li>
+                    <li class="list-inline-item">
+                        |
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://github.com/statiqdev/CleanBlog"><i class="fa fa-blog"></i> Adapted from Clean Blog theme</a>
+                    </li>
+                </ul>
+                <div class="small text-footer">
+                    <a href="https://statiq.dev"><i class="fa fa-cogs"></i> Generated by Statiq</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="/vendor/jquery/jquery.min.js"></script>
+    <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CXPLFS7K38"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){window.dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  //gtag('config', 'G-CXPLFS7K38');
+</script>
+
+    
+
+    <!-- Custom scripts for this template -->
+    <script src="/js/always-developing-blog.js"></script>
+
+</body>
+
+</html>
