@@ -110,6 +110,8 @@ header.masthead .post-heading .meta a { color: #fff; }
 
 @media only screen and (min-width: 768px) { .post-preview > a > .post-title { font-size: 36px; } }
 
+code { color: #f088b8; }
+
 .post-preview { background-color: #333333; padding: 10px; border-radius: 20px; }
 
 .post-preview > .post-title { font-size: 24px; margin-top: 5px; margin-bottom: 5px; }
