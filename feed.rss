@@ -5,8 +5,226 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Mon, 15 Aug 2022 04:45:54 GMT</pubDate>
-		<lastBuildDate>Mon, 15 Aug 2022 04:45:54 GMT</lastBuildDate>
+		<pubDate>Tue, 16 Aug 2022 04:23:50 GMT</pubDate>
+		<lastBuildDate>Tue, 16 Aug 2022 04:23:50 GMT</lastBuildDate>
+		<item>
+			<title>Pub/Sub with Redis</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/08/16-redis-pub-sub</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/08/16-redis-pub-sub</guid>
+			<pubDate>Tue, 16 Aug 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;A common use case for &lt;code&gt;Redis&lt;/code&gt; is as a &lt;em&gt;key-value&lt;/em&gt; stored, generally for caching - however, in addition to this &lt;em&gt;key-value&lt;/em&gt; store &lt;code&gt;Redis&lt;/code&gt; also has built in &lt;code&gt;messaging functionality via pub/sub&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="redis-installation"&gt;Redis installation&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;Redis&lt;/code&gt; is not officially supported on Windows - so to use it on Windows, either &lt;code&gt;WSL2&lt;/code&gt; (Windows Subsystem for Linux) has to be used, or the Redis container image (available from &lt;a href="https://hub.docker.com/_/redis"&gt;Docker Hub&lt;/a&gt;) running in &lt;em&gt;Docker Desktop&lt;/em&gt;, for example.&lt;/p&gt;
+&lt;p&gt;For the examples below, the &lt;code&gt;Redis&lt;/code&gt; image from &lt;em&gt;Docker Hub&lt;/em&gt; was used, running on &lt;em&gt;Docker Desktop&lt;/em&gt; for Windows.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="subscriber"&gt;Subscriber&lt;/h2&gt;
+&lt;p&gt;First let's look at the &lt;code&gt;subscriber&lt;/code&gt; side. A reference is required to the &lt;code&gt;StackExchange.Redis&lt;/code&gt; NuGet package for the following code:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;using StackExchange.Redis;
+
+// configure the connection to the Redis endpoint
+using ConnectionMultiplexer redis = 
+    ConnectionMultiplexer.Connect(&amp;quot;localhost:6379&amp;quot;);
+ISubscriber subScriber = redis.GetSubscriber();
+
+// subscribe to the &amp;quot;alwaysdeveloping&amp;quot; channel. This needs to match the channel name
+// the publisher is using as well
+subScriber.Subscribe(new RedisChannel(&amp;quot;alwaysdeveloping&amp;quot;, 
+    RedisChannel.PatternMode.Auto), 
+    (channel, message) =&amp;gt;
+{
+    // this handler method will be called for each message received on the channel
+    Console.WriteLine($&amp;quot;[{DateTime.Now}] Message received: {message}&amp;quot;);
+});
+
+Console.ReadKey();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Configuring the &lt;code&gt;subscriber&lt;/code&gt; is relatively straight forward:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Define a connection to the specific &lt;code&gt;Redis&lt;/code&gt; endpoint&lt;/li&gt;
+&lt;li&gt;Get a &lt;em&gt;subscriber&lt;/em&gt; from the connection&lt;/li&gt;
+&lt;li&gt;Subscribe to a specific channel (by name , &lt;em&gt;alwaysdeveloping&lt;/em&gt; in the above)&lt;/li&gt;
+&lt;li&gt;Specify the handler method to be called when a message is received&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The code will execute until a key is read from the console, waiting for any message to be sent to the channel. When a message is sent to the channel, it will in turn be published to &lt;code&gt;all&lt;/code&gt; subscribers - it is possible to have &lt;code&gt;multiple subscribers&lt;/code&gt;, each subscriber &lt;code&gt;will receive their own copy of the message&lt;/code&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="publisher"&gt;Publisher&lt;/h2&gt;
+&lt;p&gt;Next let's look at the &lt;code&gt;publisher&lt;/code&gt; - configuring this is also as straightforward as the subscriber:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;using StackExchange.Redis;
+
+// configure the connection to the Redis endpoint
+using ConnectionMultiplexer redis = 
+    ConnectionMultiplexer.Connect(&amp;quot;localhost:6379&amp;quot;);
+ISubscriber sub = redis.GetSubscriber();
+
+// loop 100 times
+for (int i = 0; i &amp;lt;= 100; i++)
+{
+    // generate a unique id for each message
+    var id = Guid.NewGuid().ToString();
+
+    // publish to the &amp;quot;alwaysdeveloping&amp;quot; channel
+    await sub.PublishAsync(new RedisChannel(&amp;quot;alwaysdeveloping&amp;quot;, 
+        RedisChannel.PatternMode.Auto),
+        $&amp;quot;Sample message with Id {id}&amp;quot;);
+
+    Console.WriteLine($&amp;quot;Message with Id '{id}' published!&amp;quot;);
+    Thread.Sleep(100);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The above code:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Define a connection to the &lt;code&gt;Redis&lt;/code&gt; endpoint&lt;/li&gt;
+&lt;li&gt;Get a &lt;em&gt;subscriber&lt;/em&gt; from the connection&lt;/li&gt;
+&lt;li&gt;Loops 100 times,&lt;/li&gt;
+&lt;li&gt;Publishes a string to a specific channel (by name, &lt;em&gt;alwaysdeveloping&lt;/em&gt; in the above)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr /&gt;
+&lt;h2 id="pubsub-execution"&gt;Pub/Sub Execution&lt;/h2&gt;
+&lt;p&gt;Executing the &lt;code&gt;subscriber&lt;/code&gt; first, so it is running waiting for messages, then executing the &lt;code&gt;publisher&lt;/code&gt; yields the following output:&lt;/p&gt;
+&lt;p&gt;Sample from the the &lt;strong&gt;Publisher&lt;/strong&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Message with Id '1895b2c1-61c1-4be9-8ed2-7c6359018534' published!
+Message with Id '01a27c11-984c-481a-b4d0-bc879b13674d' published!
+Message with Id '49e799eb-cf4c-4847-a234-d79b8e40cd79' published!
+Message with Id '25700248-edbc-4c70-aaef-5aca4cb0f24f' published!
+Message with Id '6a4caee2-e9ad-446f-8e2c-156cebdf6a42' published!
+Message with Id '061ef1ff-e830-408c-84db-bdf649c8c446' published!
+Message with Id '358c78ba-e85a-481a-970a-1c67b2ca8b1d' published!
+Message with Id '5101fe4a-86fb-4356-b0db-dea0f4f1a402' published!
+Message with Id 'fe944b2c-c945-417c-bb61-8b7eb7bfe8f1' published!
+Message with Id '1f6d26a0-35ab-4994-8293-1e2a9e672cee' published!
+Message with Id '5e276d80-9ccd-403b-9435-80b8fda0e2d3' published!
+Message with Id 'a3ea7ddd-6ac6-4b3e-b35d-1276ce20e1bd' published!
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Sample from the &lt;code&gt;Subscriber(s)&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;[2022/07/19 21:09:24] Message received: Sample message with Id 1895b2c1-61c1-4be9-8ed2-7c6359018534
+[2022/07/19 21:09:24] Message received: Sample message with Id 01a27c11-984c-481a-b4d0-bc879b13674d
+[2022/07/19 21:09:24] Message received: Sample message with Id 49e799eb-cf4c-4847-a234-d79b8e40cd79
+[2022/07/19 21:09:24] Message received: Sample message with Id 25700248-edbc-4c70-aaef-5aca4cb0f24f
+[2022/07/19 21:09:24] Message received: Sample message with Id 6a4caee2-e9ad-446f-8e2c-156cebdf6a42
+[2022/07/19 21:09:24] Message received: Sample message with Id 061ef1ff-e830-408c-84db-bdf649c8c446
+[2022/07/19 21:09:25] Message received: Sample message with Id 358c78ba-e85a-481a-970a-1c67b2ca8b1d
+[2022/07/19 21:09:25] Message received: Sample message with Id 5101fe4a-86fb-4356-b0db-dea0f4f1a402
+[2022/07/19 21:09:25] Message received: Sample message with Id fe944b2c-c945-417c-bb61-8b7eb7bfe8f1
+[2022/07/19 21:09:25] Message received: Sample message with Id 1f6d26a0-35ab-4994-8293-1e2a9e672cee
+[2022/07/19 21:09:25] Message received: Sample message with Id 5e276d80-9ccd-403b-9435-80b8fda0e2d3
+[2022/07/19 21:09:25] Message received: Sample message with Id a3ea7ddd-6ac6-4b3e-b35d-1276ce20e1bd
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;Configuring &lt;code&gt;Redis pub/sub&lt;/code&gt; is incredibly simple and easy to implement, especially if there is a Redis instance setup (for caching for example). While not entirely comparable, having worked with other similar services such as &lt;em&gt;RabbitMq&lt;/em&gt; and &lt;em&gt;Kafka&lt;/em&gt;, this was by far the simplest to implement.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://www.youtube.com/watch?v=80Ke9hsG_RU"&gt;DevMentors - FeedR episode #5&lt;/a&gt;&lt;br /&gt;
+&lt;a href="https://redis.io/docs/getting-started/installation/install-redis-on-windows/"&gt;Install Redis on Windows&lt;/a&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;?# DailyDrop ?&gt;139: 16-08-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
+		<item>
+			<title>Delay SQL execution with WAITFOR</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/09/09-sql-waitfor</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/09/09-sql-waitfor</guid>
+			<pubDate>Tue, 16 Aug 2022 00:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;SQL is a &lt;code&gt;WAITFOR&lt;/code&gt; command which an be used to delay the execution of a proceeding SQL statement. One of two options can be supplied to the &lt;code&gt;WAITFOR&lt;/code&gt; statement:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;TIME&lt;/code&gt;: waits until the  time of day specified before executing the next statement&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;DELAY&lt;/code&gt;: waits for the time span specified before executing the next statement&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr /&gt;
+&lt;h2 id="waitfor-format"&gt;WAITFOR Format&lt;/h2&gt;
+&lt;p&gt;The format and usage of &lt;code&gt;WAITFOR&lt;/code&gt; is straightforward:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;WAITFOR DELAY 'time_to_pass' | TIME 'time_to_execute'
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="waitfor-delay"&gt;WAITFOR DELAY&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;WAITFOR DELAY&lt;/code&gt; will wait the &lt;code&gt;specified time span&lt;/code&gt; before executing the next command:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;PRINT CONVERT(varchar, SYSDATETIME(), 121)
+GO
+
+WAITFOR DELAY '00:00:05';
+GO
+
+PRINT CONVERT(varchar, SYSDATETIME(), 121)
+GO
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Executing the above will result in the following output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;2022-09-08 20:39:51.2166773
+2022-09-08 20:39:56.2387040
+
+Completion time: 2022-09-08T20:39:56.2397037+02:00
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;A time span between &lt;code&gt;00:00:00.001&lt;/code&gt; and &lt;code&gt;23:59:59.998&lt;/code&gt; can be specified - anything longer will result in an error.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="waitfor-time"&gt;WAITFOR TIME&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;WAITFOR TIME&lt;/code&gt; will wait until the &lt;code&gt;specified time of day&lt;/code&gt; before executing the next command:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;PRINT CONVERT(varchar, SYSDATETIME(), 121)
+GO
+
+WAITFOR TIME '20:47:00';
+GO
+
+PRINT CONVERT(varchar, SYSDATETIME(), 121)
+GO
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Executing the above will result in the following output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;2022-08-15 20:46:48.9212859
+2022-08-15 20:47:00.0130443
+
+Completion time: 2022-08-15T20:47:00.0140433+02:00
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In this example, we only had to wait &lt;em&gt;12 seconds&lt;/em&gt;, but the wait could be longer depending on the time specified. Only a &lt;code&gt;time can be specified, not a particular date&lt;/code&gt;. If the next execution of the specified time is the following day, the wait until the time is reached the following day.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="scheduling"&gt;Scheduling&lt;/h2&gt;
+&lt;p&gt;The below is an &lt;em&gt;example&lt;/em&gt; of how the functionality can be used to executing a command on a specific schedule. This technique is used for demo purposes not necessarily recommended for a production use case.&lt;/p&gt;
+&lt;p&gt;The following will execute the command every second for a full minute, once a day:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;-- wait until a specific time
+WAITFOR TIME '20:52:00';
+GO
+
+-- while it is the 53th minute
+WHILE(DATEPART(MINUTE, GETDATE()) &amp;lt; 54)
+BEGIN
+        -- print out the date time
+	BEGIN
+		PRINT CONVERT(varchar, SYSDATETIME(), 121)
+	END
+
+        -- wait for 1 second
+	BEGIN
+		WAITFOR DELAY '00:00:01';
+	END
+END
+GO
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;2022-08-15 20:52:00.0145585
+2022-08-15 20:52:01.0162047
+2022-08-15 20:52:02.0209920
+2022-08-15 20:52:03.0229534
+.
+.
+.
+2022-08-15 20:53:56.6402032
+2022-08-15 20:53:57.6424606
+2022-08-15 20:53:58.6450557
+2022-08-15 20:53:59.6499793
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;While not necessarily a command which will see every day usage, it could prove useful to simulate a specific &amp;quot;real world&amp;quot; scenario when there is a time span between statements, either for testing or investigation purposes.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://www.mssqltips.com/sqlservertip/7344/delay-sql-code-execution-with-sql-waitfor/"&gt;SQL WAITFOR Command to Delay SQL Code Execution&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;157: 09-09-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Complex Pattern Matching</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/08/15-pattern-keywords</link>
@@ -1622,307 +1840,6 @@ However, in the case when hosting the code as a &lt;code&gt;Windows Service&lt;/
 &lt;a href="https://code-maze.com/aspnetcore-running-applications-as-windows-service/"&gt;Running .NET Core Applications as a Windows Service&lt;/a&gt;&lt;/p&gt;
 &lt;hr /&gt;
 &lt;?# DailyDrop ?&gt;132: 05-08-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Dynamically changing minimal api return type</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/08/04-minimal-api-return-type</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/08/04-minimal-api-return-type</guid>
-			<pubDate>Thu, 04 Aug 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;Minimal apis, by default, have a JSON return type - however a custom &lt;code&gt;IResult&lt;/code&gt; implementation can be used to change this return type. This same interface can be used to dynamically decide at runtime the return type, but requires some additional effort.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="default-return-type"&gt;Default return type&lt;/h2&gt;
-&lt;p&gt;With minimal api's, the default return type is JSON. Executing the following command, the &lt;em&gt;Song&lt;/em&gt; instance is automatically serialized to JSON and the response &lt;em&gt;content-type&lt;/em&gt; header automatically set to &lt;strong&gt;application/json&lt;/strong&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/json&amp;quot;, () =&amp;gt;
-{
-    return new Song
-    {
-        ArtistName = &amp;quot;John Mayer&amp;quot;,
-        SongName = &amp;quot;Bigger than my body&amp;quot;,
-        LengthInSeconds = 245
-    };
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Returned JSON:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-json"&gt;{&amp;quot;songName&amp;quot;:&amp;quot;Bigger than my body&amp;quot;,&amp;quot;artistName&amp;quot;:&amp;quot;John Mayer&amp;quot;,&amp;quot;lengthInSeconds&amp;quot;:245}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;WHat if a &lt;code&gt;different return type&lt;/code&gt; is required?&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="xml-return-type"&gt;XML return type&lt;/h2&gt;
-&lt;p&gt;As mentioned, to change the response type, instead of just returning the &lt;em&gt;Song&lt;/em&gt; instance (which will then serialize to JSON), an implementation of &lt;code&gt;IResult&lt;/code&gt; needs to be returned.&lt;/p&gt;
-&lt;p&gt;In this endpoint an instance of the custom class &lt;code&gt;XmlResult&lt;/code&gt; (full code below) is being returned:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/xml&amp;quot;, () =&amp;gt;
-{
-    // XML implementation of IResult 
-    return new XmlResult&amp;lt;Song&amp;gt;(
-        new Song
-        {
-            ArtistName = &amp;quot;John Mayer&amp;quot;,
-            SongName = &amp;quot;Bigger than my body&amp;quot;,
-            LengthInSeconds = 245
-        });
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;code&gt;XmlResult&lt;/code&gt; is an implementation of the &lt;code&gt;IResult&lt;/code&gt; interface, which is very simple, containing only one method to implement:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;    Task ExecuteAsync(HttpContext httpContext);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This method will accept the &lt;em&gt;HttpContext&lt;/em&gt; of the request as a parameter, and modify the response body and headers as required before being returned to the called.&lt;/p&gt;
-&lt;p&gt;The &lt;code&gt;XmlResult&lt;/code&gt; implementation (this is by no means the most efficient method for doing XML serialization, but it's a simple demonstration for this post):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// implement IResult
-public class XmlResult&amp;lt;T&amp;gt; : IResult
-{
-    // store the entity to be serialized
-    private readonly T _entity;
-
-    public XmlResult(T entity)
-    {
-        _entity = entity;
-    }
-
-    // method which needs implementing
-    public Task ExecuteAsync(HttpContext httpContext)
-    {
-        // prepare for XML serialization
-        XmlSerializer xmlSerializer = new(typeof(T));
-        using StringWriter textWriter = new();
-
-        // perform the serialization
-        xmlSerializer.Serialize(textWriter, _entity);
-
-        // modify the response content type, content length and 
-        // write the XML to the body of the response
-        httpContext.Response.ContentType = MediaTypeNames.Application.Xml;
-        httpContext.Response.ContentLength = 
-            Encoding.UTF8.GetByteCount(textWriter.ToString());
-        return httpContext.Response.WriteAsync(textWriter.ToString());
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Browsing to the &lt;code&gt;/xml&lt;/code&gt; endpoint show above, returns the following response, with the response &lt;em&gt;content-type&lt;/em&gt; set to &lt;strong&gt;application/xml&lt;/strong&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-xml"&gt;&amp;lt;Song&amp;gt;
-    &amp;lt;SongName&amp;gt;Bigger than my body&amp;lt;/SongName&amp;gt;
-    &amp;lt;ArtistName&amp;gt;John Mayer&amp;lt;/ArtistName&amp;gt;
-    &amp;lt;LengthInSeconds&amp;gt;245&amp;lt;/LengthInSeconds&amp;gt;
-&amp;lt;/Song&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;So far so good, however, the standard recommended way of returning an &lt;code&gt;IResult&lt;/code&gt; implementation is via an extension method on &lt;code&gt;IResultExtensions&lt;/code&gt;, and not a manual instantiation:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public static class XmlResultsExtensions
-{
-    public static IResult Xml&amp;lt;T&amp;gt;(this IResultExtensions resultExtensions, T entity)
-    {
-        ArgumentNullException.ThrowIfNull(resultExtensions);
-
-        return new XmlResult&amp;lt;T&amp;gt;(entity);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Using this extension method, the &lt;strong&gt;final XML endpoint&lt;/strong&gt; now looks as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/xml&amp;quot;, () =&amp;gt;
-{
-    // Use the extension method instead of 
-    // explicitly using XmlResult 
-    return Results.Extensions.Xml(
-        new Song
-        {
-            ArtistName = &amp;quot;John Mayer&amp;quot;,
-            SongName = &amp;quot;Bigger than my body&amp;quot;,
-            LengthInSeconds = 245
-        });
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Next up we explore how to allow the &lt;code&gt;caller to decide how they would like the data returned, using a single endpoint&lt;/code&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="dynamic-return-type"&gt;Dynamic return type&lt;/h2&gt;
-&lt;p&gt;Let's explore how the return type can be changed dynamically based on an indicator from the caller. For this example we'll use the &lt;code&gt;content-type&lt;/code&gt; of the &lt;em&gt;request&lt;/em&gt; as the indicator (not necessarily the good option for all cases - but good enough for this demo).&lt;/p&gt;
-&lt;p&gt;We'll add a parameter to the endpoint, and instruct ASPNET Core to get the value from the &lt;code&gt;content-type&lt;/code&gt; header, using the &lt;em&gt;FromHeader&lt;/em&gt; attribute:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/dynamic&amp;quot;, ([FromHeader(Name = &amp;quot;Content-Type&amp;quot;)] string? contentType) =&amp;gt;
-{
-    var song = new Song
-    {
-        ArtistName = &amp;quot;John Mayer&amp;quot;,
-        SongName = &amp;quot;Bigger than my body&amp;quot;,
-        LengthInSeconds = 245
-    };
-
-    return song;
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Progress! However this endpoint still only returns JSON. Next let's add the check on the request content type....&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/dynamic&amp;quot;, ([FromHeader(Name = &amp;quot;Content-Type&amp;quot;)] string? contentType) =&amp;gt;
-{
-    var song = new Song
-    {
-        ArtistName = &amp;quot;John Mayer&amp;quot;,
-        SongName = &amp;quot;Bigger than my body&amp;quot;,
-        LengthInSeconds = 245
-    };
-
-    // if XML return XML implementation of Song
-    if (contentType == MediaTypeNames.Application.Xml)
-    {
-        return Results.Extensions.Xml(song);
-    }
-
-    return song;
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;...which &lt;code&gt;results in an error!&lt;/code&gt;&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Cannot convert lambda expression to type 'RequestDelegate' because 
-    the parameter types do not match the delegate parameter types
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Our endpoint is trying trying to return two different types - an &lt;code&gt;IResult&lt;/code&gt; implementation when XML, and a &lt;code&gt;Song&lt;/code&gt; instance when not.&lt;/p&gt;
-&lt;p&gt;This is easy enough to resolve - change the endpoint to &lt;code&gt;always returns an IResult&lt;/code&gt; implementation. To do this however, we now need a &lt;code&gt;custom IResult implementation for JSON&lt;/code&gt;. It operates exactly the same as the XML implementation, but serializes to JSON instead of XML:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class JsonResult&amp;lt;T&amp;gt; : IResult
-{
-    private readonly T _entity;
-
-    public JsonResult(T entity)
-    {
-        _entity = entity;
-    }
-
-    public Task ExecuteAsync(HttpContext httpContext)
-    {
-        using StringWriter textWriter = new StringWriter();
-        var jsonResult = System.Text.Json.JsonSerializer.Serialize&amp;lt;T&amp;gt;(_entity);
-
-        httpContext.Response.ContentType = MediaTypeNames.Application.Json;
-        httpContext.Response.ContentLength = Encoding.UTF8.GetByteCount(jsonResult);
-        return httpContext.Response.WriteAsync(jsonResult);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;And the corresponding extension method:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public static class JsonResultsExtensions
-{
-    public static IResult Json&amp;lt;T&amp;gt;(this IResultExtensions resultExtensions, T entity)
-    {
-        ArgumentNullException.ThrowIfNull(resultExtensions);
-
-        return new JsonResult&amp;lt;T&amp;gt;(entity);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Lastly, we update the &lt;em&gt;dynamic&lt;/em&gt; endpoint so the &lt;strong&gt;final endpoint&lt;/strong&gt; now looks as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/dynamic&amp;quot;, ([FromHeader(Name = &amp;quot;Content-Type&amp;quot;)] string? contentType) =&amp;gt;
-{
-    var song = new Song
-    {
-        ArtistName = &amp;quot;John Mayer&amp;quot;,
-        SongName = &amp;quot;Bigger than my body&amp;quot;,
-        LengthInSeconds = 245
-    };
-
-    // if XML return XML implementation of Song
-    if (contentType == MediaTypeNames.Application.Xml)
-    {
-        return Results.Extensions.Xml(song);
-    }
-
-    // In all other cases return JSON
-    return Results.Extensions.Json(song);
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The endpoint can now be invoked with a &lt;code&gt;content-type&lt;/code&gt; header value &lt;code&gt;application/xml&lt;/code&gt; to get the results in XML and in all other cases, get the result as JSON.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;This is a fair amount of code just to change the response type - but it is a piece of code which only needs to be written once and can then be reused across all endpoints. All endpoints can then benefit from bug fixes or performance improvements in the &lt;code&gt;IResult&lt;/code&gt; implementation.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis?view=aspnetcore-6.0#responses"&gt;Minimal APIs overview - responses&lt;/a&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;?# DailyDrop ?&gt;131: 04-08-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>String interpolation with alignment</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/08/03-string-interpolation-alignment</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/08/03-string-interpolation-alignment</guid>
-			<pubDate>Wed, 03 Aug 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;When using &lt;code&gt;string interpolation ($)&lt;/code&gt;, the &lt;em&gt;interpolation expressions results&lt;/em&gt; (the final string resolved into the main string) can be left or right aligned, including padding to be used when aligning.&lt;/p&gt;
-&lt;p&gt;This can be very useful when having &lt;em&gt;interpolation expressions&lt;/em&gt; which result in string of varying lengths - having these values alignment can result in a more uniform output.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="examples"&gt;Examples&lt;/h2&gt;
-&lt;p&gt;In all the below examples, a collection of &lt;em&gt;sale values&lt;/em&gt; of varying lengths is used:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var saleValues = new[]
-{
-    100,
-    54500,
-    1,
-    8514,
-    -500
-};
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h4 id="default"&gt;Default&lt;/h4&gt;
-&lt;p&gt;If we want to output each of them without any alignment:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;The sale amount is: 100 (for the month of August)
-The sale amount is: 54500 (for the month of August)
-The sale amount is: 1 (for the month of August)
-The sale amount is: 8514 (for the month of August)
-The sale amount is: -500 (for the month of August)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h4 id="right-align"&gt;Right align&lt;/h4&gt;
-&lt;p&gt;If we require a more uniform output, a &lt;code&gt;positive number&lt;/code&gt; can be used to &lt;code&gt;right align and pad&lt;/code&gt; the value:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;foreach (var sale in saleValues)
-{
-    Console.WriteLine($&amp;quot;The sale amount is: {sale, 9} (for the month of August)&amp;quot;);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The above will &lt;code&gt;right align&lt;/code&gt; the &lt;em&gt;sale&lt;/em&gt; value and make it a uniform &lt;em&gt;9 characters in length&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;The sale amount is:       100 (for the month of August)
-The sale amount is:     54500 (for the month of August)
-The sale amount is:         1 (for the month of August)
-The sale amount is:      8514 (for the month of August)
-The sale amount is:      -500 (for the month of August)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h4 id="left-align"&gt;Left align&lt;/h4&gt;
-&lt;p&gt;To left align, a &lt;code&gt;negative number&lt;/code&gt; is specified:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;foreach (var sale in saleValues)
-{
-    Console.WriteLine($&amp;quot;The sale amount is: {sale, -9} (for the month of August)&amp;quot;);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The above will &lt;code&gt;left align&lt;/code&gt; the &lt;em&gt;sale&lt;/em&gt; value and make it a uniform &lt;em&gt;9 characters in length&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;The sale amount is: 100       (for the month of August)
-The sale amount is: 54500     (for the month of August)
-The sale amount is: 1         (for the month of August)
-The sale amount is: 8514      (for the month of August)
-The sale amount is: -500      (for the month of August)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h4 id="const-value"&gt;Const value&lt;/h4&gt;
-&lt;p&gt;The value specified is required to be a constant value.&lt;/p&gt;
-&lt;p&gt;So this is valid:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// must be a constant
-const int length = 10;
-
-foreach (var sale in saleValues)
-{
-    Console.WriteLine($&amp;quot;The sale amount is: {sale, length} (for the month of August)&amp;quot;);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;However, this is &lt;code&gt;NOT VALID&lt;/code&gt;, as &lt;em&gt;length&lt;/em&gt; is not a &lt;code&gt;const&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;int length = saleValues.Length;
-
-foreach (var sale in saleValues)
-{
-    Console.WriteLine($&amp;quot;The sale amount is: {sale, length} (for the month of August)&amp;quot;);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;A small lesser-known feature of string interpolation, however it can be very useful in producing uniform output when required, with very little additional effort.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://twitter.com/buhakmeh/status/1541467908169035776"&gt;Khalid Abuhakmeh Tweet&lt;/a&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;?# DailyDrop ?&gt;130: 03-08-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
