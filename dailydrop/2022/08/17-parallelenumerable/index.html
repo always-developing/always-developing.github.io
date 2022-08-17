@@ -1,0 +1,494 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="always learning | always growing">
+
+    <title>Always Developing - Parallel processing with ParallelEnumerable </title>
+
+    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/08/17-parallelenumerable">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
+
+    <meta name="application-name" content="Always Developing" />
+    <meta name="msapplication-tooltip" content="Always Developing" />
+    <meta name="msapplication-starturl" content="/" />
+
+    <meta property="og:title" content="Always Developing - Parallel processing with ParallelEnumerable " />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/08/17-parallelenumerable" />
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Bootstrap core CSS -->
+    <link href="/vendor/bootstrap/scss/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom fonts for this template -->
+    <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="/vendor/fontawesome-free/css/brands.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css' data-no-mirror>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css' data-no-mirror>
+
+    <!-- Custom styles for this template -->
+    <link href="/scss/always-developing-blog.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/plugins/autoloader/prism-autoloader.min.js" data-no-mirror></script>
+    <script src="https://cdn.jsdelivr.net/npm/quicklink@2.0.0/dist/quicklink.umd.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/themes/prism.css">
+
+    <!-- Lunr search -->
+        <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/pako@2.0.3/dist/pako_inflate.min.js"></script>
+        <script src="/search.js"></script>
+
+    
+
+
+    
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand"  href="/">
+            <img src="/images/ad_logo.png" alt="" width="25" height="25" class="d-inline-block align-text-top">
+            Always Developing
+        </a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            Menu
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/software">Software</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/tags">Tags</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/posts">Posts</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/about">About</a>
+            </li>
+</ul>
+                <form class="form-inline my-2 my-lg-0" action="/search" method="GET">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="query">
+                    <input type="submit" hidden />
+                </form>
+        </div>
+    </div>
+</nav>
+
+    <!-- Page Header -->
+    <header class="masthead">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 align-middle">
+                <div class="post-header-image">
+                    <a href="/">
+                        <img src="/images/ad_logo.png" class="header-image">
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="post-heading">
+                    <h1>
+                        Parallel processing with ParallelEnumerable 
+                    </h1>
+                            <h2 class="subheading">Built in Linq parallel processing with ParallelEnumerable</h2>
+                        <p class="post-meta">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
+                                <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
+                            </svg> Published on Wednesday, 17 August 2022
+                        </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <!-- Main Content -->
+    <div class="container">
+            <div class="row ">
+                    <div id="content" class="col-md-9 post-with-toc post-block">
+                        
+<div class="post-header-category">
+    <a class="btn btn-primary btn-sm btn-default btn-home" href="\" role="button"><i class="fas fa-angle-double-left"></i> Home</a>
+            <a class="btn btn-primary btn-sm category-btn" href="/categories/dailydrop" role="button">DailyDrop</a>
+</div>
+
+                        <h2 id="daily-knowledge-drop">Daily Knowledge Drop</h2>
+<p>Linq has built in parallel functionality, available in the <code>ParallelEnumerable</code> class.  This functionality is available as <em>extension methods</em> on <code>ParallelQuery</code>, which is generated by calling <code>AsParallel</code> on an <em>IEnumerable</em>.</p>
+<hr />
+<h2 id="usage">Usage</h2>
+<p>The usage of the functionality offered by <code>ParallelEnumerable</code> is very similar (and for the most part, the same) to normal Linq method usage.</p>
+<p>The <em>access</em> the root of the parallel functionality,<code>ParallelQuery</code>, all that is required is the <code>AsParallel()</code> method to be called on an <em>IEnumerable</em>:</p>
+<pre><code class="language-csharp">IEnumerable&lt;int&gt; array = Enumerable.Range(1, 1000);
+ParallelQuery&lt;int&gt; parallelQuery = array.AsParallel();
+</code></pre>
+<p>With the ParallelQuery instance, traditional Linq methods can still available:</p>
+<pre><code class="language-csharp">// output: 750,5
+int average = parallelQuery
+    .Where(i =&gt; i &gt; 500)
+    .Average(); 
+</code></pre>
+<p>However, there is now also <em>additional methods</em> available, for example <code>ForAll</code> which will perform an <em>Action</em> on each element, but in <strong>parallel</strong>:</p>
+<pre><code class="language-csharp">var outputArray = new int[1000];
+parallelQuery.ForAll(i =&gt;
+{
+    outputArray[i - 1] = i * i;
+});
+</code></pre>
+<p>Let's benchmark this to see how it performs against other parallel and not parallel operations which achieve the same outcome.</p>
+<hr />
+<h2 id="benchmark">Benchmark</h2>
+<p>In this set of benchmarks, we are operating on a <em>IEnumerable&lt;int&gt;</em> with 100 items, and for each item in the source, the <em>PerformCalculation</em> method will be called:</p>
+<pre><code class="language-csharp">// the source items
+IEnumerable&lt;int&gt; array = Enumerable.Range(1, 100);
+
+// the method invoked
+void PerformCalculation(int i)
+{
+    _ = i * i * i;
+}
+</code></pre>
+<p>The following techniques were benchmarked:</p>
+<ul>
+<li><p><strong>List.ForEach:</strong></p>
+<pre><code class="language-csharp">public void ForEachList()
+{
+    array.ToList()
+       .ForEach(i =&gt; PerformCalculation(i));
+}
+</code></pre>
+</li>
+<li><p><strong>Foreach over an Array:</strong></p>
+<pre><code class="language-csharp">public void ForeachOverArray()
+{
+    foreach (var i in array.ToArray())
+    {
+        PerformCalculation(i);
+    }
+}
+</code></pre>
+</li>
+<li><p><strong>ParallelForEach:</strong></p>
+<pre><code class="language-csharp">public void ParallelForEach()
+{
+    Parallel.ForEach(array, PerformCalculation);
+}
+</code></pre>
+</li>
+<li><p><strong>ParallelQuery.ForAll:</strong></p>
+<pre><code class="language-csharp">public void ParallelQueryForAll()
+{
+    array
+    .AsParallel()
+    .ForAll(i =&gt; PerformCalculation(i));
+}
+</code></pre>
+</li>
+</ul>
+<p>The results:</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th style="text-align: right;">Mean</th>
+<th style="text-align: right;">Error</th>
+<th style="text-align: right;">StdDev</th>
+<th style="text-align: right;">Ratio</th>
+<th style="text-align: right;">RatioSD</th>
+<th style="text-align: right;">Gen 0</th>
+<th style="text-align: right;">Gen 1</th>
+<th style="text-align: right;">Allocated</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ListForEach</td>
+<td style="text-align: right;">322.85 ns</td>
+<td style="text-align: right;">5.651 ns</td>
+<td style="text-align: right;">5.286 ns</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.0825</td>
+<td style="text-align: right;">-</td>
+<td style="text-align: right;">520 B</td>
+</tr>
+<tr>
+<td>ForeachOverArray</td>
+<td style="text-align: right;">91.40 ns</td>
+<td style="text-align: right;">1.770 ns</td>
+<td style="text-align: right;">1.656 ns</td>
+<td style="text-align: right;">0.28</td>
+<td style="text-align: right;">0.01</td>
+<td style="text-align: right;">0.0675</td>
+<td style="text-align: right;">-</td>
+<td style="text-align: right;">424 B</td>
+</tr>
+<tr>
+<td>ParallelQueryForAll</td>
+<td style="text-align: right;">13,481.85 ns</td>
+<td style="text-align: right;">172.827 ns</td>
+<td style="text-align: right;">161.663 ns</td>
+<td style="text-align: right;">41.77</td>
+<td style="text-align: right;">0.86</td>
+<td style="text-align: right;">2.0599</td>
+<td style="text-align: right;">0.0610</td>
+<td style="text-align: right;">12,585 B</td>
+</tr>
+<tr>
+<td>ParallelForEach</td>
+<td style="text-align: right;">7,978.07 ns</td>
+<td style="text-align: right;">41.364 ns</td>
+<td style="text-align: right;">34.540 ns</td>
+<td style="text-align: right;">24.70</td>
+<td style="text-align: right;">0.43</td>
+<td style="text-align: right;">4.6844</td>
+<td style="text-align: right;">0.1068</td>
+<td style="text-align: right;">24,175 B</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>parallel versions are slow</code> - <strong>VERY</strong> slow compared to just iterating over the collection of items in sequence.</p>
+<p>Surely doing processing in parallel should make things process quicker overall? Generally yes - in this case however, the actual work being performed (the <em>PerformCalculation</em> method) is done so quickly, that the <code>overhead of creating and managing the parallel tasks is a detriment to performance</code> vs just operating on the items in sequence.</p>
+<p>However, what if the work being performed took slightly longer....</p>
+<hr />
+<h2 id="benchmark-v2">Benchmark v2</h2>
+<p>We'll run the exact same benchmarks, with the same array size, but now the <em>PerformCalculation</em> method will <code>take 2ms longer</code>:</p>
+<pre><code class="language-csharp">void PerformCalculation(int i)
+{
+    _ = i * i * i;
+    // simulate a longer 
+    // running process
+    Thread.Sleep(2);
+}
+</code></pre>
+<p>The results of round 2:</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th style="text-align: right;">Mean</th>
+<th style="text-align: right;">Error</th>
+<th style="text-align: right;">StdDev</th>
+<th style="text-align: right;">Ratio</th>
+<th style="text-align: right;">Allocated</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ListForEach</td>
+<td style="text-align: right;">1,536.90 ms</td>
+<td style="text-align: right;">2.679 ms</td>
+<td style="text-align: right;">2.506 ms</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">1 KB</td>
+</tr>
+<tr>
+<td>ForeachOverArray</td>
+<td style="text-align: right;">1,534.54 ms</td>
+<td style="text-align: right;">2.702 ms</td>
+<td style="text-align: right;">2.528 ms</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">1 KB</td>
+</tr>
+<tr>
+<td>ParallelQueryForAll</td>
+<td style="text-align: right;">152.84 ms</td>
+<td style="text-align: right;">0.730 ms</td>
+<td style="text-align: right;">0.683 ms</td>
+<td style="text-align: right;">0.10</td>
+<td style="text-align: right;">13 KB</td>
+</tr>
+<tr>
+<td>ParallelForEach</td>
+<td style="text-align: right;">71.86 ms</td>
+<td style="text-align: right;">7.165 ms</td>
+<td style="text-align: right;">20.788 ms</td>
+<td style="text-align: right;">0.07</td>
+<td style="text-align: right;">99 KB</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>parallel versions are now 10-20 times faster!</code>. The <em>Parallel.ForEach</em> is <code>twice as fast</code> as the <em>ParallelEnumerable.ForAll</em>, but uses <code>7 times the amount of memory</code> (and both parallel techniques use vastly more memory in comparison to the basic loops)</p>
+<hr />
+<h2 id="notes">Notes</h2>
+<p>There are a number of different techniques to solve a use case such as this - each with its own pros and cons, which would need to be evaluated for each use case. It's important to know about each technique, so a thorough evaluation can be done. Results may vary based on collection size, and process time, but based on the above use case:</p>
+<ul>
+<li><code>Low memory usage</code> is most important? - use a <em>foreach</em> loop</li>
+<li><code>Fast throughput</code> is most important? - use <em>Parallel.ForEach</em></li>
+<li><code>Good throughput with good memory</code> usage? - use <em>ParallelEnumerable.ForAll</em></li>
+</ul>
+<hr />
+<h2 id="references">References</h2>
+<p><a href="https://docs.microsoft.com/en-us/dotnet/api/system.linq.parallelenumerable?view=net-6.0">ParallelEnumerable Class</a></p>
+<hr />
+
+<blockquote class="daily-drop">
+    <div>
+        <div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px; ">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="50" height="50" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffec00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+              <path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+              <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+              <line x1="9.7" y1="17" x2="14.3" y2="17" />
+            </svg>
+        </div>
+        <div class="drop-header">
+            Daily Drop 140: 17-08-2022
+        </div>
+        <div>
+            <br>At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br> It could be anything - some.NET / C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
+            The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+        <div>
+    </div>
+</blockquote>
+
+
+                        
+<div>
+            <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
+            <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
+            <a role="button" href="/tags/enumerable" class="badge badge-light"> enumerable</a>
+            <a role="button" href="/tags/parallel" class="badge badge-light"> parallel</a>
+</div>
+                    </div>
+                    <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
+                        
+
+        <div class="box sticky-top toc-block">
+            <h3 class="no-anchor">On This Page</h3>
+            <ul>
+        <li><a href="#daily-knowledge-drop">Daily Knowledge Drop</a></li>
+        <li><a href="#usage">Usage</a></li>
+        <li><a href="#benchmark">Benchmark</a></li>
+        <li><a href="#benchmark-v2">Benchmark v2</a></li>
+        <li><a href="#notes">Notes</a></li>
+        <li><a href="#references">References</a></li>
+            </ul>
+        </div>
+
+                    </div>
+            </div>
+            <div class="row ">
+                    <div id="content" class="col-md-9">
+                        <div>
+    <script src="https://giscus.app/client.js"
+            data-repo="always-developing/always-developing.github.io"
+            data-repo-id="R_kgDOGQJLBQ"
+            data-category="Comments"
+            data-category-id="DIC_kwDOGQJLBc4B_pUA"
+            data-mapping="pathname"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="bottom"
+            data-theme="transparent_dark"
+            data-lang="en"
+            crossorigin="anonymous"
+            async>
+    </script>
+</div>
+                    </div>
+            </div>
+    </div>
+
+    <hr class="horizontal-rule" />
+
+    <!-- Footer -->
+    <footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <ul class="list-inline text-center">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://www.linkedin.com/in/jean-pierre-seini">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-linkedin fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                <div>
+                    <p class="copyright text-footer">
+                        Copyright © 2022 Always Developing</a>.
+                    </p>
+                </div>
+                <ul class="list-inline text-center small text-feeds">
+                        <li class="list-inline-item">
+                            <a href="/feed.rss"><i class="fa fa-rss"></i> RSS Feed</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="/feed.atom"><i class="fa fa-rss"></i> Atom Feed</a>
+                        </li>
+                </ul>
+                <ul class="list-inline text-center small">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing/alwaysdeveloping-website-src"><i class="fab fa-github"></i> This site on GitHub</a>                    
+                    </li>
+                    <li class="list-inline-item">
+                        |
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing/alwaysdeveloping-website-src/tree/main/theme"><i class="fa fa-code"></i> Custom Always-Developing theme</a>
+                    </li>
+                    <li class="list-inline-item">
+                        |
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://github.com/statiqdev/CleanBlog"><i class="fa fa-blog"></i> Adapted from Clean Blog theme</a>
+                    </li>
+                </ul>
+                <div class="small text-footer">
+                    <a href="https://statiq.dev"><i class="fa fa-cogs"></i> Generated by Statiq</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="/vendor/jquery/jquery.min.js"></script>
+    <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CXPLFS7K38"></script>
+
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){window.dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-CXPLFS7K38');
+</script>
+
+    
+
+    <!-- Custom scripts for this template -->
+    <script src="/js/always-developing-blog.js"></script>
+
+</body>
+
+</html>
