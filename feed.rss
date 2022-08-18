@@ -5,8 +5,219 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Wed, 17 Aug 2022 04:51:12 GMT</pubDate>
-		<lastBuildDate>Wed, 17 Aug 2022 04:51:12 GMT</lastBuildDate>
+		<pubDate>Thu, 18 Aug 2022 04:46:25 GMT</pubDate>
+		<lastBuildDate>Thu, 18 Aug 2022 04:46:25 GMT</lastBuildDate>
+		<item>
+			<title>Combining enum values</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/08/18-enum-bit-flags</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/08/18-enum-bit-flags</guid>
+			<pubDate>Thu, 18 Aug 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;bitwise logical operator (|)&lt;/code&gt; can be used to &lt;em&gt;combine enum values&lt;/em&gt; when assigning to a variable, but they can also be used when &lt;code&gt;defining the enum&lt;/code&gt; to create enum values which are a &lt;code&gt;combination of other enum values&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="combine-variable"&gt;Combine variable&lt;/h2&gt;
+&lt;p&gt;This is the more common (in my experience) usage of combining enums - assigning enum value(s) to a variable.&lt;/p&gt;
+&lt;p&gt;Consider the following enum:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;[Flags]
+enum OrderStatus
+{
+    New = 1,
+    Processing = 2,
+    Reserved = 4,
+    Paid = 8,
+    Delivered = 16,
+    Cancelled = 32
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We could indicate that an order is &lt;em&gt;Paid&lt;/em&gt; but also been &lt;em&gt;Cancelled&lt;/em&gt; by doing the follow:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;OrderStatus status = OrderStatus.Paid | OrderStatus.Cancelled;
+
+Console.WriteLine($&amp;quot;Is order Paid? {status.HasFlag(OrderStatus.Paid)}&amp;quot;);
+Console.WriteLine($&amp;quot;Is order Cancelled? {status.HasFlag(OrderStatus.Cancelled)}&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;With the output being:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Is order Paid? True
+Is order Cancelled? True
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The &lt;code&gt;bitwise logical operator (|)&lt;/code&gt; can also be used when &lt;code&gt;declaring the enum&lt;/code&gt; to combine statues.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="combine-declaration"&gt;Combine declaration&lt;/h2&gt;
+&lt;p&gt;Consider the same enum from above:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;[Flags]
+enum OrderStatus
+{
+    New = 1,
+    Processing = 2,
+    Reserved = 4,
+    Paid = 8,
+    Delivered = 16,
+    Cancelled = 32
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Suppose we wanted two methods to determine if a order is currently &lt;code&gt;Open&lt;/code&gt; (still processing to do) or if it is &lt;code&gt;Closed&lt;/code&gt; (no more processing to do).&lt;/p&gt;
+&lt;p&gt;With the enums as they are, something similar to this would need to be done:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// check all the statuses considered 'open'
+bool IsOrderOpen(OrderStatus status) =&amp;gt; status.HasFlag(OrderStatus.New) ||
+        status.HasFlag(OrderStatus.Processing) ||
+        status.HasFlag(OrderStatus.Reserved) ||
+        status.HasFlag(OrderStatus.Paid);
+
+// check all the statuses considered 'closed'
+bool IsOrderClosed(OrderStatus status) =&amp;gt; status.HasFlag(OrderStatus.Delivered) ||
+        status.HasFlag(OrderStatus.Cancelled);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Each time a new status is added and the enum changes, the developer would need to remember to come in and update each method as well.&lt;/p&gt;
+&lt;p&gt;A cleaner approach, is to &lt;code&gt;define a new status, and use it to combine with other statuses&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Consider this &lt;code&gt;updated enum&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;[Flags]
+enum OrderStatus
+{
+    New = 1 | 64,
+    Processing = 2 | 64,
+    Reserved = 4 | 64,
+    Paid = 8 | 64,
+    Delivered = 16 | 128,
+    Cancelled = 32 | 128,
+    Open = 64,
+    Closed = 128
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Two new statuses, &lt;code&gt;Open&lt;/code&gt; and &lt;code&gt;Closed&lt;/code&gt;, have been defined, with each other status being updated to indicate it as being either &lt;em&gt;Open&lt;/em&gt; or &lt;em&gt;Closed&lt;/em&gt;.
+For example &lt;code&gt;Processing = 2 | 64,&lt;/code&gt; effectively means: &lt;code&gt;an order with a status of Processing is Processing but also Open&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;To check if an order is &lt;code&gt;Open&lt;/code&gt; or &lt;code&gt;Closed&lt;/code&gt; now, all that is required is the following:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;bool IsOrderOpen(OrderStatus status) =&amp;gt; status.HasFlag(OrderStatus.Open);
+bool IsOrderClosed(OrderStatus status) =&amp;gt; status.HasFlag(OrderStatus.Closed);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Using the methods:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// the status is not set explicitly to 'Open' or 'Closed'
+var status = OrderStatus.Reserved;
+
+Console.WriteLine($&amp;quot;Is order open? {IsOrderOpen(status)}&amp;quot;);
+Console.WriteLine($&amp;quot;Is order closed? {IsOrderClosed(status)}&amp;quot;);
+
+// just to confirm a check on the original status 
+// still works
+Console.WriteLine($&amp;quot;Is order reserved? {status.HasFlag(OrderStatus.Reserved)}&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Is order open? True
+Is order closed? False
+Is order reserved? True
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This version of the code is definitely &lt;code&gt;much cleaner&lt;/code&gt;, and much &lt;code&gt;easier to maintain&lt;/code&gt;!&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;Using the &lt;em&gt;bitwise logical operator (|)&lt;/em&gt; on enum definition is a useful technique I was not aware of. It facilities cleaner code, and makes it easier for the developer to contain enum logic all in one place.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://www.reddit.com/r/csharp/comments/vzph36/enum_bitshifting_syntax_for_multiple_flags_during/"&gt;Enum bit-shifting syntax for multiple flags during enum declaration&lt;/a&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;?# DailyDrop ?&gt;141: 18-08-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
+		<item>
+			<title>Delay SQL execution with WAITFOR</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/09/09-sql-waitfor</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/09/09-sql-waitfor</guid>
+			<pubDate>Thu, 18 Aug 2022 00:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;SQL is a &lt;code&gt;WAITFOR&lt;/code&gt; command which an be used to delay the execution of a proceeding SQL statement. One of two options can be supplied to the &lt;code&gt;WAITFOR&lt;/code&gt; statement:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;TIME&lt;/code&gt;: waits until the  time of day specified before executing the next statement&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;DELAY&lt;/code&gt;: waits for the time span specified before executing the next statement&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr /&gt;
+&lt;h2 id="waitfor-format"&gt;WAITFOR Format&lt;/h2&gt;
+&lt;p&gt;The format and usage of &lt;code&gt;WAITFOR&lt;/code&gt; is straightforward:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;WAITFOR DELAY 'time_to_pass' | TIME 'time_to_execute'
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="waitfor-delay"&gt;WAITFOR DELAY&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;WAITFOR DELAY&lt;/code&gt; will wait the &lt;code&gt;specified time span&lt;/code&gt; before executing the next command:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;PRINT CONVERT(varchar, SYSDATETIME(), 121)
+GO
+
+WAITFOR DELAY '00:00:05';
+GO
+
+PRINT CONVERT(varchar, SYSDATETIME(), 121)
+GO
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Executing the above will result in the following output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;2022-09-08 20:39:51.2166773
+2022-09-08 20:39:56.2387040
+
+Completion time: 2022-09-08T20:39:56.2397037+02:00
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;A time span between &lt;code&gt;00:00:00.001&lt;/code&gt; and &lt;code&gt;23:59:59.998&lt;/code&gt; can be specified - anything longer will result in an error.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="waitfor-time"&gt;WAITFOR TIME&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;WAITFOR TIME&lt;/code&gt; will wait until the &lt;code&gt;specified time of day&lt;/code&gt; before executing the next command:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;PRINT CONVERT(varchar, SYSDATETIME(), 121)
+GO
+
+WAITFOR TIME '20:47:00';
+GO
+
+PRINT CONVERT(varchar, SYSDATETIME(), 121)
+GO
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Executing the above will result in the following output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;2022-08-15 20:46:48.9212859
+2022-08-15 20:47:00.0130443
+
+Completion time: 2022-08-15T20:47:00.0140433+02:00
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In this example, we only had to wait &lt;em&gt;12 seconds&lt;/em&gt;, but the wait could be longer depending on the time specified. Only a &lt;code&gt;time can be specified, not a particular date&lt;/code&gt;. If the next execution of the specified time is the following day, the wait until the time is reached the following day.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="scheduling"&gt;Scheduling&lt;/h2&gt;
+&lt;p&gt;The below is an &lt;em&gt;example&lt;/em&gt; of how the functionality can be used to executing a command on a specific schedule. This technique is used for demo purposes not necessarily recommended for a production use case.&lt;/p&gt;
+&lt;p&gt;The following will execute the command every second for a full minute, once a day:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;-- wait until a specific time
+WAITFOR TIME '20:52:00';
+GO
+
+-- while it is the 53th minute
+WHILE(DATEPART(MINUTE, GETDATE()) &amp;lt; 54)
+BEGIN
+        -- print out the date time
+	BEGIN
+		PRINT CONVERT(varchar, SYSDATETIME(), 121)
+	END
+
+        -- wait for 1 second
+	BEGIN
+		WAITFOR DELAY '00:00:01';
+	END
+END
+GO
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;2022-08-15 20:52:00.0145585
+2022-08-15 20:52:01.0162047
+2022-08-15 20:52:02.0209920
+2022-08-15 20:52:03.0229534
+.
+.
+.
+2022-08-15 20:53:56.6402032
+2022-08-15 20:53:57.6424606
+2022-08-15 20:53:58.6450557
+2022-08-15 20:53:59.6499793
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;While not necessarily a command which will see every day usage, it could prove useful to simulate a specific &amp;quot;real world&amp;quot; scenario when there is a time span between statements, either for testing or investigation purposes.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://www.mssqltips.com/sqlservertip/7344/delay-sql-code-execution-with-sql-waitfor/"&gt;SQL WAITFOR Command to Delay SQL Code Execution&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;157: 09-09-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Parallel processing with ParallelEnumerable </title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/08/17-parallelenumerable</link>
@@ -222,107 +433,6 @@ void PerformCalculation(int i)
 &lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/api/system.linq.parallelenumerable?view=net-6.0"&gt;ParallelEnumerable Class&lt;/a&gt;&lt;/p&gt;
 &lt;hr /&gt;
 &lt;?# DailyDrop ?&gt;140: 17-08-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Delay SQL execution with WAITFOR</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/09/09-sql-waitfor</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/09/09-sql-waitfor</guid>
-			<pubDate>Wed, 17 Aug 2022 00:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;SQL is a &lt;code&gt;WAITFOR&lt;/code&gt; command which an be used to delay the execution of a proceeding SQL statement. One of two options can be supplied to the &lt;code&gt;WAITFOR&lt;/code&gt; statement:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;TIME&lt;/code&gt;: waits until the  time of day specified before executing the next statement&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;DELAY&lt;/code&gt;: waits for the time span specified before executing the next statement&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr /&gt;
-&lt;h2 id="waitfor-format"&gt;WAITFOR Format&lt;/h2&gt;
-&lt;p&gt;The format and usage of &lt;code&gt;WAITFOR&lt;/code&gt; is straightforward:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;WAITFOR DELAY 'time_to_pass' | TIME 'time_to_execute'
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="waitfor-delay"&gt;WAITFOR DELAY&lt;/h2&gt;
-&lt;p&gt;&lt;code&gt;WAITFOR DELAY&lt;/code&gt; will wait the &lt;code&gt;specified time span&lt;/code&gt; before executing the next command:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;PRINT CONVERT(varchar, SYSDATETIME(), 121)
-GO
-
-WAITFOR DELAY '00:00:05';
-GO
-
-PRINT CONVERT(varchar, SYSDATETIME(), 121)
-GO
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Executing the above will result in the following output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;2022-09-08 20:39:51.2166773
-2022-09-08 20:39:56.2387040
-
-Completion time: 2022-09-08T20:39:56.2397037+02:00
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;A time span between &lt;code&gt;00:00:00.001&lt;/code&gt; and &lt;code&gt;23:59:59.998&lt;/code&gt; can be specified - anything longer will result in an error.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="waitfor-time"&gt;WAITFOR TIME&lt;/h2&gt;
-&lt;p&gt;&lt;code&gt;WAITFOR TIME&lt;/code&gt; will wait until the &lt;code&gt;specified time of day&lt;/code&gt; before executing the next command:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;PRINT CONVERT(varchar, SYSDATETIME(), 121)
-GO
-
-WAITFOR TIME '20:47:00';
-GO
-
-PRINT CONVERT(varchar, SYSDATETIME(), 121)
-GO
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Executing the above will result in the following output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;2022-08-15 20:46:48.9212859
-2022-08-15 20:47:00.0130443
-
-Completion time: 2022-08-15T20:47:00.0140433+02:00
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;In this example, we only had to wait &lt;em&gt;12 seconds&lt;/em&gt;, but the wait could be longer depending on the time specified. Only a &lt;code&gt;time can be specified, not a particular date&lt;/code&gt;. If the next execution of the specified time is the following day, the wait until the time is reached the following day.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="scheduling"&gt;Scheduling&lt;/h2&gt;
-&lt;p&gt;The below is an &lt;em&gt;example&lt;/em&gt; of how the functionality can be used to executing a command on a specific schedule. This technique is used for demo purposes not necessarily recommended for a production use case.&lt;/p&gt;
-&lt;p&gt;The following will execute the command every second for a full minute, once a day:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;-- wait until a specific time
-WAITFOR TIME '20:52:00';
-GO
-
--- while it is the 53th minute
-WHILE(DATEPART(MINUTE, GETDATE()) &amp;lt; 54)
-BEGIN
-        -- print out the date time
-	BEGIN
-		PRINT CONVERT(varchar, SYSDATETIME(), 121)
-	END
-
-        -- wait for 1 second
-	BEGIN
-		WAITFOR DELAY '00:00:01';
-	END
-END
-GO
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;2022-08-15 20:52:00.0145585
-2022-08-15 20:52:01.0162047
-2022-08-15 20:52:02.0209920
-2022-08-15 20:52:03.0229534
-.
-.
-.
-2022-08-15 20:53:56.6402032
-2022-08-15 20:53:57.6424606
-2022-08-15 20:53:58.6450557
-2022-08-15 20:53:59.6499793
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;While not necessarily a command which will see every day usage, it could prove useful to simulate a specific &amp;quot;real world&amp;quot; scenario when there is a time span between statements, either for testing or investigation purposes.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.mssqltips.com/sqlservertip/7344/delay-sql-code-execution-with-sql-waitfor/"&gt;SQL WAITFOR Command to Delay SQL Code Execution&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;157: 09-09-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
@@ -1716,172 +1826,6 @@ Running long
 &lt;p&gt;&lt;a href="https://www.youtube.com/watch?v=J4JL4zR_l-0"&gt;Scheduling repeating tasks with .NET 6’s NEW Timer&lt;/a&gt;&lt;/p&gt;
 &lt;hr /&gt;
 &lt;?# DailyDrop ?&gt;134: 09-08-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>String null or empty using pattern matching</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/08/08-length-pattern-matching</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/08/08-length-pattern-matching</guid>
-			<pubDate>Mon, 08 Aug 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;&lt;code&gt;Pattern matching&lt;/code&gt; syntax can be used to check the nullability and length of a string, instead of the traditional &lt;code&gt;string.IsNullOrEmpty&lt;/code&gt; method - with interesting (and promising) performance benchmarks!&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="isnullorempty"&gt;IsNullOrEmpty&lt;/h2&gt;
-&lt;p&gt;Usually the &lt;code&gt;string.IsNullOrEmpty&lt;/code&gt; method is used to check if a specific string has a value (other than null or empty) - a string is passed in and a bool value is returned.&lt;/p&gt;
-&lt;p&gt;Consider the following method which uses &lt;code&gt;string.IsNullOrEmpty&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;void IsStringNullOrEmpty(string value)
-{ 
-    if (!string.IsNullOrEmpty(value))
-    {
-        Console.WriteLine($&amp;quot;Using 'IsNullOrEmpty' the '{value}' is NOT empty or null&amp;quot;);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;If the method is called with three different values:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;string checkValue = &amp;quot;www.alwaysdeveloping.net&amp;quot;;
-IsStringNullOrEmpty(checkValue);
-
-checkValue = &amp;quot;&amp;quot;;
-IsStringNullOrEmpty(checkValue);
-
-checkValue = null;
-IsStringNullOrEmpty(checkValue);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;As expected, only one value triggers an output to the console:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;    Using 'IsNullOrEmpty' the value 'www.alwaysdeveloping.net' is NOT empty or null
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="pattern-matching"&gt;Pattern Matching&lt;/h2&gt;
-&lt;p&gt;However, instead of this, &lt;code&gt;string.IsNullOrEmpty&lt;/code&gt; the following &lt;code&gt;pattern matching&lt;/code&gt; syntax could be used:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;    value is { Length: &amp;gt; 0 }
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This checks if the &lt;em&gt;value&lt;/em&gt; variable has a value (not null) and has a length greater than zero.&lt;/p&gt;
-&lt;p&gt;Again, consider the following method which uses &lt;code&gt;pattern matching&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;void IsStringNullOrEmpty(string value)
-{
-    if (value is { Length: &amp;gt; 0 })
-    {
-        Console.WriteLine($&amp;quot;Using 'pattern matching' the value '{value}' is NOT empty or null&amp;quot;);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;If the method is called with three different values (the same values as above):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;string checkValue = &amp;quot;www.alwaysdeveloping.net&amp;quot;;
-IsStringNullOrEmpty(checkValue);
-
-checkValue = &amp;quot;&amp;quot;;
-IsStringNullOrEmpty(checkValue);
-
-checkValue = null;
-IsStringNullOrEmpty(checkValue);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Again, as expected, the same values as when using &lt;code&gt;IsNullOrEmpty&lt;/code&gt; are picked up as valid or not:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;    Using 'pattern matching' the value 'www.alwaysdeveloping.net' is NOT empty or null
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="benchmarks"&gt;Benchmarks&lt;/h2&gt;
-&lt;p&gt;So there doesn't appear to be any difference in the output of the two methods. Next let's see how each performs using BenchmarkDotNet.&lt;/p&gt;
-&lt;p&gt;The two different methods were compared, using the same three values as above: a string with a &lt;code&gt;value&lt;/code&gt;, and &lt;code&gt;empty&lt;/code&gt; string and a &lt;code&gt;null&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;[MemoryDiagnoser]
-public class Benchmarks
-{
-    [Params(&amp;quot;alwaysdeveloping.net&amp;quot;, &amp;quot;&amp;quot;, null)]
-    public string? strValue { get; set; }
-
-    [Benchmark]
-    public void IsNullOrEmpty()
-    {
-        _ = !string.IsNullOrEmpty(strValue);
-    }
-
-    [Benchmark]
-    public void PatternMatching()
-    {
-        _ = strValue is { Length: &amp;gt; 0 };
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The results:&lt;/p&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;Method&lt;/th&gt;
-&lt;th&gt;strValue&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Median&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Allocated&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;IsNullOrEmpty&lt;/td&gt;
-&lt;td&gt;?&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.2562 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0367 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0307 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.2615 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;PatternMatching&lt;/td&gt;
-&lt;td&gt;?&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.2592 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0203 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0190 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.2627 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;IsNullOrEmpty&lt;/td&gt;
-&lt;td&gt;&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0158 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0148 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0123 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0133 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;PatternMatching&lt;/td&gt;
-&lt;td&gt;&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0150 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0144 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0127 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0163 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;IsNullOrEmpty&lt;/td&gt;
-&lt;td&gt;alwaysdeveloping.net&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0355 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0298 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0279 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0296 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;PatternMatching&lt;/td&gt;
-&lt;td&gt;alwaysdeveloping.net&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0093 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0113 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0105 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0056 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;From the result, when the string is &lt;code&gt;null or empty performance is pretty much equivalent&lt;/code&gt;, however when the string &lt;code&gt;has a value, pattern matching is about 4x faster&lt;/code&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;pattern matching&lt;/code&gt; syntax is definitely interesting and intriguing, however is definitely not as intuitive or informative to the developer as to what it does. If micro-optimization is required, this is definitely something to look into, however for most applications the performance improvement would be unnoticeable.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://twitter.com/buhakmeh/status/1545094497138360323"&gt;Khalid Abuhakmeh Tweet&lt;/a&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;?# DailyDrop ?&gt;133: 08-08-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
