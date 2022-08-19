@@ -7,9 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <meta name="description" content="always learning | always growing">
 
-    <title>Always Developing - Delay SQL execution with WAITFOR</title>
+    <title>Always Developing - Filter IEnumerable with OfType</title>
 
-    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/09/09-sql-waitfor">
+    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/08/19-linq-oftype">
 
             <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
             <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
@@ -18,9 +18,9 @@
     <meta name="msapplication-tooltip" content="Always Developing" />
     <meta name="msapplication-starturl" content="/" />
 
-    <meta property="og:title" content="Always Developing - Delay SQL execution with WAITFOR" />
+    <meta property="og:title" content="Always Developing - Filter IEnumerable with OfType" />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/09/09-sql-waitfor" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/08/19-linq-oftype" />
 
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
@@ -104,14 +104,14 @@
             <div class="col-md-10">
                 <div class="post-heading">
                     <h1>
-                        Delay SQL execution with WAITFOR
+                        Filter IEnumerable with OfType
                     </h1>
-                            <h2 class="subheading">Using the SQL WAITFOR command to delay the execution of a SQL statement</h2>
+                            <h2 class="subheading">LINQ has a built in method to automatically filter a collection by a specific Type</h2>
                         <p class="post-meta">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
                                 <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
                                 <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
-                            </svg> Published on Thursday, 18 August 2022
+                            </svg> Published on Friday, 19 August 2022
                         </p>
                 </div>
             </div>
@@ -130,96 +130,91 @@
 </div>
 
                         <h2 id="daily-knowledge-drop">Daily Knowledge Drop</h2>
-<p>SQL is a <code>WAITFOR</code> command which an be used to delay the execution of a proceeding SQL statement. One of two options can be supplied to the <code>WAITFOR</code> statement:</p>
-<ul>
-<li><code>TIME</code>: waits until the  time of day specified before executing the next statement</li>
-<li><code>DELAY</code>: waits for the time span specified before executing the next statement</li>
-</ul>
+<p>LINQ provides a built in method to filter collection contents <em>by type</em>, <code>OfType&lt;&gt;</code>. This is considerably easier and more streamline than the alternative of using a <code>Where</code> in combination with a <code>Select</code> (which I had previously been using)</p>
 <hr />
-<h2 id="waitfor-format">WAITFOR Format</h2>
-<p>The format and usage of <code>WAITFOR</code> is straightforward:</p>
-<pre><code class="language-sql">WAITFOR DELAY 'time_to_pass' | TIME 'time_to_execute'
+<h2 id="setup">Setup</h2>
+<p>In the below example, the setup is as follows:</p>
+<p>We have three interfaces:</p>
+<pre><code class="language-csharp">public interface IBaseType {}
+
+public interface ITypeA
+{
+    void ExecuteTypeAProcessing();
+}
+
+public interface ITypeB
+{
+    void ExecuteTypeBProcessing();
+}
+
+</code></pre>
+<p>And two classes which implement these interfaces:</p>
+<pre><code class="language-csharp">// implement the base interface and TypeA interface
+public class TypeA : IBaseType, ITypeA
+{
+    public void ExecuteTypeAProcessing()
+    {
+        Console.WriteLine($&quot;{nameof(ExecuteTypeAProcessing)} has been called&quot;);
+    }
+}
+
+// implement the base interface and TypeB interface
+public class TypeB : IBaseType, ITypeB
+{
+    public void ExecuteTypeBProcessing()
+    {
+        Console.WriteLine($&quot;{nameof(ExecuteTypeBProcessing)} has been called&quot;);
+    }
+}
+</code></pre>
+<p>A list of <code>IBaseType</code> has also been initialized, and contains a combination of <em>TypeA</em> and <em>TypeB</em> instances (this is possible, as both types implement <em>IBaseType</em>):</p>
+<pre><code class="language-csharp">List&lt;IBaseType&gt; types = new()
+{
+  new TypeA(),
+  new TypeA(),
+  new TypeB(),
+  new TypeA(),
+  new TypeB(),
+  new TypeB(),
+  new TypeA(),
+};
 </code></pre>
 <hr />
-<h2 id="waitfor-delay">WAITFOR DELAY</h2>
-<p><code>WAITFOR DELAY</code> will wait the <code>specified time span</code> before executing the next command:</p>
-<pre><code class="language-sql">PRINT CONVERT(varchar, SYSDATETIME(), 121)
-GO
-
-WAITFOR DELAY '00:00:05';
-GO
-
-PRINT CONVERT(varchar, SYSDATETIME(), 121)
-GO
+<h2 id="where-with-select">Where with Select</h2>
+<p>This is the method I've been using prior to knowing there was an alternative. It does work, but is very verbose.</p>
+<p>Suppose we want to execute the <em>ExecuteTypeAProcessing</em> method on instances of <em>ITypeA</em>:</p>
+<pre><code class="language-csharp">foreach(var type in types
+    .Where(t =&gt; t is ITypeA)
+    .Select(t =&gt; t as ITypeA))
+{
+    type.ExecuteTypeAProcessing();
+}
 </code></pre>
-<p>Executing the above will result in the following output:</p>
-<pre><code class="language-terminal">2022-09-08 20:39:51.2166773
-2022-09-08 20:39:56.2387040
-
-Completion time: 2022-09-08T20:39:56.2397037+02:00
+<p>Another method, this time executing <em>ExecuteTypeBProcessing</em> on instances of <em>ITypeB</em>:</p>
+<pre><code class="language-csharp">types.Where(t =&gt; t is ITypeB)
+    .Select(t =&gt; t as ITypeB)
+    .ToList()
+    .ForEach(t =&gt; t.ExecuteTypeBProcessing());
 </code></pre>
-<p>A time span between <code>00:00:00.001</code> and <code>23:59:59.998</code> can be specified - anything longer will result in an error.</p>
 <hr />
-<h2 id="waitfor-time">WAITFOR TIME</h2>
-<p><code>WAITFOR TIME</code> will wait until the <code>specified time of day</code> before executing the next command:</p>
-<pre><code class="language-sql">PRINT CONVERT(varchar, SYSDATETIME(), 121)
-GO
-
-WAITFOR TIME '20:47:00';
-GO
-
-PRINT CONVERT(varchar, SYSDATETIME(), 121)
-GO
+<h2 id="oftype">OfType</h2>
+<p>Only recently did I come across the <code>OfType</code> method on <em>IEnumerable</em> - not that it was hidden in any way, I just never looked for it, as the above <code>Where + Select</code> method worked for my needs. However <code>OfType</code> greatly simplifies the above code.</p>
+<p>Executing <em>ExecuteTypeAProcessing</em> on instances of <em>ITypeA</em>:</p>
+<pre><code class="language-csharp">foreach(var type in types.OfType&lt;ITypeA&gt;())
+{
+    type.ExecuteTypeAProcessing();
+}
 </code></pre>
-<p>Executing the above will result in the following output:</p>
-<pre><code class="language-terminal">2022-08-15 20:46:48.9212859
-2022-08-15 20:47:00.0130443
-
-Completion time: 2022-08-15T20:47:00.0140433+02:00
+<p>Executing <em>ExecuteTypeBProcessing</em> on instances of <em>ITypeB</em>:</p>
+<pre><code class="language-csharp">types.OfType&lt;ITypeB&gt;()
+    .ToList()
+    .ForEach(t =&gt; t.ExecuteTypeBProcessing());
 </code></pre>
-<p>In this example, we only had to wait <em>12 seconds</em>, but the wait could be longer depending on the time specified. Only a <code>time can be specified, not a particular date</code>. If the next execution of the specified time is the following day, the wait until the time is reached the following day.</p>
-<hr />
-<h2 id="scheduling">Scheduling</h2>
-<p>The below is an <em>example</em> of how the functionality can be used to executing a command on a specific schedule. This technique is used for demo purposes not necessarily recommended for a production use case.</p>
-<p>The following will execute the command every second for a full minute, once a day:</p>
-<pre><code class="language-sql">-- wait until a specific time
-WAITFOR TIME '20:52:00';
-GO
-
--- while it is the 53th minute
-WHILE(DATEPART(MINUTE, GETDATE()) &lt; 54)
-BEGIN
-        -- print out the date time
-	BEGIN
-		PRINT CONVERT(varchar, SYSDATETIME(), 121)
-	END
-
-        -- wait for 1 second
-	BEGIN
-		WAITFOR DELAY '00:00:01';
-	END
-END
-GO
-</code></pre>
-<p>The output:</p>
-<pre><code class="language-terminal">2022-08-15 20:52:00.0145585
-2022-08-15 20:52:01.0162047
-2022-08-15 20:52:02.0209920
-2022-08-15 20:52:03.0229534
-.
-.
-.
-2022-08-15 20:53:56.6402032
-2022-08-15 20:53:57.6424606
-2022-08-15 20:53:58.6450557
-2022-08-15 20:53:59.6499793
-</code></pre>
+<p>Either option is simpler, more concise and more readable than the <em>Where + Select</em> method.</p>
 <hr />
 <h2 id="notes">Notes</h2>
-<p>While not necessarily a command which will see every day usage, it could prove useful to simulate a specific &quot;real world&quot; scenario when there is a time span between statements, either for testing or investigation purposes.</p>
+<p>Nothing groundbreaking learnt today - but never-the-less something very interesting and useful, which will definitely see frequent usage.</p>
 <hr />
-<h2 id="references">References</h2>
-<p><a href="https://www.mssqltips.com/sqlservertip/7344/delay-sql-code-execution-with-sql-waitfor/">SQL WAITFOR Command to Delay SQL Code Execution</a></p>
 
 <blockquote class="daily-drop">
     <div>
@@ -232,7 +227,7 @@ GO
             </svg>
         </div>
         <div class="drop-header">
-            Daily Drop 157: 09-09-2022
+            Daily Drop 142: 19-08-2022
         </div>
         <div>
             <br>At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br> It could be anything - some.NET / C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
@@ -244,10 +239,10 @@ GO
 
                         
 <div>
-            <a role="button" href="/tags/sql" class="badge badge-light"> sql</a>
-            <a role="button" href="/tags/sqlserver" class="badge badge-light"> sqlserver</a>
-            <a role="button" href="/tags/waitfor" class="badge badge-light"> waitfor</a>
-            <a role="button" href="/tags/delay" class="badge badge-light"> delay</a>
+            <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
+            <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
+            <a role="button" href="/tags/linq" class="badge badge-light"> linq</a>
+            <a role="button" href="/tags/typeof" class="badge badge-light"> typeof</a>
 </div>
                     </div>
                     <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
@@ -257,12 +252,10 @@ GO
             <h3 class="no-anchor">On This Page</h3>
             <ul>
         <li><a href="#daily-knowledge-drop">Daily Knowledge Drop</a></li>
-        <li><a href="#waitfor-format">WAITFOR Format</a></li>
-        <li><a href="#waitfor-delay">WAITFOR DELAY</a></li>
-        <li><a href="#waitfor-time">WAITFOR TIME</a></li>
-        <li><a href="#scheduling">Scheduling</a></li>
+        <li><a href="#setup">Setup</a></li>
+        <li><a href="#where-with-select">Where with Select</a></li>
+        <li><a href="#oftype">OfType</a></li>
         <li><a href="#notes">Notes</a></li>
-        <li><a href="#references">References</a></li>
             </ul>
         </div>
 

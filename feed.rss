@@ -5,8 +5,104 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Thu, 18 Aug 2022 04:46:25 GMT</pubDate>
-		<lastBuildDate>Thu, 18 Aug 2022 04:46:25 GMT</lastBuildDate>
+		<pubDate>Fri, 19 Aug 2022 04:33:53 GMT</pubDate>
+		<lastBuildDate>Fri, 19 Aug 2022 04:33:53 GMT</lastBuildDate>
+		<item>
+			<title>Filter IEnumerable with OfType</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/08/19-linq-oftype</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/08/19-linq-oftype</guid>
+			<pubDate>Fri, 19 Aug 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;LINQ provides a built in method to filter collection contents &lt;em&gt;by type&lt;/em&gt;, &lt;code&gt;OfType&amp;lt;&amp;gt;&lt;/code&gt;. This is considerably easier and more streamline than the alternative of using a &lt;code&gt;Where&lt;/code&gt; in combination with a &lt;code&gt;Select&lt;/code&gt; (which I had previously been using)&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="setup"&gt;Setup&lt;/h2&gt;
+&lt;p&gt;In the below example, the setup is as follows:&lt;/p&gt;
+&lt;p&gt;We have three interfaces:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public interface IBaseType {}
+
+public interface ITypeA
+{
+    void ExecuteTypeAProcessing();
+}
+
+public interface ITypeB
+{
+    void ExecuteTypeBProcessing();
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And two classes which implement these interfaces:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// implement the base interface and TypeA interface
+public class TypeA : IBaseType, ITypeA
+{
+    public void ExecuteTypeAProcessing()
+    {
+        Console.WriteLine($&amp;quot;{nameof(ExecuteTypeAProcessing)} has been called&amp;quot;);
+    }
+}
+
+// implement the base interface and TypeB interface
+public class TypeB : IBaseType, ITypeB
+{
+    public void ExecuteTypeBProcessing()
+    {
+        Console.WriteLine($&amp;quot;{nameof(ExecuteTypeBProcessing)} has been called&amp;quot;);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;A list of &lt;code&gt;IBaseType&lt;/code&gt; has also been initialized, and contains a combination of &lt;em&gt;TypeA&lt;/em&gt; and &lt;em&gt;TypeB&lt;/em&gt; instances (this is possible, as both types implement &lt;em&gt;IBaseType&lt;/em&gt;):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;List&amp;lt;IBaseType&amp;gt; types = new()
+{
+  new TypeA(),
+  new TypeA(),
+  new TypeB(),
+  new TypeA(),
+  new TypeB(),
+  new TypeB(),
+  new TypeA(),
+};
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="where-with-select"&gt;Where with Select&lt;/h2&gt;
+&lt;p&gt;This is the method I've been using prior to knowing there was an alternative. It does work, but is very verbose.&lt;/p&gt;
+&lt;p&gt;Suppose we want to execute the &lt;em&gt;ExecuteTypeAProcessing&lt;/em&gt; method on instances of &lt;em&gt;ITypeA&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;foreach(var type in types
+    .Where(t =&amp;gt; t is ITypeA)
+    .Select(t =&amp;gt; t as ITypeA))
+{
+    type.ExecuteTypeAProcessing();
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Another method, this time executing &lt;em&gt;ExecuteTypeBProcessing&lt;/em&gt; on instances of &lt;em&gt;ITypeB&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;types.Where(t =&amp;gt; t is ITypeB)
+    .Select(t =&amp;gt; t as ITypeB)
+    .ToList()
+    .ForEach(t =&amp;gt; t.ExecuteTypeBProcessing());
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="oftype"&gt;OfType&lt;/h2&gt;
+&lt;p&gt;Only recently did I come across the &lt;code&gt;OfType&lt;/code&gt; method on &lt;em&gt;IEnumerable&lt;/em&gt; - not that it was hidden in any way, I just never looked for it, as the above &lt;code&gt;Where + Select&lt;/code&gt; method worked for my needs. However &lt;code&gt;OfType&lt;/code&gt; greatly simplifies the above code.&lt;/p&gt;
+&lt;p&gt;Executing &lt;em&gt;ExecuteTypeAProcessing&lt;/em&gt; on instances of &lt;em&gt;ITypeA&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;foreach(var type in types.OfType&amp;lt;ITypeA&amp;gt;())
+{
+    type.ExecuteTypeAProcessing();
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Executing &lt;em&gt;ExecuteTypeBProcessing&lt;/em&gt; on instances of &lt;em&gt;ITypeB&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;types.OfType&amp;lt;ITypeB&amp;gt;()
+    .ToList()
+    .ForEach(t =&amp;gt; t.ExecuteTypeBProcessing());
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Either option is simpler, more concise and more readable than the &lt;em&gt;Where + Select&lt;/em&gt; method.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;Nothing groundbreaking learnt today - but never-the-less something very interesting and useful, which will definitely see frequent usage.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;?# DailyDrop ?&gt;142: 19-08-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Combining enum values</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/08/18-enum-bit-flags</link>
@@ -114,107 +210,6 @@ Is order reserved? True
 &lt;p&gt;&lt;a href="https://www.reddit.com/r/csharp/comments/vzph36/enum_bitshifting_syntax_for_multiple_flags_during/"&gt;Enum bit-shifting syntax for multiple flags during enum declaration&lt;/a&gt;&lt;/p&gt;
 &lt;hr /&gt;
 &lt;?# DailyDrop ?&gt;141: 18-08-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Delay SQL execution with WAITFOR</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/09/09-sql-waitfor</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/09/09-sql-waitfor</guid>
-			<pubDate>Thu, 18 Aug 2022 00:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;SQL is a &lt;code&gt;WAITFOR&lt;/code&gt; command which an be used to delay the execution of a proceeding SQL statement. One of two options can be supplied to the &lt;code&gt;WAITFOR&lt;/code&gt; statement:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;TIME&lt;/code&gt;: waits until the  time of day specified before executing the next statement&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;DELAY&lt;/code&gt;: waits for the time span specified before executing the next statement&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr /&gt;
-&lt;h2 id="waitfor-format"&gt;WAITFOR Format&lt;/h2&gt;
-&lt;p&gt;The format and usage of &lt;code&gt;WAITFOR&lt;/code&gt; is straightforward:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;WAITFOR DELAY 'time_to_pass' | TIME 'time_to_execute'
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="waitfor-delay"&gt;WAITFOR DELAY&lt;/h2&gt;
-&lt;p&gt;&lt;code&gt;WAITFOR DELAY&lt;/code&gt; will wait the &lt;code&gt;specified time span&lt;/code&gt; before executing the next command:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;PRINT CONVERT(varchar, SYSDATETIME(), 121)
-GO
-
-WAITFOR DELAY '00:00:05';
-GO
-
-PRINT CONVERT(varchar, SYSDATETIME(), 121)
-GO
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Executing the above will result in the following output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;2022-09-08 20:39:51.2166773
-2022-09-08 20:39:56.2387040
-
-Completion time: 2022-09-08T20:39:56.2397037+02:00
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;A time span between &lt;code&gt;00:00:00.001&lt;/code&gt; and &lt;code&gt;23:59:59.998&lt;/code&gt; can be specified - anything longer will result in an error.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="waitfor-time"&gt;WAITFOR TIME&lt;/h2&gt;
-&lt;p&gt;&lt;code&gt;WAITFOR TIME&lt;/code&gt; will wait until the &lt;code&gt;specified time of day&lt;/code&gt; before executing the next command:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;PRINT CONVERT(varchar, SYSDATETIME(), 121)
-GO
-
-WAITFOR TIME '20:47:00';
-GO
-
-PRINT CONVERT(varchar, SYSDATETIME(), 121)
-GO
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Executing the above will result in the following output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;2022-08-15 20:46:48.9212859
-2022-08-15 20:47:00.0130443
-
-Completion time: 2022-08-15T20:47:00.0140433+02:00
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;In this example, we only had to wait &lt;em&gt;12 seconds&lt;/em&gt;, but the wait could be longer depending on the time specified. Only a &lt;code&gt;time can be specified, not a particular date&lt;/code&gt;. If the next execution of the specified time is the following day, the wait until the time is reached the following day.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="scheduling"&gt;Scheduling&lt;/h2&gt;
-&lt;p&gt;The below is an &lt;em&gt;example&lt;/em&gt; of how the functionality can be used to executing a command on a specific schedule. This technique is used for demo purposes not necessarily recommended for a production use case.&lt;/p&gt;
-&lt;p&gt;The following will execute the command every second for a full minute, once a day:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;-- wait until a specific time
-WAITFOR TIME '20:52:00';
-GO
-
--- while it is the 53th minute
-WHILE(DATEPART(MINUTE, GETDATE()) &amp;lt; 54)
-BEGIN
-        -- print out the date time
-	BEGIN
-		PRINT CONVERT(varchar, SYSDATETIME(), 121)
-	END
-
-        -- wait for 1 second
-	BEGIN
-		WAITFOR DELAY '00:00:01';
-	END
-END
-GO
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;2022-08-15 20:52:00.0145585
-2022-08-15 20:52:01.0162047
-2022-08-15 20:52:02.0209920
-2022-08-15 20:52:03.0229534
-.
-.
-.
-2022-08-15 20:53:56.6402032
-2022-08-15 20:53:57.6424606
-2022-08-15 20:53:58.6450557
-2022-08-15 20:53:59.6499793
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;While not necessarily a command which will see every day usage, it could prove useful to simulate a specific &amp;quot;real world&amp;quot; scenario when there is a time span between statements, either for testing or investigation purposes.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.mssqltips.com/sqlservertip/7344/delay-sql-code-execution-with-sql-waitfor/"&gt;SQL WAITFOR Command to Delay SQL Code Execution&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;157: 09-09-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
