@@ -5,8 +5,149 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Fri, 19 Aug 2022 04:33:53 GMT</pubDate>
-		<lastBuildDate>Fri, 19 Aug 2022 04:33:53 GMT</lastBuildDate>
+		<pubDate>Mon, 22 Aug 2022 04:52:25 GMT</pubDate>
+		<lastBuildDate>Mon, 22 Aug 2022 04:52:25 GMT</lastBuildDate>
+		<item>
+			<title>Unsafe cast for performance</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/08/22-unsafe-cast</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/08/22-unsafe-cast</guid>
+			<pubDate>Mon, 22 Aug 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;UnSafe static class&lt;/code&gt; can be used to perform an &lt;code&gt;Unsafe&lt;/code&gt; cast, which can lead to performance improvements - however it is only recommended in instances when a &lt;code&gt;safe cast ((T)o) would have guaranteed to be successful&lt;/code&gt;.  Performing an unsafe cast when a safe cast would have been unsuccessful could result in application instability.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="safe-casting"&gt;Safe casting&lt;/h2&gt;
+&lt;p&gt;When performing a &lt;code&gt;safe cast&lt;/code&gt;, runtime safety checks are performed, and if the cast is invalid then an &lt;code&gt;InvalidCastException&lt;/code&gt; will be thrown.&lt;/p&gt;
+&lt;p&gt;The below method is a &lt;code&gt;safe cast&lt;/code&gt;, as the runtime will prevent the cast from taking place (and throw the &lt;em&gt;InvalidCastException&lt;/em&gt;) if &lt;em&gt;object o&lt;/em&gt; is not compatible with type Product:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public Product GetProduct(object o)
+{
+    return (Product)o;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Another approach is to use the &lt;code&gt;is&lt;/code&gt; keyword, which will not thrown the exception, but return &lt;code&gt;false&lt;/code&gt; if the cast is not compatible (and actually perform the cast if it is compatible):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public Product GetProductIs(object o)
+{
+    if (o is Product p)
+        return p;
+
+    return null;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;For almost all use cases, one of the above techniques will be suitable.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="unsafe-casting"&gt;UnSafe casting&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;static Unsafe class&lt;/code&gt; can be used to perform a cast, but without any of the safety checks being performed. Performing an invalid cast will not lead to the &lt;code&gt;InvalidCastException&lt;/code&gt; being thrown, just to potential system instability.&lt;/p&gt;
+&lt;p&gt;Performing an &lt;code&gt;unsafe cast&lt;/code&gt; is almost as simple as performing a &lt;em&gt;safe cast&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public Product GetProductUnsafe(object o)
+{
+    // case object o to Product
+    return Unsafe.As&amp;lt;Product&amp;gt;(o);
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As no safety checks are performed by the runtime, some performance gains can be achieved by using this approach - but let's test just how big of a gain.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="performance"&gt;Performance&lt;/h2&gt;
+&lt;p&gt;Benchmarking the three different techniques, each with a &lt;code&gt;null value&lt;/code&gt; and with a &lt;code&gt;Product instance&lt;/code&gt; (a valid cast):&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Method&lt;/th&gt;
+&lt;th&gt;o&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Median&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Ratio&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;RatioSD&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;NormalCast&lt;/td&gt;
+&lt;td&gt;?&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.2752 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0331 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0294 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.2763 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.00&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;CastUsingIs&lt;/td&gt;
+&lt;td&gt;?&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.4600 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0369 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0327 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.4688 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;5.37&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.67&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;UnsafeCast&lt;/td&gt;
+&lt;td&gt;?&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0447 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0428 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0761 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0000 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.16&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.20&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;NormalCast&lt;/td&gt;
+&lt;td&gt;Product&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.1189 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0353 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0275 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.1164 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.000&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.00&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;CastUsingIs&lt;/td&gt;
+&lt;td&gt;Product&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.7099 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0511 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0453 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.7091 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;6.290&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.30&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;UnsafeCast&lt;/td&gt;
+&lt;td&gt;Product&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0000 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0000 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0000 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0000 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.000&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.00&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;Results may vary depending on the use case, but here, &lt;code&gt;using Unsafe is effectively is free&lt;/code&gt; and takes no time at all.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;Using &lt;code&gt;Unsafe&lt;/code&gt; is only recommended in the narrow use case where one knows using a &lt;code&gt;safe cast will succeed&lt;/code&gt; - leveraging &lt;code&gt;Unsafe&lt;/code&gt; in this case will result in performance gains.
+However, the gain is on the &lt;em&gt;nanoseconds&lt;/em&gt; scale, so is not likely to be noticeable - results may vary depending on the use ase though, and if performing a large number of slow &lt;em&gt;casts&lt;/em&gt;, then potentially a safe &lt;code&gt;Unsafe&lt;/code&gt; cast result in a noticeable difference.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://www.tabsoverspaces.com/233888-what-is-the-cost-of-casting-in-net-csharp?utm_source=feed/"&gt;What is the cost of casting in .NET (C#)?&lt;/a&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;?# DailyDrop ?&gt;143: 22-08-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Filter IEnumerable with OfType</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/08/19-linq-oftype</link>
@@ -1657,170 +1798,6 @@ public class GetRoleDataResponse
 &lt;a href="hhttps://learn.hashicorp.com/tutorials/vault/dotnet-httpclient"&gt;HashiCorp Vault C# client with .NET Core Guide&lt;/a&gt;&lt;br /&gt;
 &lt;a href="https://github.com/hashicorp/vault-guides"&gt;HashiCorp Vault Guide repository&lt;/a&gt;&lt;br /&gt;
 &lt;a href="https://github.com/rajanadar/VaultSharp"&gt;VaultSharp&lt;/a&gt;&lt;/p&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Accurate, regular scheduling with PeriodicTimer</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/08/09-periodic-timer</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/08/09-periodic-timer</guid>
-			<pubDate>Tue, 09 Aug 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;.NET 6 introduced a new timer, the &lt;code&gt;PeriodicTimer&lt;/code&gt; which provides a more regular, accurate and reliable way to run code on a specific interval when compared with previous methods.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="task.delay"&gt;Task.Delay&lt;/h2&gt;
-&lt;p&gt;Consider a simple background process which needs to run every second:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;async Task StartJobAsync(CancellationToken token)
-{
-    while (!token.IsCancellationRequested)
-    {
-        Console.WriteLine(DateTime.Now.ToString(&amp;quot;O&amp;quot;));
-        
-        // Do work
-        
-        await Task.Delay(1000, token);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The method is started, and while a cancellation is not requested via the &lt;em&gt;CancellationToken&lt;/em&gt;, the date time is output, and &lt;em&gt;work&lt;/em&gt; is done.&lt;/p&gt;
-&lt;p&gt;Executing the above as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var cancelSource = new CancellationTokenSource();
-var jobTask = StartJobAsync(cancelSource.Token);
-
-Console.ReadKey();
-cancelSource.Cancel();
-Console.ReadKey();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Provides the following output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;2022-07-13T19:48:38.9682679+02:00
-2022-07-13T19:48:39.9743395+02:00
-2022-07-13T19:48:40.9755190+02:00
-2022-07-13T19:48:41.9913331+02:00
-2022-07-13T19:48:42.9977149+02:00
-2022-07-13T19:48:44.0130672+02:00
-2022-07-13T19:48:45.0289959+02:00
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Even without any work being done in the iteration, the loop does not iterate every second - in &lt;code&gt;second 43 no work is done at all&lt;/code&gt;. At time goes on the divergence from the start time will just grow larger.&lt;/p&gt;
-&lt;p&gt;This divergence is even more evident if a job is executed and takes longer than the interval:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;async Task StartJobAsync(CancellationToken token)
-{
-    while (!token.IsCancellationRequested)
-    {
-        Console.WriteLine(DateTime.Now.ToString(&amp;quot;O&amp;quot;));
-
-        // generate a random number between 0 and 3
-        var random = new Random();
-        if (random.Next(3) == 1)
-        {
-            // if the random number was 1, simulate a long 
-            // running job
-            Console.WriteLine(&amp;quot;Running long&amp;quot;);
-            await Task.Delay(1500);
-        }
-
-        await Task.Delay(1000, token);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Here the random &lt;em&gt;work&lt;/em&gt; being performed takes &lt;code&gt;1.5 second&lt;/code&gt;, so instead of the loop taking &lt;code&gt;1 second&lt;/code&gt;, it becomes &lt;code&gt;2.5 seconds&lt;/code&gt;. If the work being done is variable in time, then the interval also becomes varied and irregular:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;2022-07-13T19:54:18.5637838+02:00
-2022-07-13T19:54:19.6099211+02:00
-2022-07-13T19:54:20.6106040+02:00
-Running long
-2022-07-13T19:54:23.1278907+02:00
-2022-07-13T19:54:24.1338937+02:00
-2022-07-13T19:54:25.1360588+02:00
-2022-07-13T19:54:26.1519535+02:00
-Running long
-2022-07-13T19:54:28.6815481+02:00
-2022-07-13T19:54:29.6844306+02:00
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This might be sufficient, however if a more regular, consistent interval is required, look no further than the &lt;code&gt;PeriodicTimer&lt;/code&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="periodic-timer"&gt;Periodic Timer&lt;/h2&gt;
-&lt;p&gt;.NET 6 introduce the &lt;code&gt;PeriodicTimer&lt;/code&gt; which runs on a more regular, predictable schedule, using more modern practices:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;async Task StartJobAsync(CancellationToken token)
-{
-    // define the timer to tick every second
-    var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(1000));
-
-    // loop every tick while the token has not been cancelled
-    while (await timer.WaitForNextTickAsync() &amp;amp;&amp;amp; !token.IsCancellationRequested)
-    {
-        Console.WriteLine(DateTime.Now.ToString(&amp;quot;O&amp;quot;));
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;With the &lt;code&gt;PeriodicTimer&lt;/code&gt; the interval period is defined when the timer is declared, and the &lt;em&gt;WaitForNextTickAsync&lt;/em&gt; method will return true every interval period.&lt;/p&gt;
-&lt;p&gt;Executing the above as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var cancelSource = new CancellationTokenSource();
-var jobTask = StartJobAsync(cancelSource.Token);
-
-Console.ReadKey();
-cancelSource.Cancel();
-Console.ReadKey();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Provides the following output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;2022-07-14T07:23:29.1553510+02:00
-2022-07-14T07:23:30.1430203+02:00
-2022-07-14T07:23:31.1502777+02:00
-2022-07-14T07:23:32.1522676+02:00
-2022-07-14T07:23:33.1541686+02:00
-2022-07-14T07:23:34.1603689+02:00
-2022-07-14T07:23:35.1475597+02:00
-2022-07-14T07:23:36.1498775+02:00
-2022-07-14T07:23:37.1561782+02:00
-2022-07-14T07:23:38.1425797+02:00
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;There are variations on the milliseconds, but the &lt;code&gt;PeriodicTimer&lt;/code&gt; will adjust to keep it as regular as possible.&lt;/p&gt;
-&lt;p&gt;When introducing &lt;em&gt;work&lt;/em&gt; which exceeds the interval period, the &lt;code&gt;PeriodTimer&lt;/code&gt; will still try to adjust to keep the ticks as regular as it can:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;async Task StartJobAsync(CancellationToken token)
-{
-    var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(1000));
-
-    while (await timer.WaitForNextTickAsync() &amp;amp;&amp;amp; !token.IsCancellationRequested)
-    {
-        Console.WriteLine(DateTime.Now.ToString(&amp;quot;O&amp;quot;));
-
-        // randomly perform some work which takes 1.5 seconds
-        var random = new Random();
-        if (random.Next(3) == 1)
-        {
-            Console.WriteLine(&amp;quot;Running long&amp;quot;);
-            await Task.Delay(1500);
-        }
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;From the results one can see that if a tick gets skipped due to the work running long, the next tick will &lt;code&gt;align with the starting tick&lt;/code&gt; and not when the previous tick completed:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;2022-07-14T07:27:22.2437461+02:00
-Running long
-2022-07-14T07:27:23.7708051+02:00
-2022-07-14T07:27:24.2487034+02:00
-2022-07-14T07:27:25.2491709+02:00
-Running long
-2022-07-14T07:27:26.7629854+02:00
-2022-07-14T07:27:27.2392793+02:00
-Running long
-2022-07-14T07:27:28.7631133+02:00
-2022-07-14T07:27:29.2430825+02:00
-Running long
-2022-07-14T07:27:30.7529474+02:00
-2022-07-14T07:27:31.2606374+02:00
-Running long
-2022-07-14T07:27:32.7737681+02:00
-2022-07-14T07:27:33.2500507+02:00
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The timer will always execute on a regular, predictable schedule, even if the work runs long.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;Periodic Timer&lt;/code&gt; is a great addition to the ecosystem. Reliable and easy to use, for simple background processing, this should be the go-to mechanism going forward. For more complex scheduling and processing, something like &lt;a href="https://www.hangfire.io/"&gt;Hangfire&lt;/a&gt; will still have its place for a while to come.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.youtube.com/watch?v=J4JL4zR_l-0"&gt;Scheduling repeating tasks with .NET 6’s NEW Timer&lt;/a&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;?# DailyDrop ?&gt;134: 09-08-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
