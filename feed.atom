@@ -4,8 +4,144 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-08-22T04:52:25Z</updated>
+	<updated>2022-08-23T05:00:50Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/08/23-override-new</id>
+		<title>Override vs New behavior</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/08/23-override-new" />
+		<updated>2022-08-23T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;When using &lt;code&gt;polymorphism&lt;/code&gt;, even though on the surface they appear to be doing the same thing, &lt;em&gt;hiding&lt;/em&gt; the functionality of a parent, the &lt;code&gt;override&lt;/code&gt; and &lt;code&gt;new&lt;/code&gt; keywords behave very differently.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;Override&lt;/code&gt; will &lt;em&gt;hide&lt;/em&gt; the parent method invoked, and the &lt;em&gt;overridden&lt;/em&gt; method on the child will be called. However when &lt;code&gt;new&lt;/code&gt; is used on a method, when invoked, the &lt;em&gt;parent&lt;/em&gt; method will be called.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="definition-recap"&gt;Definition recap&lt;/h2&gt;
+&lt;p&gt;A lot of keywords used in the introduction above, so a quick recap on some of the definitions of the keywords.&lt;/p&gt;
+&lt;h3 id="polymorphism"&gt;Polymorphism&lt;/h3&gt;
+&lt;p&gt;&lt;code&gt;Polymorphism&lt;/code&gt; allows for objects of a &lt;em&gt;derived class&lt;/em&gt; can be treated as objects of the &lt;em&gt;parent class&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;For example, when a &lt;em&gt;Child&lt;/em&gt; class inherits from a &lt;em&gt;Parent&lt;/em&gt; class, then the following is valid:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// defined as type Parent
+// but assigned a Child
+Parent childEntity = new Child();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="virtual"&gt;Virtual&lt;/h3&gt;
+&lt;p&gt;Often the &lt;em&gt;Parent&lt;/em&gt; class will defined methods as &lt;code&gt;virtual&lt;/code&gt; (which can also be applied to properties, indexers), which allows for it to be explicitly overridden in the &lt;em&gt;Child&lt;/em&gt; class.&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Parent
+{
+    public virtual void Hello()
+    {
+        Console.WriteLine(&amp;quot;Hello, I am Parent&amp;quot;);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="override"&gt;Override&lt;/h3&gt;
+&lt;p&gt;The &lt;code&gt;override&lt;/code&gt; keyword is used on a &lt;em&gt;Child&lt;/em&gt; class, to &lt;code&gt;override&lt;/code&gt; the behavior defined by the &lt;em&gt;Parent&lt;/em&gt; class:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Child : Parent
+{
+    // Override the Parent Hello method
+    public override void Hello()
+    {
+        Console.WriteLine(&amp;quot;Hello, I am Child&amp;quot;);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="new"&gt;New&lt;/h3&gt;
+&lt;p&gt;The &lt;code&gt;new&lt;/code&gt; keyword can be used as a declaration modifier to explicitly &lt;em&gt;hide&lt;/em&gt; the base class functionality:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Child : Parent
+{
+    // Hide the Parent Hello method
+    public new void Hello()
+    {
+        Console.WriteLine(&amp;quot;Hello, I am Child&amp;quot;);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="new-vs-override"&gt;New vs override&lt;/h2&gt;
+&lt;p&gt;There is a subtle difference between the definitions of the &lt;code&gt;override&lt;/code&gt; and &lt;code&gt;new&lt;/code&gt; keywords:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;override&lt;/code&gt; will &lt;strong&gt;override&lt;/strong&gt; the parent method&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;new&lt;/code&gt; will &lt;strong&gt;hide&lt;/strong&gt; the parent method&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;What all this comes down to, is the following - consider a &lt;em&gt;Parent&lt;/em&gt; and two different &lt;em&gt;Child&lt;/em&gt; classes, one using &lt;code&gt;new&lt;/code&gt; and one using &lt;code&gt;override&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Parent
+{
+    public virtual string Ping()
+    {
+        return $&amp;quot;Response from {nameof(Parent)}&amp;quot;;
+    }
+}
+
+public class OverrideChild : Parent
+{
+    public override string Ping()
+    {
+        return $&amp;quot;Response from {nameof(OverrideChild)}&amp;quot;;
+    }
+}
+
+public class NewChild : Parent
+{
+    public new string Ping()
+    {
+        return $&amp;quot;Response from {nameof(NewChild)}&amp;quot;;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;When we declare an instance of each of the three types and call the &lt;em&gt;Ping&lt;/em&gt; method, we get a response from the method on the respective type:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;Parent parent = new Parent();
+NewChild newChild = new NewChild();
+OverrideChild overChild = new OverrideChild();
+
+Console.WriteLine(parent.Ping());
+Console.WriteLine(newChild.Ping());
+Console.WriteLine(overChild.Ping());
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The resulting output being:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Response from Parent
+Response from NewChild
+Response from OverrideChild
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;So far, so good - all is as expected.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="polymorphism-1"&gt;Polymorphism&lt;/h3&gt;
+&lt;p&gt;However, when using &lt;code&gt;polymorphism&lt;/code&gt; then behavior starts to change.&lt;/p&gt;
+&lt;p&gt;In the below, each type is &lt;code&gt;declare of type Parent by assigned one of the three different types&lt;/code&gt; (this is allowed, because of &lt;em&gt;polymorphism&lt;/em&gt;):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// all type Parent
+// but assigned different types
+Parent parent = new Parent();
+Parent overChild = new OverrideChild();
+Parent newChild = new NewChild();
+
+Console.WriteLine(parent.Ping()); 
+Console.WriteLine(overChild.Ping()); 
+Console.WriteLine(newChild.Ping()); 
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now the output is as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Response from Parent
+Response from OverrideChild
+Response from Parent
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;From this we can see that with:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;override&lt;/code&gt;: there is a &lt;em&gt;link&lt;/em&gt; between the child and parent entities, so when the method is called the runtime knows to call the child entity method (even though the type is &lt;em&gt;Parent&lt;/em&gt;)&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;new&lt;/code&gt;: the parent method is hidden by the child method, but there is no &lt;em&gt;link&lt;/em&gt; between them, so calling the method on a &lt;em&gt;Parent&lt;/em&gt; entity (even though it was assigned a &lt;em&gt;Child&lt;/em&gt;) will call the parent entity method&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;Interesting behavior from the runtime which one should be aware of, otherwise unexpended results might occur. There is no &lt;em&gt;right&lt;/em&gt; or &lt;em&gt;wrong&lt;/em&gt; modifier to use, it will depend on the use case, how the classes are defined and used, and how they should behave.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://dotnetcoretutorials.com/2022/05/13/override-vs-new-polymorphism-in-c-net/"&gt;Override vs New Polymorphism In C# .NET&lt;/a&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;?# DailyDrop ?&gt;144: 23-08-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/08/22-unsafe-cast</id>
 		<title>Unsafe cast for performance</title>
@@ -1176,617 +1312,6 @@ FROM Audit
 &lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/sql/t-sql/queries/select-over-clause-transact-sql?view=sql-server-ver16"&gt;SELECT - OVER Clause (Transact-SQL)&lt;/a&gt;&lt;/p&gt;
 &lt;hr /&gt;
 &lt;?# DailyDrop ?&gt;135: 10-08-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/p/2022-08-hashicorp-vault</id>
-		<title>HashiCorp Vault with C#</title>
-		<link href="https://alwaysdeveloping.net/p/2022-08-hashicorp-vault" />
-		<updated>2022-08-10T01:00:00Z</updated>
-		<content>&lt;h2 id="introduction"&gt;Introduction&lt;/h2&gt;
-&lt;p&gt;The requirement was very simple (or so I thought) - create a locally running &lt;a href="https://www.vaultproject.io/"&gt;HashiCorp Vault&lt;/a&gt; instance, setup a simple C# client to connect to the vault, and get an understanding how how the Vault operates. At almost every step of the process I ran into issue - which lead me to putting together this guide.&lt;/p&gt;
-&lt;p&gt;This guide will go through step by step:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;How to configure the Vault for local development&lt;/li&gt;
-&lt;li&gt;Connect to the Vault using VaultSharp&lt;/li&gt;
-&lt;li&gt;Connect to the Vault using the REST api&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;This is a long guide, but will go through each aspect step by step and by the end you should have an up and running local Vault instance, and be able to connect via the CLI, the C# &lt;em&gt;VaultSharp&lt;/em&gt; library as well as the HTTP API using C#.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="why"&gt;Why?&lt;/h3&gt;
-&lt;p&gt;So why did I struggle at almost every step, and why did I feel this guide could help?&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;Documentation is inaccurate&lt;/code&gt;: Sometimes the guide and sample code snippets are just inaccurate or don't work. Some manual correction is required&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;Documentation is incomplete&lt;/code&gt;: In some cases it was difficult to track down comprehensive documentation on what I was trying to perform. If there was documentation, it sometimes didn't adequately&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;VaultSharp has missing functionality&lt;/code&gt;: This is not a criticism of the great work done by the contributors to this free library, but there is some functionality available via the Vault CLI, not available via &lt;em&gt;VaultSharp&lt;/em&gt; (if it is is available, I could not find it, or documentation of it anywhere)&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;Few C# REST api examples available&lt;/code&gt;: This wasn't the biggest issue, but it did take a few attempts to get the C# HttpClient to successfully perform operations on the Vault. This was mostly down to having to translate the working &lt;em&gt;curl&lt;/em&gt; and &lt;em&gt;CLI&lt;/em&gt; examples into C# http requests.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr /&gt;
-&lt;h2 id="hashicorp-vault"&gt;HashiCorp Vault&lt;/h2&gt;
-&lt;p&gt;In short, &lt;a href="https://www.vaultproject.io/"&gt;HashiCorp Vault&lt;/a&gt; (also referred to as the &lt;em&gt;Vault&lt;/em&gt; in the rest of this post) allows for &lt;em&gt;secure, store and tightly control access to tokens, passwords, certificates, encryption keys for protecting secrets and other sensitive data using a UI, CLI, or HTTP API&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;There are other key vaults available on the market (Azure Key Vault, AWS KMS, GCP KMS) - but Hashicorp Vault is the defacto standard.&lt;/p&gt;
-&lt;p&gt;In this post we'll explore accessing the Vault using all three methods - the UI, CLI and HTTP api.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="prerequisites"&gt;Prerequisites&lt;/h3&gt;
-&lt;p&gt;The guide below was written on a machine running Windows 11, so the requirements mentioned below will differ if working on another OS.&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;&lt;code&gt;HashiCorp Vault download&lt;/code&gt;: The exe is &lt;a href="https://www.vaultproject.io/downloads"&gt;available here&lt;/a&gt; and is a requirement for this guide. This executable serves two purposes:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Allows for a dev instance of the Vault server to be run&lt;/li&gt;
-&lt;li&gt;Serves as a CLI tool to connect to the Vault server instance&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Once downloaded, is is recommended (but not required) making the &lt;code&gt;Vault binary&lt;/code&gt; available on the &lt;code&gt;PATH&lt;/code&gt; (so it can be executed from any directory when working in the command prompt/Powershell). The steps to perform this are &lt;a href="https://stackoverflow.com/questions/1618280/where-can-i-set-path-to-make-exe-on-windows"&gt;available here&lt;/a&gt;.&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;&lt;code&gt;Docker Desktop&lt;/code&gt;: This is not a requirement, as the Vault server can be run from the above mentioned download. However the guide also covers running a &lt;em&gt;container instance&lt;/em&gt; of the Vault and if using this method then &lt;a href="https://www.docker.com/products/docker-desktop/"&gt;Docker Desktop&lt;/a&gt; (or similar) is require to be installed.&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr /&gt;
-&lt;h3 id="vault-startup"&gt;Vault Startup&lt;/h3&gt;
-&lt;p&gt;The below guides will demonstrate how to get a Vault instance up and running - it will not go into detail on persisting the Vault information to a permanent store. This guide is primarily aimed at getting a Vault up and running for &lt;em&gt;development&lt;/em&gt; purposes.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h4 id="binary"&gt;Binary&lt;/h4&gt;
-&lt;p&gt;This is by far the easiest method to get an instance of the Vault up and running. This is &lt;strong&gt;not&lt;/strong&gt; the route I initially took, as I was interested in getting the &lt;em&gt;container version&lt;/em&gt; up and running - however I &lt;strong&gt;highly&lt;/strong&gt; recommend this as a starting point if te goal is to just get a working, integrated sample up and running.&lt;/p&gt;
-&lt;p&gt;To stand a Vault Server instance, from either the &lt;em&gt;Command Prompt&lt;/em&gt; or &lt;em&gt;PowerShell&lt;/em&gt;, execute the following:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-powershell"&gt;vault server -dev
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output should look something like this:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;WARNING! dev mode is enabled! In this mode, Vault runs entirely in-memory
-and starts unsealed with a single unseal key. The root token is already
-authenticated to the CLI, so you can immediately begin using Vault.
-
-You may need to set the following environment variable:
-
-PowerShell:
-    $env:VAULT_ADDR=&amp;quot;http://127.0.0.1:8200&amp;quot;
-cmd.exe:
-    set VAULT_ADDR=http://127.0.0.1:8200
-
-The unseal key and root token are displayed below in case you want to
-seal/unseal the Vault or re-authenticate.
-
-Unseal Key: ANYzmKrmlp3eO4skaJFjmhKE2dEVLzbKSxecR+XGb0o=
-Root Token: hvs.9kouFib30HrpNSxDWTCzmczk
-
-Development mode should NOT be used in production installations!
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The Vault instance should now be available by browsing to &lt;code&gt;http://127.0.0.1:8200&lt;/code&gt;, and you should be able to login using the &lt;code&gt;Root Token&lt;/code&gt; provided in the output.&lt;/p&gt;
-&lt;p&gt;Keep in mind, this instance does NOT use any persistent storage, and if the server is stopped (by closing the prompt, or pressing &lt;em&gt;Ctrl-C&lt;/em&gt;) then any information saved to the Vault will be lost.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h4 id="docker"&gt;Docker&lt;/h4&gt;
-&lt;p&gt;Trying to get a &lt;em&gt;Docker&lt;/em&gt; version of the Vault up and running proved trickier than I thought or expected it to be. All of the below attempts were executed with the Windows version of &lt;a href="https://www.docker.com/products/docker-desktop/"&gt;Docker Desktop&lt;/a&gt; installed, configured to use Linux containers.&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;&lt;code&gt;Attempt 1:&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;The &lt;a href="https://hub.docker.com/_/vault"&gt;Vault page on DockerHub&lt;/a&gt; gives the below command as an example for running the vault with a completely in-memory server:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;docker run --cap-add=IPC_LOCK -e 'VAULT_DEV_ROOT_TOKEN_ID=myroot' -e 'VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:1234' vault
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;While this command did successfully startup a Vault container instance, no ports were exposed, so the vault URL wasn't accessible (or if it was, I couldn't figure it out). At this point I probably should have explored how to expose the ports - but I did not, I was hoping to find something that &lt;em&gt;just worked&lt;/em&gt;.&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;&lt;code&gt;Attempt 2:&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;While reading through the various documentation, I had also came across this official &lt;a href="hhttps://learn.hashicorp.com/tutorials/vault/dotnet-httpclient"&gt;using HashiCorp Vault C# client with .NET Core Guide&lt;/a&gt; which contained a link to a &lt;a href="https://github.com/hashicorp/vault-guides"&gt;Vault Guide repository&lt;/a&gt;. As part of the guide and repository is a &lt;a href="https://github.com/hashicorp/vault-guides/blob/master/secrets/dotnet-vault/demo_setup.sh"&gt;demo_setup.sh file&lt;/a&gt;. Exactly what I needed! (or so I thought)&lt;/p&gt;
-&lt;p&gt;However, executing the &lt;code&gt;demo_setup.sh&lt;/code&gt; script, resulted in ...nothing. No error messages, but also no positive responses from the prompt. Looking at the contents of the script, a &lt;a href="https://github.com/hashicorp/vault-guides/blob/master/secrets/dotnet-vault/docker-compose.yml"&gt;docker-compose&lt;/a&gt; is invoked.&lt;/p&gt;
-&lt;p&gt;I tried running the docker-compose independently which resulted in ...a timeout. The &lt;em&gt;docker-compose&lt;/em&gt; tries to startup and instance of &lt;code&gt;Vault&lt;/code&gt; and &lt;code&gt;MS SQL Server&lt;/code&gt; (for persistent storage) - however the it seems like the &lt;code&gt;MS SQL Server&lt;/code&gt; image in the &lt;em&gt;docker-compose&lt;/em&gt; is no longer valid.&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;&lt;code&gt;Successful Attempt:&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;For development purposes, I didn't need a persistent store, so the sample &lt;em&gt;docker-compose.yml&lt;/em&gt; was modified, removing the requirement for the MS SQL database.&lt;/p&gt;
-&lt;p&gt;The result was this &lt;em&gt;docker-compose.yml&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-yml"&gt;version: &amp;quot;3.3&amp;quot;
-services:
-vault:
-    image: vault:1.6.1
-    restart: always
-    command: [ 'vault', 'server', '-dev', '-dev-listen-address=0.0.0.0:8200']
-    environment:
-    VAULT_DEV_ROOT_TOKEN_ID: &amp;quot;some-root-token&amp;quot;
-    ports:
-    - &amp;quot;8200:8200&amp;quot;
-    cap_add:
-    - IPC_LOCK
-    networks:
-    vpcbr:
-        ipv4_address: 10.5.0.2
-
-networks:
-vpcbr:
-    driver: bridge
-    ipam:
-    config:
-        - subnet: 10.5.0.0/16
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Executing this with:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;docker-compose up -d
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We finally have a result!&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;[+] Running 6/6
-- vault Pulled                              13.1s
-- 21c83c524219 Pull complete                5.2s
-- 2552eed26cd4 Pull complete                5.3s
-- b6096191328a Pull complete                7.2s
-- 63cf312915ed Pull complete                7.3s
-- ba2ada45d14d Pull complete                7.3s
-[+] Running 2/2
-- Network vaultpoc_vpcbr      Created       0.9s
-- Container vaultpoc-vault-1  Started       1.3s   
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Browsing to &lt;code&gt;http://localhost:8200&lt;/code&gt; (the port specified in the docker-compose) - the Vault logon screen can be accessed! Using the default root token specified (&lt;code&gt;some-root-token&lt;/code&gt; if using the above yml), allowed access into the Vault.&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;We now had a repeatable container based process which &lt;em&gt;just works!&lt;/em&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="vault-configuration"&gt;Vault Configuration&lt;/h3&gt;
-&lt;p&gt;Now that the Vault is up and running, the next step is to configure the Vault, as well as create and configure credentials for our application. At this point there is only one &lt;em&gt;root&lt;/em&gt; user configured, which has full access to all areas of the Vault. Using the root credentials might be fine for development purposes, but it is important to understand how the security in Vault works, how the future application will interact with Vault, and how permission are assigned.&lt;/p&gt;
-&lt;p&gt;Some of the steps below make use of the &lt;a href="https://www.vaultproject.io/downloads"&gt;&lt;code&gt;Vault Command Line Interface (CLI)&lt;/code&gt;&lt;/a&gt; tool, which should be downloaded. It consists of a single exe which is used to invoke commands against the Vault instance.&lt;/p&gt;
-&lt;p&gt;As part of using the CLI, it is also recommended to set an environment variables for the &lt;code&gt;vault url&lt;/code&gt; - this is not required, but will save time later as the URL will not need to be specified for each CLI command ( specifying &lt;code&gt;-address=&amp;quot;http://localhost:8200&amp;quot;&lt;/code&gt; on every command):&lt;/p&gt;
-&lt;p&gt;To set the environment variable in &lt;strong&gt;Powershell&lt;/strong&gt;, execute the following:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-powershell"&gt;$env:VAULT_ADDR='http://0.0.0.0:8200'
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;OR&lt;/p&gt;
-&lt;p&gt;Or in &lt;strong&gt;Command Prompt&lt;/strong&gt;,  execute the following:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;set VAULT_ADDR=http://0.0.0.0:8200
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The steps below which use the CLI, will show the &lt;strong&gt;PowerShell&lt;/strong&gt; command, but the &lt;em&gt;Command Prompt&lt;/em&gt; commands would be almost identical.&lt;/p&gt;
-&lt;p&gt;A note: the above will only set the environment variables for the lifetime of the shell session - if closed and reopened, the environment variable will no longer be set and the above commands will need to be run again.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h4 id="key-value-engine"&gt;Key-Value Engine&lt;/h4&gt;
-&lt;p&gt;This guide focuses on using the Vault &lt;code&gt;key-value pair functionality&lt;/code&gt; to store application secrets - there is however other functionality available, which if required, would need to be enabled as with the &lt;code&gt;key-value pair&lt;/code&gt; functionality.&lt;/p&gt;
-&lt;p&gt;The first step to being able to store &lt;code&gt;key value pairs&lt;/code&gt; is to enable the functionality. The following steps will essentially create a &lt;em&gt;path&lt;/em&gt; (folder) in the Vault, which will store specific type of information - in this case, a folder called &lt;code&gt;secrets&lt;/code&gt; is being created, which will store &lt;code&gt;key-value pairs&lt;/code&gt;. A &lt;em&gt;path&lt;/em&gt; can be thought of a &lt;em&gt;folder structure&lt;/em&gt; within the Vault in which secrets will be stored, with each folder able to have its own permissions.&lt;/p&gt;
-&lt;p&gt;This step only needs to be performed once, unless specifically deciding that additional &lt;em&gt;root paths&lt;/em&gt; are required.&lt;/p&gt;
-&lt;p&gt;The easiest way to enable the &lt;em&gt;kv-engine&lt;/em&gt; (kv) is via the UI (although it can also be done via the CLI):&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Log into the Vault UI as the root&lt;/li&gt;
-&lt;li&gt;By default, there should be a &lt;code&gt;secret&lt;/code&gt; path already visible under the &lt;code&gt;Secrets&lt;/code&gt; menu (the default screen once logged in), linked to a &lt;em&gt;kv engine&lt;/em&gt; (the description under the name &lt;em&gt;secret&lt;/em&gt; will specify &lt;em&gt;&amp;quot;v2 kv_xxx&amp;quot;&lt;/em&gt;)
-&lt;ul&gt;
-&lt;li&gt;If there is no &lt;code&gt;secret&lt;/code&gt; engine listed, OR if you would like to create another path, click &lt;code&gt;Enable new engine +&lt;/code&gt; on the top right-hand corner of the grid&lt;/li&gt;
-&lt;li&gt;Select &lt;code&gt;Generic -&amp;gt; KV&lt;/code&gt; (first option) and click &lt;code&gt;Next&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;Specify the &lt;code&gt;Path&lt;/code&gt; - this will be the name under which all the key-value pairs will be stored. It can be anything, but should be something which makes sense to your usage (secrets, settings etc) and click &lt;code&gt;Enable Engine&lt;/code&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Step 1 done! - &lt;strong&gt;secrets engine enabled!&lt;/strong&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h4 id="secret"&gt;Secret&lt;/h4&gt;
-&lt;p&gt;The next step is to add a test secret (key/value pair) to &lt;code&gt;secret&lt;/code&gt; area (the &lt;em&gt;secret&lt;/em&gt; path, or if a different path was manually in the above step, which name was specified there)&lt;/p&gt;
-&lt;p&gt;For the next few steps, we'll switch to &lt;strong&gt;PowerShell&lt;/strong&gt; - first a login needs to be performed:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-powershell"&gt;vault login
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Type in the &lt;code&gt;root token&lt;/code&gt; once prompted, and you should have success (if the address environment variable was not configured, you may need to that as a parameter as well):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Key                  Value
----                  -----
-token                some-root-token
-token_accessor       D8XSBVu53WTDDktgjYGdOdDg
-token_duration       ∞
-token_renewable      false
-token_policies       [&amp;quot;root&amp;quot;]
-identity_policies    []
-policies             [&amp;quot;root&amp;quot;]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Now to create the &lt;code&gt;key-value pair&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-powershell"&gt;vault kv put secret/firstapp secretkey=mypassword
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This is instructing the CLI to:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Create/update a secret at the path &lt;code&gt;secret/firstapp&lt;/code&gt; (This will be the &lt;em&gt;folder&lt;/em&gt; and &lt;em&gt;subfolder&lt;/em&gt; where the secrets specific to this application will be stored)&lt;/li&gt;
-&lt;li&gt;With a key of &lt;code&gt;secretkey&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;And a value of &lt;code&gt;mypassword&lt;/code&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Browsing to the Vault UI, there should now see a &lt;em&gt;path&lt;/em&gt; (folder) under &lt;code&gt;secret&lt;/code&gt; called &lt;em&gt;firstapp&lt;/em&gt; which contains one secret, with the key &lt;em&gt;secretkey&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;This can also be verified using the CLI, by executing:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-powershell"&gt;vault kv get secret/firstapp
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;====== Data ======
-Key          Value
----          -----
-secretkey    mypassword
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The standard used by this guide, is that each separate application will have its own path under &lt;code&gt;secret&lt;/code&gt; (e.g. &lt;em&gt;secret/appname&lt;/em&gt;), with each path with its own permissions. If configuring secrets for another application, then the above can be executed again, replacing &amp;quot;firstapp&amp;quot; with the new application's name.&lt;/p&gt;
-&lt;p&gt;Step 2 done! - &lt;strong&gt;secret created successfully!&lt;/strong&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h4 id="approle"&gt;AppRole&lt;/h4&gt;
-&lt;p&gt;Next up is enabling the &lt;code&gt;approle&lt;/code&gt; functionality - this will only need to be performed once on the Vault instance.&lt;/p&gt;
-&lt;p&gt;The &lt;code&gt;approle&lt;/code&gt; auth method is designed to allow machines or applications to authenticate to the Vault using a &lt;em&gt;roleId and secretId&lt;/em&gt;. This step effectively just turns on this functionality in the Vault.&lt;/p&gt;
-&lt;p&gt;To enable &lt;code&gt;approle&lt;/code&gt; execute the following command in PowerShell:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-powershell"&gt;vault auth enable approle
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The successful response:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Success! Enabled approle auth method at: approle/
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;If the &lt;code&gt;approle&lt;/code&gt; auth method has already been enabled, the following will be the response:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Error enabling approle auth: Error making API request.
-
-URL: POST http://0.0.0.0:8200/v1/sys/auth/approle
-Code: 400. Errors:
-
-* path is already in use at approle/
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Step 3 done! - &lt;strong&gt;Approle functionality enabled!&lt;/strong&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h4 id="policy"&gt;Policy&lt;/h4&gt;
-&lt;p&gt;Permission to a specific &lt;em&gt;path&lt;/em&gt; are controlled with a &lt;code&gt;policy&lt;/code&gt;. The &lt;code&gt;policy&lt;/code&gt; is configured, and then attached to one or more roles (roles are created in the next step), which allows an application authenticating with a specific &lt;em&gt;roleId and secretId&lt;/em&gt; to have specifically controlled access to one or more &lt;em&gt;paths&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;First create a &lt;code&gt;policy file&lt;/code&gt; (this can be used as a template for future applications), named &lt;code&gt;app-policy.hcl&lt;/code&gt; (although the name itself is not import):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-yml"&gt;# Login with AppRole 
-path &amp;quot;auth/approle/login&amp;quot; {
-  capabilities =  [ &amp;quot;create&amp;quot;, &amp;quot;read&amp;quot; ]
-} 
-
-# Read data from secret/firstapp
-path &amp;quot;secret/data/firstapp&amp;quot; {
-  capabilities =  [ &amp;quot;read&amp;quot; ]
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This policy file allows:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;em&gt;create&lt;/em&gt; and &lt;em&gt;read&lt;/em&gt; permissions on the &lt;em&gt;auth/approle/login&lt;/em&gt; path. Effectively if an &lt;code&gt;approle&lt;/code&gt; is assigned this policy, it can login&lt;/li&gt;
-&lt;li&gt;&lt;em&gt;read&lt;/em&gt; permissions on the &lt;em&gt;secret/data/firstapp&lt;/em&gt; path. The user entity assigned this policy can &lt;code&gt;only&lt;/code&gt; read the &lt;em&gt;key-value pairs&lt;/em&gt; &lt;code&gt;only&lt;/code&gt; on that specific path&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Now that we have a policy defined (in a file), it needs to be created in the Vault. Cchanging the file path to wherever the policy files is stored, execute:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-powershell"&gt;vault policy write firstapp-policy c:\app-policy.hcl
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This creates a new policy called &lt;code&gt;firstapp-policy&lt;/code&gt;, using the contents of the &lt;code&gt;app-policy.hcl&lt;/code&gt; file.&lt;/p&gt;
-&lt;p&gt;Step 4 done! - &lt;strong&gt;Policy create!&lt;/strong&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h4 id="role-with-policy"&gt;Role (with policy)&lt;/h4&gt;
-&lt;p&gt;Finally, its time to &lt;code&gt;create the role&lt;/code&gt; (the application user), with the above defined policy assigned to it:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-powershell"&gt;vault write auth/approle/role/firstapp-role policies=&amp;quot;firstapp-policy&amp;quot;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This command creates a new role called &lt;code&gt;firstapp-role&lt;/code&gt;, and assigns it the policy called &lt;code&gt;firstapp-policy&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;Even though the role is now created, we have no information about it (yet). What is the &lt;em&gt;role-Id&lt;/em&gt; (name) and &lt;em&gt;secret-Id&lt;/em&gt; (password)?&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;Let's retrieve the &lt;em&gt;role-Id&lt;/em&gt; for the role:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-powershell"&gt;vault read auth/approle/role/firstapp-role/role-id
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;And &lt;em&gt;role-Id&lt;/em&gt; should be returned:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Key        Value
----        -----
-role_id    cb476d64-4614-1038-0dd5-b344700f3f3a
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;And then the &lt;em&gt;secret-Id&lt;/em&gt; for the role (notice the addition of the -f parameter):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-powershell"&gt;vault write -f auth/approle/role/firstapp-role/secret-id
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;And &lt;em&gt;secret-Id&lt;/em&gt; should be returned:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Key                   Value
----                   -----
-secret_id             5c1587dc-83b0-fe15-cc8e-196e6b777150
-secret_id_accessor    256b2ca7-5bce-3ce7-45b3-ceccc53fc6a3
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Lastly, we can test the new credentials by using them to log in via the CLI:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-powershell"&gt;vault write auth/approle/login role_id=cb476d64-4614-1038-0dd5-b344700f3f3a secret_id=5c1587dc-83b0-fe15-cc8e-196e6b777150
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Receiving back a token along with other role information:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Key                     Value
----                     -----
-token                   s.NWPZT9b6KuoakFfO9R9OZgPO
-token_accessor          rl4mmRW0dDvvpevDlYjnkjKO
-token_duration          768h
-token_renewable         true
-token_policies          [&amp;quot;default&amp;quot; &amp;quot;firstapp-policy&amp;quot;]
-identity_policies       []
-policies                [&amp;quot;default&amp;quot; &amp;quot;firstapp-policy&amp;quot;]
-token_meta_role_name    firstapp-role
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The &lt;em&gt;token&lt;/em&gt; can be used to log into the UI to confirm what the &lt;em&gt;application will be able to see&lt;/em&gt;. If you try to browse to the &lt;em&gt;secret&lt;/em&gt; path, you may get a &lt;code&gt;Not Authorized&lt;/code&gt; message - this is because the policy linked to the application role, does not have permission to see a list of the folders under &lt;em&gt;secret&lt;/em&gt;.
-If you browse directly to &lt;code&gt;http://localhost:8200/ui/vault/secrets/secret/show/firstapp&lt;/code&gt; however, you should see the list of secrets on that specific path - which the policy &lt;strong&gt;does allow&lt;/strong&gt;.&lt;/p&gt;
-&lt;p&gt;Step 5 done! - &lt;strong&gt;Role successfully created!&lt;/strong&gt; (with roleId and secretId)&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="configuration-wrap-up"&gt;Configuration wrap-up&lt;/h3&gt;
-&lt;p&gt;We have now successfully configured the Vault instance with all the functionality we need for &lt;code&gt;basic integration&lt;/code&gt;. We also looked at creating a &lt;code&gt;policy&lt;/code&gt; and creating and linking an &lt;code&gt;app role&lt;/code&gt; to policy.&lt;/p&gt;
-&lt;p&gt;Next up, we'll look at some C# code, using &lt;code&gt;VaultSharp&lt;/code&gt; to integrate with the Vault.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="vaultsharp"&gt;VaultSharp&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://github.com/rajanadar/VaultSharp"&gt;VaultSharp&lt;/a&gt; describes itself as &lt;em&gt;the most comprehensive cross-platform .NET Library for HashiCorp's Vault&lt;/em&gt;, and simplifies the integration into HashiCorp Vault when using .NET.&lt;/p&gt;
-&lt;p&gt;For most operations performed on the Vault via code, &lt;code&gt;VaultSharp&lt;/code&gt; is the easiest way, however there are some operations which I was unable to do using VaultSharp, in which case the integration needs to be handled manually (see the next section onthe REST api).&lt;/p&gt;
-&lt;p&gt;For the below samples, a NuGet package reference to &lt;code&gt;VaultSharp 1.7.0.4&lt;/code&gt; was added to a C# project.&lt;/p&gt;
-&lt;h3 id="reading-secrets"&gt;Reading secrets&lt;/h3&gt;
-&lt;p&gt;Now that we finally have a correctly setup and configured Vault, with credentials for our application, we can finally try to connect via C# code.&lt;/p&gt;
-&lt;p&gt;Once the Vault is configured, connecting and interacting with it via C# code is very easy:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// Use the roleId and secretId generated
-IAuthMethodInfo authMethod = new AppRoleAuthMethodInfo(
-    &amp;quot;cb476d64-4614-1038-0dd5-b344700f3f3a&amp;quot;, 
-    &amp;quot;5c1587dc-83b0-fe15-cc8e-196e6b777150&amp;quot;);
-
-var vaultClientSettings = 
-    new VaultClientSettings(&amp;quot;http://127.0.0.1:8200&amp;quot;, authMethod);
-
-IVaultClient vaultClient = new VaultClient(vaultClientSettings);
-
-try
-{
-    // the &amp;quot;mountPoint&amp;quot; is the root path
-    // the &amp;quot;path&amp;quot; is the rest of the path
-    Secret&amp;lt;SecretData&amp;gt; secrets = await vaultClient
-        .V1.Secrets.KeyValue.V2.ReadSecretAsync(
-            path: &amp;quot;firstapp&amp;quot;, mountPoint: &amp;quot;secret&amp;quot;);
-
-    // access all the key-value pairs
-    foreach(var item in secrets.Data.Data)
-    {
-        Console.WriteLine($&amp;quot;key:'{item.Key}' value:'{item.Value}'&amp;quot;);
-    }
-}
-catch (Exception ex)
-{
-    // try-catch just here for now to help 
-    // debug any connection issues
-    _ = ex;
-}
-
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Going through the official &lt;em&gt;VaultSharp&lt;/em&gt; documentation, it wasn't immediately obvious what the values of &lt;em&gt;path&lt;/em&gt; and &lt;em&gt;mountPoint&lt;/em&gt; should be:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;mountPoint&lt;/code&gt;: is the root path to read from, &lt;em&gt;secret&lt;/em&gt; in our case. If a &lt;code&gt;key-value pair&lt;/code&gt; engine was added with a different name when configuring Vault in the previous steps, then this would be that value&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;path&lt;/code&gt;: this is the path, excluding the root, from which the key-value pairs are retrieved. This allows for fine control over which &lt;em&gt;path&lt;/em&gt; (or folder) to read the secrets from&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;The output from executing the above:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;key:'secretkey' value:'mypassword'
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h3 id="writing-secrets"&gt;Writing secrets&lt;/h3&gt;
-&lt;p&gt;As it stands, &lt;code&gt;permission denied&lt;/code&gt; error will occur if trying to &lt;em&gt;write&lt;/em&gt; a secret - this is because our application role is linked to the &lt;code&gt;firstapp-policy&lt;/code&gt;, which only has &lt;code&gt;read&lt;/code&gt; permissions to the &lt;em&gt;firstapp&lt;/em&gt; path.&lt;/p&gt;
-&lt;p&gt;So to be able to create secrets using the approle credentials, the &lt;code&gt;policy linked to it need to be updated&lt;/code&gt;. This can be done either:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;In the Vault user interface, by logging in as the root user, browsing to &lt;code&gt;Policies -&amp;gt; firstapp-policy -&amp;gt; Edit policy&lt;/code&gt; and editing the policy directly&lt;/li&gt;
-&lt;li&gt;Or by &lt;code&gt;updating the policy file&lt;/code&gt;, then executing the following command again to write the update policy to the Vault (updating the existing one):
-&lt;pre&gt;&lt;code class="language-powershell"&gt;vault policy write firstapp-policy C:\app-policy.hcl
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Whether using the Vault UI or editing the file, the &lt;code&gt;update&lt;/code&gt; permissions needs to be added to the policy capabilities, and the policy should look as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;# Login with AppRole 
-path &amp;quot;auth/approle/login&amp;quot; {
-  capabilities =  [ &amp;quot;create&amp;quot;, &amp;quot;read&amp;quot; ]
-} 
-
-# Read data from secret/firstapp
-path &amp;quot;secret/data/firstapp&amp;quot; {
-  capabilities =  [ &amp;quot;read&amp;quot;, &amp;quot;update&amp;quot; ]
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;With the policy updated, the role now has permissions to &lt;code&gt;create/write&lt;/code&gt; secrets:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;IAuthMethodInfo authMethod = new AppRoleAuthMethodInfo(
-    &amp;quot;cb476d64-4614-1038-0dd5-b344700f3f3a&amp;quot;, 
-    &amp;quot;5c1587dc-83b0-fe15-cc8e-196e6b777150&amp;quot;);
-
-var vaultClientSettings = 
-    new VaultClientSettings(&amp;quot;http://127.0.0.1:8200&amp;quot;, authMethod);
-
-IVaultClient vaultClient = new VaultClient(vaultClientSettings);
-
-try
-{
-    var newSecrets = new Dictionary&amp;lt;string, object&amp;gt;
-    {
-        [&amp;quot;DbPassword&amp;quot;] = &amp;quot;password123&amp;quot;
-    };
-
-    // Patch method called
-    await vaultClient.V1.Secrets.KeyValue.V2.PatchSecretAsync(
-        path: &amp;quot;firstapp&amp;quot;, newSecrets, mountPoint: &amp;quot;secret&amp;quot;);
-}
-catch (Exception ex)
-{
-    _ = ex;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="quirks-and-tips"&gt;Quirks and tips&lt;/h2&gt;
-&lt;p&gt;These are a few quirks I've encountered working with Vault and VaultSharp, which was not obvious while initially getting the two to integrate:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;&lt;code&gt;Policy path vs Code path&lt;/code&gt;:
-Its not immediately obvious when going through documentation, but in the policy &lt;code&gt;data&lt;/code&gt; (or &lt;code&gt;metadata&lt;/code&gt;) is added to the path, for example, &lt;code&gt;secret/data/firstapp&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-yml"&gt;path &amp;quot;secret/data/firstapp&amp;quot; {
-    capabilities =  [ &amp;quot;read&amp;quot;, &amp;quot;update&amp;quot; ]
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;However when using &lt;code&gt;VaultSharp&lt;/code&gt;, or the &lt;code&gt;CLI&lt;/code&gt; to retrieve secrets, the &lt;code&gt;data&lt;/code&gt; portion is dropped:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;Using CLI:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-powershell"&gt;    vault kv get secret/firstapp
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;Using VaultSharp:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;    await vaultClient.V1.Secrets.KeyValue.V2.ReadSecretAsync(
-        path: &amp;quot;firstapp&amp;quot;, mountPoint: &amp;quot;secret&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;&lt;code&gt;Write secret vs Patch secret&lt;/code&gt;:
-In Vault, when changing the secrets in a &lt;em&gt;path&lt;/em&gt; (folder), a new version of the &lt;em&gt;path&lt;/em&gt; is created with the updated version of the secrets.&lt;br /&gt;
-When &lt;code&gt;writing&lt;/code&gt; or using &lt;em&gt;put&lt;/em&gt; to create a secret, &lt;code&gt;all previous secrets will be lost&lt;/code&gt; and a &lt;code&gt;new version of the path created, with just the new secret&lt;/code&gt;.&lt;br /&gt;
-However when &lt;code&gt;patching&lt;/code&gt; then &lt;code&gt;all secrets in the current version are brought into the new version&lt;/code&gt;, along with any changes.&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;&lt;code&gt;Write/Put&lt;/code&gt;: Existing secrets are lost in the new version:&lt;/p&gt;
-&lt;p&gt;In PowerShell:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-powershell"&gt;vault kv put secret/firstapp newkey=mynewpassword
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;And in C# code:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var newSecrets = new Dictionary&amp;lt;string, object&amp;gt;
-{
-    [&amp;quot;newkey&amp;quot;] = &amp;quot;mynewpassword&amp;quot;
-};
-// WriteSecretAsync is used here, vs PatchSecretAsync
-await vaultClient.V1.Secrets.KeyValue.V2.WriteSecretAsync(
-    path: &amp;quot;firstapp&amp;quot;, newSecrets, mountPoint: &amp;quot;secret&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;&lt;code&gt;Patch&lt;/code&gt;: Existing secrets are brought into the new version:&lt;/p&gt;
-&lt;p&gt;In PowerShell:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-powershell"&gt;vault kv patch secret/firstapp newkey=mynewpassword
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;And in C# code:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var newSecrets = new Dictionary&amp;lt;string, object&amp;gt;
-{
-    [&amp;quot;newkey&amp;quot;] = &amp;quot;mynewpassword&amp;quot;
-};
-// PatchSecretAsync is used here, vs WriteSecretAsync
-await vaultClient.V1.Secrets.KeyValue.V2.PatchSecretAsync(
-    path: &amp;quot;firstapp&amp;quot;, newSecrets, mountPoint: &amp;quot;secret&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr /&gt;
-&lt;h2 id="rest-api"&gt;Rest API&lt;/h2&gt;
-&lt;p&gt;In certain cases, &lt;code&gt;VaultSharp&lt;/code&gt; does not provide functionality available via the Vault CLI (or at least, I was not able to find it amongst the VaultSharp code or documentation) - in these cases an alternative option has to be used. Luckily, Vault exposes all it's functionality via a REST api (which is what the CLI actually uses as well). This means any functionality available from the CLI can be reproduced in code by doing an HTTP call.&lt;/p&gt;
-&lt;p&gt;An example of a call which &lt;code&gt;VaultSharp&lt;/code&gt; does not (at the time of writing this post) support, is the ability to &lt;code&gt;create an app role though code&lt;/code&gt;. This is possible via the CLI, as it was done in previous steps:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-powershell"&gt;vault write auth/approle/role/firstapp-role policies=&amp;quot;firstapp-policy&amp;quot;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;If we want to be able to perform this functionality vai code, it'll have to be via an HTTP call. Let's write some C# code to setup the permission for a new application. It will:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Create a policy for a new application (using VaultSharp)&lt;/li&gt;
-&lt;li&gt;Create an approle for a new application (using the REST API)&lt;/li&gt;
-&lt;li&gt;Get the &lt;em&gt;roleId&lt;/em&gt; for the newly created role (using the REST API)&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr /&gt;
-&lt;h3 id="policy-creation"&gt;Policy creation&lt;/h3&gt;
-&lt;p&gt;VaultSharp does have functionality to create policies, so VaultSharp can be leveraged for this step:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// use the root token (or preferably another token which has permissions)
-IAuthMethodInfo authMethod = new TokenAuthMethodInfo(config.Token);
-var vaultClientSettings = new VaultClientSettings(config.Url, authMethod);
-
-IVaultClient vaultClient = new VaultClient(vaultClientSettings);
-
-// specify the application name
-var applicationName = &amp;quot;newapplication&amp;quot;;
-// define the policy as a string
-string appPolicy = &amp;#64;&amp;quot;
-    # Login with AppRole 
-    path &amp;quot;&amp;quot;auth/approle/login&amp;quot;&amp;quot; {{
-    capabilities =  [&amp;quot;&amp;quot;create&amp;quot;&amp;quot;, &amp;quot;&amp;quot;read&amp;quot;&amp;quot;]
-    }}
-
-    # Read test data (v2)
-    path &amp;quot;&amp;quot;secret/data/{0}&amp;quot;&amp;quot; {{
-    capabilities =  [&amp;quot;&amp;quot;read&amp;quot;&amp;quot;]
-    }}&amp;quot;;
-
-    // define the policy. 
-    var policy = new ACLPolicy
-    {
-        Name = String.Format($&amp;quot;{applicationName}-policy&amp;quot;, applicationName),
-        Policy = String.Format(appPolicy, applicationName)
-    };
-
-    // create the policy
-    await vaultClient.V1.System.WriteACLPolicyAsync(policy);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Here a different &lt;em&gt;IAuthMethodInfo&lt;/em&gt; implementation is used vs the previous examples - this is because this operation is being performed by the &lt;em&gt;root user&lt;/em&gt; (or preferably another &amp;quot;admin&amp;quot; user/token with similar permissions). Apart from that, the usage of the VaultSharp library remains the same.&lt;/p&gt;
-&lt;p&gt;Step 1 done! - &lt;strong&gt;Policy created successfully!&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;Now that we have a policy, let's look at using &lt;code&gt;HttpClient&lt;/code&gt; to call the REST api to create an &lt;code&gt;approle&lt;/code&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="approle-creation"&gt;Approle creation&lt;/h3&gt;
-&lt;p&gt;Invoking the REST api methods is similar to using the CLI, so the CLI command can be used as a template for the HTTP call:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-powershell"&gt;vault write auth/approle/role/firstapp-role policies=&amp;quot;firstapp-policy&amp;quot;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Translating this into C#:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// specify the application name
-var applicationName = &amp;quot;newapplication&amp;quot;;
-
-// Ideally getting the client is done via the HttpClientFactory
-var httpClient = new HttpClient();
-httpClient.BaseAddress = new Uri(&amp;quot;http://localhost:8200&amp;quot;);
-
-// this is the same path as used in the CLI, just with v1 pre-pended
-HttpRequestMessage requestMessage = new(
-    HttpMethod.Post, $&amp;quot;v1/auth/approle/role/{applicationName}-role&amp;quot;);
-
-// add the token as a header to the request
-requestMessage.Headers.Add(&amp;quot;X-Vault-Token&amp;quot;, &amp;quot;some-root-token&amp;quot;);
-
-// set the contents of the request in json representation of the same
-// params passed in the CLI
-requestMessage.Content = new StringContent(
-    $&amp;quot;{{\&amp;quot;policies\&amp;quot;: \&amp;quot;{applicationName}-policy\&amp;quot;}}&amp;quot;, 
-    Encoding.UTF8, &amp;quot;application/json&amp;quot;);
-// send the request!
-var response = await httpClient.SendAsync(requestMessage);
-
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Step 2 done! - &lt;strong&gt;Approle created successfully!&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;Assuming no errors have occurred, the &lt;code&gt;approle&lt;/code&gt; is now created - we just need to lookup the &lt;em&gt;roleId&lt;/em&gt; and &lt;em&gt;secretId&lt;/em&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="roleid-lookup"&gt;RoleId lookup&lt;/h3&gt;
-&lt;p&gt;Performing the &lt;em&gt;roleId&lt;/em&gt; follows very similar steps to the approle creation.&lt;/p&gt;
-&lt;p&gt;For reference, the powershell to perform this action:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-powershell"&gt;vault read auth/approle/role/firstapp-role/role-id
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;And converting this into C# code:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// specify the application name
-var applicationName = &amp;quot;newapplication&amp;quot;;
-
-// Ideally getting the client is done via the HttpClientFactory
-var httpClient = new HttpClient();
-httpClient.BaseAddress = new Uri(&amp;quot;http://localhost:8200&amp;quot;);
-
-// this is the same path as used in the CLI, just with v1 pre-pended
-HttpRequestMessage requestMessage = 
-    new(HttpMethod.Get, $&amp;quot;v1/auth/approle/role/{applicationName}-role/role-id&amp;quot;);
-// add the token as a header to the request
-requestMessage.Headers.Add(&amp;quot;X-Vault-Token&amp;quot;, &amp;quot;some-root-token&amp;quot;);
-
-// send the request!
-var response = await httpClient.SendAsync(requestMessage);
-
-if (!response.IsSuccessStatusCode)
-{
-    throw new HttpRequestException(
-        $&amp;quot;Error getting role id: {response.ReasonPhrase}&amp;quot;, 
-        null, 
-        response.StatusCode);
-}
-
-var roleResponse = await response.Content.ReadFromJsonAsync&amp;lt;GetRoleIdResponse&amp;gt;();
-
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The &lt;em&gt;GetRoleIdResponse&lt;/em&gt; entity is a custom class which is defined as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class GetRoleIdResponse
-{
-    public GetRoleDataResponse data { get; set; }
-}
-
-public class GetRoleDataResponse
-{
-    public Guid role_id { get; set; }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Step 3 done! - &lt;strong&gt;RoleId retrieved successfully!&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;The same process can be applied to lookup the &lt;em&gt;secretId&lt;/em&gt;, as well as execute any other Vault CLI command.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="in-summary"&gt;In summary&lt;/h2&gt;
-&lt;p&gt;In this post we had a look at how to do the following:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Successfully running an instance of the HashiCorp vault using
-&lt;ul&gt;
-&lt;li&gt;The Windows binary&lt;/li&gt;
-&lt;li&gt;A Docker image&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;The Vault configuration steps required to be able to connect with an app level roleId and secretId:
-&lt;ul&gt;
-&lt;li&gt;Enabling the key-value pair engine&lt;/li&gt;
-&lt;li&gt;Creating a &lt;em&gt;path&lt;/em&gt; to hold secrets&lt;/li&gt;
-&lt;li&gt;Enabling the approle authentication method&lt;/li&gt;
-&lt;li&gt;Creating a policy&lt;/li&gt;
-&lt;li&gt;Creating a role and linking a policy to it&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;Using VaultSharp to read secrets from, and write secrets to the Vault&lt;/li&gt;
-&lt;li&gt;Using the Vault Rest API to perform functionality comparable to the Vault CLI (especially for use cases not covered by VaultSharp)&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;The hope is this guide will help others not have to go through some of the struggles I encountered while integrating with, and exploring the HashiCorp Vault functionality for the first time.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.vaultproject.io/"&gt;HashiCorp Vault&lt;/a&gt;&lt;br /&gt;
-&lt;a href="https://www.vaultproject.io/downloads"&gt;HashiCorp Vault Download&lt;/a&gt;&lt;br /&gt;
-&lt;a href="https://www.docker.com/products/docker-desktop/"&gt;Docker Desktop&lt;/a&gt;&lt;br /&gt;
-&lt;a href="https://hub.docker.com/_/vault"&gt;Vault on DockerHub&lt;/a&gt;&lt;br /&gt;
-&lt;a href="hhttps://learn.hashicorp.com/tutorials/vault/dotnet-httpclient"&gt;HashiCorp Vault C# client with .NET Core Guide&lt;/a&gt;&lt;br /&gt;
-&lt;a href="https://github.com/hashicorp/vault-guides"&gt;HashiCorp Vault Guide repository&lt;/a&gt;&lt;br /&gt;
-&lt;a href="https://github.com/rajanadar/VaultSharp"&gt;VaultSharp&lt;/a&gt;&lt;/p&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
