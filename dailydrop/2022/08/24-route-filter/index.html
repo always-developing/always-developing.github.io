@@ -1,0 +1,410 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="always learning | always growing">
+
+    <title>Always Developing - Route handler filters in .NET 7</title>
+
+    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/08/24-route-filter">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
+
+    <meta name="application-name" content="Always Developing" />
+    <meta name="msapplication-tooltip" content="Always Developing" />
+    <meta name="msapplication-starturl" content="/" />
+
+    <meta property="og:title" content="Always Developing - Route handler filters in .NET 7" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/08/24-route-filter" />
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Bootstrap core CSS -->
+    <link href="/vendor/bootstrap/scss/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom fonts for this template -->
+    <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="/vendor/fontawesome-free/css/brands.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css' data-no-mirror>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css' data-no-mirror>
+
+    <!-- Custom styles for this template -->
+    <link href="/scss/always-developing-blog.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/plugins/autoloader/prism-autoloader.min.js" data-no-mirror></script>
+    <script src="https://cdn.jsdelivr.net/npm/quicklink@2.0.0/dist/quicklink.umd.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/themes/prism.css">
+
+    <!-- Lunr search -->
+        <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/pako@2.0.3/dist/pako_inflate.min.js"></script>
+        <script src="/search.js"></script>
+
+    
+
+
+    
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand"  href="/">
+            <img src="/images/ad_logo.png" alt="" width="25" height="25" class="d-inline-block align-text-top">
+            Always Developing
+        </a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            Menu
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/software">Software</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/tags">Tags</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/posts">Posts</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/about">About</a>
+            </li>
+</ul>
+                <form class="form-inline my-2 my-lg-0" action="/search" method="GET">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="query">
+                    <input type="submit" hidden />
+                </form>
+        </div>
+    </div>
+</nav>
+
+    <!-- Page Header -->
+    <header class="masthead">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 align-middle">
+                <div class="post-header-image">
+                    <a href="/">
+                        <img src="/images/ad_logo.png" class="header-image">
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="post-heading">
+                    <h1>
+                        Route handler filters in .NET 7
+                    </h1>
+                            <h2 class="subheading">Learning about minimal api route handler filters coming in .NET 7</h2>
+                        <p class="post-meta">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
+                                <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
+                            </svg> Published on Wednesday, 24 August 2022
+                        </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <!-- Main Content -->
+    <div class="container">
+            <div class="row ">
+                    <div id="content" class="col-md-9 post-with-toc post-block">
+                        
+<div class="post-header-category">
+    <a class="btn btn-primary btn-sm btn-default btn-home" href="\" role="button"><i class="fas fa-angle-double-left"></i> Home</a>
+            <a class="btn btn-primary btn-sm category-btn" href="/categories/dailydrop" role="button">DailyDrop</a>
+</div>
+
+                        <h2 id="daily-knowledge-drop">Daily Knowledge Drop</h2>
+<p>Coming with .NET 7 (most likely, .NET 7 is still in preview so its not 100% guaranteed to be included), is the <code>IRouteHandlerFilter</code> interface, which allows for <em>intercepting</em>  requests/response to and from a specific minimal endpoint.</p>
+<p>This enabled <code>cross-cutting concerns to be coded once</code>, and then applied to the relevent endpoints. They operate <em>similar</em> to the .NET <code>middleware</code> but are applied at a specific endpoint level, and not a level higher targeting all routes.</p>
+<hr />
+<h2 id="iroutehandlerfilter">IRouteHandlerFilter</h2>
+<h3 id="definition">Definition</h3>
+<p>First, lets define the <code>IRouteHandlerFilter</code> implementation to later be applied to a minimal api endpoint. In the below example, a router handler filter is defined to measure how long a call to the endpoint takes:</p>
+<pre><code class="language-csharp">public class RouteLogger : IRouteHandlerFilter
+{
+    public async ValueTask&lt;object?&gt; InvokeAsync(RouteHandlerInvocationContext context, 
+        RouteHandlerFilterDelegate next)
+    {
+        // record the time before the endpoint (or next filter is called)
+        Console.WriteLine($&quot;{DateTime.Now:MM/dd/yyyy hh:mm:ss.fff}: &quot; +
+            $&quot;RouteLogger - before endpoint called&quot;);
+
+        var result = await next.Invoke(context);
+
+        // record the time after the endpoint (or next filter is called)
+        Console.WriteLine($&quot;{DateTime.Now:MM/dd/yyyy hh:mm:ss.fff}: &quot; +
+            $&quot;RouteLogger - after endpoint called&quot;);
+
+        return result;
+    }
+}
+</code></pre>
+<p>The <code>IRouteHandlerFilter</code> interface only has one method to implement - <em>InvokeAsync</em>, which takes two parameters:</p>
+<ul>
+<li><code>RouteHandlerInvocationContext</code>:  this contains a reference to the <em>HttpContext</em>, as well as a list of <em>Arguments</em> which can be modified to be passed between filters</li>
+<li><code>RouteHandlerFilterDelegate</code>: this contains a delegate to the next <em>IRouteHandlerFilter</em> implementation if multiple have been applied, otherwise it will route to the <em>actual endpoint handler</em></li>
+</ul>
+<p>In the above sample, a message is logged when the method is entered, the <em>next</em> delegate is invoked, and then a message logged just before the return. If <em>next</em> is not invoked, the pipeline to the endpoint is <code>short-circuited</code> and the <code>endpoint handler will never be invoked</code>. This allows checks or validation to be performed (authentication checks for example), and <em>short-circuit</em> if the checks fail.</p>
+<h3 id="application">Application</h3>
+<p>Applying the filter to the endpoint is very simple:</p>
+<pre><code class="language-csharp">var builder = WebApplication.CreateBuilder(args);
+
+var app = builder.Build();
+
+app.MapGet(&quot;/endpoint&quot;, () =&gt;
+{
+    Console.WriteLine($&quot;{DateTime.Now:MM/dd/yyyy hh:mm:ss.fff}: &quot; +
+        $&quot;Endpoint handler&quot;);
+
+    return &quot;Endpoint has been called&quot;;
+}).AddFilter&lt;RouteLogger&gt;(); // add the filter
+
+app.Run();
+</code></pre>
+<p>On the endpoint definition, the <em>AddFilter</em> method is called, with the <code>IRouteHandlerFilter</code> implementation specified. Multiple implementations can be linked together to form a pipeline to the endpoint handler.</p>
+
+<blockquote class="info-block">
+    <div>
+        <div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px; ">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-info-circle" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#00abfb" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                <circle cx="12" cy="12" r="9" />
+                <line x1="12" y1="8" x2="12.01" y2="8" />
+                <polyline points="11 12 12 12 12 16 13 16" />
+            </svg >
+        </div >
+        <div>
+            <p>
+<p>The above was written using <strong>.NET 7 Preview 5</strong>. AddFilter() has been renamed to <em>AddRouteHandlerFilter()</em> in Preview 6 and will be renamed again to <em>AddEndpointFilter()</em> starting in Preview 7.</p>
+</p>
+        </div>
+    </div>
+</blockquote >
+
+<hr />
+<h2 id="middleware">Middleware</h2>
+<p>As mentioned in the introduction, <em>route handler filters</em> act similar to the middleware. Where <code>route handler filters are applied to specific endpoints</code>, <code>middleware is applied to requests coming in on any route</code>.</p>
+<p>Below a middleware function is defined, which also performs logging:</p>
+<pre><code class="language-csharp">var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
+
+// define the middleware
+// The Func defined is called on every 
+// request to any endpoints
+app.Use(async (context, next) =&gt;
+{
+    Console.WriteLine($&quot;{DateTime.Now:MM/dd/yyyy hh:mm:ss.fff}: &quot; +
+        $&quot;Middleware - before endpoint called&quot;);
+
+    await next(context);
+
+    Console.WriteLine($&quot;{DateTime.Now:MM/dd/yyyy hh:mm:ss.fff}: &quot; +
+        $&quot;Middleware - after endpoint called&quot;);
+});
+
+app.MapGet(&quot;/endpoint&quot;, () =&gt;
+{
+    Console.WriteLine($&quot;{DateTime.Now:MM/dd/yyyy hh:mm:ss.fff}: &quot; +
+        $&quot;Endpoint handler&quot;);
+
+    return &quot;Endpoint has been called&quot;;
+}).AddFilter&lt;RouteLogger&gt;();
+
+app.Run();
+
+</code></pre>
+<p>The middleware has a similar structure to a <em>route handler filter</em>, with an <em>HttpContext</em> and a <em>RequestDelegate</em> as arguments. The <em>RequestDelegate</em> argument <code>next</code> is also invoked, to call the next middleware component, or the endpoint handler. If not called, <em>short-circuiting</em> will occur, just as with the <em>route handler filter</em>.</p>
+<p>In the above example, the <code>middleware was defined as a lambda function</code> while the <code>filter was defined as a concrete IRouteHandlerFilter implementation</code> - either of these can also be defined the either way. Middleware could be defined as a concrete implementation, and a route handler filter could be defined as a lambda function.<br />
+If there are a number of middleware or route handler filter components being used, it's usually better to use the concrete implementation method to keep the startup code cleaner, and keep all pipeline logic in one place (their own folder, for example).</p>
+<p>Executing the above code and browsing to the <code>/endpoint</code>, results in the following output:</p>
+<pre><code class="language-terminal">07/27/2022 08:42:27.851: Middleware - before endpoint called
+07/27/2022 08:42:27.859: RouteLogger - before endpoint called
+07/27/2022 08:42:27.860: Endpoint handler
+07/27/2022 08:42:27.860: RouteLogger - after endpoint called
+07/27/2022 08:42:27.865: Middleware - after endpoint called
+</code></pre>
+<p>As expected, the <code>middleware is called first</code>, before the http request is passed onto the endpoint specific <code>route handler filter(s)</code> (if any are defined), before the <code>actual endpoint handler</code> is called.</p>
+<hr />
+<h2 id="notes">Notes</h2>
+<p>As mentioned, <code>middleware</code> is applied to all endpoints, so if some middleware logic is only applicable to a certain endpoint(s), then currently filter logic needs to be specific in the middleware to determine if the middleware functionality should be applied to the request or not.
+Having the ability to granularly apply <code>route handler filter</code> &quot;middleware&quot; on specific endpoint(s) allows for greater flexibility and is a welcome addition which brings functionality closer to being on par with that of MVC (which has ActionFilter)</p>
+<hr />
+<h2 id="references">References</h2>
+<p><a href="https://khalidabuhakmeh.com/minimal-api-route-handler-filters">Minimal API Route Handler Filters</a></p>
+<hr />
+
+<blockquote class="daily-drop">
+    <div>
+        <div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px; ">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="50" height="50" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffec00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+              <path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+              <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+              <line x1="9.7" y1="17" x2="14.3" y2="17" />
+            </svg>
+        </div>
+        <div class="drop-header">
+            Daily Drop 145: 24-08-2022
+        </div>
+        <div>
+            <br>At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br> It could be anything - some.NET / C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
+            The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+        <div>
+    </div>
+</blockquote>
+
+
+                        
+<div>
+            <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
+            <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
+            <a role="button" href="/tags/minimalapi" class="badge badge-light"> minimalapi</a>
+            <a role="button" href="/tags/net7" class="badge badge-light"> .net7</a>
+            <a role="button" href="/tags/routehandler" class="badge badge-light"> routehandler</a>
+            <a role="button" href="/tags/filter" class="badge badge-light"> filter</a>
+</div>
+                    </div>
+                    <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
+                        
+
+        <div class="box sticky-top toc-block">
+            <h3 class="no-anchor">On This Page</h3>
+            <ul>
+        <li><a href="#daily-knowledge-drop">Daily Knowledge Drop</a></li>
+        <li><a href="#iroutehandlerfilter">IRouteHandlerFilter</a></li>
+            <ul>
+        <li><a href="#definition">Definition</a></li>
+        <li><a href="#application">Application</a></li>
+            </ul>
+        <li><a href="#middleware">Middleware</a></li>
+        <li><a href="#notes">Notes</a></li>
+        <li><a href="#references">References</a></li>
+            </ul>
+        </div>
+
+                    </div>
+            </div>
+            <div class="row ">
+                    <div id="content" class="col-md-9">
+                        <div>
+    <script src="https://giscus.app/client.js"
+            data-repo="always-developing/always-developing.github.io"
+            data-repo-id="R_kgDOGQJLBQ"
+            data-category="Comments"
+            data-category-id="DIC_kwDOGQJLBc4B_pUA"
+            data-mapping="pathname"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="bottom"
+            data-theme="transparent_dark"
+            data-lang="en"
+            crossorigin="anonymous"
+            async>
+    </script>
+</div>
+                    </div>
+            </div>
+    </div>
+
+    <hr class="horizontal-rule" />
+
+    <!-- Footer -->
+    <footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <ul class="list-inline text-center">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://www.linkedin.com/in/jean-pierre-seini">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-linkedin fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                <div>
+                    <p class="copyright text-footer">
+                        Copyright © 2022 Always Developing</a>.
+                    </p>
+                </div>
+                <ul class="list-inline text-center small text-feeds">
+                        <li class="list-inline-item">
+                            <a href="/feed.rss"><i class="fa fa-rss"></i> RSS Feed</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="/feed.atom"><i class="fa fa-rss"></i> Atom Feed</a>
+                        </li>
+                </ul>
+                <ul class="list-inline text-center small">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing/alwaysdeveloping-website-src"><i class="fab fa-github"></i> This site on GitHub</a>                    
+                    </li>
+                    <li class="list-inline-item">
+                        |
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing/alwaysdeveloping-website-src/tree/main/theme"><i class="fa fa-code"></i> Custom Always-Developing theme</a>
+                    </li>
+                    <li class="list-inline-item">
+                        |
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://github.com/statiqdev/CleanBlog"><i class="fa fa-blog"></i> Adapted from Clean Blog theme</a>
+                    </li>
+                </ul>
+                <div class="small text-footer">
+                    <a href="https://statiq.dev"><i class="fa fa-cogs"></i> Generated by Statiq</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="/vendor/jquery/jquery.min.js"></script>
+    <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CXPLFS7K38"></script>
+
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){window.dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-CXPLFS7K38');
+</script>
+
+    
+
+    <!-- Custom scripts for this template -->
+    <script src="/js/always-developing-blog.js"></script>
+
+</body>
+
+</html>

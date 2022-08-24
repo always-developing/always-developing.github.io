@@ -4,8 +4,120 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-08-23T05:00:50Z</updated>
+	<updated>2022-08-24T04:53:47Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/08/24-route-filter</id>
+		<title>Route handler filters in .NET 7</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/08/24-route-filter" />
+		<updated>2022-08-24T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;Coming with .NET 7 (most likely, .NET 7 is still in preview so its not 100% guaranteed to be included), is the &lt;code&gt;IRouteHandlerFilter&lt;/code&gt; interface, which allows for &lt;em&gt;intercepting&lt;/em&gt;  requests/response to and from a specific minimal endpoint.&lt;/p&gt;
+&lt;p&gt;This enabled &lt;code&gt;cross-cutting concerns to be coded once&lt;/code&gt;, and then applied to the relevent endpoints. They operate &lt;em&gt;similar&lt;/em&gt; to the .NET &lt;code&gt;middleware&lt;/code&gt; but are applied at a specific endpoint level, and not a level higher targeting all routes.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="iroutehandlerfilter"&gt;IRouteHandlerFilter&lt;/h2&gt;
+&lt;h3 id="definition"&gt;Definition&lt;/h3&gt;
+&lt;p&gt;First, lets define the &lt;code&gt;IRouteHandlerFilter&lt;/code&gt; implementation to later be applied to a minimal api endpoint. In the below example, a router handler filter is defined to measure how long a call to the endpoint takes:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class RouteLogger : IRouteHandlerFilter
+{
+    public async ValueTask&amp;lt;object?&amp;gt; InvokeAsync(RouteHandlerInvocationContext context, 
+        RouteHandlerFilterDelegate next)
+    {
+        // record the time before the endpoint (or next filter is called)
+        Console.WriteLine($&amp;quot;{DateTime.Now:MM/dd/yyyy hh:mm:ss.fff}: &amp;quot; +
+            $&amp;quot;RouteLogger - before endpoint called&amp;quot;);
+
+        var result = await next.Invoke(context);
+
+        // record the time after the endpoint (or next filter is called)
+        Console.WriteLine($&amp;quot;{DateTime.Now:MM/dd/yyyy hh:mm:ss.fff}: &amp;quot; +
+            $&amp;quot;RouteLogger - after endpoint called&amp;quot;);
+
+        return result;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The &lt;code&gt;IRouteHandlerFilter&lt;/code&gt; interface only has one method to implement - &lt;em&gt;InvokeAsync&lt;/em&gt;, which takes two parameters:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;RouteHandlerInvocationContext&lt;/code&gt;:  this contains a reference to the &lt;em&gt;HttpContext&lt;/em&gt;, as well as a list of &lt;em&gt;Arguments&lt;/em&gt; which can be modified to be passed between filters&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;RouteHandlerFilterDelegate&lt;/code&gt;: this contains a delegate to the next &lt;em&gt;IRouteHandlerFilter&lt;/em&gt; implementation if multiple have been applied, otherwise it will route to the &lt;em&gt;actual endpoint handler&lt;/em&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;In the above sample, a message is logged when the method is entered, the &lt;em&gt;next&lt;/em&gt; delegate is invoked, and then a message logged just before the return. If &lt;em&gt;next&lt;/em&gt; is not invoked, the pipeline to the endpoint is &lt;code&gt;short-circuited&lt;/code&gt; and the &lt;code&gt;endpoint handler will never be invoked&lt;/code&gt;. This allows checks or validation to be performed (authentication checks for example), and &lt;em&gt;short-circuit&lt;/em&gt; if the checks fail.&lt;/p&gt;
+&lt;h3 id="application"&gt;Application&lt;/h3&gt;
+&lt;p&gt;Applying the filter to the endpoint is very simple:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
+
+var app = builder.Build();
+
+app.MapGet(&amp;quot;/endpoint&amp;quot;, () =&amp;gt;
+{
+    Console.WriteLine($&amp;quot;{DateTime.Now:MM/dd/yyyy hh:mm:ss.fff}: &amp;quot; +
+        $&amp;quot;Endpoint handler&amp;quot;);
+
+    return &amp;quot;Endpoint has been called&amp;quot;;
+}).AddFilter&amp;lt;RouteLogger&amp;gt;(); // add the filter
+
+app.Run();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;On the endpoint definition, the &lt;em&gt;AddFilter&lt;/em&gt; method is called, with the &lt;code&gt;IRouteHandlerFilter&lt;/code&gt; implementation specified. Multiple implementations can be linked together to form a pipeline to the endpoint handler.&lt;/p&gt;
+&lt;?# InfoBlock ?&gt;
+&lt;p&gt;The above was written using &lt;strong&gt;.NET 7 Preview 5&lt;/strong&gt;. AddFilter() has been renamed to &lt;em&gt;AddRouteHandlerFilter()&lt;/em&gt; in Preview 6 and will be renamed again to &lt;em&gt;AddEndpointFilter()&lt;/em&gt; starting in Preview 7.&lt;/p&gt;
+&lt;?#/ InfoBlock ?&gt;
+&lt;hr /&gt;
+&lt;h2 id="middleware"&gt;Middleware&lt;/h2&gt;
+&lt;p&gt;As mentioned in the introduction, &lt;em&gt;route handler filters&lt;/em&gt; act similar to the middleware. Where &lt;code&gt;route handler filters are applied to specific endpoints&lt;/code&gt;, &lt;code&gt;middleware is applied to requests coming in on any route&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Below a middleware function is defined, which also performs logging:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
+
+// define the middleware
+// The Func defined is called on every 
+// request to any endpoints
+app.Use(async (context, next) =&amp;gt;
+{
+    Console.WriteLine($&amp;quot;{DateTime.Now:MM/dd/yyyy hh:mm:ss.fff}: &amp;quot; +
+        $&amp;quot;Middleware - before endpoint called&amp;quot;);
+
+    await next(context);
+
+    Console.WriteLine($&amp;quot;{DateTime.Now:MM/dd/yyyy hh:mm:ss.fff}: &amp;quot; +
+        $&amp;quot;Middleware - after endpoint called&amp;quot;);
+});
+
+app.MapGet(&amp;quot;/endpoint&amp;quot;, () =&amp;gt;
+{
+    Console.WriteLine($&amp;quot;{DateTime.Now:MM/dd/yyyy hh:mm:ss.fff}: &amp;quot; +
+        $&amp;quot;Endpoint handler&amp;quot;);
+
+    return &amp;quot;Endpoint has been called&amp;quot;;
+}).AddFilter&amp;lt;RouteLogger&amp;gt;();
+
+app.Run();
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The middleware has a similar structure to a &lt;em&gt;route handler filter&lt;/em&gt;, with an &lt;em&gt;HttpContext&lt;/em&gt; and a &lt;em&gt;RequestDelegate&lt;/em&gt; as arguments. The &lt;em&gt;RequestDelegate&lt;/em&gt; argument &lt;code&gt;next&lt;/code&gt; is also invoked, to call the next middleware component, or the endpoint handler. If not called, &lt;em&gt;short-circuiting&lt;/em&gt; will occur, just as with the &lt;em&gt;route handler filter&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;In the above example, the &lt;code&gt;middleware was defined as a lambda function&lt;/code&gt; while the &lt;code&gt;filter was defined as a concrete IRouteHandlerFilter implementation&lt;/code&gt; - either of these can also be defined the either way. Middleware could be defined as a concrete implementation, and a route handler filter could be defined as a lambda function.&lt;br /&gt;
+If there are a number of middleware or route handler filter components being used, it's usually better to use the concrete implementation method to keep the startup code cleaner, and keep all pipeline logic in one place (their own folder, for example).&lt;/p&gt;
+&lt;p&gt;Executing the above code and browsing to the &lt;code&gt;/endpoint&lt;/code&gt;, results in the following output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;07/27/2022 08:42:27.851: Middleware - before endpoint called
+07/27/2022 08:42:27.859: RouteLogger - before endpoint called
+07/27/2022 08:42:27.860: Endpoint handler
+07/27/2022 08:42:27.860: RouteLogger - after endpoint called
+07/27/2022 08:42:27.865: Middleware - after endpoint called
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As expected, the &lt;code&gt;middleware is called first&lt;/code&gt;, before the http request is passed onto the endpoint specific &lt;code&gt;route handler filter(s)&lt;/code&gt; (if any are defined), before the &lt;code&gt;actual endpoint handler&lt;/code&gt; is called.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;As mentioned, &lt;code&gt;middleware&lt;/code&gt; is applied to all endpoints, so if some middleware logic is only applicable to a certain endpoint(s), then currently filter logic needs to be specific in the middleware to determine if the middleware functionality should be applied to the request or not.
+Having the ability to granularly apply &lt;code&gt;route handler filter&lt;/code&gt; &amp;quot;middleware&amp;quot; on specific endpoint(s) allows for greater flexibility and is a welcome addition which brings functionality closer to being on par with that of MVC (which has ActionFilter)&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://khalidabuhakmeh.com/minimal-api-route-handler-filters"&gt;Minimal API Route Handler Filters&lt;/a&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;?# DailyDrop ?&gt;145: 24-08-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/08/23-override-new</id>
 		<title>Override vs New behavior</title>
@@ -1103,215 +1215,6 @@ Is Linux?: True
 &lt;p&gt;&lt;a href="https://twitter.com/buhakmeh/status/1541104583728136192"&gt;Khalid Abuhakmeh Tweet&lt;/a&gt;&lt;/p&gt;
 &lt;hr /&gt;
 &lt;?# DailyDrop ?&gt;136: 11-08-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/08/10-sql-over</id>
-		<title>An intro to SQL SELECT-OVER</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/08/10-sql-over" />
-		<updated>2022-08-10T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;The SQL &lt;code&gt;OVER&lt;/code&gt; clause can be used to define a window or user-specified set of rows within a result set. This effectively &lt;code&gt;allows computed values&lt;/code&gt; (AVG, MAX in the below examples) to be &lt;code&gt;executed over different sets of data&lt;/code&gt;, in the &lt;code&gt;same query&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;Some examples below should make this clearer.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="audit-table"&gt;Audit table&lt;/h2&gt;
-&lt;p&gt;In our examples below, we are using an &lt;code&gt;Audit&lt;/code&gt; table which stored the average execution time for a process on a server for a specific day. The table will store the server name, as well as the average execution time (in milliseconds):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT * FROM Audit
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;A sample output of the data for a few servers:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Id          Created                 Server          ExecutionInMs
------------ ----------------------- --------------- -------------
-230001      2022-07-15 06:38:54.710 Server1         2420
-230002      2022-07-15 06:38:54.710 Server2         4176
-230003      2022-07-15 06:38:54.710 Server3         6291
-230004      2022-07-15 06:38:54.710 Server4         2508
-230005      2022-07-15 06:38:54.710 Server5         6690
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id="use-case"&gt;Use case&lt;/h3&gt;
-&lt;p&gt;In our use case, we want to see the &lt;code&gt;average execution&lt;/code&gt; time for each server along with the &lt;code&gt;average across all servers&lt;/code&gt;, to determine if any specific server(s) are executing excessively above the average. Also to include is &lt;code&gt;MIN and MAX execution time across all servers&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;In our example we only have 100 server, so one could potentially just manually look at the data to see the &lt;code&gt;MIN and MAX&lt;/code&gt; - but imagine the same scenario at scale with hundreds or thousands of server. Not as easy to do manually.&lt;/p&gt;
-&lt;h2 id="without-over"&gt;Without OVER&lt;/h2&gt;
-&lt;h3 id="averages"&gt;Averages&lt;/h3&gt;
-&lt;p&gt;First step, is to get the &lt;code&gt;average across all servers&lt;/code&gt; and the following is a method to do it - using a sub query to perform the &lt;code&gt;average across all data&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT Server, ExecutionInMs,
-	(
-		SELECT AVG(ExecutionInMs) FROM Audit
-	) as TotalAverageExecutionTime
-FROM Audit
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Another way could be to &lt;em&gt;SELECT&lt;/em&gt; the value into a variable and then include that in the final &lt;em&gt;SELECT&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;DECLARE &amp;#64;TotalAverageExecutionTime int
-SELECT &amp;#64;TotalAverageExecutionTime = AVG(ExecutionInMs) FROM Audit
-
-SELECT Server, ExecutionInMs, &amp;#64;TotalAverageExecutionTime as TotalAverageExecutionTime
-FROM Audit
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Both techniques return the same result set:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Server           ExecutionInMs TotalAverageExecutionTime
----------------- ------------- -------------------------
-Server1          2420          4551
-Server2          4176          4551
-Server3          6291          4551
-Server4          2508          4551
-Server5          6690          4551
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This approach is required as we are trying to combine operations &lt;code&gt;across different datasets&lt;/code&gt; - the dataset of a set of rows and the dataset of all the information combined (the &lt;code&gt;AVG&lt;/code&gt;).&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="min-and-max"&gt;MIN and MAX&lt;/h3&gt;
-&lt;p&gt;The same problem occurs with using &lt;code&gt;MIN and MAX&lt;/code&gt;. Here is a sample of what the query would look like using &lt;code&gt;sub-queries&lt;/code&gt; to get all the information required:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT 
-	Server, 
-        ExecutionInMs,
-	(
-		SELECT AVG(ExecutionInMs) FROM Audit
-	) as TotalAverageExecutionTime,
-	(
-		SELECT MIN(ExecutionInMs) FROM Audit
-	) as TotalMinExecutionTime,
-	(
-		SELECT Max(ExecutionInMs) FROM Audit
-	) as TotalMaxExecutionTime
-FROM Audit
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;With all of this, we have the information we require:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Server          ExecutionInMs TotalAverageExecutionTime TotalMinExecutionTime TotalMaxExecutionTime
---------------- ------------- ------------------------- --------------------- ---------------------
-Server1         2420          4551                      2027                  10600
-Server2         4176          4551                      2027                  10600
-Server3         6291          4551                      2027                  10600
-Server4         2508          4551                      2027                  10600
-Server5         6690          4551                      2027                  10600
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;While this is all valid, but there is a easier and simpler way, using the &lt;code&gt;OVER clause&lt;/code&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="with-over"&gt;With OVER&lt;/h2&gt;
-&lt;h3 id="averages-1"&gt;Averages&lt;/h3&gt;
-&lt;p&gt;As mentioned in the intro - the &lt;code&gt;OVER&lt;/code&gt; clause can be used to &lt;em&gt;define a window or user-specified set of rows within a result set&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;We can select the base table information, and then use the &lt;code&gt;OVER&lt;/code&gt; clause to define a separate result set to perform the &lt;code&gt;AVG&lt;/code&gt; on, &lt;code&gt;in the same query&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT	
-    Server, 
-    ExecutionInMs, 
-    AVG(ExecutionInMs) OVER()
-FROM Audit
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The additional of &lt;code&gt;OVER()&lt;/code&gt; with no parameters passed in, means: &lt;code&gt;over the entire dataset&lt;/code&gt;. So in the query the &lt;em&gt;Server&lt;/em&gt; and &lt;em&gt;ExecutionInMs&lt;/em&gt; is returned for each row in the base data, while the &lt;code&gt;AVG is executed over the entire dataset of all rows&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;Definitely cleaner, easier and more concise than the other methods shown above without &lt;code&gt;OVER&lt;/code&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="min-and-max-1"&gt;MIN and MAX&lt;/h3&gt;
-&lt;p&gt;The same solution can be used for &lt;code&gt;MIN and MAX&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT	
-    Server, 
-    ExecutionInMs, 
-    AVG(ExecutionInMs) OVER() as TotalAverageExecutionTime,
-    MIN(ExecutionInMs) OVER() as TotalMinExecutionTime,
-    MAX(ExecutionInMs) OVER() as TotalMaxExecutionTime
-FROM Audit
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We now have our final required results:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Server           ExecutionInMs TotalAverageExecutionTime TotalMinExecutionTime TotalMaxExecutionTime
----------------- ------------- ------------------------- --------------------- ---------------------
-Server1          2420          4551                      2027                  10600
-Server2          4176          4551                      2027                  10600
-Server3          6291          4551                      2027                  10600
-Server4          2508          4551                      2027                  10600
-Server5          6690          4551                      2027                  10600
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="calculations"&gt;Calculations&lt;/h2&gt;
-&lt;p&gt;Calculations can also be performed on the data output by using &lt;code&gt;OVER&lt;/code&gt;:&lt;/p&gt;
-&lt;p&gt;In this example, the percentage above the total average for each server is calculated, and then each server is ranked by how far they are above the average:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT	
-    Server, 
-    ExecutionInMs, 
-    AVG(ExecutionInMs) OVER() as TotalAverageExecutionTime,
-    MIN(ExecutionInMs) OVER() as TotalMinExecutionTime,
-    MAX(ExecutionInMs) OVER() as TotalMaxExecutionTime,
-    (CONVERT(decimal, ExecutionInMs) / CONVERT(decimal, AVG(ExecutionInMs) OVER())) * 100
-FROM Audit
-ORDER BY 6 DESC
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;From the results, we can see that &lt;code&gt;Server10&lt;/code&gt; is executing over &lt;code&gt;two times slower than the average&lt;/code&gt;!&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Server          ExecutionInMs TotalAverageExecutionTime TotalMinExecutionTime TotalMaxExecutionTime 
---------------- ------------- ------------------------- --------------------- --------------------- ---------------------
-Server10        10600         4551                      2027                  10600                 232.9158426719402329
-Server50        7000          4551                      2027                  10600                 153.8123489343001538
-Server77        6950          4551                      2027                  10600                 152.7136892990551527
-Server90        6941          4551                      2027                  10600                 152.5159305647110525
-Server56        6899          4551                      2027                  10600                 151.5930564711052516
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h3 id="partition"&gt;Partition&lt;/h3&gt;
-&lt;p&gt;The &lt;code&gt;PARTITION&lt;/code&gt; keyword can also be used in conjunction with the &lt;code&gt;OVER&lt;/code&gt; to create multiple smaller datasets &lt;em&gt;partitioned&lt;/em&gt; by the specified field.&lt;/p&gt;
-&lt;p&gt;For the below example, suppose a requirement has come into also include the average for each &lt;em&gt;second&lt;/em&gt; - that is, the &lt;code&gt;average for all server's where the execution time is between 4000-4999ms&lt;/code&gt;, the average where the execution time is &lt;code&gt;between 5000-5999ms etc&lt;/code&gt;. Maybe there is a threshold above which the execution jumps drastically?&lt;/p&gt;
-&lt;p&gt;First, let's include a clause to get the first digit of the &lt;em&gt;ExecutionTimeInMs&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT	
-    Server, 
-    ExecutionInMs,
-    SUBSTRING(CAST(ExecutionInMs as varchar), 1, 1) as FirstDigit,
-    AVG(ExecutionInMs) OVER() as TotalAverageExecutionTime,
-    MIN(ExecutionInMs) OVER() as TotalMinExecutionTime,
-    MAX(ExecutionInMs) OVER() as TotalMaxExecutionTime,
-    (CONVERT(decimal, ExecutionInMs) / CONVERT(decimal, AVG(ExecutionInMs) OVER())) * 100
-FROM Audit
-ORDER BY 6 DESC
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;From there, we can now use this field to create multiple datasets on which the &lt;code&gt;AVG&lt;/code&gt; is &lt;code&gt;PARTITIONED&lt;/code&gt; by:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT	
-    Server, 
-    ExecutionInMs,
-    SUBSTRING(CAST(ExecutionInMs as varchar), 1, 1) as FirstDigit,
-    AVG(ExecutionInMs) OVER(PARTITION BY SUBSTRING(CAST(ExecutionInMs as varchar), 1, 1)) as SecondAverageInMs,
-    AVG(ExecutionInMs) OVER() as TotalAverageExecutionTime,
-    MIN(ExecutionInMs) OVER() as TotalMinExecutionTime,
-    MAX(ExecutionInMs) OVER() as TotalMaxExecutionTime,
-    (CONVERT(decimal, ExecutionInMs) / CONVERT(decimal, AVG(ExecutionInMs) OVER())) * 100
-FROM Audit
-ORDER BY 6 DESC
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;A sample of the results:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Server          ExecutionInMs FirstDigit SecondAverageInMs TotalAverageExecutionTime TotalMinExecutionTime TotalMaxExecutionTime 
---------------- ------------- ---------- ----------------- ------------------------- --------------------- --------------------- --------------------
-Server91        2813          2          2508              4551                      2027                  10600                 61.8105910788837618
-Server92        2295          2          2508              4551                      2027                  10600                 50.4284772577455504
-Server95        2159          2          2508              4551                      2027                  10600                 47.4401230498791474
-Server96        2566          2          2508              4551                      2027                  10600                 56.3832124807734564
-Server93        3818          3          3538              4551                      2027                  10600                 83.8936497473082839
-Server100       3127          3          3538              4551                      2027                  10600                 68.7101735882223687
-Server70        3348          3          3538              4551                      2027                  10600                 73.5662491760052736
-
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;From the result, we now have:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;The &lt;code&gt;average&lt;/code&gt; across a specific &lt;code&gt;partition&lt;/code&gt; - records which start with the same digit for &lt;em&gt;ExecutionInMs&lt;/em&gt; will have the same average&lt;/li&gt;
-&lt;li&gt;The &lt;code&gt;average&lt;/code&gt; across the entire dataset - all records will have the same average&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr /&gt;
-&lt;h2 id="row-numbering"&gt;Row Numbering&lt;/h2&gt;
-&lt;p&gt;A use case which often comes up (and which I've used, without fully understanding the inner workings) - and that is to &lt;code&gt;number each row&lt;/code&gt; and specifically &lt;code&gt;number each row over a group/partition&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;The &lt;code&gt;ROW_NUMBER&lt;/code&gt; function is used with the &lt;code&gt;OVER&lt;/code&gt; and &lt;code&gt;ORDER BY&lt;/code&gt; clauses to give each row a number, based on the &lt;code&gt;ORDER BY&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;Here, each row is given a number, ordered by the &lt;em&gt;ExecutionInMs&lt;/em&gt; from largest to smallest:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT ROW_NUMBER() OVER(ORDER BY ExecutionInMs DESC), Server, ExecutionInMs
-FROM Audit
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;A sample of the output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;                     Server           ExecutionInMs
--------------------  ---------------- -------------
-1                    Server10         10600
-2                    Server50         7000
-3                    Server77         6950
-4                    Server90         6941
-5                    Server56         6899
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This can also be used with the &lt;code&gt;PARTITION&lt;/code&gt; clause to generate row numbers within a specific sub-dataset.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;If working with an ORM (such as Entity Framework), this may not be something for every day use. However, investigations and troubleshooting will still need to be performed on the data, in which case knowledge of the usage of &lt;code&gt;OVER&lt;/code&gt; and &lt;code&gt;PARTITION&lt;/code&gt; can prove to be invaluable. In addition if using an ORM which does generate SQL using &lt;code&gt;OVER&lt;/code&gt; its important to understand the SQL and how the code effects the SQL generation.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/sql/t-sql/queries/select-over-clause-transact-sql?view=sql-server-ver16"&gt;SELECT - OVER Clause (Transact-SQL)&lt;/a&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;?# DailyDrop ?&gt;135: 10-08-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
