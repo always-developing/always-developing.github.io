@@ -5,8 +5,75 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Thu, 25 Aug 2022 05:01:08 GMT</pubDate>
-		<lastBuildDate>Thu, 25 Aug 2022 05:01:08 GMT</lastBuildDate>
+		<pubDate>Fri, 26 Aug 2022 05:09:23 GMT</pubDate>
+		<lastBuildDate>Fri, 26 Aug 2022 05:09:23 GMT</lastBuildDate>
+		<item>
+			<title>Constructor out parameters</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/08/26-constructor-out</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/08/26-constructor-out</guid>
+			<pubDate>Fri, 26 Aug 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;Class constructors can contain &lt;code&gt;out or ref parameters&lt;/code&gt;, and operate just as they would on a normal method.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="usages"&gt;Usages&lt;/h2&gt;
+&lt;p&gt;While not a very common feature to make use of in most code, below we'll look at a few use cases when an &lt;code&gt;out&lt;/code&gt; parameter on a constructor &lt;em&gt;might&lt;/em&gt; be useful. There may definitely be better ways of handling these specific use cases, but using an &lt;code&gt;out&lt;/code&gt; parameter is &lt;em&gt;a way to handle them&lt;/em&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="dependent-entity"&gt;Dependent entity&lt;/h3&gt;
+&lt;p&gt;Consider the situation when &lt;code&gt;instantiating a class, another class is created at the same time using the same information&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;In the below example, we have a &lt;code&gt;Product&lt;/code&gt; class to store product information (including the current price) and a &lt;code&gt;ProductPrice&lt;/code&gt; class to store the history of prices for the product.&lt;/p&gt;
+&lt;p&gt;When creating a &lt;code&gt;Product&lt;/code&gt; record, &lt;code&gt;ProductPrice&lt;/code&gt; record should be created at the same time:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var product = new Product(Guid.NewGuid(), &amp;quot;Green pants&amp;quot;, 99.99m);
+var price = new ProductPrice
+{
+    Id = product1.Id,
+    Price = product1.Price
+};
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This could however also be done using an &lt;code&gt;out&lt;/code&gt; parameter. Consider the following &lt;em&gt;constructor&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public Product(Guid id, string name, decimal price, out ProductPrice productPrice)
+{
+    Id = id;
+    Name = name;
+    Price = price;
+
+    productPrice = new ProductPrice 
+    { 
+        Id = id, 
+        Price = price 
+    };
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Which can then be called as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var product = new Product(Guid.NewGuid(), &amp;quot;Green pants&amp;quot;, 99.99m, out ProductPrice price);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;More concise? Yes. A better solution? Debatably.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="generated-information"&gt;Generated information&lt;/h3&gt;
+&lt;p&gt;Expanding on the above example, maybe the &lt;code&gt;Id of the Product is generated internally to the class&lt;/code&gt;, in the constructor. An &lt;code&gt;out&lt;/code&gt; parameter could be used to return the instance &lt;em&gt;Id&lt;/em&gt; from the constructor.&lt;/p&gt;
+&lt;p&gt;Here the &lt;em&gt;Id&lt;/em&gt; is generated in the constructor, and assigned to the &lt;code&gt;out&lt;/code&gt; parameter as well as the &lt;em&gt;Id&lt;/em&gt; property of thd class itself:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public Product(string name, decimal price, out Guid id)
+{
+    id = Id = Guid.NewGuid();
+    Name = name;
+    Price = price;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The usage of the constructor:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var product = new Product(&amp;quot;Green pants&amp;quot;, 99.99m, out Guid productId);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Again - more concise than some alternatives? Yes. A better solution? Debatably.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;This is not something I'd ever really considered, or ever required in 20 years of development - however it is an interesting feature. Maybe one day I might have a  a practical use to use it in production code.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/MarusykRoman/status/1550995942576476162"&gt;Roman Marusyk Tweet&lt;/a&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;?# DailyDrop ?&gt;147: 26-08-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Delimit an array with ArraySegment</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/08/25-arraysegment</link>
@@ -1196,106 +1263,6 @@ In this demo &lt;code&gt;pattern matching&lt;/code&gt; is certainly more readabl
 &lt;p&gt;&lt;a href="https://twitter.com/buhakmeh/status/1543278994069544962"&gt;Khalid Abuhakmeh Tweet&lt;/a&gt;&lt;/p&gt;
 &lt;hr /&gt;
 &lt;?# DailyDrop ?&gt;138: 15-08-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Modifying configuration on load</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/08/12-options-create</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/08/12-options-create</guid>
-			<pubDate>Fri, 12 Aug 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;Options.Create&lt;/code&gt; method can be used in conjunction with the &lt;code&gt;GetSection.Bind&lt;/code&gt; methods to read settings from the &lt;em&gt;Configuration&lt;/em&gt; provider(s), and modify them before adding them to the dependency injection container.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="configuring-options"&gt;Configuring options&lt;/h2&gt;
-&lt;p&gt;First we'll have a look at how to load options &lt;em&gt;without&lt;/em&gt; any modification.&lt;/p&gt;
-&lt;p&gt;We have the following section in the &lt;em&gt;appsettings.json&lt;/em&gt; file:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-json"&gt;"Credentials": {
-    "Username": "admin",
-    "Password": "logMeIn"
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The startup (using top level statements and a minimal endpoint) is as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
-
-// Get the section called "Credentials" from configuration
-var optionSection = builder.Configuration.GetSection("Credentials");
-// this line will bind the section to a Credentials class
-// and add it to the DI container automatically
-builder.Services.Configure&amp;lt;Credentials&amp;gt;(optionSection);
-
-var app = builder.Build();
-
-app.MapGet("/getoptions", (IOptions&amp;lt;Credentials&amp;gt; options) =&amp;gt;
-{
-    return options.Value;
-});
-
-app.Run();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The &lt;code&gt;builder.Services.Configure&amp;lt;Credentials&amp;gt;(optionSection);&lt;/code&gt; block of code, will convert the &lt;em&gt;optionSection&lt;/em&gt; to type &lt;em&gt;Credentials&lt;/em&gt; and automatically add it to the dependency injection container as &lt;code&gt;IOptions&amp;lt;Credentials&amp;gt;&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;It is best practice to use the &lt;a href="https://alwaysdeveloping.net/02/03-ioptions"&gt;&lt;code&gt;options Pattern&lt;/code&gt; (as described in this post)&lt;/a&gt;, over just inserting &lt;em&gt;Credentials&lt;/em&gt; as a singleton. The options pattern this is the default pattern when using &lt;em&gt;Services.Configure&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;Calling the endpoint defined above, will return the following:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-json"&gt;{"username":"admin","password":"logMeIn"}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The obvious issue with all of the above, is that we are &lt;code&gt;storing the password in plain text in the source control repository&lt;/code&gt;. Next we will look at how the settings can be:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;Loaded from the configuration (without a password)&lt;/li&gt;
-&lt;li&gt;Modified (to add the password from an &lt;em&gt;environment variable&lt;/em&gt;)&lt;/li&gt;
-&lt;li&gt;Added to the dependency injection container still using &lt;em&gt;Options pattern&lt;/em&gt;&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;Only the startup code will need to change, and any other code which is using &lt;code&gt;IOptions&amp;lt;Credentials&amp;gt;&lt;/code&gt; will not be affected and be required to change.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="modifying-options"&gt;Modifying options&lt;/h2&gt;
-&lt;p&gt;To repeat - we are aiming to remove the password from the &lt;em&gt;appsettings.json&lt;/em&gt;, inject it as an &lt;em&gt;environment variable&lt;/em&gt; at runtime but still have it populated on the &lt;code&gt;IOptions&amp;lt;Credentials&amp;gt;&lt;/code&gt; class added to the dependency injection container.&lt;/p&gt;
-&lt;p&gt;Step one is to remove the password from  &lt;em&gt;appsettings.json&lt;/em&gt; file:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-json"&gt;"Credentials": {
-    "Username": "admin"
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Next, we update the startup to load the configuration slightly differently:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
-
-// load the Credentials section from the configuration
-// and bind it to the credentialOptions instance
-var credentialOptions = new Credentials();
-builder.Configuration.GetSection("Credentials").Bind(credentialOptions);
-
-// modify the instance by setting the Password value from
-// the environment variables
-credentialOptions.Password = builder.Configuration["Credentials.Password"];
-
-// Create IOptions&amp;lt;Credentials&amp;gt; from an instance of Credentials
-var ioptions = Options.Create(credentialOptions);
-// manually add to the DI container
-builder.Services.AddSingleton(ioptions);
-
-var app = builder.Build();
-
-app.MapGet("/getoptions", (IOptions&amp;lt;Credentials&amp;gt; options) =&amp;gt;
-{
-    return options.Value;
-});
-
-app.Run();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Here are few more steps are involved, when compared to the first example, but its not much more complex:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Instead of using &lt;code&gt;builder.Services.Configure&lt;/code&gt; to create an &lt;em&gt;IOptions&lt;/em&gt; from the configuration directly, the &lt;code&gt;builder.Configuration.GetSection.Bind&lt;/code&gt; method is used to bind the configuration to an instance of &lt;em&gt;Credentials&lt;/em&gt; (at this point we have no &lt;em&gt;IOptions&lt;/em&gt;)&lt;/li&gt;
-&lt;li&gt;Manually update the instance using values from the &lt;em&gt;environment variable&lt;/em&gt; (in this example)&lt;/li&gt;
-&lt;li&gt;Use the &lt;code&gt;Options.Create&lt;/code&gt; method to create &lt;em&gt;IOptions&amp;lt;Credentials&amp;gt;&lt;/em&gt; from the instance of &lt;em&gt;Credentials&lt;/em&gt;&lt;/li&gt;
-&lt;li&gt;Add the &lt;em&gt;IOptions&lt;/em&gt; instance to the DI container (as a singleton)&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Calling the endpoint defined above, now returns the following:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-json"&gt;{"username":"admin","password":"logMeInEnvVar"}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We have a password, which was passed in as an &lt;code&gt;environment variable&lt;/code&gt; (with the key &lt;em&gt;Credentials.Password&lt;/em&gt;), and no client code had to change, only startup code!&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;While there are better methods for dealing with passwords (such as storing them in a vault, and using a configuration provider to pull the values directly from the vault) - in some cases this is not feasible. So while this solution might not be the first choice, it definitely is a valid method to protect passwords, by not having them as part of the source code in a source control repository.&lt;/p&gt;
-&lt;hr&gt;
-&lt;!--?# DailyDrop ?--&gt;137: 12-08-2022&lt;!--?#/ DailyDrop ?--&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
