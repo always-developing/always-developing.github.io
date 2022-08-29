@@ -5,8 +5,100 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Fri, 26 Aug 2022 05:09:23 GMT</pubDate>
-		<lastBuildDate>Fri, 26 Aug 2022 05:09:23 GMT</lastBuildDate>
+		<pubDate>Mon, 29 Aug 2022 05:07:03 GMT</pubDate>
+		<lastBuildDate>Mon, 29 Aug 2022 05:07:03 GMT</lastBuildDate>
+		<item>
+			<title>Namespace-less types</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/08/29-global-namespace</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/08/29-global-namespace</guid>
+			<pubDate>Mon, 29 Aug 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;Types in C# &lt;code&gt;do not have to belong to a specific namespace&lt;/code&gt; - it is just standard convention that they do, however this is not a requirement. The &lt;code&gt;global&lt;/code&gt; alias, along with the namespace alias qualifier &lt;code&gt;::&lt;/code&gt; can be used to reference types without a namespace in the event of a &lt;em&gt;naming conflict&lt;/em&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="usage"&gt;Usage&lt;/h2&gt;
+&lt;p&gt;Consider the following basic example - a simple wrapper class, &lt;em&gt;belonging to a namespace&lt;/em&gt;, which will output a string to the console:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;namespace GlobalKeyword;
+
+public class ConsoleWrapper
+{
+    public static void OutputToConsole(string output)
+    {
+        Console.WriteLine(output);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The usage is straight forward:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;namespace GlobalKeyword;
+
+public class Program
+{
+    public static void Main()
+    {
+        ConsoleWrapper.OutputToConsole(
+            $&amp;quot;Written to console by instance of '{nameof(ConsoleWrapper)}'&amp;quot;);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Suppose we reference a Nuget package in our project - it just so happens the require functionality is contained in the package, in a class also called &lt;code&gt;ConsoleWrapper&lt;/code&gt;, however, it &lt;code&gt;doesn't contain a namespace&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public  class ConsoleWrapper
+{
+    public static void Output(string output)
+    {
+        Console.WriteLine(output);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If we try reference the new class in our &lt;em&gt;Main&lt;/em&gt; method:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;namespace GlobalKeyword;
+
+public static void Main()
+{
+    // old class in same namespace as Main
+    ConsoleWrapper.OutputToConsole(
+        $&amp;quot;Written to console by instance of '{nameof(ConsoleWrapper)}'&amp;quot;);
+
+    // new class without a namespace
+    ConsoleWrapper.Output(
+        $&amp;quot;Written to console by instance of '{nameof(GlobalKeyword.ConsoleWrapper)}'&amp;quot;);
+    
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Then the following compile-time error occurs:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;'ConsoleWrapper' does not contain a definition for 'Output'
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As the newly introduced  &lt;em&gt;ConsoleWrapper&lt;/em&gt; has no namespace, we cannot fully qualify it to resolve the conflict. However, as it has no namespace, it gets put into the &lt;code&gt;global namespace&lt;/code&gt; which can be referenced using &lt;code&gt;global::&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;namespace GlobalKeyword;
+
+public static void Main()
+{
+    // old class in same namespace as Main
+    ConsoleWrapper.OutputToConsole(
+        $&amp;quot;Written to console by instance of '{nameof(ConsoleWrapper)}'&amp;quot;);
+
+    // new class in no/global namespace
+    global::ConsoleWrapper.Output(
+        $&amp;quot;Written to console by instance of '{nameof(GlobalKeyword.ConsoleWrapper)}'&amp;quot;);
+    
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;strong&gt;Problem solved!&lt;/strong&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;This is a very rare issue to encounter, as it requires two unlikely scenarios to occur:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;A type to not have a namespace&lt;/li&gt;
+&lt;li&gt;The type without a namespace to have the same name as another type (either user defined, or reference)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The vast majority of types do have namespaces, so the chances of encountering this issue are small - however, if it is encountered, the &lt;code&gt;global&lt;/code&gt; alias can be used to resolve the conflict.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/operators/namespace-alias-qualifier"&gt;:: operator (C# reference)&lt;/a&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;?# DailyDrop ?&gt;148: 29-08-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Constructor out parameters</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/08/26-constructor-out</link>
@@ -1136,133 +1228,6 @@ Message with Id 'a3ea7ddd-6ac6-4b3e-b35d-1276ce20e1bd' published!
 &lt;a href="https://redis.io/docs/getting-started/installation/install-redis-on-windows/"&gt;Install Redis on Windows&lt;/a&gt;&lt;/p&gt;
 &lt;hr /&gt;
 &lt;?# DailyDrop ?&gt;139: 16-08-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Complex Pattern Matching</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/08/15-pattern-keywords</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/08/15-pattern-keywords</guid>
-			<pubDate>Mon, 15 Aug 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;&lt;code&gt;Pattern matching&lt;/code&gt; can use the &lt;code&gt;is&lt;/code&gt;, &lt;code&gt;not&lt;/code&gt;, &lt;code&gt;and&lt;/code&gt; and &lt;code&gt;or&lt;/code&gt; keywords individually in a statement, but also use the keywords together to form an enhanced, more complex statement.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="individual"&gt;Individual&lt;/h2&gt;
-&lt;h3 id="is-keyword"&gt;is keyword&lt;/h3&gt;
-&lt;p&gt;Common usages of the &lt;code&gt;is&lt;/code&gt; keyword is for &lt;code&gt;null checks&lt;/code&gt; and &lt;code&gt;type tests&lt;/code&gt;:&lt;/p&gt;
-&lt;p&gt;A &lt;code&gt;null check&lt;/code&gt; being performed:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;int? age = 12;
-
-// check if the value of age
-// is a valid number (i.e. not null)
-if (age is int number)
-{
-    Console.WriteLine($&amp;quot;'age' has the value of:{number}&amp;quot;);
-}
-else
-{
-    Console.WriteLine(&amp;quot;'age' has no value&amp;quot;);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;A &lt;code&gt;type check&lt;/code&gt; being performed (for performance improvements in this example):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public int SumListChecked(IEnumerable&amp;lt;int&amp;gt; enumerable)
-{
-    var runningSum = 0;
-
-    // Check the type 
-    if (enumerable is List&amp;lt;int&amp;gt; list)
-    {
-        foreach (var item in list)
-        {
-            runningSum += item;
-        }
-        return runningSum;
-    }
-    
-    // all others
-    foreach (var item in enumerable)
-    {
-        runningSum += item;
-    }
-
-    return runningSum;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id="not-keyword"&gt;not keyword&lt;/h3&gt;
-&lt;p&gt;The &lt;code&gt;not&lt;/code&gt; keyword can be used in conjunction with the &lt;code&gt;is&lt;/code&gt; keyword to perform a &lt;code&gt;null check&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;string? outputMessage = &amp;quot;This message should be output!&amp;quot;;
-
-// explicitly check that the string is not null
-if (outputMessage is not null)
-{
-    Console.WriteLine(outputMessage);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h3 id="and-or-keywords"&gt;and, or keywords&lt;/h3&gt;
-&lt;p&gt;The &lt;code&gt;and&lt;/code&gt; and &lt;code&gt;or&lt;/code&gt; keywords are commonly used in a &lt;code&gt;switch expression&lt;/code&gt; for &lt;code&gt;pattern matching&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;string GetGrade(int percentage) =&amp;gt;
-    percentage switch
-    {
-        (&amp;lt; 0) or (&amp;gt; 100) =&amp;gt; &amp;quot;Invalid&amp;quot;,
-        (&amp;gt;= 0) and (&amp;lt; 40) =&amp;gt; &amp;quot;Fail&amp;quot;,
-        (&amp;gt;= 40) and (&amp;lt; 70) =&amp;gt; &amp;quot;Average&amp;quot;,
-        (&amp;gt;= 70) =&amp;gt; &amp;quot;Excellent&amp;quot;,
-    };
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="enhanced-matching"&gt;Enhanced matching&lt;/h2&gt;
-&lt;p&gt;All the keywords can be used together for a more complex pattern matching expression - in this example to &lt;code&gt;validate an email address&lt;/code&gt; (there are definitely better, more comprehensive ways to validate an email address than using pattern matching, and although the below is not a complete and entirely valid way to validate an email address, it is sufficient for this demo)&lt;/p&gt;
-&lt;p&gt;The first step is to loop through each character in the email address to determine if its valid for an email address:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;bool IsValidEmailAddress(string email)
-{
-    foreach (var c in email)
-    {
-        var result = IsValidChar(c);
-        if (!result)
-        {
-            return false;
-        }
-    }
-
-    return true;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;If any of the characters are invalid according to the &lt;code&gt;IsValidChar&lt;/code&gt; method, then the &lt;em&gt;email string&lt;/em&gt; as a whole is invalid.&lt;/p&gt;
-&lt;p&gt;The &lt;code&gt;IsValidChar&lt;/code&gt; is where the enhanced, more complex pattern matching takes place. The method is an &lt;code&gt;expression-bodied method&lt;/code&gt; which in turn used &lt;code&gt;pattern matching&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;bool IsValidChar(char c) =&amp;gt;
-    c is ((&amp;gt;= 'A' and &amp;lt;= 'Z') // capital letters
-      or (&amp;gt;= 'a' and &amp;lt;= 'z') // lower case
-      or (&amp;gt;= '0' and &amp;lt;= '9') // numbers
-      or '&amp;#64;' // allowed symbols
-      or '.'
-      or '-'
-      or '+'
-      and not ' ');
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Executing the above code with the following example:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var emailToValidate = &amp;quot;learn&amp;#64;alwaysdeveloping.com&amp;quot;;
-Console.WriteLine($&amp;quot;'{emailToValidate}' a valid email &amp;quot; +
-    $&amp;quot;address?: {IsValidEmailAddress(emailToValidate)}&amp;quot;);
-
-var anotherEmailToValidate = &amp;quot;invalid123, invalid&amp;quot;;
-Console.WriteLine($&amp;quot;'{anotherEmailToValidate}' a valid email &amp;quot; +
-    $&amp;quot;address?: {IsValidEmailAddress(anotherEmailToValidate)}&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;'learn&amp;#64;alwaysdeveloping.com' a valid email address?: True
-'invalid123, invalid' a valid email address?: False
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;As &lt;code&gt;Pattern matching&lt;/code&gt; is a fairly new addition to C#, I have not seen it extensively used, and have no extensively used it myself. However the more I learn about the usages of it, the more it gets incorporated into my coding daily.&lt;br /&gt;
-In this demo &lt;code&gt;pattern matching&lt;/code&gt; is certainly more readable and easier to understand than some other methods (regex for example) - but what one gains in maintainability and readability, one might lose in performance. However, the important thing to know is there are options, and being better informed about each option allows for the best technique to be chosen for each use case.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://twitter.com/buhakmeh/status/1543278994069544962"&gt;Khalid Abuhakmeh Tweet&lt;/a&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;?# DailyDrop ?&gt;138: 15-08-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>

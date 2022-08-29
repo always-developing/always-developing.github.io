@@ -164,7 +164,7 @@ code { color: #f088b8; }
 
 .post-block * img { max-width: 100%; height: auto; margin-left: auto !important; margin-right: auto !important; display: block !important; }
 
-.post-block table { width: 100%; border-collapse: collapse; border-width: 1px; border-color: #717171; border-style: solid; }
+.post-block table { width: 100%; border-collapse: collapse; border-width: 1px; border-color: #717171; border-style: solid; margin-bottom: 1.5em; }
 
 .post-block th { border-width: 1px; border-color: #717171; border-style: solid; padding-left: 5px; padding-right: 5px; }
 
