@@ -4,8 +4,107 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-08-29T05:07:03Z</updated>
+	<updated>2022-08-30T05:13:02Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/08/30-ef-query-enumerable</id>
+		<title>Entity Framework: IQueryable vs IEnumerable</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/08/30-ef-query-enumerable" />
+		<updated>2022-08-30T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;When querying data using &lt;code&gt;Entity Framework (Core)&lt;/code&gt; the type of collection used before materializing the results drastically changes how the LINQ is translated and executed.&lt;/p&gt;
+&lt;p&gt;Using:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;IQueryable&lt;/code&gt;: The LINQ is translated to SQL and executing on the database (SQL Server in my examples below)&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;IEnumerable&lt;/code&gt;: The data is retrieved, and then the LINQ applied to the full dataset in memory&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr /&gt;
+&lt;h2 id="sample"&gt;Sample&lt;/h2&gt;
+&lt;p&gt;In these examples, we have SQL database containing &lt;em&gt;Blog&lt;/em&gt; information. One of the tables, is the &lt;code&gt;Tag&lt;/code&gt; table which contains all the &lt;em&gt;tags&lt;/em&gt; which have been assigned to specific blog posts.&lt;/p&gt;
+&lt;h3 id="query"&gt;Query&lt;/h3&gt;
+&lt;p&gt;An important aspect to remember when using Entity Framework (Core) and LINQ, is that a call is only made to the database and the results materialized (stored in memory) when needed and explicitly asked for.&lt;/p&gt;
+&lt;p&gt;To query all &lt;em&gt;Tags&lt;/em&gt; in the database:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// usual DbContext setup
+var context = new DemoContext();
+
+// query using the DbSet itself
+DbSet&amp;lt;Tag&amp;gt; dbSetTags = context.Tags;
+// materialize the results. The actual database
+// call is done when ToList is called
+var dbSetList = dbSetTags.ToList();
+
+// query using IQueryable
+IQueryable&amp;lt;Tag&amp;gt; queryableTags = context.Tags;
+var queryList = queryableTags.ToList();
+
+// Query using IEnumerable
+IEnumerable&amp;lt;Tag&amp;gt; enumerableTags = context.Tags;
+var enumerableList = enumerableTags.ToList();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As &lt;em&gt;DbSet&lt;/em&gt; implements &lt;em&gt;IQueryable&lt;/em&gt;, which implements &lt;em&gt;IEnumerable&lt;/em&gt; - all of the above casts are valid.&lt;/p&gt;
+&lt;p&gt;As mentioned above, the database is not actually queried until the data is explicitly asked for, which in the above examples, is when &lt;code&gt;ToList is called&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Executing the above code results in all three generating the same SQL:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT [t].[Id], [t].[DateCreated], [t].[Name], [t].[Used]
+FROM [Tag] AS [t]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Fairly straightforward and so far the results are as expected.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="filterordering"&gt;Filter/Ordering&lt;/h3&gt;
+&lt;p&gt;When &lt;em&gt;filtering&lt;/em&gt; or &lt;em&gt;data ordering&lt;/em&gt; is applied however, things can go wrong if not done correctly. The same three examples as above will be used, but with a &lt;em&gt;filter&lt;/em&gt; applied using &lt;code&gt;Where&lt;/code&gt; and &lt;em&gt;ordering&lt;/em&gt; applied by using &lt;code&gt;OrderBy&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// usual DbCOntext setup
+var context = new DemoContext();
+
+// query using the DbSet itself
+DbSet&amp;lt;Tag&amp;gt; dbSetTagsFilter = context.Tags;
+// apply filter, ordering and then materialize
+var dbSetTagsFilterList = dbSetTagsFilter
+    .Where(t =&amp;gt; t.Id &amp;gt; 50)
+    .OrderBy(t =&amp;gt; t.DateCreated)
+    .ToList();
+
+// query using IQueryable
+IQueryable&amp;lt;Tag&amp;gt; queryTagsFilter = context.Tags;
+// apply filter, ordering and then materialize
+var queryTagsFilterList = queryTagsFilter
+    .Where(t =&amp;gt; t.Id &amp;gt; 50)
+    .OrderBy(t =&amp;gt; t.DateCreated)
+    .ToList();
+
+// query using IEnumerable
+IEnumerable&amp;lt;Tag&amp;gt; enumerableTagsFilter = context.Tags;
+// apply filter, ordering and then materialize
+var enumerableTagsFilterList = enumerableTagsFilter
+    .Where(t =&amp;gt; t.Id &amp;gt; 50)
+    .OrderBy(t =&amp;gt; t.DateCreated)
+    .ToList();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;On the surface, these might all look the same, however, when looking at the SQL generated there is a &lt;code&gt;fundamental difference&lt;/code&gt; between them.&lt;/p&gt;
+&lt;p&gt;The first two, &lt;code&gt;DbSet&lt;/code&gt; and &lt;code&gt;IQueryable&lt;/code&gt; generate the following SQL:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT [t].[Id], [t].[DateCreated], [t].[Name], [t].[Used]
+FROM [Tag] AS [t]
+WHERE [t].[Id] &amp;gt; 50
+ORDER BY [t].[DateCreated]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;While the third method, using &lt;code&gt;IEnumerable&lt;/code&gt; generates the following:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT [t].[Id], [t].[DateCreated], [t].[Name], [t].[Used]
+FROM [Tag] AS [t]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;When using &lt;code&gt;DBSet&lt;/code&gt; or &lt;code&gt;IQueryable&lt;/code&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The LINQ is translated into SQL and executed on the database. This limits the amount of data transferred from the database to the application&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;When using &lt;code&gt;IEnumerable&lt;/code&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;First all the data is retrieved and then the filtering/ordering applied in memory. This leads to slower performance (as more data needs is transferred) and more memory usage&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;When working with Entity Framework (Core) make sure to understand how the collections work, and which to use, when materialization occurs and how the LINQ gets translated - if done incorrectly, one could see a massive negative performance impact.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;?# DailyDrop ?&gt;149: 30-08-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/08/29-global-namespace</id>
 		<title>Namespace-less types</title>
@@ -1101,122 +1200,6 @@ void PerformCalculation(int i)
 &lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/api/system.linq.parallelenumerable?view=net-6.0"&gt;ParallelEnumerable Class&lt;/a&gt;&lt;/p&gt;
 &lt;hr /&gt;
 &lt;?# DailyDrop ?&gt;140: 17-08-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/08/16-redis-pub-sub</id>
-		<title>Pub/Sub with Redis</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/08/16-redis-pub-sub" />
-		<updated>2022-08-16T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;A common use case for &lt;code&gt;Redis&lt;/code&gt; is as a &lt;em&gt;key-value&lt;/em&gt; stored, generally for caching - however, in addition to this &lt;em&gt;key-value&lt;/em&gt; store &lt;code&gt;Redis&lt;/code&gt; also has built in &lt;code&gt;messaging functionality via pub/sub&lt;/code&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="redis-installation"&gt;Redis installation&lt;/h2&gt;
-&lt;p&gt;&lt;code&gt;Redis&lt;/code&gt; is not officially supported on Windows - so to use it on Windows, either &lt;code&gt;WSL2&lt;/code&gt; (Windows Subsystem for Linux) has to be used, or the Redis container image (available from &lt;a href="https://hub.docker.com/_/redis"&gt;Docker Hub&lt;/a&gt;) running in &lt;em&gt;Docker Desktop&lt;/em&gt;, for example.&lt;/p&gt;
-&lt;p&gt;For the examples below, the &lt;code&gt;Redis&lt;/code&gt; image from &lt;em&gt;Docker Hub&lt;/em&gt; was used, running on &lt;em&gt;Docker Desktop&lt;/em&gt; for Windows.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="subscriber"&gt;Subscriber&lt;/h2&gt;
-&lt;p&gt;First let's look at the &lt;code&gt;subscriber&lt;/code&gt; side. A reference is required to the &lt;code&gt;StackExchange.Redis&lt;/code&gt; NuGet package for the following code:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;using StackExchange.Redis;
-
-// configure the connection to the Redis endpoint
-using ConnectionMultiplexer redis = 
-    ConnectionMultiplexer.Connect(&amp;quot;localhost:6379&amp;quot;);
-ISubscriber subScriber = redis.GetSubscriber();
-
-// subscribe to the &amp;quot;alwaysdeveloping&amp;quot; channel. This needs to match the channel name
-// the publisher is using as well
-subScriber.Subscribe(new RedisChannel(&amp;quot;alwaysdeveloping&amp;quot;, 
-    RedisChannel.PatternMode.Auto), 
-    (channel, message) =&amp;gt;
-{
-    // this handler method will be called for each message received on the channel
-    Console.WriteLine($&amp;quot;[{DateTime.Now}] Message received: {message}&amp;quot;);
-});
-
-Console.ReadKey();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Configuring the &lt;code&gt;subscriber&lt;/code&gt; is relatively straight forward:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Define a connection to the specific &lt;code&gt;Redis&lt;/code&gt; endpoint&lt;/li&gt;
-&lt;li&gt;Get a &lt;em&gt;subscriber&lt;/em&gt; from the connection&lt;/li&gt;
-&lt;li&gt;Subscribe to a specific channel (by name , &lt;em&gt;alwaysdeveloping&lt;/em&gt; in the above)&lt;/li&gt;
-&lt;li&gt;Specify the handler method to be called when a message is received&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;The code will execute until a key is read from the console, waiting for any message to be sent to the channel. When a message is sent to the channel, it will in turn be published to &lt;code&gt;all&lt;/code&gt; subscribers - it is possible to have &lt;code&gt;multiple subscribers&lt;/code&gt;, each subscriber &lt;code&gt;will receive their own copy of the message&lt;/code&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="publisher"&gt;Publisher&lt;/h2&gt;
-&lt;p&gt;Next let's look at the &lt;code&gt;publisher&lt;/code&gt; - configuring this is also as straightforward as the subscriber:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;using StackExchange.Redis;
-
-// configure the connection to the Redis endpoint
-using ConnectionMultiplexer redis = 
-    ConnectionMultiplexer.Connect(&amp;quot;localhost:6379&amp;quot;);
-ISubscriber sub = redis.GetSubscriber();
-
-// loop 100 times
-for (int i = 0; i &amp;lt;= 100; i++)
-{
-    // generate a unique id for each message
-    var id = Guid.NewGuid().ToString();
-
-    // publish to the &amp;quot;alwaysdeveloping&amp;quot; channel
-    await sub.PublishAsync(new RedisChannel(&amp;quot;alwaysdeveloping&amp;quot;, 
-        RedisChannel.PatternMode.Auto),
-        $&amp;quot;Sample message with Id {id}&amp;quot;);
-
-    Console.WriteLine($&amp;quot;Message with Id '{id}' published!&amp;quot;);
-    Thread.Sleep(100);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The above code:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Define a connection to the &lt;code&gt;Redis&lt;/code&gt; endpoint&lt;/li&gt;
-&lt;li&gt;Get a &lt;em&gt;subscriber&lt;/em&gt; from the connection&lt;/li&gt;
-&lt;li&gt;Loops 100 times,&lt;/li&gt;
-&lt;li&gt;Publishes a string to a specific channel (by name, &lt;em&gt;alwaysdeveloping&lt;/em&gt; in the above)&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr /&gt;
-&lt;h2 id="pubsub-execution"&gt;Pub/Sub Execution&lt;/h2&gt;
-&lt;p&gt;Executing the &lt;code&gt;subscriber&lt;/code&gt; first, so it is running waiting for messages, then executing the &lt;code&gt;publisher&lt;/code&gt; yields the following output:&lt;/p&gt;
-&lt;p&gt;Sample from the the &lt;strong&gt;Publisher&lt;/strong&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Message with Id '1895b2c1-61c1-4be9-8ed2-7c6359018534' published!
-Message with Id '01a27c11-984c-481a-b4d0-bc879b13674d' published!
-Message with Id '49e799eb-cf4c-4847-a234-d79b8e40cd79' published!
-Message with Id '25700248-edbc-4c70-aaef-5aca4cb0f24f' published!
-Message with Id '6a4caee2-e9ad-446f-8e2c-156cebdf6a42' published!
-Message with Id '061ef1ff-e830-408c-84db-bdf649c8c446' published!
-Message with Id '358c78ba-e85a-481a-970a-1c67b2ca8b1d' published!
-Message with Id '5101fe4a-86fb-4356-b0db-dea0f4f1a402' published!
-Message with Id 'fe944b2c-c945-417c-bb61-8b7eb7bfe8f1' published!
-Message with Id '1f6d26a0-35ab-4994-8293-1e2a9e672cee' published!
-Message with Id '5e276d80-9ccd-403b-9435-80b8fda0e2d3' published!
-Message with Id 'a3ea7ddd-6ac6-4b3e-b35d-1276ce20e1bd' published!
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Sample from the &lt;code&gt;Subscriber(s)&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;[2022/07/19 21:09:24] Message received: Sample message with Id 1895b2c1-61c1-4be9-8ed2-7c6359018534
-[2022/07/19 21:09:24] Message received: Sample message with Id 01a27c11-984c-481a-b4d0-bc879b13674d
-[2022/07/19 21:09:24] Message received: Sample message with Id 49e799eb-cf4c-4847-a234-d79b8e40cd79
-[2022/07/19 21:09:24] Message received: Sample message with Id 25700248-edbc-4c70-aaef-5aca4cb0f24f
-[2022/07/19 21:09:24] Message received: Sample message with Id 6a4caee2-e9ad-446f-8e2c-156cebdf6a42
-[2022/07/19 21:09:24] Message received: Sample message with Id 061ef1ff-e830-408c-84db-bdf649c8c446
-[2022/07/19 21:09:25] Message received: Sample message with Id 358c78ba-e85a-481a-970a-1c67b2ca8b1d
-[2022/07/19 21:09:25] Message received: Sample message with Id 5101fe4a-86fb-4356-b0db-dea0f4f1a402
-[2022/07/19 21:09:25] Message received: Sample message with Id fe944b2c-c945-417c-bb61-8b7eb7bfe8f1
-[2022/07/19 21:09:25] Message received: Sample message with Id 1f6d26a0-35ab-4994-8293-1e2a9e672cee
-[2022/07/19 21:09:25] Message received: Sample message with Id 5e276d80-9ccd-403b-9435-80b8fda0e2d3
-[2022/07/19 21:09:25] Message received: Sample message with Id a3ea7ddd-6ac6-4b3e-b35d-1276ce20e1bd
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;Configuring &lt;code&gt;Redis pub/sub&lt;/code&gt; is incredibly simple and easy to implement, especially if there is a Redis instance setup (for caching for example). While not entirely comparable, having worked with other similar services such as &lt;em&gt;RabbitMq&lt;/em&gt; and &lt;em&gt;Kafka&lt;/em&gt;, this was by far the simplest to implement.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.youtube.com/watch?v=80Ke9hsG_RU"&gt;DevMentors - FeedR episode #5&lt;/a&gt;&lt;br /&gt;
-&lt;a href="https://redis.io/docs/getting-started/installation/install-redis-on-windows/"&gt;Install Redis on Windows&lt;/a&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;?# DailyDrop ?&gt;139: 16-08-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
