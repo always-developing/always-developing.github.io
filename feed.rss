@@ -5,8 +5,134 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Tue, 30 Aug 2022 05:13:02 GMT</pubDate>
-		<lastBuildDate>Tue, 30 Aug 2022 05:13:02 GMT</lastBuildDate>
+		<pubDate>Wed, 31 Aug 2022 05:15:28 GMT</pubDate>
+		<lastBuildDate>Wed, 31 Aug 2022 05:15:28 GMT</lastBuildDate>
+		<item>
+			<title>.NET 7 Rate limiting</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/08/31-rate-limiting</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/08/31-rate-limiting</guid>
+			<pubDate>Wed, 31 Aug 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;Built in &lt;code&gt;rate limiting support&lt;/code&gt; is being introduced with .NET 7, and provides a way to protect a resource from being overwhelmed with requests.&lt;/p&gt;
+&lt;p&gt;The rate limiting can be applied to an endpoint(s) to automatically control how often it can be called (API rate limiting), but in addition it can also be manually leveraged to control how often any resource in the applications gets used (such as a database connection)&lt;/p&gt;
+&lt;p&gt;All below examples were written using .NET 7-preview5, and as such may differ from the final release or subsequent preview releases.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="rate-limiter-types"&gt;Rate limiter types&lt;/h2&gt;
+&lt;p&gt;There are a number of different rate limiting algorithms available in .NET 7 to control the flow of requests. We will not go into detail in this post, but full details on each one can be found in the references link below:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;Concurrency&lt;/code&gt; limit&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Token bucket&lt;/code&gt; limit&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Fixed window&lt;/code&gt; limit&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Sliding window&lt;/code&gt; limit&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;In the examples below, we make use of, and explore in a little more depth, the &lt;code&gt;fixed window&lt;/code&gt; and &lt;code&gt;token bucket&lt;/code&gt; limiters.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="limiting-an-api"&gt;Limiting an API&lt;/h2&gt;
+&lt;p&gt;The most obvious and well-known usage for rate limiting, is to apply it to an API endpoint to control how often it can get called. A few examples on why one might want to do this:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;To prevent API being overwhelmed with requests from any source&lt;/li&gt;
+&lt;li&gt;To control how often a specific user can call the API based on account balance (or account tier)&lt;/li&gt;
+&lt;li&gt;To limit the number of requests from a specific IP address (in the case of endpoint abuse)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;In the example below, a &lt;code&gt;fixed windows&lt;/code&gt; rate limiter will be applied to an endpoint. Two NuGet package references are required:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;System.Threading.RateLimiting&lt;/code&gt; - provides the based rate limiting functionality&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Microsoft.AspNetCore.RateLimiting&lt;/code&gt; - provides functionality to integrate rate limiting into AspNetCore middleware&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Two steps are involved when using rate limiting with an endpoint:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Defined the rate limit policy&lt;/li&gt;
+&lt;li&gt;Apply the policy to an endpoint(s)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr /&gt;
+&lt;h3 id="define-the-policy"&gt;Define the policy&lt;/h3&gt;
+&lt;p&gt;The policy is defined on startup by using the &lt;code&gt;UseRateLimiter&lt;/code&gt; extension method:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;
+app.UseRateLimiter(new RateLimiterOptions()
+    .AddFixedWindowLimiter(&amp;quot;getlimiter&amp;quot;, 
+        new FixedWindowRateLimiterOptions(1, 
+            QueueProcessingOrder.OldestFirst, 
+            0, 
+            TimeSpan.FromSeconds(2)))
+    );
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Here the &lt;code&gt;FixedWindowLimiter&lt;/code&gt; is being used, with the policy name being &lt;em&gt;&amp;quot;getlimiter&amp;quot;&lt;/em&gt;. Effectively the policy states that: &lt;code&gt;During the 2 second window, only 1 request may be served, with no requests allowed to queue&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Now that the policy is defined, the next step is to apply it to an endpoint.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="apply-the-policy"&gt;Apply the policy&lt;/h3&gt;
+&lt;p&gt;In the below example, we have a minimal api endpoint which returns the current datetime. Applying the rate limiter is as easy as invoking the &lt;code&gt;RequireRateLimiting&lt;/code&gt; method:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/getwithlimit&amp;quot;, () =&amp;gt;
+{
+    return DateTime.Now;
+
+}).RequireRateLimiting(&amp;quot;getlimiter&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The &lt;em&gt;RequireRateLimiting&lt;/em&gt; method is called with the policy name to apply specified.&lt;/p&gt;
+&lt;p&gt;If the endpoint is now invoked more than once in a 2 second window, the called will receive a &lt;code&gt;503: Service unavailable&lt;/code&gt; response.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="limiting-a-resource"&gt;Limiting a resource&lt;/h2&gt;
+&lt;p&gt;It is also possible to control the flow of requests to any part of the code or resource using the rate limiting functionality.&lt;/p&gt;
+&lt;p&gt;In the following example, we have an endpoint which can either &lt;code&gt;return data from a cache or from the database&lt;/code&gt;. We only want to &lt;em&gt;limit the number of requests which go to the database&lt;/em&gt; using a rate limiter.&lt;/p&gt;
+&lt;h3 id="define-the-policy-1"&gt;Define the policy&lt;/h3&gt;
+&lt;p&gt;First step again, is to define the policy.&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;TokenBucketRateLimiter tokenLimiter = 
+    new TokenBucketRateLimiter(
+        new TokenBucketRateLimiterOptions(0, 
+            QueueProcessingOrder.OldestFirst,
+            0, 
+            TimeSpan.FromSeconds(10), 
+            5));
+
+builder.Services.AddSingleton(tokenLimiter);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Here the &lt;em&gt;TokenBucketRateLimiter&lt;/em&gt; is being used - it is defined and added as a singleton to the dependency injection container. Effectively the policy states that: &lt;code&gt;Every 10 second period, 5 tokens will be added to the bucket (with a max of 5 tokens in the bucket), with no requests allowed to queue&lt;/code&gt;. Once the tokens are all taken, no requests will be allowed until the bucket is replenished.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="apply-the-policy-1"&gt;Apply the policy&lt;/h3&gt;
+&lt;p&gt;We can now inject the policy into a constructor, or API endpoint&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// inject the limiter as well as the DatabaseResource to limit
+// the number of requests to
+app.MapGet(&amp;quot;/limitresource&amp;quot;, (TokenBucketRateLimiter tokenLimiter, 
+    DatabaseResource databaseAccess) =&amp;gt;
+{
+    // use Random to simulate if the database should be 
+    // called or if the cache should be used
+    var random = new Random();
+    var shouldCallDatabase = random.Next(0, 2);
+
+    // database should be called, rate limiting applies
+    if (shouldCallDatabase == 1)
+    {
+        // try acquire a token
+        var lease = tokenLimiter.Acquire();
+        // if there was a token available
+        // then we can call the database
+        if (lease.IsAcquired)
+        {
+            return databaseAccess.GetData();
+        }
+
+        // otherwise, unable to call at this time
+        return &amp;quot;Unable to retrieve data at this time&amp;quot;;
+    }
+
+    // from cache, no rate limiting
+    return &amp;quot;Retrieved from cache&amp;quot;;
+
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The basic flow is to try &lt;em&gt;acquire&lt;/em&gt; a lease on a token from the rate limiter instance - if no token is available, the lease is not acquired and a relevent message is returned.&lt;br /&gt;
+In this specific example, a &lt;code&gt;200 Success&lt;/code&gt; will still be returned in all branches of the flow, but this could be manually changed handled to change the HTTP response code based on the branch taken by the code.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;This is a very useful and easy to configure feature coming with .NET 7. If already using an &lt;em&gt;API Management (APIM)&lt;/em&gt; tool, which usually has rate limiting functionality included, this feature might not be &lt;em&gt;as&lt;/em&gt; useful, but can still play its part. Often some internal traffic doesn't always go through the APIM, so the .NET rate limiting feature could be leveraged for those cases, and used in conjunction with the APIM.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://devblogs.microsoft.com/dotnet/announcing-rate-limiting-for-dotnet/"&gt;Announcing Rate Limiting for .NET&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;150: 31-08-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Entity Framework: IQueryable vs IEnumerable</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/08/30-ef-query-enumerable</link>
@@ -993,224 +1119,6 @@ Is order reserved? True
 &lt;p&gt;&lt;a href="https://www.reddit.com/r/csharp/comments/vzph36/enum_bitshifting_syntax_for_multiple_flags_during/"&gt;Enum bit-shifting syntax for multiple flags during enum declaration&lt;/a&gt;&lt;/p&gt;
 &lt;hr /&gt;
 &lt;?# DailyDrop ?&gt;141: 18-08-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Parallel processing with ParallelEnumerable </title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/08/17-parallelenumerable</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/08/17-parallelenumerable</guid>
-			<pubDate>Wed, 17 Aug 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;Linq has built in parallel functionality, available in the &lt;code&gt;ParallelEnumerable&lt;/code&gt; class.  This functionality is available as &lt;em&gt;extension methods&lt;/em&gt; on &lt;code&gt;ParallelQuery&lt;/code&gt;, which is generated by calling &lt;code&gt;AsParallel&lt;/code&gt; on an &lt;em&gt;IEnumerable&lt;/em&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="usage"&gt;Usage&lt;/h2&gt;
-&lt;p&gt;The usage of the functionality offered by &lt;code&gt;ParallelEnumerable&lt;/code&gt; is very similar (and for the most part, the same) to normal Linq method usage.&lt;/p&gt;
-&lt;p&gt;The &lt;em&gt;access&lt;/em&gt; the root of the parallel functionality,&lt;code&gt;ParallelQuery&lt;/code&gt;, all that is required is the &lt;code&gt;AsParallel()&lt;/code&gt; method to be called on an &lt;em&gt;IEnumerable&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;IEnumerable&amp;lt;int&amp;gt; array = Enumerable.Range(1, 1000);
-ParallelQuery&amp;lt;int&amp;gt; parallelQuery = array.AsParallel();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;With the ParallelQuery instance, traditional Linq methods can still available:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// output: 750,5
-int average = parallelQuery
-    .Where(i =&amp;gt; i &amp;gt; 500)
-    .Average(); 
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;However, there is now also &lt;em&gt;additional methods&lt;/em&gt; available, for example &lt;code&gt;ForAll&lt;/code&gt; which will perform an &lt;em&gt;Action&lt;/em&gt; on each element, but in &lt;strong&gt;parallel&lt;/strong&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var outputArray = new int[1000];
-parallelQuery.ForAll(i =&amp;gt;
-{
-    outputArray[i - 1] = i * i;
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Let's benchmark this to see how it performs against other parallel and not parallel operations which achieve the same outcome.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="benchmark"&gt;Benchmark&lt;/h2&gt;
-&lt;p&gt;In this set of benchmarks, we are operating on a &lt;em&gt;IEnumerable&amp;lt;int&amp;gt;&lt;/em&gt; with 100 items, and for each item in the source, the &lt;em&gt;PerformCalculation&lt;/em&gt; method will be called:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// the source items
-IEnumerable&amp;lt;int&amp;gt; array = Enumerable.Range(1, 100);
-
-// the method invoked
-void PerformCalculation(int i)
-{
-    _ = i * i * i;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The following techniques were benchmarked:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;&lt;strong&gt;List.ForEach:&lt;/strong&gt;&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public void ForEachList()
-{
-    array.ToList()
-       .ForEach(i =&amp;gt; PerformCalculation(i));
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;&lt;strong&gt;Foreach over an Array:&lt;/strong&gt;&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public void ForeachOverArray()
-{
-    foreach (var i in array.ToArray())
-    {
-        PerformCalculation(i);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;&lt;strong&gt;ParallelForEach:&lt;/strong&gt;&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public void ParallelForEach()
-{
-    Parallel.ForEach(array, PerformCalculation);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;&lt;strong&gt;ParallelQuery.ForAll:&lt;/strong&gt;&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public void ParallelQueryForAll()
-{
-    array
-    .AsParallel()
-    .ForAll(i =&amp;gt; PerformCalculation(i));
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;The results:&lt;/p&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;Method&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Ratio&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;RatioSD&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Gen 0&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Gen 1&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Allocated&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;ListForEach&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;322.85 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;5.651 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;5.286 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.00&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0825&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;520 B&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;ForeachOverArray&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;91.40 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.770 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.656 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.28&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.01&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0675&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;424 B&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;ParallelQueryForAll&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;13,481.85 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;172.827 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;161.663 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;41.77&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.86&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.0599&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0610&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;12,585 B&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;ParallelForEach&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;7,978.07 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;41.364 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;34.540 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;24.70&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.43&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;4.6844&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.1068&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;24,175 B&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;The &lt;code&gt;parallel versions are slow&lt;/code&gt; - &lt;strong&gt;VERY&lt;/strong&gt; slow compared to just iterating over the collection of items in sequence.&lt;/p&gt;
-&lt;p&gt;Surely doing processing in parallel should make things process quicker overall? Generally yes - in this case however, the actual work being performed (the &lt;em&gt;PerformCalculation&lt;/em&gt; method) is done so quickly, that the &lt;code&gt;overhead of creating and managing the parallel tasks is a detriment to performance&lt;/code&gt; vs just operating on the items in sequence.&lt;/p&gt;
-&lt;p&gt;However, what if the work being performed took slightly longer....&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="benchmark-v2"&gt;Benchmark v2&lt;/h2&gt;
-&lt;p&gt;We'll run the exact same benchmarks, with the same array size, but now the &lt;em&gt;PerformCalculation&lt;/em&gt; method will &lt;code&gt;take 2ms longer&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;void PerformCalculation(int i)
-{
-    _ = i * i * i;
-    // simulate a longer 
-    // running process
-    Thread.Sleep(2);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The results of round 2:&lt;/p&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;Method&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Ratio&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Allocated&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;ListForEach&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1,536.90 ms&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.679 ms&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.506 ms&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1 KB&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;ForeachOverArray&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1,534.54 ms&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.702 ms&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.528 ms&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1 KB&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;ParallelQueryForAll&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;152.84 ms&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.730 ms&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.683 ms&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.10&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;13 KB&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;ParallelForEach&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;71.86 ms&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;7.165 ms&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;20.788 ms&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.07&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;99 KB&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;The &lt;code&gt;parallel versions are now 10-20 times faster!&lt;/code&gt;. The &lt;em&gt;Parallel.ForEach&lt;/em&gt; is &lt;code&gt;twice as fast&lt;/code&gt; as the &lt;em&gt;ParallelEnumerable.ForAll&lt;/em&gt;, but uses &lt;code&gt;7 times the amount of memory&lt;/code&gt; (and both parallel techniques use vastly more memory in comparison to the basic loops)&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;There are a number of different techniques to solve a use case such as this - each with its own pros and cons, which would need to be evaluated for each use case. It's important to know about each technique, so a thorough evaluation can be done. Results may vary based on collection size, and process time, but based on the above use case:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;Low memory usage&lt;/code&gt; is most important? - use a &lt;em&gt;foreach&lt;/em&gt; loop&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;Fast throughput&lt;/code&gt; is most important? - use &lt;em&gt;Parallel.ForEach&lt;/em&gt;&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;Good throughput with good memory&lt;/code&gt; usage? - use &lt;em&gt;ParallelEnumerable.ForAll&lt;/em&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/api/system.linq.parallelenumerable?view=net-6.0"&gt;ParallelEnumerable Class&lt;/a&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;?# DailyDrop ?&gt;140: 17-08-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
