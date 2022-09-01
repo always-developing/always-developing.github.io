@@ -5,8 +5,121 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Wed, 31 Aug 2022 05:15:28 GMT</pubDate>
-		<lastBuildDate>Wed, 31 Aug 2022 05:15:28 GMT</lastBuildDate>
+		<pubDate>Thu, 01 Sep 2022 04:53:49 GMT</pubDate>
+		<lastBuildDate>Thu, 01 Sep 2022 04:53:49 GMT</lastBuildDate>
+		<item>
+			<title>Dispose vs Exception handling</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/09/01-disposable-exceptions</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/09/01-disposable-exceptions</guid>
+			<pubDate>Thu, 01 Sep 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;When using a class which implements &lt;code&gt;IDisposable&lt;/code&gt; inside a &lt;code&gt;try-catch-finally&lt;/code&gt; block, if an exception is thrown in what order are the &lt;em&gt;Dispose&lt;/em&gt; and &lt;em&gt;catch&lt;/em&gt; block executed?&lt;/p&gt;
+&lt;p&gt;The order is:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;em&gt;Dispose&lt;/em&gt; method on the class implementing &lt;em&gt;IDisposable&lt;/em&gt;&lt;/li&gt;
+&lt;li&gt;&lt;em&gt;Catch&lt;/em&gt; block&lt;/li&gt;
+&lt;li&gt;&lt;em&gt;Finally&lt;/em&gt; block&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Logically this makes sense, as the &lt;code&gt;IDisposable&lt;/code&gt; class is out of scope when the &lt;code&gt;catch&lt;/code&gt; block is being executed. The &lt;em&gt;lowered&lt;/em&gt; code can also be viewed to get an even deeper understanding of how these two features fit together.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="example"&gt;Example&lt;/h2&gt;
+&lt;p&gt;Consider the following class which implements &lt;em&gt;IDisposable&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class DisposableClass : IDisposable
+{
+    public DisposableClass()
+    {
+        Console.WriteLine($&amp;quot;In Constructor of {nameof(DisposableClass)}&amp;quot;);
+    }
+
+    public void Dispose()
+    {
+        Console.WriteLine($&amp;quot;In Dispose of {nameof(DisposableClass)}&amp;quot;);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As it implements &lt;em&gt;IDisposable&lt;/em&gt;, it can be used with the &lt;code&gt;using&lt;/code&gt; statement:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;try
+{
+    // declare instance of the disposable class
+    using var disposableInstance = new DisposableClass();
+
+    throw new Exception(&amp;quot;Exception or dispose?&amp;quot;);
+
+}catch(Exception ex)
+{
+    Console.WriteLine(&amp;quot;An exception occurred&amp;quot;);
+}
+finally
+{
+    Console.WriteLine(&amp;quot;In the finally block&amp;quot;);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Executing the above, results in the following output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;In Constructor of DisposableClass
+In Dispose of DisposableClass
+An exception occurred
+In the finally block
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;em&gt;Dispose&lt;/em&gt; called before the &lt;em&gt;catch block&lt;/em&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="lowered"&gt;Lowered&lt;/h2&gt;
+&lt;p&gt;Looking at the &lt;code&gt;lowered&lt;/code&gt; code (generated using &lt;a href="https://sharplab.io/"&gt;sharplab.io&lt;/a&gt;) it becomes more obvious as to why this is the sequence of events:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;internal static class &amp;lt;Program&amp;gt;$
+{
+    private static void &amp;lt;Main&amp;gt;$(string[] args)
+    {
+        try
+        {
+            DisposableClass disposableClass = new DisposableClass();
+            try
+            {
+                throw new Exception(&amp;quot;Exception or dispose?&amp;quot;);
+            }
+            finally
+            {
+                if (disposableClass != null)
+                {
+                    ((IDisposable)disposableClass).Dispose();
+                }
+            }
+        }
+        catch (Exception)
+        {
+            Console.WriteLine(&amp;quot;An exception occurred&amp;quot;);
+        }
+        finally
+        {
+            Console.WriteLine(&amp;quot;In the finally&amp;quot;);
+        }
+    }
+}
+internal class DisposableClass : IDisposable
+{
+    public void Dispose()
+    {
+        Console.WriteLine(&amp;quot;Disposing DisposableClass&amp;quot;);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The &lt;code&gt;using&lt;/code&gt; statement is converted into its own &lt;code&gt;try-finally&lt;/code&gt; block, with the &lt;em&gt;Dispose&lt;/em&gt; being called inside the &lt;em&gt;finally&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;Looking at the above code, it make entire sense that the sequence of events is:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;Constructor&lt;/code&gt; of the &lt;em&gt;disposable class&lt;/em&gt;&lt;/li&gt;
+&lt;li&gt;The first &lt;code&gt;finally&lt;/code&gt; block is called, and the &lt;code&gt;Dispose&lt;/code&gt; method is invoked&lt;/li&gt;
+&lt;li&gt;The &lt;code&gt;catch&lt;/code&gt; block is called, and the exception is handled&lt;/li&gt;
+&lt;li&gt;The second &lt;code&gt;finally&lt;/code&gt; block is called&lt;/li&gt;
+&lt;/ol&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;The sequence of events in this scenario was not something I had considered before - but thinking through what each block of code does (as well as executing the sample code, and looking at the lowered code), the sequence of events makes sense, and is as one would probably expect. However, it is good to get confirmation and gain a better understanding of how one's code might operate under the hood.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/BelloneDavide/status/1547993398853767170"&gt;Davide Bellone tweet&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;151: 01-09-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>.NET 7 Rate limiting</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/08/31-rate-limiting</link>
@@ -1009,116 +1122,6 @@ public class TypeB : IBaseType, ITypeB
 &lt;p&gt;Nothing groundbreaking learnt today - but never-the-less something very interesting and useful, which will definitely see frequent usage.&lt;/p&gt;
 &lt;hr /&gt;
 &lt;?# DailyDrop ?&gt;142: 19-08-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Combining enum values</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/08/18-enum-bit-flags</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/08/18-enum-bit-flags</guid>
-			<pubDate>Thu, 18 Aug 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;bitwise logical operator (|)&lt;/code&gt; can be used to &lt;em&gt;combine enum values&lt;/em&gt; when assigning to a variable, but they can also be used when &lt;code&gt;defining the enum&lt;/code&gt; to create enum values which are a &lt;code&gt;combination of other enum values&lt;/code&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="combine-variable"&gt;Combine variable&lt;/h2&gt;
-&lt;p&gt;This is the more common (in my experience) usage of combining enums - assigning enum value(s) to a variable.&lt;/p&gt;
-&lt;p&gt;Consider the following enum:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;[Flags]
-enum OrderStatus
-{
-    New = 1,
-    Processing = 2,
-    Reserved = 4,
-    Paid = 8,
-    Delivered = 16,
-    Cancelled = 32
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We could indicate that an order is &lt;em&gt;Paid&lt;/em&gt; but also been &lt;em&gt;Cancelled&lt;/em&gt; by doing the follow:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;OrderStatus status = OrderStatus.Paid | OrderStatus.Cancelled;
-
-Console.WriteLine($&amp;quot;Is order Paid? {status.HasFlag(OrderStatus.Paid)}&amp;quot;);
-Console.WriteLine($&amp;quot;Is order Cancelled? {status.HasFlag(OrderStatus.Cancelled)}&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;With the output being:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Is order Paid? True
-Is order Cancelled? True
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The &lt;code&gt;bitwise logical operator (|)&lt;/code&gt; can also be used when &lt;code&gt;declaring the enum&lt;/code&gt; to combine statues.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="combine-declaration"&gt;Combine declaration&lt;/h2&gt;
-&lt;p&gt;Consider the same enum from above:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;[Flags]
-enum OrderStatus
-{
-    New = 1,
-    Processing = 2,
-    Reserved = 4,
-    Paid = 8,
-    Delivered = 16,
-    Cancelled = 32
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Suppose we wanted two methods to determine if a order is currently &lt;code&gt;Open&lt;/code&gt; (still processing to do) or if it is &lt;code&gt;Closed&lt;/code&gt; (no more processing to do).&lt;/p&gt;
-&lt;p&gt;With the enums as they are, something similar to this would need to be done:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// check all the statuses considered 'open'
-bool IsOrderOpen(OrderStatus status) =&amp;gt; status.HasFlag(OrderStatus.New) ||
-        status.HasFlag(OrderStatus.Processing) ||
-        status.HasFlag(OrderStatus.Reserved) ||
-        status.HasFlag(OrderStatus.Paid);
-
-// check all the statuses considered 'closed'
-bool IsOrderClosed(OrderStatus status) =&amp;gt; status.HasFlag(OrderStatus.Delivered) ||
-        status.HasFlag(OrderStatus.Cancelled);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Each time a new status is added and the enum changes, the developer would need to remember to come in and update each method as well.&lt;/p&gt;
-&lt;p&gt;A cleaner approach, is to &lt;code&gt;define a new status, and use it to combine with other statuses&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;Consider this &lt;code&gt;updated enum&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;[Flags]
-enum OrderStatus
-{
-    New = 1 | 64,
-    Processing = 2 | 64,
-    Reserved = 4 | 64,
-    Paid = 8 | 64,
-    Delivered = 16 | 128,
-    Cancelled = 32 | 128,
-    Open = 64,
-    Closed = 128
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Two new statuses, &lt;code&gt;Open&lt;/code&gt; and &lt;code&gt;Closed&lt;/code&gt;, have been defined, with each other status being updated to indicate it as being either &lt;em&gt;Open&lt;/em&gt; or &lt;em&gt;Closed&lt;/em&gt;.
-For example &lt;code&gt;Processing = 2 | 64,&lt;/code&gt; effectively means: &lt;code&gt;an order with a status of Processing is Processing but also Open&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;To check if an order is &lt;code&gt;Open&lt;/code&gt; or &lt;code&gt;Closed&lt;/code&gt; now, all that is required is the following:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;bool IsOrderOpen(OrderStatus status) =&amp;gt; status.HasFlag(OrderStatus.Open);
-bool IsOrderClosed(OrderStatus status) =&amp;gt; status.HasFlag(OrderStatus.Closed);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Using the methods:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// the status is not set explicitly to 'Open' or 'Closed'
-var status = OrderStatus.Reserved;
-
-Console.WriteLine($&amp;quot;Is order open? {IsOrderOpen(status)}&amp;quot;);
-Console.WriteLine($&amp;quot;Is order closed? {IsOrderClosed(status)}&amp;quot;);
-
-// just to confirm a check on the original status 
-// still works
-Console.WriteLine($&amp;quot;Is order reserved? {status.HasFlag(OrderStatus.Reserved)}&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Is order open? True
-Is order closed? False
-Is order reserved? True
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This version of the code is definitely &lt;code&gt;much cleaner&lt;/code&gt;, and much &lt;code&gt;easier to maintain&lt;/code&gt;!&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;Using the &lt;em&gt;bitwise logical operator (|)&lt;/em&gt; on enum definition is a useful technique I was not aware of. It facilities cleaner code, and makes it easier for the developer to contain enum logic all in one place.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.reddit.com/r/csharp/comments/vzph36/enum_bitshifting_syntax_for_multiple_flags_during/"&gt;Enum bit-shifting syntax for multiple flags during enum declaration&lt;/a&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;?# DailyDrop ?&gt;141: 18-08-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
