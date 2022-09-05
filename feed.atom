@@ -4,8 +4,180 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-09-02T05:05:34Z</updated>
+	<updated>2022-09-05T05:05:30Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/09/05-ping-programmatically</id>
+		<title>Performing a ping programmatically</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/09/05-ping-programmatically" />
+		<updated>2022-09-05T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;A &lt;code&gt;Ping&lt;/code&gt; class is available in the &lt;em&gt;System.Net.NetworkInformation&lt;/em&gt; namespace - this class facilitates performing &lt;em&gt;ping&lt;/em&gt; operations (as the name suggests), on a hostname or IP address from code.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="usage"&gt;Usage&lt;/h2&gt;
+&lt;p&gt;The usage of the class is straightforward - declare an instance of &lt;code&gt;Ping&lt;/code&gt;, and call the &lt;em&gt;SendPingAsync&lt;/em&gt; method:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;using System.Net.NetworkInformation;
+
+var looping = true;
+
+// format asynchronously on a separate thread
+Task.Run(async () =&amp;gt;
+{
+    // create an instance of the Ping class
+    Ping pinger = new Ping();
+
+    // loop until the user presses a key
+    while (looping)
+    {
+        // ping and get the response
+        PingReply response = await pinger
+            .SendPingAsync(&amp;quot;alwaysdeveloping.net&amp;quot;);
+
+        // extract response information
+        Console.WriteLine($&amp;quot;Ping to '{response.Address}' took &amp;quot; +
+            $&amp;quot;{response.RoundtripTime}milliseconds and the response &amp;quot; +
+            $&amp;quot;was: `{response.Status}`&amp;quot;);
+
+        // wait 250ms before pinging again
+        await Task.Delay(250);
+    }
+});
+
+// wait for a key press
+// and then cancel the looping above
+Console.ReadKey();
+looping = false;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;A sample response:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Ping to '192.11.119.201' took 604 milliseconds and was: 'Success'
+Ping to '192.11.119.201' took 307 milliseconds and was: 'Success'
+Ping to '192.11.119.201' took 307 milliseconds and was: 'Success'
+Ping to '192.11.119.201' took 321 milliseconds and was: 'Success'
+Ping to '192.11.119.201' took 311 milliseconds and was: 'Success'
+Ping to '0.0.0.0' took 0 milliseconds and was: 'TimedOut'
+Ping to '192.11.119.201' took 307 milliseconds and was: 'Success'
+Ping to '192.11.119.201' took 620 milliseconds and was: 'Success'
+Ping to '192.11.119.201' took 308 milliseconds and was: 'Success'
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;While there are better and more featureful (and more expensive) 3rd party tools available for monitoring the status and uptime of a website, with &lt;code&gt;Ping&lt;/code&gt; a simple, small application could be written to ping on an interval (as in the above example) and send out an alert if numerous timeouts are received.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/BelloneDavide/status/1553066721702977537"&gt;Davide Bellone Tweet&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;153: 05-09-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/09/30-min-api-cancellation</id>
+		<title>Minimal api's and cancellation tokens</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/09/30-min-api-cancellation" />
+		<updated>2022-09-05T00:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;A &lt;code&gt;CancellationToken&lt;/code&gt; can be passed into a minimal api endpoint to be used to &lt;em&gt;cancel processing executed by the endpoint&lt;/em&gt; - the cancellation token will automatically be marked as cancelled if the caller either cancels the request or navigates away from the endpoint (if being accessed from the browser)&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="process-cancellation"&gt;Process cancellation&lt;/h2&gt;
+&lt;h3 id="no-token"&gt;No token&lt;/h3&gt;
+&lt;p&gt;Consider the following minimal api endpoint:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/long&amp;quot;, async () =&amp;gt;
+{
+    Console.WriteLine($&amp;quot;{DateTime.Now.ToString(&amp;quot;ss&amp;quot;)}: &amp;quot; +
+        $&amp;quot;Starting long process&amp;quot;);
+
+    // simulate a long running process
+    await Task.Delay(5000);
+
+    Console.WriteLine($&amp;quot;{DateTime.Now.ToString(&amp;quot;ss&amp;quot;)}: &amp;quot; +
+        $&amp;quot;Finishing long process&amp;quot;);
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If the application is executed, and the endpoint called, the output would be something like this:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;02: Starting long process
+07: Finishing long process
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As expected, it takes approximately 5 seconds for the endpoint to execute and finish.&lt;/p&gt;
+&lt;p&gt;If the endpoint is called again, and during those 5 seconds of &amp;quot;processing&amp;quot;, the &lt;em&gt;&amp;quot;Stop loading this page&amp;quot;&lt;/em&gt; button is clicked on the browser (wording may differ slightly depending on browser) we see the following:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;52: Starting long process
+57: Finishing long process
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Even though the &lt;code&gt;request from the browser to the endpoint is cancelled, the processing done by the endpoint is not cancelled!&lt;/code&gt;. The endpoint isn't aware of the fact the request was cancelled, which results in unnecessary CPU and memory usage, no longer required as the user has decided to cancel the request.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="cancellationtoken"&gt;CancellationToken&lt;/h3&gt;
+&lt;p&gt;&lt;code&gt;CancellationToken&lt;/code&gt; to the rescue - a &lt;em&gt;cancellation token&lt;/em&gt; can be used to convey information to the endpoint about the status of the request.&lt;/p&gt;
+&lt;p&gt;Let's update the endpoint to use a cancellation token:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// add cancellation token, which is automatically populated
+app.MapGet(&amp;quot;/long&amp;quot;, async (CancellationToken token) =&amp;gt;
+{
+    Console.WriteLine($&amp;quot;{DateTime.Now.ToString(&amp;quot;ss&amp;quot;)}: &amp;quot; +
+        $&amp;quot;Starting long process&amp;quot;);
+
+    //forward the token onto the method
+    await Task.Delay(5000, token);
+
+    Console.WriteLine($&amp;quot;{DateTime.Now.ToString(&amp;quot;ss&amp;quot;)}: &amp;quot; +
+        $&amp;quot;Finishing long process&amp;quot;);
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Here, a &lt;code&gt;CancellationToken&lt;/code&gt; is specified to be passed into the endpoint - this automatically gets instantiated and is &lt;em&gt;&amp;quot;linked&amp;quot;&lt;/em&gt; to the HTTP context of the request. If the request is cancelled by the caller, the &lt;code&gt;CancellationToken&lt;/code&gt; will indicate this fact.&lt;/p&gt;
+&lt;p&gt;Most &lt;em&gt;async&lt;/em&gt; methods (such as &lt;code&gt;Task.Delay&lt;/code&gt; in this instance) have an optional &lt;code&gt;CancellationToken&lt;/code&gt; parameter which can be used to pass a token all the way down the call stack to the code doing the actual work/processing, which will then in turn monitor and check if the token has been cancelled.&lt;/p&gt;
+&lt;p&gt;Invoking this endpoint now, and clicking the &lt;em&gt;&amp;quot;Stop loading this page&amp;quot;&lt;/em&gt; button on the browser while the endpoint is still processing will result in the following:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;27: Starting long process
+fail: Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware[1]
+      An unhandled exception has occurred while executing the request.
+      System.Threading.Tasks.TaskCanceledException: A task was canceled.
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;When a &lt;code&gt;CancellationToken&lt;/code&gt; is used to cancel a process, it is up to the library author to decide if cancelling means an exception be thrown (such as in the above example with &lt;em&gt;Task.Delay&lt;/em&gt;), or if processing simply just stops.&lt;/p&gt;
+&lt;p&gt;While the endpoint &lt;code&gt;process is now successfully&lt;/code&gt; cancelled when the request is cancelled, not using unnecessary resources - we now have to deal with and cater for the &lt;code&gt;TaskCanceledException&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="cancellation-middleware"&gt;Cancellation middleware&lt;/h3&gt;
+&lt;p&gt;A &lt;em&gt;custom middleware&lt;/em&gt; component can be written to catch any exceptions of type &lt;code&gt;TaskCanceledException&lt;/code&gt;, log it and return a different response to the caller (which they will not care about, as they have cancelled the request):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class CancellationMiddleware
+{
+    private readonly RequestDelegate _next;
+
+    public CancellationMiddleware(RequestDelegate next)
+    {
+        _next = next;
+    }
+
+    public async Task Invoke(HttpContext context)
+    {
+        try
+        {
+            await _next(context);
+        }
+        // catch any canceled exceptions
+        // TaskCanceledException inherits from OperationCanceledException
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine($&amp;quot;Cancelled request handled by {nameof(CancellationMiddleware)}&amp;quot;);
+            // the called has cancelled the request
+            // so doesn't care about the response
+            // Totally legit HTTP response code
+            context.Response.StatusCode = StatusCodes.Status418ImATeapot;
+        }
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This middleware is then registered on startup:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.UseMiddleware&amp;lt;CancellationMiddleware&amp;gt;();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And now when invoking the endpoint and cancelling we see the following output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;18: Starting long process
+Cancelled request handled by CancellationMiddleware
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;code&gt;Process successfully cancelled&lt;/code&gt; and &lt;code&gt;no more unhandled exception errors&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;Adding &lt;code&gt;CancellationToken&lt;/code&gt; support to a minimal endpoint is a fairly low effort improvement, with a (depending on how the endpoint gets used) potential high reward - processing which is no longer required by the caller gets cancelled, freeing up CPU and memory usage.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://andrewlock.net/using-cancellationtokens-in-asp-net-core-minimal-apis/"&gt;Using CancellationTokens in ASP.NET Core minimal APIs &lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;172: 30-09-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/09/02-enhanced-nameof</id>
 		<title>nameof enhancement in C# 11</title>
@@ -831,282 +1003,6 @@ Having the ability to granularly apply &lt;code&gt;route handler filter&lt;/code
 &lt;p&gt;&lt;a href="https://khalidabuhakmeh.com/minimal-api-route-handler-filters"&gt;Minimal API Route Handler Filters&lt;/a&gt;&lt;/p&gt;
 &lt;hr /&gt;
 &lt;?# DailyDrop ?&gt;145: 24-08-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/08/23-override-new</id>
-		<title>Override vs New behavior</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/08/23-override-new" />
-		<updated>2022-08-23T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;When using &lt;code&gt;polymorphism&lt;/code&gt;, even though on the surface they appear to be doing the same thing, &lt;em&gt;hiding&lt;/em&gt; the functionality of a parent, the &lt;code&gt;override&lt;/code&gt; and &lt;code&gt;new&lt;/code&gt; keywords behave very differently.&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;Override&lt;/code&gt; will &lt;em&gt;hide&lt;/em&gt; the parent method invoked, and the &lt;em&gt;overridden&lt;/em&gt; method on the child will be called. However when &lt;code&gt;new&lt;/code&gt; is used on a method, when invoked, the &lt;em&gt;parent&lt;/em&gt; method will be called.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="definition-recap"&gt;Definition recap&lt;/h2&gt;
-&lt;p&gt;A lot of keywords used in the introduction above, so a quick recap on some of the definitions of the keywords.&lt;/p&gt;
-&lt;h3 id="polymorphism"&gt;Polymorphism&lt;/h3&gt;
-&lt;p&gt;&lt;code&gt;Polymorphism&lt;/code&gt; allows for objects of a &lt;em&gt;derived class&lt;/em&gt; can be treated as objects of the &lt;em&gt;parent class&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;For example, when a &lt;em&gt;Child&lt;/em&gt; class inherits from a &lt;em&gt;Parent&lt;/em&gt; class, then the following is valid:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// defined as type Parent
-// but assigned a Child
-Parent childEntity = new Child();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h3 id="virtual"&gt;Virtual&lt;/h3&gt;
-&lt;p&gt;Often the &lt;em&gt;Parent&lt;/em&gt; class will defined methods as &lt;code&gt;virtual&lt;/code&gt; (which can also be applied to properties, indexers), which allows for it to be explicitly overridden in the &lt;em&gt;Child&lt;/em&gt; class.&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Parent
-{
-    public virtual void Hello()
-    {
-        Console.WriteLine(&amp;quot;Hello, I am Parent&amp;quot;);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h3 id="override"&gt;Override&lt;/h3&gt;
-&lt;p&gt;The &lt;code&gt;override&lt;/code&gt; keyword is used on a &lt;em&gt;Child&lt;/em&gt; class, to &lt;code&gt;override&lt;/code&gt; the behavior defined by the &lt;em&gt;Parent&lt;/em&gt; class:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Child : Parent
-{
-    // Override the Parent Hello method
-    public override void Hello()
-    {
-        Console.WriteLine(&amp;quot;Hello, I am Child&amp;quot;);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h3 id="new"&gt;New&lt;/h3&gt;
-&lt;p&gt;The &lt;code&gt;new&lt;/code&gt; keyword can be used as a declaration modifier to explicitly &lt;em&gt;hide&lt;/em&gt; the base class functionality:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Child : Parent
-{
-    // Hide the Parent Hello method
-    public new void Hello()
-    {
-        Console.WriteLine(&amp;quot;Hello, I am Child&amp;quot;);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="new-vs-override"&gt;New vs override&lt;/h2&gt;
-&lt;p&gt;There is a subtle difference between the definitions of the &lt;code&gt;override&lt;/code&gt; and &lt;code&gt;new&lt;/code&gt; keywords:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;override&lt;/code&gt; will &lt;strong&gt;override&lt;/strong&gt; the parent method&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;new&lt;/code&gt; will &lt;strong&gt;hide&lt;/strong&gt; the parent method&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;What all this comes down to, is the following - consider a &lt;em&gt;Parent&lt;/em&gt; and two different &lt;em&gt;Child&lt;/em&gt; classes, one using &lt;code&gt;new&lt;/code&gt; and one using &lt;code&gt;override&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Parent
-{
-    public virtual string Ping()
-    {
-        return $&amp;quot;Response from {nameof(Parent)}&amp;quot;;
-    }
-}
-
-public class OverrideChild : Parent
-{
-    public override string Ping()
-    {
-        return $&amp;quot;Response from {nameof(OverrideChild)}&amp;quot;;
-    }
-}
-
-public class NewChild : Parent
-{
-    public new string Ping()
-    {
-        return $&amp;quot;Response from {nameof(NewChild)}&amp;quot;;
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;When we declare an instance of each of the three types and call the &lt;em&gt;Ping&lt;/em&gt; method, we get a response from the method on the respective type:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;Parent parent = new Parent();
-NewChild newChild = new NewChild();
-OverrideChild overChild = new OverrideChild();
-
-Console.WriteLine(parent.Ping());
-Console.WriteLine(newChild.Ping());
-Console.WriteLine(overChild.Ping());
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The resulting output being:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Response from Parent
-Response from NewChild
-Response from OverrideChild
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;So far, so good - all is as expected.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="polymorphism-1"&gt;Polymorphism&lt;/h3&gt;
-&lt;p&gt;However, when using &lt;code&gt;polymorphism&lt;/code&gt; then behavior starts to change.&lt;/p&gt;
-&lt;p&gt;In the below, each type is &lt;code&gt;declare of type Parent by assigned one of the three different types&lt;/code&gt; (this is allowed, because of &lt;em&gt;polymorphism&lt;/em&gt;):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// all type Parent
-// but assigned different types
-Parent parent = new Parent();
-Parent overChild = new OverrideChild();
-Parent newChild = new NewChild();
-
-Console.WriteLine(parent.Ping()); 
-Console.WriteLine(overChild.Ping()); 
-Console.WriteLine(newChild.Ping()); 
-
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Now the output is as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Response from Parent
-Response from OverrideChild
-Response from Parent
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;From this we can see that with:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;override&lt;/code&gt;: there is a &lt;em&gt;link&lt;/em&gt; between the child and parent entities, so when the method is called the runtime knows to call the child entity method (even though the type is &lt;em&gt;Parent&lt;/em&gt;)&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;new&lt;/code&gt;: the parent method is hidden by the child method, but there is no &lt;em&gt;link&lt;/em&gt; between them, so calling the method on a &lt;em&gt;Parent&lt;/em&gt; entity (even though it was assigned a &lt;em&gt;Child&lt;/em&gt;) will call the parent entity method&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;Interesting behavior from the runtime which one should be aware of, otherwise unexpended results might occur. There is no &lt;em&gt;right&lt;/em&gt; or &lt;em&gt;wrong&lt;/em&gt; modifier to use, it will depend on the use case, how the classes are defined and used, and how they should behave.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://dotnetcoretutorials.com/2022/05/13/override-vs-new-polymorphism-in-c-net/"&gt;Override vs New Polymorphism In C# .NET&lt;/a&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;?# DailyDrop ?&gt;144: 23-08-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/08/22-unsafe-cast</id>
-		<title>Unsafe cast for performance</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/08/22-unsafe-cast" />
-		<updated>2022-08-22T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;UnSafe static class&lt;/code&gt; can be used to perform an &lt;code&gt;Unsafe&lt;/code&gt; cast, which can lead to performance improvements - however it is only recommended in instances when a &lt;code&gt;safe cast ((T)o) would have guaranteed to be successful&lt;/code&gt;.  Performing an unsafe cast when a safe cast would have been unsuccessful could result in application instability.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="safe-casting"&gt;Safe casting&lt;/h2&gt;
-&lt;p&gt;When performing a &lt;code&gt;safe cast&lt;/code&gt;, runtime safety checks are performed, and if the cast is invalid then an &lt;code&gt;InvalidCastException&lt;/code&gt; will be thrown.&lt;/p&gt;
-&lt;p&gt;The below method is a &lt;code&gt;safe cast&lt;/code&gt;, as the runtime will prevent the cast from taking place (and throw the &lt;em&gt;InvalidCastException&lt;/em&gt;) if &lt;em&gt;object o&lt;/em&gt; is not compatible with type Product:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public Product GetProduct(object o)
-{
-    return (Product)o;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Another approach is to use the &lt;code&gt;is&lt;/code&gt; keyword, which will not thrown the exception, but return &lt;code&gt;false&lt;/code&gt; if the cast is not compatible (and actually perform the cast if it is compatible):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public Product GetProductIs(object o)
-{
-    if (o is Product p)
-        return p;
-
-    return null;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;For almost all use cases, one of the above techniques will be suitable.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="unsafe-casting"&gt;UnSafe casting&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;static Unsafe class&lt;/code&gt; can be used to perform a cast, but without any of the safety checks being performed. Performing an invalid cast will not lead to the &lt;code&gt;InvalidCastException&lt;/code&gt; being thrown, just to potential system instability.&lt;/p&gt;
-&lt;p&gt;Performing an &lt;code&gt;unsafe cast&lt;/code&gt; is almost as simple as performing a &lt;em&gt;safe cast&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public Product GetProductUnsafe(object o)
-{
-    // case object o to Product
-    return Unsafe.As&amp;lt;Product&amp;gt;(o);
-}
-
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;As no safety checks are performed by the runtime, some performance gains can be achieved by using this approach - but let's test just how big of a gain.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="performance"&gt;Performance&lt;/h2&gt;
-&lt;p&gt;Benchmarking the three different techniques, each with a &lt;code&gt;null value&lt;/code&gt; and with a &lt;code&gt;Product instance&lt;/code&gt; (a valid cast):&lt;/p&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;Method&lt;/th&gt;
-&lt;th&gt;o&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Median&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Ratio&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;RatioSD&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;NormalCast&lt;/td&gt;
-&lt;td&gt;?&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.2752 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0331 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0294 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.2763 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.00&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;CastUsingIs&lt;/td&gt;
-&lt;td&gt;?&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.4600 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0369 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0327 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.4688 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;5.37&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.67&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;UnsafeCast&lt;/td&gt;
-&lt;td&gt;?&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0447 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0428 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0761 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0000 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.16&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.20&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;&lt;/td&gt;
-&lt;td&gt;&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;NormalCast&lt;/td&gt;
-&lt;td&gt;Product&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.1189 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0353 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0275 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.1164 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.000&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.00&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;CastUsingIs&lt;/td&gt;
-&lt;td&gt;Product&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.7099 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0511 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0453 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.7091 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;6.290&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.30&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;UnsafeCast&lt;/td&gt;
-&lt;td&gt;Product&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0000 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0000 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0000 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0000 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.000&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.00&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;Results may vary depending on the use case, but here, &lt;code&gt;using Unsafe is effectively is free&lt;/code&gt; and takes no time at all.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;Using &lt;code&gt;Unsafe&lt;/code&gt; is only recommended in the narrow use case where one knows using a &lt;code&gt;safe cast will succeed&lt;/code&gt; - leveraging &lt;code&gt;Unsafe&lt;/code&gt; in this case will result in performance gains.
-However, the gain is on the &lt;em&gt;nanoseconds&lt;/em&gt; scale, so is not likely to be noticeable - results may vary depending on the use ase though, and if performing a large number of slow &lt;em&gt;casts&lt;/em&gt;, then potentially a safe &lt;code&gt;Unsafe&lt;/code&gt; cast result in a noticeable difference.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.tabsoverspaces.com/233888-what-is-the-cost-of-casting-in-net-csharp?utm_source=feed/"&gt;What is the cost of casting in .NET (C#)?&lt;/a&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;?# DailyDrop ?&gt;143: 22-08-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
