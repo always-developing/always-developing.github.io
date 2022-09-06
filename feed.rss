@@ -5,69 +5,120 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Mon, 05 Sep 2022 05:05:30 GMT</pubDate>
-		<lastBuildDate>Mon, 05 Sep 2022 05:05:30 GMT</lastBuildDate>
+		<pubDate>Tue, 06 Sep 2022 05:13:23 GMT</pubDate>
+		<lastBuildDate>Tue, 06 Sep 2022 05:13:23 GMT</lastBuildDate>
 		<item>
-			<title>Performing a ping programmatically</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/09/05-ping-programmatically</link>
+			<title>Dynamic EF operations with EF.Property</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/09/06-ef-property</link>
 			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/09/05-ping-programmatically</guid>
-			<pubDate>Mon, 05 Sep 2022 01:00:00 GMT</pubDate>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/09/06-ef-property</guid>
+			<pubDate>Tue, 06 Sep 2022 01:00:00 GMT</pubDate>
 			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;A &lt;code&gt;Ping&lt;/code&gt; class is available in the &lt;em&gt;System.Net.NetworkInformation&lt;/em&gt; namespace - this class facilitates performing &lt;em&gt;ping&lt;/em&gt; operations (as the name suggests), on a hostname or IP address from code.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;EF.Property&lt;/code&gt; static method can be used to &lt;code&gt;reference an entity property dynamically&lt;/code&gt; using a &lt;code&gt;string representation of the property name&lt;/code&gt;. This can be leveraged to perform dynamic ordering or filtering on the DbSet, for example.&lt;/p&gt;
 &lt;hr /&gt;
 &lt;h2 id="usage"&gt;Usage&lt;/h2&gt;
-&lt;p&gt;The usage of the class is straightforward - declare an instance of &lt;code&gt;Ping&lt;/code&gt;, and call the &lt;em&gt;SendPingAsync&lt;/em&gt; method:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;using System.Net.NetworkInformation;
-
-var looping = true;
-
-// format asynchronously on a separate thread
-Task.Run(async () =&amp;gt;
-{
-    // create an instance of the Ping class
-    Ping pinger = new Ping();
-
-    // loop until the user presses a key
-    while (looping)
-    {
-        // ping and get the response
-        PingReply response = await pinger
-            .SendPingAsync(&amp;quot;alwaysdeveloping.net&amp;quot;);
-
-        // extract response information
-        Console.WriteLine($&amp;quot;Ping to '{response.Address}' took &amp;quot; +
-            $&amp;quot;{response.RoundtripTime}milliseconds and the response &amp;quot; +
-            $&amp;quot;was: `{response.Status}`&amp;quot;);
-
-        // wait 250ms before pinging again
-        await Task.Delay(250);
-    }
-});
-
-// wait for a key press
-// and then cancel the looping above
-Console.ReadKey();
-looping = false;
+&lt;p&gt;In all of the examples below, a simple &lt;em&gt;Blog&lt;/em&gt; table is being used which contains a list of 10 000 blog records.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="selection"&gt;Selection&lt;/h3&gt;
+&lt;p&gt;Suppose we wanted to get a list of all &lt;em&gt;Blog Titles&lt;/em&gt; - a simple enough query using Entity Framework:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var titles = context.Blogs
+    .Select(e =&amp;gt; e.Title)
+    .ToList();
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;A sample response:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Ping to '192.11.119.201' took 604 milliseconds and was: 'Success'
-Ping to '192.11.119.201' took 307 milliseconds and was: 'Success'
-Ping to '192.11.119.201' took 307 milliseconds and was: 'Success'
-Ping to '192.11.119.201' took 321 milliseconds and was: 'Success'
-Ping to '192.11.119.201' took 311 milliseconds and was: 'Success'
-Ping to '0.0.0.0' took 0 milliseconds and was: 'TimedOut'
-Ping to '192.11.119.201' took 307 milliseconds and was: 'Success'
-Ping to '192.11.119.201' took 620 milliseconds and was: 'Success'
-Ping to '192.11.119.201' took 308 milliseconds and was: 'Success'
+&lt;p&gt;Suppose now we have a requirement to allow the user to choose which specific column data should be returned. This could be done with a &lt;code&gt;switch statement&lt;/code&gt; or &lt;code&gt;multiple if statements&lt;/code&gt;, but this is not a sustainable approach. The better option is to use &lt;code&gt;Ef.Property&lt;/code&gt; - this allows for the &lt;code&gt;column name to be specified as a string&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var dynTitle = context.Blogs
+    .Select(e =&amp;gt; EF.Property&amp;lt;string&amp;gt;(e, &amp;quot;Title&amp;quot;))
+    .ToList();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Here we get all &lt;em&gt;Titles&lt;/em&gt;, without ever referencing the &lt;em&gt;Title&lt;/em&gt; property on the &lt;em&gt;Blog&lt;/em&gt; entity directly.&lt;/p&gt;
+&lt;p&gt;This can be enhanced, and a generic method created to &lt;code&gt;select values from the specified table and column&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// get all ids from the Blog table
+var ids = GetColumnValues&amp;lt;Blog, int&amp;gt;(&amp;quot;Id&amp;quot;);
+Console.WriteLine($&amp;quot;Num Ids in list: {ids.Count}&amp;quot;);
+Console.WriteLine($&amp;quot;First Id in list: {ids.First()}&amp;quot;);
+
+// the entity type and the colum value type are specific
+// as well as the column name
+public List&amp;lt;TColumn&amp;gt; GetColumnValues&amp;lt;TEntity, TColumn&amp;gt;(
+    string columnName) where TEntity : class
+{
+    using var context = new DemoContext();
+
+    return context.Set&amp;lt;TEntity&amp;gt;()
+        .Select(e =&amp;gt; EF.Property&amp;lt;TColumn&amp;gt;(e, columnName))
+        .ToList();
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output is as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Num Ids in list: 10000
+First Id in list: 1
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We now have a dynamic method to retrieve all values from the specified column.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;EF.Property&lt;/code&gt; can be used anywhere a entity property would traditionally be used - this means it could also be used for dynamic ordering and filtering!&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="ordering"&gt;Ordering&lt;/h3&gt;
+&lt;p&gt;We can use the above &lt;code&gt;GetColumnValues&lt;/code&gt; method as a template for a new method to perform &lt;em&gt;dynamic ordering&lt;/em&gt; on the &lt;em&gt;Blog&lt;/em&gt; entity:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;List&amp;lt;Blog&amp;gt; GetBlogs(string sortProperty, int pageSize)
+{
+    using var context = new DemoContext();
+
+    // instead of specifying the column to order by 
+    // directly, EF.Property is used
+    return context.Blogs
+        .OrderBy(e =&amp;gt; EF.Property&amp;lt;object&amp;gt;(e, sortProperty))
+        .Take(pageSize)
+        .ToList();
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This can now be invoked as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// get 5 blogs sorted by Id
+var sortedById = GetBlogs(&amp;quot;Id&amp;quot;, 5);
+Console.WriteLine($&amp;quot;Sorted by Id, the first Id &amp;quot; +
+    $&amp;quot;is: {sortedById.First().Id}&amp;quot;);
+
+// get 5 blogs sorted by Title
+var sortedByTitle = GetBlogs(&amp;quot;Title&amp;quot;, 5);
+Console.WriteLine($&amp;quot;Sorted by Title, the first Id &amp;quot; +
+    $&amp;quot;is: {sortedByTitle.First().Id}&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Sorted by Id, the first Id is: 1
+Sorted by Title, the first Id is: 665
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="filtering"&gt;Filtering&lt;/h3&gt;
+&lt;p&gt;One final example of how &lt;code&gt;EF.Property&lt;/code&gt; can be leveraged, is to perform &lt;em&gt;dynamic filtering&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public List&amp;lt;Blog&amp;gt; GetFilterBlogs&amp;lt;T&amp;gt;(string sortProperty, T value, int pageSize)
+{
+    using var context = new DemoContext();
+
+    return context.Blogs
+        .Where(e =&amp;gt; EF.Property&amp;lt;T&amp;gt;(e, sortProperty).Equals(value))
+        .Take(pageSize)
+        .ToList();
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This allows for a &lt;em&gt;column name&lt;/em&gt; and &lt;em&gt;column value&lt;/em&gt; to be &lt;code&gt;specified dynamically and have filtering applied&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// filter by id
+var filteredById = GetFilterBlogs&amp;lt;int&amp;gt;(&amp;quot;Id&amp;quot;, 1011, 1);
+Console.WriteLine($&amp;quot;Filtered count: {filteredById.Count}&amp;quot;);
+
+// filter by title
+var filteredByTitle = GetFilterBlogs&amp;lt;string&amp;gt;(&amp;quot;Title&amp;quot;, 
+    &amp;quot;Dynamic EF operations with EF.Property&amp;quot;, 1);
+Console.WriteLine($&amp;quot;Filtered count: {filteredByTitle.Count}&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Executing the above:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Filtered count: 1
+Filtered count: 1
 &lt;/code&gt;&lt;/pre&gt;
 &lt;hr /&gt;
 &lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;While there are better and more featureful (and more expensive) 3rd party tools available for monitoring the status and uptime of a website, with &lt;code&gt;Ping&lt;/code&gt; a simple, small application could be written to ping on an interval (as in the above example) and send out an alert if numerous timeouts are received.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;Ef.Property&lt;/code&gt; is a very useful utility method when required to change the target column of operations at runtime, such as when ordering or filtering dynamically (from a user interface grid, for example). There may be a performance impact in using this over referencing the column directly (but this should be benchmarked to confirm for the specific use case) - however these are the tradeoffs which need to be considered when deciding which method to use.&lt;/p&gt;
 &lt;hr /&gt;
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://twitter.com/BelloneDavide/status/1553066721702977537"&gt;Davide Bellone Tweet&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;153: 05-09-2022&lt;?#/ DailyDrop ?&gt;
+&lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/api/microsoft.entityframeworkcore.ef.property?view=efcore-6.0"&gt;EF.Property&lt;TProperty&gt;(Object, String) Method&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;154: 06-09-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
@@ -76,7 +127,7 @@ Ping to '192.11.119.201' took 308 milliseconds and was: 'Success'
 			<link>https://alwaysdeveloping.net/dailydrop/2022/09/30-min-api-cancellation</link>
 			<description>always learning | always growing</description>
 			<guid>https://alwaysdeveloping.net/dailydrop/2022/09/30-min-api-cancellation</guid>
-			<pubDate>Mon, 05 Sep 2022 00:00:00 GMT</pubDate>
+			<pubDate>Tue, 06 Sep 2022 00:00:00 GMT</pubDate>
 			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
 &lt;p&gt;A &lt;code&gt;CancellationToken&lt;/code&gt; can be passed into a minimal api endpoint to be used to &lt;em&gt;cancel processing executed by the endpoint&lt;/em&gt; - the cancellation token will automatically be marked as cancelled if the caller either cancels the request or navigates away from the endpoint (if being accessed from the browser)&lt;/p&gt;
 &lt;hr /&gt;
@@ -178,6 +229,70 @@ Cancelled request handled by CancellationMiddleware
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://andrewlock.net/using-cancellationtokens-in-asp-net-core-minimal-apis/"&gt;Using CancellationTokens in ASP.NET Core minimal APIs &lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;172: 30-09-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
+		<item>
+			<title>Performing a ping programmatically</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/09/05-ping-programmatically</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/09/05-ping-programmatically</guid>
+			<pubDate>Mon, 05 Sep 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;A &lt;code&gt;Ping&lt;/code&gt; class is available in the &lt;em&gt;System.Net.NetworkInformation&lt;/em&gt; namespace - this class facilitates performing &lt;em&gt;ping&lt;/em&gt; operations (as the name suggests), on a hostname or IP address from code.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="usage"&gt;Usage&lt;/h2&gt;
+&lt;p&gt;The usage of the class is straightforward - declare an instance of &lt;code&gt;Ping&lt;/code&gt;, and call the &lt;em&gt;SendPingAsync&lt;/em&gt; method:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;using System.Net.NetworkInformation;
+
+var looping = true;
+
+// format asynchronously on a separate thread
+Task.Run(async () =&amp;gt;
+{
+    // create an instance of the Ping class
+    Ping pinger = new Ping();
+
+    // loop until the user presses a key
+    while (looping)
+    {
+        // ping and get the response
+        PingReply response = await pinger
+            .SendPingAsync(&amp;quot;alwaysdeveloping.net&amp;quot;);
+
+        // extract response information
+        Console.WriteLine($&amp;quot;Ping to '{response.Address}' took &amp;quot; +
+            $&amp;quot;{response.RoundtripTime}milliseconds and the response &amp;quot; +
+            $&amp;quot;was: `{response.Status}`&amp;quot;);
+
+        // wait 250ms before pinging again
+        await Task.Delay(250);
+    }
+});
+
+// wait for a key press
+// and then cancel the looping above
+Console.ReadKey();
+looping = false;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;A sample response:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Ping to '192.11.119.201' took 604 milliseconds and was: 'Success'
+Ping to '192.11.119.201' took 307 milliseconds and was: 'Success'
+Ping to '192.11.119.201' took 307 milliseconds and was: 'Success'
+Ping to '192.11.119.201' took 321 milliseconds and was: 'Success'
+Ping to '192.11.119.201' took 311 milliseconds and was: 'Success'
+Ping to '0.0.0.0' took 0 milliseconds and was: 'TimedOut'
+Ping to '192.11.119.201' took 307 milliseconds and was: 'Success'
+Ping to '192.11.119.201' took 620 milliseconds and was: 'Success'
+Ping to '192.11.119.201' took 308 milliseconds and was: 'Success'
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;While there are better and more featureful (and more expensive) 3rd party tools available for monitoring the status and uptime of a website, with &lt;code&gt;Ping&lt;/code&gt; a simple, small application could be written to ping on an interval (as in the above example) and send out an alert if numerous timeouts are received.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/BelloneDavide/status/1553066721702977537"&gt;Davide Bellone Tweet&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;153: 05-09-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
@@ -901,119 +1016,6 @@ Mayer
 &lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/api/system.arraysegment-1?view=net-6.0"&gt;ArraySegment Struct&lt;/a&gt;&lt;/p&gt;
 &lt;hr /&gt;
 &lt;?# DailyDrop ?&gt;146: 25-08-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Route handler filters in .NET 7</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/08/24-route-filter</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/08/24-route-filter</guid>
-			<pubDate>Wed, 24 Aug 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;Coming with .NET 7 (most likely, .NET 7 is still in preview so its not 100% guaranteed to be included), is the &lt;code&gt;IRouteHandlerFilter&lt;/code&gt; interface, which allows for &lt;em&gt;intercepting&lt;/em&gt;  requests/response to and from a specific minimal endpoint.&lt;/p&gt;
-&lt;p&gt;This enabled &lt;code&gt;cross-cutting concerns to be coded once&lt;/code&gt;, and then applied to the relevent endpoints. They operate &lt;em&gt;similar&lt;/em&gt; to the .NET &lt;code&gt;middleware&lt;/code&gt; but are applied at a specific endpoint level, and not a level higher targeting all routes.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="iroutehandlerfilter"&gt;IRouteHandlerFilter&lt;/h2&gt;
-&lt;h3 id="definition"&gt;Definition&lt;/h3&gt;
-&lt;p&gt;First, lets define the &lt;code&gt;IRouteHandlerFilter&lt;/code&gt; implementation to later be applied to a minimal api endpoint. In the below example, a router handler filter is defined to measure how long a call to the endpoint takes:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class RouteLogger : IRouteHandlerFilter
-{
-    public async ValueTask&amp;lt;object?&amp;gt; InvokeAsync(RouteHandlerInvocationContext context, 
-        RouteHandlerFilterDelegate next)
-    {
-        // record the time before the endpoint (or next filter is called)
-        Console.WriteLine($&amp;quot;{DateTime.Now:MM/dd/yyyy hh:mm:ss.fff}: &amp;quot; +
-            $&amp;quot;RouteLogger - before endpoint called&amp;quot;);
-
-        var result = await next.Invoke(context);
-
-        // record the time after the endpoint (or next filter is called)
-        Console.WriteLine($&amp;quot;{DateTime.Now:MM/dd/yyyy hh:mm:ss.fff}: &amp;quot; +
-            $&amp;quot;RouteLogger - after endpoint called&amp;quot;);
-
-        return result;
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The &lt;code&gt;IRouteHandlerFilter&lt;/code&gt; interface only has one method to implement - &lt;em&gt;InvokeAsync&lt;/em&gt;, which takes two parameters:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;RouteHandlerInvocationContext&lt;/code&gt;:  this contains a reference to the &lt;em&gt;HttpContext&lt;/em&gt;, as well as a list of &lt;em&gt;Arguments&lt;/em&gt; which can be modified to be passed between filters&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;RouteHandlerFilterDelegate&lt;/code&gt;: this contains a delegate to the next &lt;em&gt;IRouteHandlerFilter&lt;/em&gt; implementation if multiple have been applied, otherwise it will route to the &lt;em&gt;actual endpoint handler&lt;/em&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;In the above sample, a message is logged when the method is entered, the &lt;em&gt;next&lt;/em&gt; delegate is invoked, and then a message logged just before the return. If &lt;em&gt;next&lt;/em&gt; is not invoked, the pipeline to the endpoint is &lt;code&gt;short-circuited&lt;/code&gt; and the &lt;code&gt;endpoint handler will never be invoked&lt;/code&gt;. This allows checks or validation to be performed (authentication checks for example), and &lt;em&gt;short-circuit&lt;/em&gt; if the checks fail.&lt;/p&gt;
-&lt;h3 id="application"&gt;Application&lt;/h3&gt;
-&lt;p&gt;Applying the filter to the endpoint is very simple:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
-
-var app = builder.Build();
-
-app.MapGet(&amp;quot;/endpoint&amp;quot;, () =&amp;gt;
-{
-    Console.WriteLine($&amp;quot;{DateTime.Now:MM/dd/yyyy hh:mm:ss.fff}: &amp;quot; +
-        $&amp;quot;Endpoint handler&amp;quot;);
-
-    return &amp;quot;Endpoint has been called&amp;quot;;
-}).AddFilter&amp;lt;RouteLogger&amp;gt;(); // add the filter
-
-app.Run();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;On the endpoint definition, the &lt;em&gt;AddFilter&lt;/em&gt; method is called, with the &lt;code&gt;IRouteHandlerFilter&lt;/code&gt; implementation specified. Multiple implementations can be linked together to form a pipeline to the endpoint handler.&lt;/p&gt;
-&lt;?# InfoBlock ?&gt;
-&lt;p&gt;The above was written using &lt;strong&gt;.NET 7 Preview 5&lt;/strong&gt;. AddFilter() has been renamed to &lt;em&gt;AddRouteHandlerFilter()&lt;/em&gt; in Preview 6 and will be renamed again to &lt;em&gt;AddEndpointFilter()&lt;/em&gt; starting in Preview 7.&lt;/p&gt;
-&lt;?#/ InfoBlock ?&gt;
-&lt;hr /&gt;
-&lt;h2 id="middleware"&gt;Middleware&lt;/h2&gt;
-&lt;p&gt;As mentioned in the introduction, &lt;em&gt;route handler filters&lt;/em&gt; act similar to the middleware. Where &lt;code&gt;route handler filters are applied to specific endpoints&lt;/code&gt;, &lt;code&gt;middleware is applied to requests coming in on any route&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;Below a middleware function is defined, which also performs logging:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
-var app = builder.Build();
-
-// define the middleware
-// The Func defined is called on every 
-// request to any endpoints
-app.Use(async (context, next) =&amp;gt;
-{
-    Console.WriteLine($&amp;quot;{DateTime.Now:MM/dd/yyyy hh:mm:ss.fff}: &amp;quot; +
-        $&amp;quot;Middleware - before endpoint called&amp;quot;);
-
-    await next(context);
-
-    Console.WriteLine($&amp;quot;{DateTime.Now:MM/dd/yyyy hh:mm:ss.fff}: &amp;quot; +
-        $&amp;quot;Middleware - after endpoint called&amp;quot;);
-});
-
-app.MapGet(&amp;quot;/endpoint&amp;quot;, () =&amp;gt;
-{
-    Console.WriteLine($&amp;quot;{DateTime.Now:MM/dd/yyyy hh:mm:ss.fff}: &amp;quot; +
-        $&amp;quot;Endpoint handler&amp;quot;);
-
-    return &amp;quot;Endpoint has been called&amp;quot;;
-}).AddFilter&amp;lt;RouteLogger&amp;gt;();
-
-app.Run();
-
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The middleware has a similar structure to a &lt;em&gt;route handler filter&lt;/em&gt;, with an &lt;em&gt;HttpContext&lt;/em&gt; and a &lt;em&gt;RequestDelegate&lt;/em&gt; as arguments. The &lt;em&gt;RequestDelegate&lt;/em&gt; argument &lt;code&gt;next&lt;/code&gt; is also invoked, to call the next middleware component, or the endpoint handler. If not called, &lt;em&gt;short-circuiting&lt;/em&gt; will occur, just as with the &lt;em&gt;route handler filter&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;In the above example, the &lt;code&gt;middleware was defined as a lambda function&lt;/code&gt; while the &lt;code&gt;filter was defined as a concrete IRouteHandlerFilter implementation&lt;/code&gt; - either of these can also be defined the either way. Middleware could be defined as a concrete implementation, and a route handler filter could be defined as a lambda function.&lt;br /&gt;
-If there are a number of middleware or route handler filter components being used, it's usually better to use the concrete implementation method to keep the startup code cleaner, and keep all pipeline logic in one place (their own folder, for example).&lt;/p&gt;
-&lt;p&gt;Executing the above code and browsing to the &lt;code&gt;/endpoint&lt;/code&gt;, results in the following output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;07/27/2022 08:42:27.851: Middleware - before endpoint called
-07/27/2022 08:42:27.859: RouteLogger - before endpoint called
-07/27/2022 08:42:27.860: Endpoint handler
-07/27/2022 08:42:27.860: RouteLogger - after endpoint called
-07/27/2022 08:42:27.865: Middleware - after endpoint called
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;As expected, the &lt;code&gt;middleware is called first&lt;/code&gt;, before the http request is passed onto the endpoint specific &lt;code&gt;route handler filter(s)&lt;/code&gt; (if any are defined), before the &lt;code&gt;actual endpoint handler&lt;/code&gt; is called.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;As mentioned, &lt;code&gt;middleware&lt;/code&gt; is applied to all endpoints, so if some middleware logic is only applicable to a certain endpoint(s), then currently filter logic needs to be specific in the middleware to determine if the middleware functionality should be applied to the request or not.
-Having the ability to granularly apply &lt;code&gt;route handler filter&lt;/code&gt; &amp;quot;middleware&amp;quot; on specific endpoint(s) allows for greater flexibility and is a welcome addition which brings functionality closer to being on par with that of MVC (which has ActionFilter)&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://khalidabuhakmeh.com/minimal-api-route-handler-filters"&gt;Minimal API Route Handler Filters&lt;/a&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;?# DailyDrop ?&gt;145: 24-08-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
