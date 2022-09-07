@@ -5,8 +5,230 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Tue, 06 Sep 2022 05:13:23 GMT</pubDate>
-		<lastBuildDate>Tue, 06 Sep 2022 05:13:23 GMT</lastBuildDate>
+		<pubDate>Wed, 07 Sep 2022 05:16:54 GMT</pubDate>
+		<lastBuildDate>Wed, 07 Sep 2022 05:16:54 GMT</lastBuildDate>
+		<item>
+			<title>.NET 7 API output caching</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/09/07-output-cache</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/09/07-output-cache</guid>
+			<pubDate>Wed, 07 Sep 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;Built in &lt;code&gt;output caching&lt;/code&gt; support is being introduced with .NET 7, providing &lt;code&gt;caching functionality for minimal api responses&lt;/code&gt;. The functionality is highly configurable allowing for fast, yet accurate responses from a minimal api.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="endpoints"&gt;Endpoints&lt;/h2&gt;
+&lt;h3 id="default-endpoint"&gt;Default endpoint&lt;/h3&gt;
+&lt;p&gt;In these examples, a simple minimal api endpoint will be used as a base, which &lt;em&gt;returns the current datetime when invoked&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet("/date", () =&amp;gt;
+{
+    return DateTime.Now;
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr&gt;
+&lt;h3 id="default-caching"&gt;Default caching&lt;/h3&gt;
+&lt;p&gt;Let's start by adding default caching to the endpoint. There are basically 3 steps to be performed to configure output caching (these are the same three steps that apply to most  API functionality):&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;Configure the &lt;code&gt;dependency injection container&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;builder.Services.AddOutputCache();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Configure the api &lt;code&gt;middleware pipeline&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.UseOutputCache();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Define the endpoint, and &lt;code&gt;apply the output cache functionality to the endpoint&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet("/datedefaultcache", () =&amp;gt;
+{
+    return DateTime.Now;
+}).CacheOutput();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Invoking the &lt;code&gt;/date&lt;/code&gt; endpoint will always result in a new return value, however invoking &lt;code&gt;/datedefaultcache&lt;/code&gt; a cached value will be returned (apart from the first time it is invoked). By default, the response is cached for 60 seconds.&lt;/p&gt;
+&lt;p&gt;Inspecting the response headers (by using a tool like Postman, for example), one can see the age of the cached response (in seconds) is included:&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/response-age.png" alt="Response age - 17 seconds old"&gt;&lt;/p&gt;
+&lt;p&gt;By default, once the cache is 60 seconds old, it expires and the next request to the endpoint will generate a new cache.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id="caching-policy"&gt;Caching policy&lt;/h3&gt;
+&lt;p&gt;It is also possible to define one or more &lt;code&gt;cache policy&lt;/code&gt; which allows for finer control of the behavior over the caching mechanism. A policy can either be defined as part of the &lt;code&gt;AddOutputCache&lt;/code&gt; call, and then applied to one or many endpoints (as is shown in the example immediately below), or defined when applying caching to a specific endpoint (as shown in an &lt;em&gt;VaryBy&lt;/em&gt; example further down).&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;Define the &lt;code&gt;caching policy&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;builder.Services.AddOutputCache(options =&amp;gt;
+{
+    options.AddPolicy("ignore-cache", p =&amp;gt; p
+        .With(ctx =&amp;gt; !ctx.HttpContext.Request.Headers.ContainsKey("ignore-cache"))
+    );
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This policy looks for the presence of a header called &lt;em&gt;ignore-cache&lt;/em&gt; and only applies the cache policy if the header is &lt;strong&gt;not&lt;/strong&gt; present (irrespective of the header value)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;code&gt;Apply the policy&lt;/code&gt; to an endpoint:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// option to ignore
+app.MapGet("/dateignorecache", () =&amp;gt;
+{
+    return DateTime.Now;
+}).CacheOutput("ignore-cache");
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Invoking this endpoint will result in default caching behavior, &lt;em&gt;unless&lt;/em&gt; a header named &lt;code&gt;ignore-cache&lt;/code&gt; is included in the request, in which case caching will be ignored.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;hr&gt;
+&lt;h3 id="caching-varyby"&gt;Caching VaryBy&lt;/h3&gt;
+&lt;p&gt;Another feature which can be leveraged, is the ability to &lt;code&gt;cache by a specific value&lt;/code&gt;. The built in options available are to cache:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;By query&lt;/li&gt;
+&lt;li&gt;By header&lt;/li&gt;
+&lt;li&gt;By value&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;In the below example, the output is &lt;code&gt;cached by the query string value 'timezone'&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet("/datetimezone", (string? timezone) =&amp;gt;
+{
+    // insert some logic to get the correct datetime
+    // based on the timezone
+    return DateTime.Now;
+
+}).CacheOutput(p =&amp;gt; p.VaryByQuery("timezone"));
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;When the endpoint is invoked with a specific timezone (&lt;em&gt;/datetimezone&lt;code&gt;?timezone=CAT&lt;/code&gt;&lt;/em&gt; for example), the output will be cached while the same timezone query string is provided. If another timezone is provided (&lt;em&gt;/datetimezone&lt;code&gt;?timezone=GMT&lt;/code&gt;&lt;/em&gt; for example), the same cache used for CAT is &lt;strong&gt;not applied&lt;/strong&gt; and a new cache will be generated specific for &lt;code&gt;GMT&lt;/code&gt;. The cache will &lt;code&gt;vary by a query string value&lt;/code&gt;. The same logic can be applied to a header value, or any other custom value.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id="evicting-cache"&gt;Evicting cache&lt;/h3&gt;
+&lt;p&gt;In some instances it might be required to &lt;code&gt;manually invalidate a cache&lt;/code&gt; if we know the content is no longer valid. The below example is very simple (for demo purposes), but the same mechanism can be extended for more elaborate use cases:&lt;/p&gt;
+&lt;p&gt;The first step is to &lt;code&gt;tag the output cache&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet("/datetimetag", () =&amp;gt;
+{
+    return DateTime.Now;
+
+}).CacheOutput(t =&amp;gt; t.Tag("current"));
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Here when the &lt;code&gt;/datetimetag&lt;/code&gt; endpoint is called, the output cache is tagged with the name &lt;em&gt;"current"&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;The implementation of &lt;code&gt;IOutputCacheStore&lt;/code&gt; (configured with dependency injection using the &lt;em&gt;AddOutputCache&lt;/em&gt; method) can then be injected where and when required to &lt;code&gt;evict&lt;/code&gt; (invalidate) a cache using the tag.&lt;/p&gt;
+&lt;p&gt;In this example, another endpoint is defined which will evict the cache for the &lt;code&gt;/datetimetag&lt;/code&gt; endpoint:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet("/datetimeclear", (IOutputCacheStore cache) =&amp;gt;
+{
+    // evict the cache tagged with "current"
+    cache.EvictByTagAsync("current", default);
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;Another very useful and easy to configure feature coming with .NET 7 (along with &lt;a href="https://alwaysdeveloping.net/08/31-rate-limiting"&gt;rate limiting&lt;/a&gt;, for example) - making minimal api's even more powerful and bringing it closer to parity with the more traditional MVC (controllers) approach.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://www.youtube.com/watch?v=0WvGwOoK-CI"&gt;Nick Chapsas - The NEW caching you should be using in .NET 7&lt;/a&gt;&lt;/p&gt;
+&lt;!--?# DailyDrop ?--&gt;155: 07-09-2022&lt;!--?#/ DailyDrop ?--&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
+		<item>
+			<title>Minimal api's and cancellation tokens</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/09/30-min-api-cancellation</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/09/30-min-api-cancellation</guid>
+			<pubDate>Wed, 07 Sep 2022 00:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;A &lt;code&gt;CancellationToken&lt;/code&gt; can be passed into a minimal api endpoint to be used to &lt;em&gt;cancel processing executed by the endpoint&lt;/em&gt; - the cancellation token will automatically be marked as cancelled if the caller either cancels the request or navigates away from the endpoint (if being accessed from the browser)&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="process-cancellation"&gt;Process cancellation&lt;/h2&gt;
+&lt;h3 id="no-token"&gt;No token&lt;/h3&gt;
+&lt;p&gt;Consider the following minimal api endpoint:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/long&amp;quot;, async () =&amp;gt;
+{
+    Console.WriteLine($&amp;quot;{DateTime.Now.ToString(&amp;quot;ss&amp;quot;)}: &amp;quot; +
+        $&amp;quot;Starting long process&amp;quot;);
+
+    // simulate a long running process
+    await Task.Delay(5000);
+
+    Console.WriteLine($&amp;quot;{DateTime.Now.ToString(&amp;quot;ss&amp;quot;)}: &amp;quot; +
+        $&amp;quot;Finishing long process&amp;quot;);
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If the application is executed, and the endpoint called, the output would be something like this:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;02: Starting long process
+07: Finishing long process
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As expected, it takes approximately 5 seconds for the endpoint to execute and finish.&lt;/p&gt;
+&lt;p&gt;If the endpoint is called again, and during those 5 seconds of &amp;quot;processing&amp;quot;, the &lt;em&gt;&amp;quot;Stop loading this page&amp;quot;&lt;/em&gt; button is clicked on the browser (wording may differ slightly depending on browser) we see the following:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;52: Starting long process
+57: Finishing long process
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Even though the &lt;code&gt;request from the browser to the endpoint is cancelled, the processing done by the endpoint is not cancelled!&lt;/code&gt;. The endpoint isn't aware of the fact the request was cancelled, which results in unnecessary CPU and memory usage, no longer required as the user has decided to cancel the request.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="cancellationtoken"&gt;CancellationToken&lt;/h3&gt;
+&lt;p&gt;&lt;code&gt;CancellationToken&lt;/code&gt; to the rescue - a &lt;em&gt;cancellation token&lt;/em&gt; can be used to convey information to the endpoint about the status of the request.&lt;/p&gt;
+&lt;p&gt;Let's update the endpoint to use a cancellation token:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// add cancellation token, which is automatically populated
+app.MapGet(&amp;quot;/long&amp;quot;, async (CancellationToken token) =&amp;gt;
+{
+    Console.WriteLine($&amp;quot;{DateTime.Now.ToString(&amp;quot;ss&amp;quot;)}: &amp;quot; +
+        $&amp;quot;Starting long process&amp;quot;);
+
+    //forward the token onto the method
+    await Task.Delay(5000, token);
+
+    Console.WriteLine($&amp;quot;{DateTime.Now.ToString(&amp;quot;ss&amp;quot;)}: &amp;quot; +
+        $&amp;quot;Finishing long process&amp;quot;);
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Here, a &lt;code&gt;CancellationToken&lt;/code&gt; is specified to be passed into the endpoint - this automatically gets instantiated and is &lt;em&gt;&amp;quot;linked&amp;quot;&lt;/em&gt; to the HTTP context of the request. If the request is cancelled by the caller, the &lt;code&gt;CancellationToken&lt;/code&gt; will indicate this fact.&lt;/p&gt;
+&lt;p&gt;Most &lt;em&gt;async&lt;/em&gt; methods (such as &lt;code&gt;Task.Delay&lt;/code&gt; in this instance) have an optional &lt;code&gt;CancellationToken&lt;/code&gt; parameter which can be used to pass a token all the way down the call stack to the code doing the actual work/processing, which will then in turn monitor and check if the token has been cancelled.&lt;/p&gt;
+&lt;p&gt;Invoking this endpoint now, and clicking the &lt;em&gt;&amp;quot;Stop loading this page&amp;quot;&lt;/em&gt; button on the browser while the endpoint is still processing will result in the following:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;27: Starting long process
+fail: Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware[1]
+      An unhandled exception has occurred while executing the request.
+      System.Threading.Tasks.TaskCanceledException: A task was canceled.
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;When a &lt;code&gt;CancellationToken&lt;/code&gt; is used to cancel a process, it is up to the library author to decide if cancelling means an exception be thrown (such as in the above example with &lt;em&gt;Task.Delay&lt;/em&gt;), or if processing simply just stops.&lt;/p&gt;
+&lt;p&gt;While the endpoint &lt;code&gt;process is now successfully&lt;/code&gt; cancelled when the request is cancelled, not using unnecessary resources - we now have to deal with and cater for the &lt;code&gt;TaskCanceledException&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="cancellation-middleware"&gt;Cancellation middleware&lt;/h3&gt;
+&lt;p&gt;A &lt;em&gt;custom middleware&lt;/em&gt; component can be written to catch any exceptions of type &lt;code&gt;TaskCanceledException&lt;/code&gt;, log it and return a different response to the caller (which they will not care about, as they have cancelled the request):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class CancellationMiddleware
+{
+    private readonly RequestDelegate _next;
+
+    public CancellationMiddleware(RequestDelegate next)
+    {
+        _next = next;
+    }
+
+    public async Task Invoke(HttpContext context)
+    {
+        try
+        {
+            await _next(context);
+        }
+        // catch any canceled exceptions
+        // TaskCanceledException inherits from OperationCanceledException
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine($&amp;quot;Cancelled request handled by {nameof(CancellationMiddleware)}&amp;quot;);
+            // the called has cancelled the request
+            // so doesn't care about the response
+            // Totally legit HTTP response code
+            context.Response.StatusCode = StatusCodes.Status418ImATeapot;
+        }
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This middleware is then registered on startup:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.UseMiddleware&amp;lt;CancellationMiddleware&amp;gt;();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And now when invoking the endpoint and cancelling we see the following output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;18: Starting long process
+Cancelled request handled by CancellationMiddleware
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;code&gt;Process successfully cancelled&lt;/code&gt; and &lt;code&gt;no more unhandled exception errors&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;Adding &lt;code&gt;CancellationToken&lt;/code&gt; support to a minimal endpoint is a fairly low effort improvement, with a (depending on how the endpoint gets used) potential high reward - processing which is no longer required by the caller gets cancelled, freeing up CPU and memory usage.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://andrewlock.net/using-cancellationtokens-in-asp-net-core-minimal-apis/"&gt;Using CancellationTokens in ASP.NET Core minimal APIs &lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;172: 30-09-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Dynamic EF operations with EF.Property</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/09/06-ef-property</link>
@@ -119,116 +341,6 @@ Filtered count: 1
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/api/microsoft.entityframeworkcore.ef.property?view=efcore-6.0"&gt;EF.Property&lt;TProperty&gt;(Object, String) Method&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;154: 06-09-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Minimal api's and cancellation tokens</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/09/30-min-api-cancellation</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/09/30-min-api-cancellation</guid>
-			<pubDate>Tue, 06 Sep 2022 00:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;A &lt;code&gt;CancellationToken&lt;/code&gt; can be passed into a minimal api endpoint to be used to &lt;em&gt;cancel processing executed by the endpoint&lt;/em&gt; - the cancellation token will automatically be marked as cancelled if the caller either cancels the request or navigates away from the endpoint (if being accessed from the browser)&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="process-cancellation"&gt;Process cancellation&lt;/h2&gt;
-&lt;h3 id="no-token"&gt;No token&lt;/h3&gt;
-&lt;p&gt;Consider the following minimal api endpoint:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/long&amp;quot;, async () =&amp;gt;
-{
-    Console.WriteLine($&amp;quot;{DateTime.Now.ToString(&amp;quot;ss&amp;quot;)}: &amp;quot; +
-        $&amp;quot;Starting long process&amp;quot;);
-
-    // simulate a long running process
-    await Task.Delay(5000);
-
-    Console.WriteLine($&amp;quot;{DateTime.Now.ToString(&amp;quot;ss&amp;quot;)}: &amp;quot; +
-        $&amp;quot;Finishing long process&amp;quot;);
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;If the application is executed, and the endpoint called, the output would be something like this:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;02: Starting long process
-07: Finishing long process
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;As expected, it takes approximately 5 seconds for the endpoint to execute and finish.&lt;/p&gt;
-&lt;p&gt;If the endpoint is called again, and during those 5 seconds of &amp;quot;processing&amp;quot;, the &lt;em&gt;&amp;quot;Stop loading this page&amp;quot;&lt;/em&gt; button is clicked on the browser (wording may differ slightly depending on browser) we see the following:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;52: Starting long process
-57: Finishing long process
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Even though the &lt;code&gt;request from the browser to the endpoint is cancelled, the processing done by the endpoint is not cancelled!&lt;/code&gt;. The endpoint isn't aware of the fact the request was cancelled, which results in unnecessary CPU and memory usage, no longer required as the user has decided to cancel the request.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="cancellationtoken"&gt;CancellationToken&lt;/h3&gt;
-&lt;p&gt;&lt;code&gt;CancellationToken&lt;/code&gt; to the rescue - a &lt;em&gt;cancellation token&lt;/em&gt; can be used to convey information to the endpoint about the status of the request.&lt;/p&gt;
-&lt;p&gt;Let's update the endpoint to use a cancellation token:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// add cancellation token, which is automatically populated
-app.MapGet(&amp;quot;/long&amp;quot;, async (CancellationToken token) =&amp;gt;
-{
-    Console.WriteLine($&amp;quot;{DateTime.Now.ToString(&amp;quot;ss&amp;quot;)}: &amp;quot; +
-        $&amp;quot;Starting long process&amp;quot;);
-
-    //forward the token onto the method
-    await Task.Delay(5000, token);
-
-    Console.WriteLine($&amp;quot;{DateTime.Now.ToString(&amp;quot;ss&amp;quot;)}: &amp;quot; +
-        $&amp;quot;Finishing long process&amp;quot;);
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Here, a &lt;code&gt;CancellationToken&lt;/code&gt; is specified to be passed into the endpoint - this automatically gets instantiated and is &lt;em&gt;&amp;quot;linked&amp;quot;&lt;/em&gt; to the HTTP context of the request. If the request is cancelled by the caller, the &lt;code&gt;CancellationToken&lt;/code&gt; will indicate this fact.&lt;/p&gt;
-&lt;p&gt;Most &lt;em&gt;async&lt;/em&gt; methods (such as &lt;code&gt;Task.Delay&lt;/code&gt; in this instance) have an optional &lt;code&gt;CancellationToken&lt;/code&gt; parameter which can be used to pass a token all the way down the call stack to the code doing the actual work/processing, which will then in turn monitor and check if the token has been cancelled.&lt;/p&gt;
-&lt;p&gt;Invoking this endpoint now, and clicking the &lt;em&gt;&amp;quot;Stop loading this page&amp;quot;&lt;/em&gt; button on the browser while the endpoint is still processing will result in the following:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;27: Starting long process
-fail: Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware[1]
-      An unhandled exception has occurred while executing the request.
-      System.Threading.Tasks.TaskCanceledException: A task was canceled.
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;When a &lt;code&gt;CancellationToken&lt;/code&gt; is used to cancel a process, it is up to the library author to decide if cancelling means an exception be thrown (such as in the above example with &lt;em&gt;Task.Delay&lt;/em&gt;), or if processing simply just stops.&lt;/p&gt;
-&lt;p&gt;While the endpoint &lt;code&gt;process is now successfully&lt;/code&gt; cancelled when the request is cancelled, not using unnecessary resources - we now have to deal with and cater for the &lt;code&gt;TaskCanceledException&lt;/code&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="cancellation-middleware"&gt;Cancellation middleware&lt;/h3&gt;
-&lt;p&gt;A &lt;em&gt;custom middleware&lt;/em&gt; component can be written to catch any exceptions of type &lt;code&gt;TaskCanceledException&lt;/code&gt;, log it and return a different response to the caller (which they will not care about, as they have cancelled the request):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class CancellationMiddleware
-{
-    private readonly RequestDelegate _next;
-
-    public CancellationMiddleware(RequestDelegate next)
-    {
-        _next = next;
-    }
-
-    public async Task Invoke(HttpContext context)
-    {
-        try
-        {
-            await _next(context);
-        }
-        // catch any canceled exceptions
-        // TaskCanceledException inherits from OperationCanceledException
-        catch (OperationCanceledException)
-        {
-            Console.WriteLine($&amp;quot;Cancelled request handled by {nameof(CancellationMiddleware)}&amp;quot;);
-            // the called has cancelled the request
-            // so doesn't care about the response
-            // Totally legit HTTP response code
-            context.Response.StatusCode = StatusCodes.Status418ImATeapot;
-        }
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This middleware is then registered on startup:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.UseMiddleware&amp;lt;CancellationMiddleware&amp;gt;();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;And now when invoking the endpoint and cancelling we see the following output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;18: Starting long process
-Cancelled request handled by CancellationMiddleware
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;code&gt;Process successfully cancelled&lt;/code&gt; and &lt;code&gt;no more unhandled exception errors&lt;/code&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;Adding &lt;code&gt;CancellationToken&lt;/code&gt; support to a minimal endpoint is a fairly low effort improvement, with a (depending on how the endpoint gets used) potential high reward - processing which is no longer required by the caller gets cancelled, freeing up CPU and memory usage.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://andrewlock.net/using-cancellationtokens-in-asp-net-core-minimal-apis/"&gt;Using CancellationTokens in ASP.NET Core minimal APIs &lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;172: 30-09-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
@@ -883,139 +995,6 @@ var price = new ProductPrice
 &lt;p&gt;&lt;a href="https://twitter.com/MarusykRoman/status/1550995942576476162"&gt;Roman Marusyk Tweet&lt;/a&gt;&lt;/p&gt;
 &lt;hr /&gt;
 &lt;?# DailyDrop ?&gt;147: 26-08-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Delimit an array with ArraySegment</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/08/25-arraysegment</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/08/25-arraysegment</guid>
-			<pubDate>Thu, 25 Aug 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;ArraySegment&lt;/code&gt; structure can be used to represent only a portion of a larger array. A few use cases when &lt;code&gt;ArraySegment&lt;/code&gt; is useful:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;when only a portion of a larger array needs to be passed as an argument to a method, &lt;code&gt;ArraySegment&lt;/code&gt; can be used to pass only the require portion of elements&lt;/li&gt;
-&lt;li&gt;when wanting to perform operations on the array from multiple threads, &lt;code&gt;ArraySegment&lt;/code&gt; can be used to have each thread operation on a portion of the array&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;An important aspect of the &lt;code&gt;ArraySegment&lt;/code&gt; is that a &lt;code&gt;new array is not created&lt;/code&gt; - the &lt;code&gt;ArraySegment&lt;/code&gt; structure still points back to the original array.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="examples"&gt;Examples&lt;/h2&gt;
-&lt;p&gt;In the following examples, a line from a &lt;code&gt;csv file&lt;/code&gt; is being read into a &lt;code&gt;string array&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var artistCSVLine = &amp;quot;1,John,Mayer,1976,United States,www.johnmayer.com&amp;quot;;
-var fullArtistArray = artistCSVLine.Split(&amp;quot;,&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We also have a method to output each item in the array:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public void OutputArray(string[] items)
-{
-    for (var i = 0; i &amp;lt; items.Length; i++)
-    {
-        Console.WriteLine(items[i]);
-    }
-
-    Console.WriteLine(&amp;quot;------&amp;quot;);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Calling the method, with the &lt;em&gt;fullArtistArray&lt;/em&gt; array:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;1
-John
-Mayer
-1976
-United States
-www.johnmayer.com
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;But suppose in our application we are only interested in the &lt;em&gt;artist Names and year of birth&lt;/em&gt;, how do we output only those values?&lt;/p&gt;
-&lt;p&gt;(this example is very simplified for the sample, and not necessarily a production ready way of dealing with CSV records in this manner)&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="without-arraysegment"&gt;Without ArraySegment&lt;/h3&gt;
-&lt;p&gt;Without leveraging &lt;code&gt;ArraySegment&lt;/code&gt;, there are two common ways (in my experience) to get only a portion of an array:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;Creating a separate array:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// define a new array
-var portionArray = new string[3];
-// set the values of the new array from the
-// values of the original array
-portionArray[0] = fullArtistArray[1];
-portionArray[1] = fullArtistArray[2];
-portionArray[2] = fullArtistArray[3];
-
-// print out only the new array
-OutputArray(portionArray);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;With this approach, an additional array is created in memory and the information duplicated, so will use more memory.&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;Manual checks for specific elements in the array:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public void OutputArrayPortion(string[] items)
-{
-    for (var i = 0; i &amp;lt; items.Length; i++)
-    {
-        // only output items in specific
-        // positions in the array
-        if (i == 1 || i == 2 || i == 3)
-        {
-            Console.WriteLine(items[i]);
-        }
-    }
-    Console.WriteLine(&amp;quot;------&amp;quot;);
-}   
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;With this approach, the original full array can passed to the method and a manual check is performed to only output items in specific positions in the array. While this does use no additional memory, its not sustainable. If the checks needs to be performed in multiple places in code (when outputting the data, when saving to a database etc) this approach makes the code not very maintainable.&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;While either of these approaches could still work, a better approach is to leverage the &lt;code&gt;ArraySegment&lt;/code&gt; class.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="with-arraysegment"&gt;With ArraySegment&lt;/h3&gt;
-&lt;p&gt;The &lt;code&gt;ArraySegment&lt;/code&gt; class can be used to represent only a portion (or segment) of the original array:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// create a segment, from fullArtistArray, starting at position 1
-// and include 3 items from the original array
-var artistSegment = new ArraySegment&amp;lt;string&amp;gt;(fullArtistArray, 1, 3);
-OutputArraySegment(artistSegment);
-
-// ------
-
-public void OutputArraySegment(ArraySegment&amp;lt;string&amp;gt; items)
-{
-    for (var i = 0; i &amp;lt; items.Count; i++)
-    {
-        Console.WriteLine(items[i]);
-    }
-    Console.WriteLine(&amp;quot;------&amp;quot;);
-}
-
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;John
-Mayer
-1976
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;As mentioned, an important feature of the &lt;code&gt;ArraySegment&lt;/code&gt; is that a &lt;code&gt;new array is not created&lt;/code&gt;, but the class is a &lt;code&gt;structure which points to a segment of the original array&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;This can be demonstrated as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var artistCSVLine = &amp;quot;1,John,Mayer,1976,United States,www.johnmayer.com&amp;quot;;
-var fullArtistArray = artistCSVLine.Split(&amp;quot;,&amp;quot;);
-
-// create a new array segment
-var artistSegment = new ArraySegment&amp;lt;string&amp;gt;(fullArtistArray, 1, 3);
-
-// change the item at index 3 in the ORIGINAL array
-fullArtistArray[3] = &amp;quot;1977&amp;quot;;
-
-// print out the array segment
-OutputArraySegment(artistSegment);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output is as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;John
-Mayer
-1977
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The year value output is the &lt;code&gt;updated value&lt;/code&gt;, even though it &lt;code&gt;was updated on the original array&lt;/code&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;ArraySegment&lt;/code&gt; provides an easy, memory efficient way of working with portions of a larger original array, and should be leveraged whenever possible of the other &lt;em&gt;non-array-segment&lt;/em&gt; techniques mentioned above.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/api/system.arraysegment-1?view=net-6.0"&gt;ArraySegment Struct&lt;/a&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;?# DailyDrop ?&gt;146: 25-08-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
