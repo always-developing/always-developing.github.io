@@ -7,9 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <meta name="description" content="always learning | always growing">
 
-    <title>Always Developing - Minimal api&#x27;s and cancellation tokens</title>
+    <title>Always Developing - Formatting interpolated strings</title>
 
-    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/09/30-min-api-cancellation">
+    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/09/08-interpolation-formatting">
 
             <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
             <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
@@ -18,9 +18,9 @@
     <meta name="msapplication-tooltip" content="Always Developing" />
     <meta name="msapplication-starturl" content="/" />
 
-    <meta property="og:title" content="Always Developing - Minimal api&#x27;s and cancellation tokens" />
+    <meta property="og:title" content="Always Developing - Formatting interpolated strings" />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/09/30-min-api-cancellation" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/09/08-interpolation-formatting" />
 
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
@@ -104,14 +104,14 @@
             <div class="col-md-10">
                 <div class="post-heading">
                     <h1>
-                        Minimal api&#x27;s and cancellation tokens
+                        Formatting interpolated strings
                     </h1>
-                            <h2 class="subheading">How to cancel aborted api calls with cancellation tokens</h2>
+                            <h2 class="subheading">How interpolated strings can be formatted without using the ToString method</h2>
                         <p class="post-meta">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
                                 <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
                                 <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
-                            </svg> Published on Wednesday, 07 September 2022
+                            </svg> Published on Thursday, 08 September 2022
                         </p>
                 </div>
             </div>
@@ -130,105 +130,96 @@
 </div>
 
                         <h2 id="daily-knowledge-drop">Daily Knowledge Drop</h2>
-<p>A <code>CancellationToken</code> can be passed into a minimal api endpoint to be used to <em>cancel processing executed by the endpoint</em> - the cancellation token will automatically be marked as cancelled if the caller either cancels the request or navigates away from the endpoint (if being accessed from the browser)</p>
+<p>When using <code>string interpolation</code>, the colon <code>:</code> operator can be used, followed by the <code>format string</code> to specify how the string should be formatted. This can be used instead of the <code>ToString</code> method with a specified format.</p>
+<p>This post is about <code>interpolated strings</code> however the technique will also work when using the <code>index component</code> (using <em>String.Format</em> with <code>{0}</code> instead the string).</p>
 <hr />
-<h2 id="process-cancellation">Process cancellation</h2>
-<h3 id="no-token">No token</h3>
-<p>Consider the following minimal api endpoint:</p>
-<pre><code class="language-csharp">app.MapGet(&quot;/long&quot;, async () =&gt;
-{
-    Console.WriteLine($&quot;{DateTime.Now.ToString(&quot;ss&quot;)}: &quot; +
-        $&quot;Starting long process&quot;);
-
-    // simulate a long running process
-    await Task.Delay(5000);
-
-    Console.WriteLine($&quot;{DateTime.Now.ToString(&quot;ss&quot;)}: &quot; +
-        $&quot;Finishing long process&quot;);
-});
-</code></pre>
-<p>If the application is executed, and the endpoint called, the output would be something like this:</p>
-<pre><code class="language-terminal">02: Starting long process
-07: Finishing long process
-</code></pre>
-<p>As expected, it takes approximately 5 seconds for the endpoint to execute and finish.</p>
-<p>If the endpoint is called again, and during those 5 seconds of &quot;processing&quot;, the <em>&quot;Stop loading this page&quot;</em> button is clicked on the browser (wording may differ slightly depending on browser) we see the following:</p>
-<pre><code class="language-terminal">52: Starting long process
-57: Finishing long process
-</code></pre>
-<p>Even though the <code>request from the browser to the endpoint is cancelled, the processing done by the endpoint is not cancelled!</code>. The endpoint isn't aware of the fact the request was cancelled, which results in unnecessary CPU and memory usage, no longer required as the user has decided to cancel the request.</p>
+<h2 id="format">Format</h2>
+<p>In a previous post, we learnt how to <a href="../../08/03-string-interpolation-alignment">align the string when performing string interpolation</a> - but when using this method (and other composite string techniques) there also an optional <em>formatString</em> component.</p>
+<p>The full syntax for:</p>
+<ul>
+<li><code>string interpolation</code> is: <code>{&lt;interpolationExpression&gt;[,&lt;alignment&gt;][:&lt;formatString&gt;]}</code></li>
+<li><code>composite formatting</code> is: <code>{index[,alignment][:formatString]}</code></li>
+</ul>
+<p>This post will focus on the <em>formatString</em> portion - this provides a shortcut to using the <code>.ToString(format)</code> method on the relevent entity.</p>
 <hr />
-<h3 id="cancellationtoken">CancellationToken</h3>
-<p><code>CancellationToken</code> to the rescue - a <em>cancellation token</em> can be used to convey information to the endpoint about the status of the request.</p>
-<p>Let's update the endpoint to use a cancellation token:</p>
-<pre><code class="language-csharp">// add cancellation token, which is automatically populated
-app.MapGet(&quot;/long&quot;, async (CancellationToken token) =&gt;
-{
-    Console.WriteLine($&quot;{DateTime.Now.ToString(&quot;ss&quot;)}: &quot; +
-        $&quot;Starting long process&quot;);
+<h2 id="examples">Examples</h2>
+<p>In the examples below, the <em>ToString</em> method, and the <em>interpolated format string</em> method are compared, with the same format string, and shown to produce the same output. It is also shown when no format string is specified, the `general (&quot;G&quot;) format specifier is used (for numeric, datetime and enumeration).</p>
+<h3 id="datetime">DateTime</h3>
+<p>Below we see how to format a <code>DateTime</code> using the more traditional <em>ToString</em> method, and then the <em>format string</em> method:</p>
+<pre><code class="language-csharp">DateTime current  = DateTime.Now;
+Console.WriteLine($&quot;Current Datetime:{current}&quot;);
+Console.WriteLine($&quot;Current Datetime:{current.ToString(&quot;MM/dd/yyyy hh:mm:ss.fff&quot;)}&quot;);
+Console.WriteLine($&quot;Current Datetime:{current:MM/dd/yyyy hh:mm:ss.fff}&quot;);
 
-    //forward the token onto the method
-    await Task.Delay(5000, token);
-
-    Console.WriteLine($&quot;{DateTime.Now.ToString(&quot;ss&quot;)}: &quot; +
-        $&quot;Finishing long process&quot;);
-});
+Console.WriteLine($&quot;Current Datetime:{current.ToString(&quot;hh:mm&quot;)}&quot;);
+Console.WriteLine($&quot;Current Datetime:{current:hh:mm}&quot;);
 </code></pre>
-<p>Here, a <code>CancellationToken</code> is specified to be passed into the endpoint - this automatically gets instantiated and is <em>&quot;linked&quot;</em> to the HTTP context of the request. If the request is cancelled by the caller, the <code>CancellationToken</code> will indicate this fact.</p>
-<p>Most <em>async</em> methods (such as <code>Task.Delay</code> in this instance) have an optional <code>CancellationToken</code> parameter which can be used to pass a token all the way down the call stack to the code doing the actual work/processing, which will then in turn monitor and check if the token has been cancelled.</p>
-<p>Invoking this endpoint now, and clicking the <em>&quot;Stop loading this page&quot;</em> button on the browser while the endpoint is still processing will result in the following:</p>
-<pre><code class="language-terminal">27: Starting long process
-fail: Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware[1]
-      An unhandled exception has occurred while executing the request.
-      System.Threading.Tasks.TaskCanceledException: A task was canceled.
+<p>Executing the above:</p>
+<pre><code class="language-terminal">Current Datetime:2022/08/15 05:56:53
+Current Datetime:09/07/2022 05:54:25.527
+Current Datetime:09/07/2022 05:54:25.527
+Current Datetime:05:54
+Current Datetime:05:54
 </code></pre>
-<p>When a <code>CancellationToken</code> is used to cancel a process, it is up to the library author to decide if cancelling means an exception be thrown (such as in the above example with <em>Task.Delay</em>), or if processing simply just stops.</p>
-<p>While the endpoint <code>process is now successfully</code> cancelled when the request is cancelled, not using unnecessary resources - we now have to deal with and cater for the <code>TaskCanceledException</code>.</p>
+<p>Same output with the two methods, but when using the <em>interpolated format string</em> method, the code is more concise and (arguably) cleaner.</p>
 <hr />
-<h3 id="cancellation-middleware">Cancellation middleware</h3>
-<p>A <em>custom middleware</em> component can be written to catch any exceptions of type <code>TaskCanceledException</code>, log it and return a different response to the caller (which they will not care about, as they have cancelled the request):</p>
-<pre><code class="language-csharp">public class CancellationMiddleware
-{
-    private readonly RequestDelegate _next;
-
-    public CancellationMiddleware(RequestDelegate next)
-    {
-        _next = next;
-    }
-
-    public async Task Invoke(HttpContext context)
-    {
-        try
-        {
-            await _next(context);
-        }
-        // catch any canceled exceptions
-        // TaskCanceledException inherits from OperationCanceledException
-        catch (OperationCanceledException)
-        {
-            Console.WriteLine($&quot;Cancelled request handled by {nameof(CancellationMiddleware)}&quot;);
-            // the called has cancelled the request
-            // so doesn't care about the response
-            // Totally legit HTTP response code
-            context.Response.StatusCode = StatusCodes.Status418ImATeapot;
-        }
-    }
-}
+<h3 id="guid">Guid</h3>
+<p>A <code>Guid</code> example:</p>
+<pre><code class="language-csharp">Guid newGuid = Guid.NewGuid();
+Console.WriteLine($&quot;Guid value: {newGuid}&quot;);
+Console.WriteLine($&quot;Guid value: {newGuid.ToString(&quot;B&quot;)}&quot;);
+Console.WriteLine($&quot;Guid value: {newGuid:B}&quot;);
 </code></pre>
-<p>This middleware is then registered on startup:</p>
-<pre><code class="language-csharp">app.UseMiddleware&lt;CancellationMiddleware&gt;();
+<p>Executing the above:</p>
+<pre><code class="language-terminal">Guid value: bcaf5b5e-14be-4156-a480-a87614a900f4
+Guid value: {bcaf5b5e-14be-4156-a480-a87614a900f4}
+Guid value: {bcaf5b5e-14be-4156-a480-a87614a900f4}
 </code></pre>
-<p>And now when invoking the endpoint and cancelling we see the following output:</p>
-<pre><code class="language-terminal">18: Starting long process
-Cancelled request handled by CancellationMiddleware
+<hr />
+<h3 id="timespan">TimeSpan</h3>
+<p>A <code>TimeSpan</code> example:</p>
+<pre><code class="language-csharp">TimeSpan travelTime = new TimeSpan(1, 6, 24, 1);
+Console.WriteLine($&quot;Travel time: {travelTime}&quot;);
+Console.WriteLine($&quot;Travel time: {travelTime.ToString(&quot;g&quot;)}&quot;);
+Console.WriteLine($&quot;Travel time: {travelTime:g}&quot;);
 </code></pre>
-<p><code>Process successfully cancelled</code> and <code>no more unhandled exception errors</code>.</p>
+<p>Executing the above:</p>
+<pre><code class="language-terminal">Travel time: 1.06:24:01
+Travel time: 1:6:24:01
+Travel time: 1:6:24:01
+</code></pre>
+<hr />
+<h3 id="numeric">Numeric</h3>
+<p>A <code>numeric</code> example:</p>
+<pre><code class="language-csharp">int cost = 5699;
+Console.WriteLine($&quot;Cost: {cost}&quot;);
+Console.WriteLine($&quot;Cost: {cost.ToString(&quot;c&quot;)}&quot;);
+Console.WriteLine($&quot;Cost: {cost:c}&quot;);
+</code></pre>
+<p>Executing the above:</p>
+<pre><code class="language-terminal">Cost: 5699
+Cost: R5 699,00
+Cost: R5 699,00
+</code></pre>
+<hr />
+<h3 id="enum">Enum</h3>
+<p>A <code>Enum</code> example:</p>
+<pre><code class="language-csharp">ConsoleColor drawColor = ConsoleColor.Green;
+Console.WriteLine($&quot;Draw color: {drawColor}&quot;);
+Console.WriteLine($&quot;Draw color: {drawColor.ToString(&quot;D&quot;)}&quot;);
+Console.WriteLine($&quot;Draw color: {drawColor:D}&quot;);
+</code></pre>
+<p>Executing the above:</p>
+<pre><code class="language-terminal">Draw color: Green
+Draw color: 10
+Draw color: 10
+</code></pre>
 <hr />
 <h2 id="notes">Notes</h2>
-<p>Adding <code>CancellationToken</code> support to a minimal endpoint is a fairly low effort improvement, with a (depending on how the endpoint gets used) potential high reward - processing which is no longer required by the caller gets cancelled, freeing up CPU and memory usage.</p>
+<p>This is <code>not a new or revolutionary feature</code>. I tend to use the <code>ToString</code> method when formatting strings, not really aware that there was an alternative. Using the <code>:formatString</code> method is not going to drastically change the maintainability, readability or performance of the code - but it does require slightly less typing and removes one additional method call (<em>ToString</em>) so personally I will be using this method more frequently going forward.</p>
 <hr />
 <h2 id="references">References</h2>
-<p><a href="https://andrewlock.net/using-cancellationtokens-in-asp-net-core-minimal-apis/">Using CancellationTokens in ASP.NET Core minimal APIs </a></p>
+<p><a href="https://docs.microsoft.com/en-us/dotnet/standard/base-types/composite-formatting#format-string-component">Composite formatting: Format string component</a></p>
 
 <blockquote class="daily-drop">
     <div>
@@ -241,7 +232,7 @@ Cancelled request handled by CancellationMiddleware
             </svg>
         </div>
         <div class="drop-header">
-            Daily Drop 172: 30-09-2022
+            Daily Drop 156: 08-09-2022
         </div>
         <div>
             <br>At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br> It could be anything - some.NET / C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
@@ -255,9 +246,9 @@ Cancelled request handled by CancellationMiddleware
 <div>
             <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
             <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
-            <a role="button" href="/tags/minimalapi" class="badge badge-light"> minimalapi</a>
-            <a role="button" href="/tags/cancellation" class="badge badge-light"> cancellation</a>
-            <a role="button" href="/tags/token" class="badge badge-light"> token</a>
+            <a role="button" href="/tags/interpolation" class="badge badge-light"> interpolation</a>
+            <a role="button" href="/tags/formatting" class="badge badge-light"> formatting</a>
+            <a role="button" href="/tags/string" class="badge badge-light"> string</a>
 </div>
                     </div>
                     <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
@@ -267,11 +258,14 @@ Cancelled request handled by CancellationMiddleware
             <h3 class="no-anchor">On This Page</h3>
             <ul>
         <li><a href="#daily-knowledge-drop">Daily Knowledge Drop</a></li>
-        <li><a href="#process-cancellation">Process cancellation</a></li>
+        <li><a href="#format">Format</a></li>
+        <li><a href="#examples">Examples</a></li>
             <ul>
-        <li><a href="#no-token">No token</a></li>
-        <li><a href="#cancellationtoken">CancellationToken</a></li>
-        <li><a href="#cancellation-middleware">Cancellation middleware</a></li>
+        <li><a href="#datetime">DateTime</a></li>
+        <li><a href="#guid">Guid</a></li>
+        <li><a href="#timespan">TimeSpan</a></li>
+        <li><a href="#numeric">Numeric</a></li>
+        <li><a href="#enum">Enum</a></li>
             </ul>
         <li><a href="#notes">Notes</a></li>
         <li><a href="#references">References</a></li>

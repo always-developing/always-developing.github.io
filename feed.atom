@@ -4,8 +4,108 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-09-07T05:16:54Z</updated>
+	<updated>2022-09-08T04:57:53Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/09/08-interpolation-formatting</id>
+		<title>Formatting interpolated strings</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/09/08-interpolation-formatting" />
+		<updated>2022-09-08T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;When using &lt;code&gt;string interpolation&lt;/code&gt;, the colon &lt;code&gt;:&lt;/code&gt; operator can be used, followed by the &lt;code&gt;format string&lt;/code&gt; to specify how the string should be formatted. This can be used instead of the &lt;code&gt;ToString&lt;/code&gt; method with a specified format.&lt;/p&gt;
+&lt;p&gt;This post is about &lt;code&gt;interpolated strings&lt;/code&gt; however the technique will also work when using the &lt;code&gt;index component&lt;/code&gt; (using &lt;em&gt;String.Format&lt;/em&gt; with &lt;code&gt;{0}&lt;/code&gt; instead the string).&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="format"&gt;Format&lt;/h2&gt;
+&lt;p&gt;In a previous post, we learnt how to &lt;a href="https://alwaysdeveloping.net/08/03-string-interpolation-alignment"&gt;align the string when performing string interpolation&lt;/a&gt; - but when using this method (and other composite string techniques) there also an optional &lt;em&gt;formatString&lt;/em&gt; component.&lt;/p&gt;
+&lt;p&gt;The full syntax for:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;string interpolation&lt;/code&gt; is: &lt;code&gt;{&amp;lt;interpolationExpression&amp;gt;[,&amp;lt;alignment&amp;gt;][:&amp;lt;formatString&amp;gt;]}&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;composite formatting&lt;/code&gt; is: &lt;code&gt;{index[,alignment][:formatString]}&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;This post will focus on the &lt;em&gt;formatString&lt;/em&gt; portion - this provides a shortcut to using the &lt;code&gt;.ToString(format)&lt;/code&gt; method on the relevent entity.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="examples"&gt;Examples&lt;/h2&gt;
+&lt;p&gt;In the examples below, the &lt;em&gt;ToString&lt;/em&gt; method, and the &lt;em&gt;interpolated format string&lt;/em&gt; method are compared, with the same format string, and shown to produce the same output. It is also shown when no format string is specified, the `general ("G") format specifier is used (for numeric, datetime and enumeration).&lt;/p&gt;
+&lt;h3 id="datetime"&gt;DateTime&lt;/h3&gt;
+&lt;p&gt;Below we see how to format a &lt;code&gt;DateTime&lt;/code&gt; using the more traditional &lt;em&gt;ToString&lt;/em&gt; method, and then the &lt;em&gt;format string&lt;/em&gt; method:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;DateTime current  = DateTime.Now;
+Console.WriteLine($"Current Datetime:{current}");
+Console.WriteLine($"Current Datetime:{current.ToString("MM/dd/yyyy hh:mm:ss.fff")}");
+Console.WriteLine($"Current Datetime:{current:MM/dd/yyyy hh:mm:ss.fff}");
+
+Console.WriteLine($"Current Datetime:{current.ToString("hh:mm")}");
+Console.WriteLine($"Current Datetime:{current:hh:mm}");
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Executing the above:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Current Datetime:2022/08/15 05:56:53
+Current Datetime:09/07/2022 05:54:25.527
+Current Datetime:09/07/2022 05:54:25.527
+Current Datetime:05:54
+Current Datetime:05:54
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Same output with the two methods, but when using the &lt;em&gt;interpolated format string&lt;/em&gt; method, the code is more concise and (arguably) cleaner.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id="guid"&gt;Guid&lt;/h3&gt;
+&lt;p&gt;A &lt;code&gt;Guid&lt;/code&gt; example:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;Guid newGuid = Guid.NewGuid();
+Console.WriteLine($"Guid value: {newGuid}");
+Console.WriteLine($"Guid value: {newGuid.ToString("B")}");
+Console.WriteLine($"Guid value: {newGuid:B}");
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Executing the above:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Guid value: bcaf5b5e-14be-4156-a480-a87614a900f4
+Guid value: {bcaf5b5e-14be-4156-a480-a87614a900f4}
+Guid value: {bcaf5b5e-14be-4156-a480-a87614a900f4}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr&gt;
+&lt;h3 id="timespan"&gt;TimeSpan&lt;/h3&gt;
+&lt;p&gt;A &lt;code&gt;TimeSpan&lt;/code&gt; example:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;TimeSpan travelTime = new TimeSpan(1, 6, 24, 1);
+Console.WriteLine($"Travel time: {travelTime}");
+Console.WriteLine($"Travel time: {travelTime.ToString("g")}");
+Console.WriteLine($"Travel time: {travelTime:g}");
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Executing the above:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Travel time: 1.06:24:01
+Travel time: 1:6:24:01
+Travel time: 1:6:24:01
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr&gt;
+&lt;h3 id="numeric"&gt;Numeric&lt;/h3&gt;
+&lt;p&gt;A &lt;code&gt;numeric&lt;/code&gt; example:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;int cost = 5699;
+Console.WriteLine($"Cost: {cost}");
+Console.WriteLine($"Cost: {cost.ToString("c")}");
+Console.WriteLine($"Cost: {cost:c}");
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Executing the above:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Cost: 5699
+Cost: R5&amp;nbsp;699,00
+Cost: R5&amp;nbsp;699,00
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr&gt;
+&lt;h3 id="enum"&gt;Enum&lt;/h3&gt;
+&lt;p&gt;A &lt;code&gt;Enum&lt;/code&gt; example:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;ConsoleColor drawColor = ConsoleColor.Green;
+Console.WriteLine($"Draw color: {drawColor}");
+Console.WriteLine($"Draw color: {drawColor.ToString("D")}");
+Console.WriteLine($"Draw color: {drawColor:D}");
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Executing the above:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Draw color: Green
+Draw color: 10
+Draw color: 10
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;This is &lt;code&gt;not a new or revolutionary feature&lt;/code&gt;. I tend to use the &lt;code&gt;ToString&lt;/code&gt; method when formatting strings, not really aware that there was an alternative. Using the &lt;code&gt;:formatString&lt;/code&gt; method is not going to drastically change the maintainability, readability or performance of the code - but it does require slightly less typing and removes one additional method call (&lt;em&gt;ToString&lt;/em&gt;) so personally I will be using this method more frequently going forward.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/standard/base-types/composite-formatting#format-string-component"&gt;Composite formatting: Format string component&lt;/a&gt;&lt;/p&gt;
+&lt;!--?# DailyDrop ?--&gt;156: 08-09-2022&lt;!--?#/ DailyDrop ?--&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/09/07-output-cache</id>
 		<title>.NET 7 API output caching</title>
@@ -114,115 +214,6 @@ app.MapGet("/dateignorecache", () =&amp;gt;
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://www.youtube.com/watch?v=0WvGwOoK-CI"&gt;Nick Chapsas - The NEW caching you should be using in .NET 7&lt;/a&gt;&lt;/p&gt;
 &lt;!--?# DailyDrop ?--&gt;155: 07-09-2022&lt;!--?#/ DailyDrop ?--&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/09/30-min-api-cancellation</id>
-		<title>Minimal api's and cancellation tokens</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/09/30-min-api-cancellation" />
-		<updated>2022-09-07T00:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;A &lt;code&gt;CancellationToken&lt;/code&gt; can be passed into a minimal api endpoint to be used to &lt;em&gt;cancel processing executed by the endpoint&lt;/em&gt; - the cancellation token will automatically be marked as cancelled if the caller either cancels the request or navigates away from the endpoint (if being accessed from the browser)&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="process-cancellation"&gt;Process cancellation&lt;/h2&gt;
-&lt;h3 id="no-token"&gt;No token&lt;/h3&gt;
-&lt;p&gt;Consider the following minimal api endpoint:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/long&amp;quot;, async () =&amp;gt;
-{
-    Console.WriteLine($&amp;quot;{DateTime.Now.ToString(&amp;quot;ss&amp;quot;)}: &amp;quot; +
-        $&amp;quot;Starting long process&amp;quot;);
-
-    // simulate a long running process
-    await Task.Delay(5000);
-
-    Console.WriteLine($&amp;quot;{DateTime.Now.ToString(&amp;quot;ss&amp;quot;)}: &amp;quot; +
-        $&amp;quot;Finishing long process&amp;quot;);
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;If the application is executed, and the endpoint called, the output would be something like this:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;02: Starting long process
-07: Finishing long process
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;As expected, it takes approximately 5 seconds for the endpoint to execute and finish.&lt;/p&gt;
-&lt;p&gt;If the endpoint is called again, and during those 5 seconds of &amp;quot;processing&amp;quot;, the &lt;em&gt;&amp;quot;Stop loading this page&amp;quot;&lt;/em&gt; button is clicked on the browser (wording may differ slightly depending on browser) we see the following:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;52: Starting long process
-57: Finishing long process
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Even though the &lt;code&gt;request from the browser to the endpoint is cancelled, the processing done by the endpoint is not cancelled!&lt;/code&gt;. The endpoint isn't aware of the fact the request was cancelled, which results in unnecessary CPU and memory usage, no longer required as the user has decided to cancel the request.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="cancellationtoken"&gt;CancellationToken&lt;/h3&gt;
-&lt;p&gt;&lt;code&gt;CancellationToken&lt;/code&gt; to the rescue - a &lt;em&gt;cancellation token&lt;/em&gt; can be used to convey information to the endpoint about the status of the request.&lt;/p&gt;
-&lt;p&gt;Let's update the endpoint to use a cancellation token:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// add cancellation token, which is automatically populated
-app.MapGet(&amp;quot;/long&amp;quot;, async (CancellationToken token) =&amp;gt;
-{
-    Console.WriteLine($&amp;quot;{DateTime.Now.ToString(&amp;quot;ss&amp;quot;)}: &amp;quot; +
-        $&amp;quot;Starting long process&amp;quot;);
-
-    //forward the token onto the method
-    await Task.Delay(5000, token);
-
-    Console.WriteLine($&amp;quot;{DateTime.Now.ToString(&amp;quot;ss&amp;quot;)}: &amp;quot; +
-        $&amp;quot;Finishing long process&amp;quot;);
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Here, a &lt;code&gt;CancellationToken&lt;/code&gt; is specified to be passed into the endpoint - this automatically gets instantiated and is &lt;em&gt;&amp;quot;linked&amp;quot;&lt;/em&gt; to the HTTP context of the request. If the request is cancelled by the caller, the &lt;code&gt;CancellationToken&lt;/code&gt; will indicate this fact.&lt;/p&gt;
-&lt;p&gt;Most &lt;em&gt;async&lt;/em&gt; methods (such as &lt;code&gt;Task.Delay&lt;/code&gt; in this instance) have an optional &lt;code&gt;CancellationToken&lt;/code&gt; parameter which can be used to pass a token all the way down the call stack to the code doing the actual work/processing, which will then in turn monitor and check if the token has been cancelled.&lt;/p&gt;
-&lt;p&gt;Invoking this endpoint now, and clicking the &lt;em&gt;&amp;quot;Stop loading this page&amp;quot;&lt;/em&gt; button on the browser while the endpoint is still processing will result in the following:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;27: Starting long process
-fail: Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware[1]
-      An unhandled exception has occurred while executing the request.
-      System.Threading.Tasks.TaskCanceledException: A task was canceled.
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;When a &lt;code&gt;CancellationToken&lt;/code&gt; is used to cancel a process, it is up to the library author to decide if cancelling means an exception be thrown (such as in the above example with &lt;em&gt;Task.Delay&lt;/em&gt;), or if processing simply just stops.&lt;/p&gt;
-&lt;p&gt;While the endpoint &lt;code&gt;process is now successfully&lt;/code&gt; cancelled when the request is cancelled, not using unnecessary resources - we now have to deal with and cater for the &lt;code&gt;TaskCanceledException&lt;/code&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="cancellation-middleware"&gt;Cancellation middleware&lt;/h3&gt;
-&lt;p&gt;A &lt;em&gt;custom middleware&lt;/em&gt; component can be written to catch any exceptions of type &lt;code&gt;TaskCanceledException&lt;/code&gt;, log it and return a different response to the caller (which they will not care about, as they have cancelled the request):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class CancellationMiddleware
-{
-    private readonly RequestDelegate _next;
-
-    public CancellationMiddleware(RequestDelegate next)
-    {
-        _next = next;
-    }
-
-    public async Task Invoke(HttpContext context)
-    {
-        try
-        {
-            await _next(context);
-        }
-        // catch any canceled exceptions
-        // TaskCanceledException inherits from OperationCanceledException
-        catch (OperationCanceledException)
-        {
-            Console.WriteLine($&amp;quot;Cancelled request handled by {nameof(CancellationMiddleware)}&amp;quot;);
-            // the called has cancelled the request
-            // so doesn't care about the response
-            // Totally legit HTTP response code
-            context.Response.StatusCode = StatusCodes.Status418ImATeapot;
-        }
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This middleware is then registered on startup:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.UseMiddleware&amp;lt;CancellationMiddleware&amp;gt;();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;And now when invoking the endpoint and cancelling we see the following output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;18: Starting long process
-Cancelled request handled by CancellationMiddleware
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;code&gt;Process successfully cancelled&lt;/code&gt; and &lt;code&gt;no more unhandled exception errors&lt;/code&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;Adding &lt;code&gt;CancellationToken&lt;/code&gt; support to a minimal endpoint is a fairly low effort improvement, with a (depending on how the endpoint gets used) potential high reward - processing which is no longer required by the caller gets cancelled, freeing up CPU and memory usage.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://andrewlock.net/using-cancellationtokens-in-asp-net-core-minimal-apis/"&gt;Using CancellationTokens in ASP.NET Core minimal APIs &lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;172: 30-09-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
