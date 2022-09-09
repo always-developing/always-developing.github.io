@@ -4,8 +4,108 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-09-08T04:57:53Z</updated>
+	<updated>2022-09-09T04:51:39Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/09/09-sql-waitfor</id>
+		<title>Delay SQL execution with WAITFOR</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/09/09-sql-waitfor" />
+		<updated>2022-09-09T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;SQL is a &lt;code&gt;WAITFOR&lt;/code&gt; command which an be used to delay the execution of a proceeding SQL statement. One of two options can be supplied to the &lt;code&gt;WAITFOR&lt;/code&gt; statement:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;TIME&lt;/code&gt;: waits until the  time of day specified before executing the next statement&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;DELAY&lt;/code&gt;: waits for the time span specified before executing the next statement&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr /&gt;
+&lt;h2 id="waitfor-format"&gt;WAITFOR Format&lt;/h2&gt;
+&lt;p&gt;The format and usage of &lt;code&gt;WAITFOR&lt;/code&gt; is straightforward:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;WAITFOR DELAY 'time_to_pass' | TIME 'time_to_execute'
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="waitfor-delay"&gt;WAITFOR DELAY&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;WAITFOR DELAY&lt;/code&gt; will wait the &lt;code&gt;specified time span&lt;/code&gt; before executing the next command:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;PRINT CONVERT(varchar, SYSDATETIME(), 121)
+GO
+
+WAITFOR DELAY '00:00:05';
+GO
+
+PRINT CONVERT(varchar, SYSDATETIME(), 121)
+GO
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Executing the above will result in the following output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;2022-09-08 20:39:51.2166773
+2022-09-08 20:39:56.2387040
+
+Completion time: 2022-09-08T20:39:56.2397037+02:00
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;A time span between &lt;code&gt;00:00:00.001&lt;/code&gt; and &lt;code&gt;23:59:59.998&lt;/code&gt; can be specified - anything longer will result in an error.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="waitfor-time"&gt;WAITFOR TIME&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;WAITFOR TIME&lt;/code&gt; will wait until the &lt;code&gt;specified time of day&lt;/code&gt; before executing the next command:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;PRINT CONVERT(varchar, SYSDATETIME(), 121)
+GO
+
+WAITFOR TIME '20:47:00';
+GO
+
+PRINT CONVERT(varchar, SYSDATETIME(), 121)
+GO
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Executing the above will result in the following output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;2022-08-15 20:46:48.9212859
+2022-08-15 20:47:00.0130443
+
+Completion time: 2022-08-15T20:47:00.0140433+02:00
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In this example, we only had to wait &lt;em&gt;12 seconds&lt;/em&gt;, but the wait could be longer depending on the time specified. Only a &lt;code&gt;time can be specified, not a particular date&lt;/code&gt;. If the next execution of the specified time is the following day, the wait until the time is reached the following day.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="scheduling"&gt;Scheduling&lt;/h2&gt;
+&lt;p&gt;The below is an &lt;em&gt;example&lt;/em&gt; of how the functionality can be used to executing a command on a specific schedule. This technique is used for demo purposes not necessarily recommended for a production use case.&lt;/p&gt;
+&lt;p&gt;The following will execute the command every second for a full minute, once a day:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;-- wait until a specific time
+WAITFOR TIME '20:52:00';
+GO
+
+-- while it is the 53th minute
+WHILE(DATEPART(MINUTE, GETDATE()) &amp;lt; 54)
+BEGIN
+        -- print out the date time
+	BEGIN
+		PRINT CONVERT(varchar, SYSDATETIME(), 121)
+	END
+
+        -- wait for 1 second
+	BEGIN
+		WAITFOR DELAY '00:00:01';
+	END
+END
+GO
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;2022-08-15 20:52:00.0145585
+2022-08-15 20:52:01.0162047
+2022-08-15 20:52:02.0209920
+2022-08-15 20:52:03.0229534
+.
+.
+.
+2022-08-15 20:53:56.6402032
+2022-08-15 20:53:57.6424606
+2022-08-15 20:53:58.6450557
+2022-08-15 20:53:59.6499793
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;While not necessarily a command which will see every day usage, it could prove useful to simulate a specific &amp;quot;real world&amp;quot; scenario when there is a time span between statements, either for testing or investigation purposes.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://www.mssqltips.com/sqlservertip/7344/delay-sql-code-execution-with-sql-waitfor/"&gt;SQL WAITFOR Command to Delay SQL Code Execution&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;157: 09-09-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/09/08-interpolation-formatting</id>
 		<title>Formatting interpolated strings</title>
@@ -909,72 +1009,6 @@ public static void Main()
 &lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/operators/namespace-alias-qualifier"&gt;:: operator (C# reference)&lt;/a&gt;&lt;/p&gt;
 &lt;hr /&gt;
 &lt;?# DailyDrop ?&gt;148: 29-08-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/08/26-constructor-out</id>
-		<title>Constructor out parameters</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/08/26-constructor-out" />
-		<updated>2022-08-26T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;Class constructors can contain &lt;code&gt;out or ref parameters&lt;/code&gt;, and operate just as they would on a normal method.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="usages"&gt;Usages&lt;/h2&gt;
-&lt;p&gt;While not a very common feature to make use of in most code, below we'll look at a few use cases when an &lt;code&gt;out&lt;/code&gt; parameter on a constructor &lt;em&gt;might&lt;/em&gt; be useful. There may definitely be better ways of handling these specific use cases, but using an &lt;code&gt;out&lt;/code&gt; parameter is &lt;em&gt;a way to handle them&lt;/em&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="dependent-entity"&gt;Dependent entity&lt;/h3&gt;
-&lt;p&gt;Consider the situation when &lt;code&gt;instantiating a class, another class is created at the same time using the same information&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;In the below example, we have a &lt;code&gt;Product&lt;/code&gt; class to store product information (including the current price) and a &lt;code&gt;ProductPrice&lt;/code&gt; class to store the history of prices for the product.&lt;/p&gt;
-&lt;p&gt;When creating a &lt;code&gt;Product&lt;/code&gt; record, &lt;code&gt;ProductPrice&lt;/code&gt; record should be created at the same time:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var product = new Product(Guid.NewGuid(), &amp;quot;Green pants&amp;quot;, 99.99m);
-var price = new ProductPrice
-{
-    Id = product1.Id,
-    Price = product1.Price
-};
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This could however also be done using an &lt;code&gt;out&lt;/code&gt; parameter. Consider the following &lt;em&gt;constructor&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public Product(Guid id, string name, decimal price, out ProductPrice productPrice)
-{
-    Id = id;
-    Name = name;
-    Price = price;
-
-    productPrice = new ProductPrice 
-    { 
-        Id = id, 
-        Price = price 
-    };
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Which can then be called as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var product = new Product(Guid.NewGuid(), &amp;quot;Green pants&amp;quot;, 99.99m, out ProductPrice price);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;More concise? Yes. A better solution? Debatably.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="generated-information"&gt;Generated information&lt;/h3&gt;
-&lt;p&gt;Expanding on the above example, maybe the &lt;code&gt;Id of the Product is generated internally to the class&lt;/code&gt;, in the constructor. An &lt;code&gt;out&lt;/code&gt; parameter could be used to return the instance &lt;em&gt;Id&lt;/em&gt; from the constructor.&lt;/p&gt;
-&lt;p&gt;Here the &lt;em&gt;Id&lt;/em&gt; is generated in the constructor, and assigned to the &lt;code&gt;out&lt;/code&gt; parameter as well as the &lt;em&gt;Id&lt;/em&gt; property of thd class itself:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public Product(string name, decimal price, out Guid id)
-{
-    id = Id = Guid.NewGuid();
-    Name = name;
-    Price = price;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The usage of the constructor:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var product = new Product(&amp;quot;Green pants&amp;quot;, 99.99m, out Guid productId);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Again - more concise than some alternatives? Yes. A better solution? Debatably.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;This is not something I'd ever really considered, or ever required in 20 years of development - however it is an interesting feature. Maybe one day I might have a  a practical use to use it in production code.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://twitter.com/MarusykRoman/status/1550995942576476162"&gt;Roman Marusyk Tweet&lt;/a&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;?# DailyDrop ?&gt;147: 26-08-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
