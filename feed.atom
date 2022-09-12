@@ -4,8 +4,104 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-09-09T04:51:39Z</updated>
+	<updated>2022-09-12T05:13:14Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/09/12-constructor-default-value</id>
+		<title>Constructors with default values</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/09/12-constructor-default-value" />
+		<updated>2022-09-12T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;Constructor and minimal api parameters&lt;/code&gt; can have &lt;code&gt;default values&lt;/code&gt;, allowing for dependency injection to work - while not actually working. Specifying a default value allows for the application to &lt;em&gt;run with a default implementation&lt;/em&gt; even if the services has not been registered with the dependency injection container.&lt;/p&gt;
+&lt;p&gt;This is not something one would usually do as a standard practice, but in specific use cases it does have a place.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="example"&gt;Example&lt;/h2&gt;
+&lt;h3 id="setup"&gt;Setup&lt;/h3&gt;
+&lt;p&gt;In the below examples, we have an interface, and a couple of implementations:&lt;/p&gt;
+&lt;p&gt;The interface:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public interface IDependencyInterface 
+{
+    string GetName();
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And the implementations:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// a default implementation
+public class DefaultImplementation : IDependencyInterface
+{
+    public string GetName()
+    {
+        return nameof(DefaultImplementation);
+    }
+}
+
+// and another implementation
+public class OtherImplementation : IDependencyInterface
+{
+    public string GetName()
+    {
+        return nameof(OtherImplementation);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="injection"&gt;Injection&lt;/h3&gt;
+&lt;p&gt;Usually to make use of the functionality provided by the interface and the associated implementation, the service is registered with the dependency injection container:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// Depending on the implementation the application requires:
+builder.Services.AddTransient&amp;lt;IDependencyInterface, DefaultImplementation&amp;gt;();
+// OR
+builder.Services.AddTransient&amp;lt;IDependencyInterface, OtherImplementation&amp;gt;();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;and then is injected into the relevent constructor, or minimal api delegate in the below sample:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// explicitly tell it to get the IDependencyInterface implementation
+// from the DI service collection
+app.MapGet(&amp;quot;/name&amp;quot;, ([FromServices]IDependencyInterface injected) =&amp;gt;
+{
+    return injected.GetName();
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="di-assumption"&gt;DI Assumption&lt;/h3&gt;
+&lt;p&gt;In the above setup, the runtime assumes that the necessary registrations with the dependency injection container have take place. If neither of the following registrations are  done:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;builder.Services.AddTransient&amp;lt;IDependencyInterface, DefaultImplementation&amp;gt;();
+builder.Services.AddTransient&amp;lt;IDependencyInterface, OtherImplementation&amp;gt;();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;when trying to inject &lt;em&gt;IDependencyInterface&lt;/em&gt;, the following error will be experienced:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;InvalidOperationException: No service for type 'IDependencyInterface' has been registered.
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We've told the runtime and dependency injection container to &lt;em&gt;inject the IDependencyInterface implementation, but have not made it aware of any implementations!&lt;/em&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="default-value"&gt;Default value&lt;/h3&gt;
+&lt;p&gt;Generally if in control of the entire dependency injection container registration, one should ensure that the required registrations are performed, and the error is resolved.&lt;/p&gt;
+&lt;p&gt;However, in some cases this might not be possible - for example if developing a library package, there is no direct control over what the developer configures with the dependency injection container.&lt;br /&gt;
+As a developer of the library package, one could just allow the exception to occur, which directs the developer to configure the dependency injection container correctly. Another, arguably more developer friendly technique, is to &lt;code&gt;automatically set a default implementation if one is not explicitly set&lt;/code&gt;. This does require a few updates to the code:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// make the parameter nullable, the default value will be null.
+// In the case of a constructor (vs this minimal api delegate)
+// the value can explicitly be set to null if desired:
+// IDependencyInterface? injected = null
+app.MapGet(&amp;quot;/name&amp;quot;, ([FromServices]IDependencyInterface? injected) =&amp;gt;
+{
+    // if it is null, set it to the default implementation
+    injected ??= new DefaultImplementation();
+
+    return injected.GetName();
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Two changes are made to code:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Set the parameter as &lt;code&gt;nullable&lt;/code&gt; using the &lt;code&gt;?&lt;/code&gt; operator&lt;/li&gt;
+&lt;li&gt;Instantiate the parameter to the &lt;code&gt;default implementation&lt;/code&gt; if the value of the parameter is null&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Now if &lt;code&gt;no implementation is registered&lt;/code&gt; for IDependencyInterface, the application will still function and use the &lt;code&gt;default implementation&lt;/code&gt; specified.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;As mentioned, this is not a practice which is generally recommended - however in the case of developing an external library (which requires a dependency), there is no guarantee the host application has injected the required dependencies. By making use of &lt;code&gt;default values&lt;/code&gt; the library will &lt;em&gt;still function with default configuration&lt;/em&gt;, but allows for &lt;code&gt;specific implementations to be overwritten&lt;/code&gt; by the developer if required.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/CFDevelop/status/1556055501661929472"&gt;Christian Findlay Tweet&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;158: 12-09-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/09/09-sql-waitfor</id>
 		<title>Delay SQL execution with WAITFOR</title>
@@ -918,97 +1014,6 @@ FROM [Tag] AS [t]
 &lt;p&gt;When working with Entity Framework (Core) make sure to understand how the collections work, and which to use, when materialization occurs and how the LINQ gets translated - if done incorrectly, one could see a massive negative performance impact.&lt;/p&gt;
 &lt;hr /&gt;
 &lt;?# DailyDrop ?&gt;149: 30-08-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/08/29-global-namespace</id>
-		<title>Namespace-less types</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/08/29-global-namespace" />
-		<updated>2022-08-29T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;Types in C# &lt;code&gt;do not have to belong to a specific namespace&lt;/code&gt; - it is just standard convention that they do, however this is not a requirement. The &lt;code&gt;global&lt;/code&gt; alias, along with the namespace alias qualifier &lt;code&gt;::&lt;/code&gt; can be used to reference types without a namespace in the event of a &lt;em&gt;naming conflict&lt;/em&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="usage"&gt;Usage&lt;/h2&gt;
-&lt;p&gt;Consider the following basic example - a simple wrapper class, &lt;em&gt;belonging to a namespace&lt;/em&gt;, which will output a string to the console:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;namespace GlobalKeyword;
-
-public class ConsoleWrapper
-{
-    public static void OutputToConsole(string output)
-    {
-        Console.WriteLine(output);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The usage is straight forward:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;namespace GlobalKeyword;
-
-public class Program
-{
-    public static void Main()
-    {
-        ConsoleWrapper.OutputToConsole(
-            $&amp;quot;Written to console by instance of '{nameof(ConsoleWrapper)}'&amp;quot;);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Suppose we reference a Nuget package in our project - it just so happens the require functionality is contained in the package, in a class also called &lt;code&gt;ConsoleWrapper&lt;/code&gt;, however, it &lt;code&gt;doesn't contain a namespace&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public  class ConsoleWrapper
-{
-    public static void Output(string output)
-    {
-        Console.WriteLine(output);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;If we try reference the new class in our &lt;em&gt;Main&lt;/em&gt; method:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;namespace GlobalKeyword;
-
-public static void Main()
-{
-    // old class in same namespace as Main
-    ConsoleWrapper.OutputToConsole(
-        $&amp;quot;Written to console by instance of '{nameof(ConsoleWrapper)}'&amp;quot;);
-
-    // new class without a namespace
-    ConsoleWrapper.Output(
-        $&amp;quot;Written to console by instance of '{nameof(GlobalKeyword.ConsoleWrapper)}'&amp;quot;);
-    
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Then the following compile-time error occurs:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;'ConsoleWrapper' does not contain a definition for 'Output'
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;As the newly introduced  &lt;em&gt;ConsoleWrapper&lt;/em&gt; has no namespace, we cannot fully qualify it to resolve the conflict. However, as it has no namespace, it gets put into the &lt;code&gt;global namespace&lt;/code&gt; which can be referenced using &lt;code&gt;global::&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;namespace GlobalKeyword;
-
-public static void Main()
-{
-    // old class in same namespace as Main
-    ConsoleWrapper.OutputToConsole(
-        $&amp;quot;Written to console by instance of '{nameof(ConsoleWrapper)}'&amp;quot;);
-
-    // new class in no/global namespace
-    global::ConsoleWrapper.Output(
-        $&amp;quot;Written to console by instance of '{nameof(GlobalKeyword.ConsoleWrapper)}'&amp;quot;);
-    
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;strong&gt;Problem solved!&lt;/strong&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;This is a very rare issue to encounter, as it requires two unlikely scenarios to occur:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;A type to not have a namespace&lt;/li&gt;
-&lt;li&gt;The type without a namespace to have the same name as another type (either user defined, or reference)&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;The vast majority of types do have namespaces, so the chances of encountering this issue are small - however, if it is encountered, the &lt;code&gt;global&lt;/code&gt; alias can be used to resolve the conflict.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/operators/namespace-alias-qualifier"&gt;:: operator (C# reference)&lt;/a&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;?# DailyDrop ?&gt;148: 29-08-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
