@@ -4,8 +4,70 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-09-14T05:05:51Z</updated>
+	<updated>2022-09-15T05:03:36Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/09/15-min-api-yield</id>
+		<title>Streaming responses from a minimal api </title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/09/15-min-api-yield" />
+		<updated>2022-09-15T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;Using &lt;em&gt;&amp;quot;usual techniques&amp;quot;&lt;/em&gt;, it is not possible to stream a response from a minimal api, as the &lt;code&gt;yield keyword cannot be used inside an anonymous method or lambda expression&lt;/code&gt;. To work around this limitation, a &lt;code&gt;local function&lt;/code&gt; can be created which returns &lt;em&gt;IAsyncEnumerable&lt;/em&gt;, and the local function result in turn, is returned from the minimal api.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="limitation"&gt;Limitation&lt;/h2&gt;
+&lt;p&gt;Suppose we need to define an endpoint, which when called will stream a &lt;em&gt;bool response&lt;/em&gt; indicating if current date time minute is 13 or not (not very practical or useful, but will work for demo purposes):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/isminute13&amp;quot;, async () =&amp;gt;
+{
+    // when the endpoint is called, loop until
+    // the user cancels
+    while (true)
+    {
+        // return a bool indicating if the current minute is 13
+        yield return (DateTime.Now.Minute == 13);
+
+        // wait 1 second, and repeat
+        await Task.Delay(1000);
+    }
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The issue here, is that it &lt;code&gt;does not compile&lt;/code&gt;, as:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;The yield statement cannot be used inside an anonymous method or lambda expression
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;But, there is a way around this constraint of the lambda expression!&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="local-function"&gt;Local function&lt;/h2&gt;
+&lt;p&gt;The error itself gives a clue on how to solve the problem - yield cannot be used inside a &lt;em&gt;anonymous method or lambda expression&lt;/em&gt;, so &lt;code&gt;why don't not instead create and use a non-anonymous method!&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/isminute13&amp;quot;, () =&amp;gt;
+{
+    // move all previous logic into this local method
+    async IAsyncEnumerable&amp;lt;bool&amp;gt; DateTimeStream()
+    {
+        while (true)
+        {
+            yield return (DateTime.Now.Minute == 13);
+            await Task.Delay(1000);
+        }
+    }
+
+    // return the result of the method
+    return DateTimeStream();
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Executing the above code, and calling the endpoint will result in the following output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;[false,false,false,false,false,false,false,false,false,true,true,true
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Every second a new bool will be appended to the response, indicating if the minute is 13 or not.&lt;/p&gt;
+&lt;p&gt;Simple, easy solution with minimal additional coding!&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;Streaming responses from an api is not something I've seen leveraged much before - however with the simplicity of configuring a minimal api for streaming, it is quick and easy to get an application up and running to determine if streaming can add value to the application or business.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/davidfowl/status/1436706303586410503"&gt;David Fowler Tweet&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;161: 15-09-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/09/14-struct-default</id>
 		<title>Auto-default struct property values</title>
@@ -938,118 +1000,6 @@ public class MethodAttr : Attribute
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://twitter.com/okyrylchuk/status/1553081565613367298"&gt;Oleg Kyrylchuk Tweet&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;152: 02-09-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/09/01-disposable-exceptions</id>
-		<title>Dispose vs Exception handling</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/09/01-disposable-exceptions" />
-		<updated>2022-09-01T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;When using a class which implements &lt;code&gt;IDisposable&lt;/code&gt; inside a &lt;code&gt;try-catch-finally&lt;/code&gt; block, if an exception is thrown in what order are the &lt;em&gt;Dispose&lt;/em&gt; and &lt;em&gt;catch&lt;/em&gt; block executed?&lt;/p&gt;
-&lt;p&gt;The order is:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;em&gt;Dispose&lt;/em&gt; method on the class implementing &lt;em&gt;IDisposable&lt;/em&gt;&lt;/li&gt;
-&lt;li&gt;&lt;em&gt;Catch&lt;/em&gt; block&lt;/li&gt;
-&lt;li&gt;&lt;em&gt;Finally&lt;/em&gt; block&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;Logically this makes sense, as the &lt;code&gt;IDisposable&lt;/code&gt; class is out of scope when the &lt;code&gt;catch&lt;/code&gt; block is being executed. The &lt;em&gt;lowered&lt;/em&gt; code can also be viewed to get an even deeper understanding of how these two features fit together.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="example"&gt;Example&lt;/h2&gt;
-&lt;p&gt;Consider the following class which implements &lt;em&gt;IDisposable&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class DisposableClass : IDisposable
-{
-    public DisposableClass()
-    {
-        Console.WriteLine($&amp;quot;In Constructor of {nameof(DisposableClass)}&amp;quot;);
-    }
-
-    public void Dispose()
-    {
-        Console.WriteLine($&amp;quot;In Dispose of {nameof(DisposableClass)}&amp;quot;);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;As it implements &lt;em&gt;IDisposable&lt;/em&gt;, it can be used with the &lt;code&gt;using&lt;/code&gt; statement:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;try
-{
-    // declare instance of the disposable class
-    using var disposableInstance = new DisposableClass();
-
-    throw new Exception(&amp;quot;Exception or dispose?&amp;quot;);
-
-}catch(Exception ex)
-{
-    Console.WriteLine(&amp;quot;An exception occurred&amp;quot;);
-}
-finally
-{
-    Console.WriteLine(&amp;quot;In the finally block&amp;quot;);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Executing the above, results in the following output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;In Constructor of DisposableClass
-In Dispose of DisposableClass
-An exception occurred
-In the finally block
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;em&gt;Dispose&lt;/em&gt; called before the &lt;em&gt;catch block&lt;/em&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="lowered"&gt;Lowered&lt;/h2&gt;
-&lt;p&gt;Looking at the &lt;code&gt;lowered&lt;/code&gt; code (generated using &lt;a href="https://sharplab.io/"&gt;sharplab.io&lt;/a&gt;) it becomes more obvious as to why this is the sequence of events:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;internal static class &amp;lt;Program&amp;gt;$
-{
-    private static void &amp;lt;Main&amp;gt;$(string[] args)
-    {
-        try
-        {
-            DisposableClass disposableClass = new DisposableClass();
-            try
-            {
-                throw new Exception(&amp;quot;Exception or dispose?&amp;quot;);
-            }
-            finally
-            {
-                if (disposableClass != null)
-                {
-                    ((IDisposable)disposableClass).Dispose();
-                }
-            }
-        }
-        catch (Exception)
-        {
-            Console.WriteLine(&amp;quot;An exception occurred&amp;quot;);
-        }
-        finally
-        {
-            Console.WriteLine(&amp;quot;In the finally&amp;quot;);
-        }
-    }
-}
-internal class DisposableClass : IDisposable
-{
-    public void Dispose()
-    {
-        Console.WriteLine(&amp;quot;Disposing DisposableClass&amp;quot;);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The &lt;code&gt;using&lt;/code&gt; statement is converted into its own &lt;code&gt;try-finally&lt;/code&gt; block, with the &lt;em&gt;Dispose&lt;/em&gt; being called inside the &lt;em&gt;finally&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;Looking at the above code, it make entire sense that the sequence of events is:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;code&gt;Constructor&lt;/code&gt; of the &lt;em&gt;disposable class&lt;/em&gt;&lt;/li&gt;
-&lt;li&gt;The first &lt;code&gt;finally&lt;/code&gt; block is called, and the &lt;code&gt;Dispose&lt;/code&gt; method is invoked&lt;/li&gt;
-&lt;li&gt;The &lt;code&gt;catch&lt;/code&gt; block is called, and the exception is handled&lt;/li&gt;
-&lt;li&gt;The second &lt;code&gt;finally&lt;/code&gt; block is called&lt;/li&gt;
-&lt;/ol&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;The sequence of events in this scenario was not something I had considered before - but thinking through what each block of code does (as well as executing the sample code, and looking at the lowered code), the sequence of events makes sense, and is as one would probably expect. However, it is good to get confirmation and gain a better understanding of how one's code might operate under the hood.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://twitter.com/BelloneDavide/status/1547993398853767170"&gt;Davide Bellone tweet&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;151: 01-09-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
