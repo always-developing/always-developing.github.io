@@ -4,8 +4,127 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-09-15T05:03:36Z</updated>
+	<updated>2022-09-16T05:07:45Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/09/16-application-lifetime</id>
+		<title>Application lifetime events with IHostApplicationLifetime</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/09/16-application-lifetime" />
+		<updated>2022-09-16T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;Application &lt;code&gt;OnStarted&lt;/code&gt;, &lt;code&gt;OnStopping&lt;/code&gt; and &lt;code&gt;OnStopped&lt;/code&gt; event handlers can be registered using the &lt;code&gt;IHostApplicationLifetime&lt;/code&gt; interface (and implementation), to run logic when the application &lt;em&gt;starts&lt;/em&gt;, is &lt;em&gt;stopping&lt;/em&gt; and has &lt;em&gt;stopped&lt;/em&gt; respectively.&lt;/p&gt;
+&lt;p&gt;Zero or many event handlers can dynamically be registered to handle the required logic at the correct application lifetime event.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="registering-handlers"&gt;Registering handlers&lt;/h2&gt;
+&lt;?# InfoBlock ?&gt;
+&lt;p&gt;The &lt;code&gt;OnStopping&lt;/code&gt; and &lt;code&gt;OnStopped&lt;/code&gt; events are &lt;strong&gt;NOT&lt;/strong&gt; called when debugging the application using Visual Studio. The application has to be run using &lt;code&gt;dotnet run&lt;/code&gt; from the command line to have these events successfully invoked whilst developing. More on this below under the &lt;em&gt;Graceful shutdown&lt;/em&gt; section.&lt;/p&gt;
+&lt;?#/ InfoBlock ?&gt;
+&lt;h3 id="api"&gt;Api&lt;/h3&gt;
+&lt;p&gt;Registering callback handlers for the events is done by injecting &lt;code&gt;IHostApplicationLifetime&lt;/code&gt;, and calling the &lt;em&gt;Register&lt;/em&gt; method on the relevent &lt;em&gt;CancellationToken&lt;/em&gt; property:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// Define an endpoint, which when called will register a callback
+// method for each of the events
+app.MapGet(&amp;quot;/registerevents&amp;quot;, (
+    IHostApplicationLifetime hostApplicationLifetime) =&amp;gt;
+{
+    // register each of the events
+    hostApplicationLifetime.ApplicationStarted.Register(OnStarted);
+    hostApplicationLifetime.ApplicationStopping.Register(OnStopping);
+    hostApplicationLifetime.ApplicationStopped.Register(OnStopped);
+});
+
+app.Run();
+
+void OnStarted()
+{
+    Console.WriteLine(&amp;quot;Application OnStarted - api&amp;quot;);
+}
+
+void OnStopping()
+{
+    Console.WriteLine(&amp;quot;Application OnStopping - api&amp;quot;);
+}
+
+void OnStopped()
+{
+    Console.WriteLine(&amp;quot;Application OnStopped - api&amp;quot;);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Executing the application (using &lt;em&gt;dotnet run&lt;/em&gt;) and then closing the application (using &lt;code&gt;Ctrl-C&lt;/code&gt;) &lt;em&gt;without calling the endpoint&lt;/em&gt;, will result in &lt;em&gt;no callback events being called&lt;/em&gt; - as none have been registered.&lt;/p&gt;
+&lt;p&gt;However executing the application, and invoking the &lt;code&gt;/registerevents&lt;/code&gt; endpoint, will result in the &lt;em&gt;OnStarted&lt;/em&gt; callback event being called immediately, and the other two &lt;em&gt;OnClosing&lt;/em&gt; and &lt;em&gt;OnClosed&lt;/em&gt; events called when the application is shutdown. The output of the application (other logging output removed):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Application OnStarted - api
+Application OnStopping - api
+Application OnStopped - api
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="worker"&gt;Worker&lt;/h3&gt;
+&lt;p&gt;Callback events can also be registered with &lt;code&gt;background/worker&lt;/code&gt; services when they are instantiated. Updating the default .NET Worker template:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Worker : BackgroundService
+{
+    private readonly ILogger&amp;lt;Worker&amp;gt; _logger;
+
+    private readonly IHostApplicationLifetime _hostApplicationLifetime;
+
+    // inject IHostApplicationLifetime
+    public Worker(ILogger&amp;lt;Worker&amp;gt; logger, IHostApplicationLifetime hostApplicationLifetime)
+    {
+        _logger = logger;
+        _hostApplicationLifetime = hostApplicationLifetime;
+
+        // register the callback methods
+        _hostApplicationLifetime.ApplicationStarted.Register(OnStarted);
+        _hostApplicationLifetime.ApplicationStopping.Register(OnStopping);
+        _hostApplicationLifetime.ApplicationStopped.Register(OnStopped);
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            _logger.LogInformation(&amp;quot;Worker running at: {time}&amp;quot;, DateTimeOffset.Now);
+            await Task.Delay(1000, stoppingToken);
+        }
+    }
+
+    private void OnStarted()
+    {
+        Console.WriteLine(&amp;quot;Application OnStarted - worker&amp;quot;);
+    }
+
+    private void OnStopping()
+    {
+        Console.WriteLine(&amp;quot;Application OnStopping - worker&amp;quot;);
+    }
+
+    private void OnStopped()
+    {
+        Console.WriteLine(&amp;quot;Application OnStopped - worker&amp;quot;);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This background service can be registered in the same api application used in the previous minimal api example, using:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;builder.Services.AddHostedService&amp;lt;Worker&amp;gt;();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now executing the application, invoking the endpoint and then closing the application will result in the following output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Application OnStarted - worker
+Application OnStarted - api
+Application OnStopping - api
+Application OnStopping - worker
+Application OnStopped - api
+Application OnStopped - worker
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="graceful-shutdown"&gt;Graceful shutdown&lt;/h2&gt;
+&lt;p&gt;While the &lt;code&gt;OnStopping&lt;/code&gt; and &lt;code&gt;OnStopped&lt;/code&gt; events are useful for performing logic when the application is &lt;em&gt;stopping&lt;/em&gt; and &lt;em&gt;stopped&lt;/em&gt; - these events are only called in the case of a &lt;code&gt;graceful shutdown&lt;/code&gt;. For example, in the case when debugging using Visual Studio - when the debugging session is stopped, a graceful shutdown is &lt;strong&gt;not&lt;/strong&gt; performed, and as such the stopping/stopped events are not invoked. &lt;code&gt;Application functionality should not assume that the 'OnStopping' and 'OnStopped' events will always be called.&lt;/code&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;The two closing events &lt;code&gt;OnStopping&lt;/code&gt; and &lt;code&gt;OnStopped&lt;/code&gt; are especially useful, and can be leveraged to perform application cleanup tasks on closing (while not depending on them always being executing). For example, clearing any lingering cache files, or persisting any in memory logs to disk can be executing when the application is stopping/stopped.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/generic-host?view=aspnetcore-6.0#ihostapplicationlifetime"&gt;IHostApplicationLifetime&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;162: 16-09-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/09/15-min-api-yield</id>
 		<title>Streaming responses from a minimal api </title>
@@ -909,97 +1028,6 @@ Ping to '192.11.119.201' took 308 milliseconds and was: 'Success'
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://twitter.com/BelloneDavide/status/1553066721702977537"&gt;Davide Bellone Tweet&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;153: 05-09-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/09/02-enhanced-nameof</id>
-		<title>nameof enhancement in C# 11</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/09/02-enhanced-nameof" />
-		<updated>2022-09-02T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;With C# 11 (coming towards the end of this year) the scope of the &lt;code&gt;nameof&lt;/code&gt; expression is being extended, allowing it to be used inside an &lt;code&gt;attribute expression&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;Below examples written and tested using .NET 7-preview5, and as such may differ from the final release or subsequent preview releases.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="sample"&gt;Sample&lt;/h2&gt;
-&lt;p&gt;In the examples below, a simple &lt;code&gt;Attribute&lt;/code&gt; which takes a single string in the constructor is used:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;[AttributeUsage(AttributeTargets.Method)]
-public class MethodAttr : Attribute
-{
-    private readonly string _parameterName;
-
-    // constructor just takes a string
-    public MethodAttr(string parameterName)
-    {
-        _parameterName = parameterName;
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Suppose we want to apply this attribute to a method, and specify the method &lt;code&gt;parameter name as the argument to the Attribute constructor&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;Below we'll look at how this is done prior to C# 11 and how it can be improved on with C# 11.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="pre-c-11"&gt;Pre C# 11&lt;/h3&gt;
-&lt;p&gt;Prior to C #11 when using the attribute, the parameter name had to be &lt;em&gt;hardcoded&lt;/em&gt; into the &lt;code&gt;MethodAttr constructor&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class NameOfClass
-{
-    public NameOfClass()
-    {
-        Console.WriteLine($&amp;quot;In constructor of {nameof(NameOfClass)}&amp;quot;);
-    }
-
-    public void NameOfMethod()
-    {
-        Console.WriteLine($&amp;quot;In method {nameof(NameOfMethod)}&amp;quot;);
-    }
-
-    // method parameter name hardcoded into the MethodAttr constructor
-    [MethodAttr(&amp;quot;The parameter name is 'stringParam'&amp;quot;)]
-    public void MethodWithParam(string stringParam)
-    {
-        // however, in the method nameof can be used to get 
-        // the name of the parameter
-        Console.WriteLine($&amp;quot;Value of parameter '{nameof(stringParam)}' is &amp;quot; +
-            $&amp;quot;is {stringParam}&amp;quot;);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The &lt;code&gt;nameof&lt;/code&gt; expression can be used successfully on the parameter name &lt;em&gt;in the method&lt;/em&gt; (&lt;code&gt;nameof(stringParam)&lt;/code&gt;), however when it comes to the attribute, the name has to be hardcoded - the &lt;code&gt;nameof&lt;/code&gt; expression cannot be used in this context.&lt;/p&gt;
-&lt;p&gt;The issue with this approach, is that if the variable &lt;em&gt;stringParam&lt;/em&gt; is renamed (either with &lt;em&gt;F2&lt;/em&gt;, or &lt;em&gt;CTRL R+R&lt;/em&gt;) then all &lt;code&gt;string value representations&lt;/code&gt; of the variable name (such as in the attribute constructor) need to &lt;code&gt;manually be updated&lt;/code&gt;. With &lt;code&gt;nameof&lt;/code&gt;, a rename will ensure that all references (including the &lt;code&gt;nameof&lt;/code&gt; references) are renamed - this results in a more consistent and accurate code base.&lt;/p&gt;
-&lt;p&gt;Prior to C# 11, there was no choice but to use the string value in the attribute - however this changes in C# 11.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="c-11"&gt;C# 11&lt;/h3&gt;
-&lt;p&gt;With C# 11, the scope of &lt;code&gt;nameof&lt;/code&gt; has been increased, and it can now be used in attribute parameters:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class NameOfClass
-{
-    public NameOfClass()
-    {
-        Console.WriteLine($&amp;quot;In constructor of {nameof(NameOfClass)}&amp;quot;);
-    }
-
-    public void NameOfMethod()
-    {
-        Console.WriteLine($&amp;quot;In method {nameof(NameOfMethod)}&amp;quot;);
-    }
-
-    // method parameter name hardcoded into the MethodAttr constructor
-    [MethodAttr($&amp;quot;The parameter name is '{nameof(stringParam)}'&amp;quot;)]
-    public void MethodWithParam(string stringParam)
-    {
-        // however, in the method nameof can be used to get 
-        // the name of the parameter
-        Console.WriteLine($&amp;quot;Value of parameter '{nameof(stringParam)}' is &amp;quot; +
-            $&amp;quot;is {stringParam}&amp;quot;);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Now, &lt;code&gt;nameof&lt;/code&gt; can be used in the method as well as in the attribute parameter!&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;A small, but welcome change - leveraging &lt;code&gt;nameof&lt;/code&gt; results in more consistent, more accurate and safer code. It's not possible to change the name of the variable, without changing all reference to it also being updated - otherwise a compiler error will occur. The more places &lt;code&gt;nameof&lt;/code&gt; can be utilized, the better!&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://twitter.com/okyrylchuk/status/1553081565613367298"&gt;Oleg Kyrylchuk Tweet&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;152: 02-09-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
