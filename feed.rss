@@ -5,8 +5,209 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Mon, 19 Sep 2022 05:12:28 GMT</pubDate>
-		<lastBuildDate>Mon, 19 Sep 2022 05:12:28 GMT</lastBuildDate>
+		<pubDate>Tue, 20 Sep 2022 05:08:02 GMT</pubDate>
+		<lastBuildDate>Tue, 20 Sep 2022 05:08:02 GMT</lastBuildDate>
+		<item>
+			<title>Representing an external operation with TaskCompletionSource</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/09/20-taskcompletionsource</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/09/20-taskcompletionsource</guid>
+			<pubDate>Tue, 20 Sep 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;A &lt;code&gt;TaskCompletionSource&lt;/code&gt; instance can be used to represent an external asynchronous operation, allowing the external operation to be &lt;em&gt;awaited&lt;/em&gt; on.&lt;/p&gt;
+&lt;p&gt;This is especially useful when required to wait on a callback method to be invoked before proceeding with the execution of code.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="requirement"&gt;Requirement&lt;/h2&gt;
+&lt;p&gt;Consider the use case where an application can request that a file (containing website information in this example) be created asynchronous. Once the file is created, a callback handler method will be invoked to notify the caller that the file has been created.&lt;/p&gt;
+&lt;p&gt;Consider the below async method to request the file. The calling application has no control over this method - it just calls the &lt;em&gt;RequestFileCreation&lt;/em&gt; method, specifying the &lt;em&gt;folder&lt;/em&gt; and the &lt;em&gt;callback event&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;Task RequestFileCreation(string folder, Func&amp;lt;string, Task&amp;gt; callback)
+{
+    Task.Run(async () =&amp;gt;
+    {
+        // simulate the time it takes to create the file!
+        await Task.Delay(1000);
+
+        // invoke the callback method, notifying the called
+        // the file has been created
+        // filename is hardcoded in the example
+        await callback.Invoke(&amp;quot;alwaysdeveloping.txt&amp;quot;);
+    });
+
+    return Task.CompletedTask;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;When the method is invoked, a separate task is created (and not &lt;em&gt;awaited&lt;/em&gt;) to run a process to have the file created asynchronously. Once the file is created, the specified callback back is invoked.&lt;/p&gt;
+&lt;p&gt;The issue with this approach is that when invoking the &lt;code&gt;RequestFileCreation&lt;/code&gt; method there is &lt;code&gt;no reliable way to wait for the file to be created&lt;/code&gt; if we need to perform some additional processing on the file after it has been created:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;async Task GetWebsiteInformation()
+{
+    Console.WriteLine($&amp;quot;Start of '{nameof(GetWebsiteInformation)}' method&amp;quot;);
+
+    // call the method to request the file be created
+    // the await is NOT awaiting the creation of the file, but is 
+    // awaiting the request to create the file
+    await RequestFileCreation(&amp;quot;C:\\inputfiles&amp;quot;, (file) =&amp;gt;
+    {
+        Console.WriteLine($&amp;quot;File '{file}' processed successfully&amp;quot;);
+
+        return Task.CompletedTask;
+    });
+
+    // Need to do some additional processing based on the
+    // contents of the file here
+
+    Console.WriteLine($&amp;quot;End of '{nameof(GetWebsiteInformation)}' method&amp;quot;);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;When executed, the result is the following:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Start of 'GetWebsiteInformation' method
+End of 'GetWebsiteInformation' method
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The method is executed and exits &lt;code&gt;without waiting for the file to be created and subsequent processing to be done&lt;/code&gt;. We need a way to &lt;code&gt;wait for the file to be created&lt;/code&gt;, before performing additional processing and exiting the method.&lt;/p&gt;
+&lt;p&gt;This is exactly the situation &lt;code&gt;TaskCompletionSource&lt;/code&gt; is able to solve!&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="taskcompletionsource"&gt;TaskCompletionSource&lt;/h2&gt;
+&lt;p&gt;Incorporating the &lt;code&gt;TaskCompletionSource&lt;/code&gt; into the process is very straight forward.&lt;/p&gt;
+&lt;p&gt;The &lt;em&gt;RequestFileCreation&lt;/em&gt; method remains exactly as it was above, but the &lt;code&gt;GetWebsiteInformation&lt;/code&gt; is updated to be as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;async Task GetWebsiteInformation()
+{
+    Console.WriteLine($&amp;quot;Start of '{nameof(GetWebsiteInformation)}' method&amp;quot;);
+
+    // create a TaskCompletionSource&amp;lt;T&amp;gt; instance where T
+    // is the return type 
+    TaskCompletionSource&amp;lt;string&amp;gt; tcs = new TaskCompletionSource&amp;lt;string&amp;gt;();
+
+    // in the callback handler method, call the SetResult
+    // on TaskCompletionSource instance.
+    await RequestFileCreation(&amp;quot;C:\\inputfiles&amp;quot;, (file) =&amp;gt;
+    {
+        Console.WriteLine($&amp;quot;File '{file}' processed successfully&amp;quot;);
+
+        tcs.SetResult(file);
+
+        return Task.CompletedTask;
+    });
+
+    Console.WriteLine($&amp;quot;Waiting for a file to be created&amp;quot;);
+    // await the TaskCompletionSource instance task
+    // Once the SetResult method has been set, the task will be 
+    // considered completed
+    var fileName = await tcs.Task;
+
+    Console.WriteLine($&amp;quot;File created! Performing additional processing&amp;quot;);
+    // Need to do some additional processing based on the
+    // contents of the file here
+    
+    Console.WriteLine($&amp;quot;End of '{nameof(GetWebsiteInformation)}' method&amp;quot;);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;There are a few moving parts here:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Declare an instance of &lt;em&gt;TaskCompletionSource&amp;lt;T&amp;gt;&lt;/em&gt; where T is the type to be returned&lt;/li&gt;
+&lt;li&gt;When the callback method is invoked (once the file is created), the &lt;em&gt;SetResult&lt;/em&gt; method of &lt;em&gt;TaskCompletionSource&lt;/em&gt; is called with the information to be passed through the &lt;em&gt;TaskCompletionSource&lt;/em&gt; Task (the string filename in this example)&lt;/li&gt;
+&lt;li&gt;When required to wait for the file to be created, the &lt;em&gt;TaskCompletionSource.Task&lt;/em&gt; is awaited. This task will be considered completed once the &lt;em&gt;SetResult method is called&lt;/em&gt; in the callback&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Executing the above method now has the following output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Start of 'GetWebsiteInformation' method
+Waiting for a file to be created
+File 'alwaysdeveloping.txt' processed successfully
+File created! Performing additional processing
+End of 'GetWebsiteInformation' method
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;From this we can see, the output is exactly what we want. A request for the file to be created is initiated - the code then waits for the file to be created (the callback method being invoked), before processing continues.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="other-set-methods"&gt;Other Set methods&lt;/h2&gt;
+&lt;p&gt;Not demonstrated in this post, but there are two other &lt;code&gt;Set&lt;/code&gt; methods available on the _&lt;em&gt;TaskCompletionSource&lt;/em&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;SetException&lt;/code&gt;: transitions the underlying Task into a &lt;em&gt;Failed&lt;/em&gt; state.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;SetCanceled&lt;/code&gt;: transitions the underlying Task into a &lt;em&gt;Canceled&lt;/em&gt; state.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;An incredibly valuable class to be aware of when one needs to wait on an &lt;em&gt;external asynchronous operation&lt;/em&gt; (such as a callback event), while also being able to convey information out of the external operation to the scope &lt;em&gt;awaiting&lt;/em&gt; the call.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://youtu.be/N-ofc345-58?list=PLqqD43D6Mqz0AIDkHqaZDKaEKXdfMiIAo&amp;amp;t=1610"&gt;Async Web API testing with TaskCompletionSource (Microservices with .NET 6.0) - FeedR episode #11&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;164: 20-09-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
+		<item>
+			<title>Automatic redirect on http status code</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/10/10-status-code-pages</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/10/10-status-code-pages</guid>
+			<pubDate>Tue, 20 Sep 2022 00:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;UseStatusCodePagesWithRedirects&lt;/code&gt; method can be used to redirect the client to an error page in the case of a non-successful request (400-599 range)&lt;/p&gt;
+&lt;p&gt;This method returns a &lt;em&gt;301-Found&lt;/em&gt; to the client, and then redirects to the &lt;em&gt;redirect endpoint&lt;/em&gt; which will return a status code of &lt;em&gt;200-Success&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;This is often used when the app:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Should redirect the client to a different endpoint, perhaps to have a different application process the error. In the browser, the redirect endpoint will be reflected&lt;/li&gt;
+&lt;li&gt;Doesn't need to preserve and return the original status code with the initial redirect response back to the client&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h2 id="middleware-setup"&gt;Middleware setup&lt;/h2&gt;
+&lt;p&gt;First step is to enable the automatic redirect functionality - this step is very straight-froward, and entails adding a single middleware components:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var app = builder.Build();
+
+// other middleware setup goes here
+app.UseStatusCodePagesWithRedirects("/error?status={0}");
+// other middleware setup goes here
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Here, the middleware is instructed to redirect any responses (which are not successful) to the &lt;code&gt;/error&lt;/code&gt; endpoint. The endpoint can include a &lt;code&gt;{0}&lt;/code&gt; placeholder which will contain the &lt;em&gt;http status code&lt;/em&gt;.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="error-endpoint"&gt;Error endpoint&lt;/h2&gt;
+&lt;p&gt;Next, up the &lt;code&gt;/error&lt;/code&gt; endpoint is defined.&lt;/p&gt;
+&lt;p&gt;Here the &lt;em&gt;Map&lt;/em&gt; method is used - this takes an &lt;em&gt;IApplicationBuilder&lt;/em&gt; as a parameter:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.Map("/error", errorApp =&amp;gt;
+{
+    errorApp.Run(async context =&amp;gt;
+    {
+        await context.Response.WriteAsync($"This is a redirected " +
+            $"error message status {context.Request.Query["status"]}");
+    });
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;For all &lt;em&gt;error&lt;/em&gt; responses, the message will be output along with the &lt;em&gt;http status code&lt;/em&gt;.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="execution"&gt;Execution&lt;/h2&gt;
+&lt;p&gt;A number of other endpoints were also defined to simulate different status code responses:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet("/500response", context =&amp;gt;
+{
+    context.Response.StatusCode = 500;
+    return Task.CompletedTask;
+});
+
+app.MapGet("/401response", context =&amp;gt;
+{
+    context.Response.StatusCode = 401;
+    return Task.CompletedTask;
+});
+
+app.MapGet("/200response", context =&amp;gt;
+{
+    context.Response.StatusCode = 200;
+    return Task.CompletedTask;
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Browsing to the &lt;code&gt;/500response&lt;/code&gt; from a browser, for example, will return the following:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;This is a redirected error message status 500
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And looking at the &lt;em&gt;Network&lt;/em&gt; tab of the browse, one can see that the initial status code returned is &lt;code&gt;302&lt;/code&gt;, followed by the &lt;code&gt;200 on redirect&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/statuscode.png" alt="HTTP Status code"&gt;&lt;/p&gt;
+&lt;p&gt;Now, on error (500 status code), the caller is routed to a generic error page, with a &lt;em&gt;200&lt;/em&gt; response, and the actual error in the content of the page.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;For a lot of situations this might not be especially useful, as the return message and status code is not especially useful to the calling application to act on.&lt;/p&gt;
+&lt;p&gt;For a customer facing application this could be useful (providing the actual error is logged and recorded somewhere) as the customer doesn't care about the details of the eror, but for a backend api-to-api call, the string response is not especially useful.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://github.com/dodyg/practical-aspnetcore/tree/net6.0/projects/diagnostics/diagnostics-5"&gt;Status Pages&lt;/a&gt;&lt;br&gt;
+&lt;a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/error-handling?view=aspnetcore-6.0#usestatuscodepageswithredirects"&gt;UseStatusCodePages&lt;/a&gt;&lt;/p&gt;
+&lt;!--?# DailyDrop ?--&gt;178: 10-10-2022&lt;!--?#/ DailyDrop ?--&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>UTF8 string literals in C#11</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/09/19-string-literals</link>
@@ -111,83 +312,6 @@ ReadOnlySpan&amp;lt;byte&amp;gt; span = &amp;quot;cat&amp;quot;;
 &lt;p&gt;&lt;a href="https://gsferreira.com/archive/2022/csharp-11-utf-8-string-literals-ignore-everything-you-have-seen-so-far/"&gt;Literals - Ignore everything you have seen so far&lt;/a&gt;&lt;br /&gt;
 &lt;a href="https://devblogs.microsoft.com/dotnet/csharp-11-preview-updates/#utf-8-string-literals"&gt;C# 11 Preview Updates – Raw string literals, UTF-8 and more!&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;163: 19-09-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Automatic redirect on http status code</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/10/10-status-code-pages</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/10/10-status-code-pages</guid>
-			<pubDate>Mon, 19 Sep 2022 00:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;UseStatusCodePagesWithRedirects&lt;/code&gt; method can be used to redirect the client to an error page in the case of a non-successful request (400-599 range)&lt;/p&gt;
-&lt;p&gt;This method returns a &lt;em&gt;301-Found&lt;/em&gt; to the client, and then redirects to the &lt;em&gt;redirect endpoint&lt;/em&gt; which will return a status code of &lt;em&gt;200-Success&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;This is often used when the app:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Should redirect the client to a different endpoint, perhaps to have a different application process the error. In the browser, the redirect endpoint will be reflected&lt;/li&gt;
-&lt;li&gt;Doesn't need to preserve and return the original status code with the initial redirect response back to the client&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr&gt;
-&lt;h2 id="middleware-setup"&gt;Middleware setup&lt;/h2&gt;
-&lt;p&gt;First step is to enable the automatic redirect functionality - this step is very straight-froward, and entails adding a single middleware components:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var app = builder.Build();
-
-// other middleware setup goes here
-app.UseStatusCodePagesWithRedirects("/error?status={0}");
-// other middleware setup goes here
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Here, the middleware is instructed to redirect any responses (which are not successful) to the &lt;code&gt;/error&lt;/code&gt; endpoint. The endpoint can include a &lt;code&gt;{0}&lt;/code&gt; placeholder which will contain the &lt;em&gt;http status code&lt;/em&gt;.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="error-endpoint"&gt;Error endpoint&lt;/h2&gt;
-&lt;p&gt;Next, up the &lt;code&gt;/error&lt;/code&gt; endpoint is defined.&lt;/p&gt;
-&lt;p&gt;Here the &lt;em&gt;Map&lt;/em&gt; method is used - this takes an &lt;em&gt;IApplicationBuilder&lt;/em&gt; as a parameter:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.Map("/error", errorApp =&amp;gt;
-{
-    errorApp.Run(async context =&amp;gt;
-    {
-        await context.Response.WriteAsync($"This is a redirected " +
-            $"error message status {context.Request.Query["status"]}");
-    });
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;For all &lt;em&gt;error&lt;/em&gt; responses, the message will be output along with the &lt;em&gt;http status code&lt;/em&gt;.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="execution"&gt;Execution&lt;/h2&gt;
-&lt;p&gt;A number of other endpoints were also defined to simulate different status code responses:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet("/500response", context =&amp;gt;
-{
-    context.Response.StatusCode = 500;
-    return Task.CompletedTask;
-});
-
-app.MapGet("/401response", context =&amp;gt;
-{
-    context.Response.StatusCode = 401;
-    return Task.CompletedTask;
-});
-
-app.MapGet("/200response", context =&amp;gt;
-{
-    context.Response.StatusCode = 200;
-    return Task.CompletedTask;
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Browsing to the &lt;code&gt;/500response&lt;/code&gt; from a browser, for example, will return the following:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;This is a redirected error message status 500
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;And looking at the &lt;em&gt;Network&lt;/em&gt; tab of the browse, one can see that the initial status code returned is &lt;code&gt;302&lt;/code&gt;, followed by the &lt;code&gt;200 on redirect&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/statuscode.png" alt="HTTP Status code"&gt;&lt;/p&gt;
-&lt;p&gt;Now, on error (500 status code), the caller is routed to a generic error page, with a &lt;em&gt;200&lt;/em&gt; response, and the actual error in the content of the page.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;For a lot of situations this might not be especially useful, as the return message and status code is not especially useful to the calling application to act on.&lt;/p&gt;
-&lt;p&gt;For a customer facing application this could be useful (providing the actual error is logged and recorded somewhere) as the customer doesn't care about the details of the eror, but for a backend api-to-api call, the string response is not especially useful.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://github.com/dodyg/practical-aspnetcore/tree/net6.0/projects/diagnostics/diagnostics-5"&gt;Status Pages&lt;/a&gt;&lt;br&gt;
-&lt;a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/error-handling?view=aspnetcore-6.0#usestatuscodepageswithredirects"&gt;UseStatusCodePages&lt;/a&gt;&lt;/p&gt;
-&lt;!--?# DailyDrop ?--&gt;178: 10-10-2022&lt;!--?#/ DailyDrop ?--&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
@@ -932,118 +1056,6 @@ Draw color: 10
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/standard/base-types/composite-formatting#format-string-component"&gt;Composite formatting: Format string component&lt;/a&gt;&lt;/p&gt;
 &lt;!--?# DailyDrop ?--&gt;156: 08-09-2022&lt;!--?#/ DailyDrop ?--&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>.NET 7 API output caching</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/09/07-output-cache</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/09/07-output-cache</guid>
-			<pubDate>Wed, 07 Sep 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;Built in &lt;code&gt;output caching&lt;/code&gt; support is being introduced with .NET 7, providing &lt;code&gt;caching functionality for minimal api responses&lt;/code&gt;. The functionality is highly configurable allowing for fast, yet accurate responses from a minimal api.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="endpoints"&gt;Endpoints&lt;/h2&gt;
-&lt;h3 id="default-endpoint"&gt;Default endpoint&lt;/h3&gt;
-&lt;p&gt;In these examples, a simple minimal api endpoint will be used as a base, which &lt;em&gt;returns the current datetime when invoked&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet("/date", () =&amp;gt;
-{
-    return DateTime.Now;
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr&gt;
-&lt;h3 id="default-caching"&gt;Default caching&lt;/h3&gt;
-&lt;p&gt;Let's start by adding default caching to the endpoint. There are basically 3 steps to be performed to configure output caching (these are the same three steps that apply to most  API functionality):&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;p&gt;Configure the &lt;code&gt;dependency injection container&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;builder.Services.AddOutputCache();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;Configure the api &lt;code&gt;middleware pipeline&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.UseOutputCache();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;Define the endpoint, and &lt;code&gt;apply the output cache functionality to the endpoint&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet("/datedefaultcache", () =&amp;gt;
-{
-    return DateTime.Now;
-}).CacheOutput();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;Invoking the &lt;code&gt;/date&lt;/code&gt; endpoint will always result in a new return value, however invoking &lt;code&gt;/datedefaultcache&lt;/code&gt; a cached value will be returned (apart from the first time it is invoked). By default, the response is cached for 60 seconds.&lt;/p&gt;
-&lt;p&gt;Inspecting the response headers (by using a tool like Postman, for example), one can see the age of the cached response (in seconds) is included:&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/response-age.png" alt="Response age - 17 seconds old"&gt;&lt;/p&gt;
-&lt;p&gt;By default, once the cache is 60 seconds old, it expires and the next request to the endpoint will generate a new cache.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h3 id="caching-policy"&gt;Caching policy&lt;/h3&gt;
-&lt;p&gt;It is also possible to define one or more &lt;code&gt;cache policy&lt;/code&gt; which allows for finer control of the behavior over the caching mechanism. A policy can either be defined as part of the &lt;code&gt;AddOutputCache&lt;/code&gt; call, and then applied to one or many endpoints (as is shown in the example immediately below), or defined when applying caching to a specific endpoint (as shown in an &lt;em&gt;VaryBy&lt;/em&gt; example further down).&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;p&gt;Define the &lt;code&gt;caching policy&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;builder.Services.AddOutputCache(options =&amp;gt;
-{
-    options.AddPolicy("ignore-cache", p =&amp;gt; p
-        .With(ctx =&amp;gt; !ctx.HttpContext.Request.Headers.ContainsKey("ignore-cache"))
-    );
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This policy looks for the presence of a header called &lt;em&gt;ignore-cache&lt;/em&gt; and only applies the cache policy if the header is &lt;strong&gt;not&lt;/strong&gt; present (irrespective of the header value)&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;&lt;code&gt;Apply the policy&lt;/code&gt; to an endpoint:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// option to ignore
-app.MapGet("/dateignorecache", () =&amp;gt;
-{
-    return DateTime.Now;
-}).CacheOutput("ignore-cache");
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Invoking this endpoint will result in default caching behavior, &lt;em&gt;unless&lt;/em&gt; a header named &lt;code&gt;ignore-cache&lt;/code&gt; is included in the request, in which case caching will be ignored.&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;hr&gt;
-&lt;h3 id="caching-varyby"&gt;Caching VaryBy&lt;/h3&gt;
-&lt;p&gt;Another feature which can be leveraged, is the ability to &lt;code&gt;cache by a specific value&lt;/code&gt;. The built in options available are to cache:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;By query&lt;/li&gt;
-&lt;li&gt;By header&lt;/li&gt;
-&lt;li&gt;By value&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;In the below example, the output is &lt;code&gt;cached by the query string value 'timezone'&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet("/datetimezone", (string? timezone) =&amp;gt;
-{
-    // insert some logic to get the correct datetime
-    // based on the timezone
-    return DateTime.Now;
-
-}).CacheOutput(p =&amp;gt; p.VaryByQuery("timezone"));
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;When the endpoint is invoked with a specific timezone (&lt;em&gt;/datetimezone&lt;code&gt;?timezone=CAT&lt;/code&gt;&lt;/em&gt; for example), the output will be cached while the same timezone query string is provided. If another timezone is provided (&lt;em&gt;/datetimezone&lt;code&gt;?timezone=GMT&lt;/code&gt;&lt;/em&gt; for example), the same cache used for CAT is &lt;strong&gt;not applied&lt;/strong&gt; and a new cache will be generated specific for &lt;code&gt;GMT&lt;/code&gt;. The cache will &lt;code&gt;vary by a query string value&lt;/code&gt;. The same logic can be applied to a header value, or any other custom value.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h3 id="evicting-cache"&gt;Evicting cache&lt;/h3&gt;
-&lt;p&gt;In some instances it might be required to &lt;code&gt;manually invalidate a cache&lt;/code&gt; if we know the content is no longer valid. The below example is very simple (for demo purposes), but the same mechanism can be extended for more elaborate use cases:&lt;/p&gt;
-&lt;p&gt;The first step is to &lt;code&gt;tag the output cache&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet("/datetimetag", () =&amp;gt;
-{
-    return DateTime.Now;
-
-}).CacheOutput(t =&amp;gt; t.Tag("current"));
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Here when the &lt;code&gt;/datetimetag&lt;/code&gt; endpoint is called, the output cache is tagged with the name &lt;em&gt;"current"&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;The implementation of &lt;code&gt;IOutputCacheStore&lt;/code&gt; (configured with dependency injection using the &lt;em&gt;AddOutputCache&lt;/em&gt; method) can then be injected where and when required to &lt;code&gt;evict&lt;/code&gt; (invalidate) a cache using the tag.&lt;/p&gt;
-&lt;p&gt;In this example, another endpoint is defined which will evict the cache for the &lt;code&gt;/datetimetag&lt;/code&gt; endpoint:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet("/datetimeclear", (IOutputCacheStore cache) =&amp;gt;
-{
-    // evict the cache tagged with "current"
-    cache.EvictByTagAsync("current", default);
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;Another very useful and easy to configure feature coming with .NET 7 (along with &lt;a href="https://alwaysdeveloping.net/08/31-rate-limiting"&gt;rate limiting&lt;/a&gt;, for example) - making minimal api's even more powerful and bringing it closer to parity with the more traditional MVC (controllers) approach.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.youtube.com/watch?v=0WvGwOoK-CI"&gt;Nick Chapsas - The NEW caching you should be using in .NET 7&lt;/a&gt;&lt;/p&gt;
-&lt;!--?# DailyDrop ?--&gt;155: 07-09-2022&lt;!--?#/ DailyDrop ?--&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
