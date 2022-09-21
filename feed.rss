@@ -5,8 +5,175 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Tue, 20 Sep 2022 05:08:02 GMT</pubDate>
-		<lastBuildDate>Tue, 20 Sep 2022 05:08:02 GMT</lastBuildDate>
+		<pubDate>Wed, 21 Sep 2022 05:07:36 GMT</pubDate>
+		<lastBuildDate>Wed, 21 Sep 2022 05:07:36 GMT</lastBuildDate>
+		<item>
+			<title>Simplifying command line argument with switch mappings</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/09/21-commandline-mappings</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/09/21-commandline-mappings</guid>
+			<pubDate>Wed, 21 Sep 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;When working with command line argument, &lt;code&gt;switch mappings&lt;/code&gt; can be used to create &lt;code&gt;alias&lt;/code&gt; and &lt;code&gt;short keys&lt;/code&gt; for the arguments, simplifying their usage for the consumer of the application.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="command-line-setup"&gt;Command line setup&lt;/h2&gt;
+&lt;p&gt;By default, arguments passed to an application will automatically be made available through the &lt;em&gt;IConfiguration&lt;/em&gt; interface/implementation. Consider the below minimal endpoint:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/getarguments&amp;quot;, (IConfiguration config) =&amp;gt;
+{
+    // access the arguments using the key, via
+    // the IConfiguration implementation
+    return new
+    {
+        Argument1 = config[&amp;quot;argument1&amp;quot;],
+        Argument2 = config[&amp;quot;argument2&amp;quot;],
+    };
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Command line arguments can be passed to the application with the following command:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-powershell"&gt;dotnet run argument1=hello argument2=world
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;or by specifying the arguments in the &lt;em&gt;launchSettings.json&lt;/em&gt; file and executing in Visual Studio:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-json"&gt; &amp;quot;CommandLineMapping&amp;quot;: {
+    &amp;quot;commandName&amp;quot;: &amp;quot;Project&amp;quot;,
+    &amp;quot;commandLineArgs&amp;quot;: &amp;quot;argument1=hello argument2=world&amp;quot;,
+    &amp;quot;launchBrowser&amp;quot;: true,
+    &amp;quot;launchUrl&amp;quot;: &amp;quot;getarguments&amp;quot;,
+    &amp;quot;environmentVariables&amp;quot;: {
+    &amp;quot;ASPNETCORE_ENVIRONMENT&amp;quot;: &amp;quot;Development&amp;quot;
+    },
+    &amp;quot;dotnetRunMessages&amp;quot;: true,
+    &amp;quot;applicationUrl&amp;quot;: &amp;quot;http://localhost:5259&amp;quot;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Browsing to the &lt;em&gt;getarguments&lt;/em&gt; endpoint, we see the following response:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-json"&gt;{
+  &amp;quot;argument1&amp;quot;: &amp;quot;hello&amp;quot;,
+  &amp;quot;argument2&amp;quot;: &amp;quot;world&amp;quot;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This all functions because under the hood, on startup, &lt;code&gt;builder.Configuration.AddCommandLine(args)&lt;/code&gt; is being called. This explicitly maps the command line arguments to the .NET &lt;em&gt;IConfiguration&lt;/em&gt; implementation, making the arguments available to access.&lt;/p&gt;
+&lt;p&gt;So far so good - but suppose we want change the argument names from &lt;em&gt;argument1&lt;/em&gt; and &lt;em&gt;argument2&lt;/em&gt; to &lt;code&gt;arg1&lt;/code&gt; and &lt;code&gt;arg2&lt;/code&gt;. We don't want to remove support for the full names (as we don't want to create a breaking change), but if an argument called &lt;code&gt;arg1&lt;/code&gt; is passed in, we want it to map to &lt;em&gt;argument1&lt;/em&gt; No code which specifically looks for an argument called &lt;em&gt;argument1&lt;/em&gt; is required to change.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="aliases"&gt;Aliases&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;builder.Configuration.AddCommandLine&lt;/code&gt; has an overloaded method which takes in a &lt;code&gt;switch mapping&lt;/code&gt; to perform a mapping, which can explicitly be called to created argument aliases.&lt;/p&gt;
+&lt;p&gt;On startup:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// define the mappings between the alias and the argument
+Dictionary&amp;lt;string, string&amp;gt; mappings = new Dictionary&amp;lt;string, string&amp;gt;()
+{
+    [&amp;quot;--arg1&amp;quot;] = &amp;quot;argument1&amp;quot;,
+    [&amp;quot;--arg2&amp;quot;] = &amp;quot;argument2&amp;quot;,
+};
+// explicitly call AddCommandLine with the mappings
+builder.Configuration.AddCommandLine(args, mappings);
+
+// build the application
+var app = builder.Build();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Alias switch mappings are defined using a double dash (&lt;code&gt;--&lt;/code&gt;) and an alias name (&lt;em&gt;arg1&lt;/em&gt;) which then will be mapped to an full argument (&lt;em&gt;argument1&lt;/em&gt;).&lt;/p&gt;
+&lt;p&gt;If the endpoint it updated:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/getarguments&amp;quot;, (IConfiguration config) =&amp;gt;
+{
+    return new
+    {
+        Argument1 = config[&amp;quot;argument1&amp;quot;],
+        Argument2 = config[&amp;quot;argument2&amp;quot;],
+        Arg1 = config[&amp;quot;arg1&amp;quot;],
+        Arg2 = config[&amp;quot;arg2&amp;quot;]
+    };
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now when executing:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-powershell"&gt; dotnet run --arg1=hello --arg2=world
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The response is:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-json"&gt;{
+  &amp;quot;argument1&amp;quot;: &amp;quot;hello&amp;quot;,
+  &amp;quot;argument2&amp;quot;: &amp;quot;world&amp;quot;,
+  &amp;quot;arg1&amp;quot;: &amp;quot;hello&amp;quot;,
+  &amp;quot;arg2&amp;quot;: &amp;quot;world&amp;quot;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The value supplied for &lt;em&gt;arg1&lt;/em&gt;, is available through &lt;em&gt;IConfiguration[&amp;quot;arg1&amp;quot;]&lt;/em&gt; as well as &lt;em&gt;IConfiguration[&amp;quot;argument1&amp;quot;]&lt;/em&gt;, thanks to the &lt;code&gt;switch mapping!&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;If the dashes are omitted:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-powershell"&gt; dotnet run arg1=hello arg2=world
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Then the response is:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-json"&gt;{
+  &amp;quot;argument1&amp;quot;: null,
+  &amp;quot;argument2&amp;quot;: null,
+  &amp;quot;arg1&amp;quot;: &amp;quot;hello&amp;quot;,
+  &amp;quot;arg2&amp;quot;: &amp;quot;world&amp;quot;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The arguments are still available through the normal base configuration mechanism using &lt;em&gt;IConfiguration[&amp;quot;arg1&amp;quot;]&lt;/em&gt; but are &lt;strong&gt;not&lt;/strong&gt; mapped to, and available through, &lt;em&gt;IConfiguration[&amp;quot;argument1&amp;quot;]&lt;/em&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="short-key"&gt;Short key&lt;/h2&gt;
+&lt;p&gt;Just as with aliases, it is also possible to map an argument to &lt;code&gt;short key&lt;/code&gt; using a single dash prefix &lt;code&gt;-&lt;/code&gt;. The setup is the same as described above with aliases:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// define the mappings between the alias and the argument
+Dictionary&amp;lt;string, string&amp;gt; mappings = new Dictionary&amp;lt;string, string&amp;gt;()
+{
+    [&amp;quot;--arg1&amp;quot;] = &amp;quot;argument1&amp;quot;,
+    [&amp;quot;--arg2&amp;quot;] = &amp;quot;argument2&amp;quot;,
+    [&amp;quot;-a1&amp;quot;] = &amp;quot;argument1&amp;quot;,
+    [&amp;quot;-a2&amp;quot;] = &amp;quot;argument2&amp;quot;,
+};
+// explicitly call AddCommandLine with the mappings
+builder.Configuration.AddCommandLine(args, mappings);
+
+// build the application
+var app = builder.Build();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And the updated endpoint:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/getarguments&amp;quot;, (IConfiguration config) =&amp;gt;
+{
+    return new
+    {
+        Argument1 = config[&amp;quot;argument1&amp;quot;],
+        Argument2 = config[&amp;quot;argument2&amp;quot;],
+        Arg1 = config[&amp;quot;arg1&amp;quot;],
+        Arg2 = config[&amp;quot;arg2&amp;quot;],
+        a1 = config[&amp;quot;a1&amp;quot;],
+        a2 = config[&amp;quot;a2&amp;quot;]
+    };
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;code&gt;Short keys&lt;/code&gt; also are used in the similar way to aliases, but with a &lt;code&gt;single dash&lt;/code&gt; and a &lt;code&gt;space instead of equals (=)&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-powershell"&gt;dotnet run -a1 hello -a2 world
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The response from the endpoint:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-json"&gt;{
+  &amp;quot;argument1&amp;quot;: &amp;quot;hello&amp;quot;,
+  &amp;quot;argument2&amp;quot;: &amp;quot;world&amp;quot;,
+  &amp;quot;arg1&amp;quot;: null,
+  &amp;quot;arg2&amp;quot;: null,
+  &amp;quot;a1&amp;quot;: null,
+  &amp;quot;a2&amp;quot;: null
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;A single dash switch value cannot be access directly, as seen in the above results which reflect &lt;code&gt;null&lt;/code&gt; when trying to access the values directly. The short keys have to be mapped to and accessed via the full key.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="mix-and-match"&gt;Mix and match&lt;/h2&gt;
+&lt;p&gt;The various techniques can be mixed and match when supplying the value to the command lines. All of the below options will yield the same (simplified) output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-powershell"&gt; dotnet run --argument1=hello --arg2 world
+ dotnet run -a1 hello --arg2=world
+ dotnet run --arg1=hello -a2 world
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-json"&gt;{
+  &amp;quot;argument1&amp;quot;: &amp;quot;hello&amp;quot;,
+  &amp;quot;argument2&amp;quot;: &amp;quot;world&amp;quot;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;If your application requires command line argument - consider configuring &lt;code&gt;alias keys&lt;/code&gt; and &lt;code&gt;short keys&lt;/code&gt;. They are simple to configure, and provide an easier, quicker and more convenient way to pass in arguments to the application for the end user.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.configuration.commandlineconfigurationextensions.addcommandline?view=dotnet-plat-ext-6.0#microsoft-extensions-configuration-commandlineconfigurationextensions-addcommandline(microsoft-extensions-configuration-iconfigurationbuilder-system-string()-system-collections-generic-idictionary((system-string-system-string)))"&gt;CommandLineConfigurationExtensions.AddCommandLine Method&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;165: 21-09-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Representing an external operation with TaskCompletionSource</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/09/20-taskcompletionsource</link>
@@ -128,83 +295,6 @@ End of 'GetWebsiteInformation' method
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://youtu.be/N-ofc345-58?list=PLqqD43D6Mqz0AIDkHqaZDKaEKXdfMiIAo&amp;amp;t=1610"&gt;Async Web API testing with TaskCompletionSource (Microservices with .NET 6.0) - FeedR episode #11&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;164: 20-09-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Automatic redirect on http status code</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/10/10-status-code-pages</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/10/10-status-code-pages</guid>
-			<pubDate>Tue, 20 Sep 2022 00:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;UseStatusCodePagesWithRedirects&lt;/code&gt; method can be used to redirect the client to an error page in the case of a non-successful request (400-599 range)&lt;/p&gt;
-&lt;p&gt;This method returns a &lt;em&gt;301-Found&lt;/em&gt; to the client, and then redirects to the &lt;em&gt;redirect endpoint&lt;/em&gt; which will return a status code of &lt;em&gt;200-Success&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;This is often used when the app:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Should redirect the client to a different endpoint, perhaps to have a different application process the error. In the browser, the redirect endpoint will be reflected&lt;/li&gt;
-&lt;li&gt;Doesn't need to preserve and return the original status code with the initial redirect response back to the client&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr&gt;
-&lt;h2 id="middleware-setup"&gt;Middleware setup&lt;/h2&gt;
-&lt;p&gt;First step is to enable the automatic redirect functionality - this step is very straight-froward, and entails adding a single middleware components:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var app = builder.Build();
-
-// other middleware setup goes here
-app.UseStatusCodePagesWithRedirects("/error?status={0}");
-// other middleware setup goes here
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Here, the middleware is instructed to redirect any responses (which are not successful) to the &lt;code&gt;/error&lt;/code&gt; endpoint. The endpoint can include a &lt;code&gt;{0}&lt;/code&gt; placeholder which will contain the &lt;em&gt;http status code&lt;/em&gt;.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="error-endpoint"&gt;Error endpoint&lt;/h2&gt;
-&lt;p&gt;Next, up the &lt;code&gt;/error&lt;/code&gt; endpoint is defined.&lt;/p&gt;
-&lt;p&gt;Here the &lt;em&gt;Map&lt;/em&gt; method is used - this takes an &lt;em&gt;IApplicationBuilder&lt;/em&gt; as a parameter:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.Map("/error", errorApp =&amp;gt;
-{
-    errorApp.Run(async context =&amp;gt;
-    {
-        await context.Response.WriteAsync($"This is a redirected " +
-            $"error message status {context.Request.Query["status"]}");
-    });
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;For all &lt;em&gt;error&lt;/em&gt; responses, the message will be output along with the &lt;em&gt;http status code&lt;/em&gt;.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="execution"&gt;Execution&lt;/h2&gt;
-&lt;p&gt;A number of other endpoints were also defined to simulate different status code responses:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet("/500response", context =&amp;gt;
-{
-    context.Response.StatusCode = 500;
-    return Task.CompletedTask;
-});
-
-app.MapGet("/401response", context =&amp;gt;
-{
-    context.Response.StatusCode = 401;
-    return Task.CompletedTask;
-});
-
-app.MapGet("/200response", context =&amp;gt;
-{
-    context.Response.StatusCode = 200;
-    return Task.CompletedTask;
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Browsing to the &lt;code&gt;/500response&lt;/code&gt; from a browser, for example, will return the following:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;This is a redirected error message status 500
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;And looking at the &lt;em&gt;Network&lt;/em&gt; tab of the browse, one can see that the initial status code returned is &lt;code&gt;302&lt;/code&gt;, followed by the &lt;code&gt;200 on redirect&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/statuscode.png" alt="HTTP Status code"&gt;&lt;/p&gt;
-&lt;p&gt;Now, on error (500 status code), the caller is routed to a generic error page, with a &lt;em&gt;200&lt;/em&gt; response, and the actual error in the content of the page.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;For a lot of situations this might not be especially useful, as the return message and status code is not especially useful to the calling application to act on.&lt;/p&gt;
-&lt;p&gt;For a customer facing application this could be useful (providing the actual error is logged and recorded somewhere) as the customer doesn't care about the details of the eror, but for a backend api-to-api call, the string response is not especially useful.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://github.com/dodyg/practical-aspnetcore/tree/net6.0/projects/diagnostics/diagnostics-5"&gt;Status Pages&lt;/a&gt;&lt;br&gt;
-&lt;a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/error-handling?view=aspnetcore-6.0#usestatuscodepageswithredirects"&gt;UseStatusCodePages&lt;/a&gt;&lt;/p&gt;
-&lt;!--?# DailyDrop ?--&gt;178: 10-10-2022&lt;!--?#/ DailyDrop ?--&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>

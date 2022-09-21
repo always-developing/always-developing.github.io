@@ -7,9 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <meta name="description" content="always learning | always growing">
 
-    <title>Always Developing - Automatic redirect on http status code</title>
+    <title>Always Developing - Simplifying command line argument with switch mappings</title>
 
-    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/10/10-status-code-pages">
+    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/09/21-commandline-mappings">
 
             <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
             <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
@@ -18,9 +18,9 @@
     <meta name="msapplication-tooltip" content="Always Developing" />
     <meta name="msapplication-starturl" content="/" />
 
-    <meta property="og:title" content="Always Developing - Automatic redirect on http status code" />
+    <meta property="og:title" content="Always Developing - Simplifying command line argument with switch mappings" />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/10/10-status-code-pages" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/09/21-commandline-mappings" />
 
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
@@ -104,14 +104,14 @@
             <div class="col-md-10">
                 <div class="post-heading">
                     <h1>
-                        Automatic redirect on http status code
+                        Simplifying command line argument with switch mappings
                     </h1>
-                            <h2 class="subheading">Using UseStatusCodePagesWithRedirects to automatically redirect to an error endpoint</h2>
+                            <h2 class="subheading">Exploring switch mappings to simplify (and alias) command line arguments</h2>
                         <p class="post-meta">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
                                 <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
                                 <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
-                            </svg> Published on Tuesday, 20 September 2022
+                            </svg> Published on Wednesday, 21 September 2022
                         </p>
                 </div>
             </div>
@@ -130,72 +130,162 @@
 </div>
 
                         <h2 id="daily-knowledge-drop">Daily Knowledge Drop</h2>
-<p>The <code>UseStatusCodePagesWithRedirects</code> method can be used to redirect the client to an error page in the case of a non-successful request (400-599 range)</p>
-<p>This method returns a <em>301-Found</em> to the client, and then redirects to the <em>redirect endpoint</em> which will return a status code of <em>200-Success</em>.</p>
-<p>This is often used when the app:</p>
-<ul>
-<li>Should redirect the client to a different endpoint, perhaps to have a different application process the error. In the browser, the redirect endpoint will be reflected</li>
-<li>Doesn't need to preserve and return the original status code with the initial redirect response back to the client</li>
-</ul>
+<p>When working with command line argument, <code>switch mappings</code> can be used to create <code>alias</code> and <code>short keys</code> for the arguments, simplifying their usage for the consumer of the application.</p>
 <hr />
-<h2 id="middleware-setup">Middleware setup</h2>
-<p>First step is to enable the automatic redirect functionality - this step is very straight-froward, and entails adding a single middleware components:</p>
-<pre><code class="language-csharp">var app = builder.Build();
-
-// other middleware setup goes here
-app.UseStatusCodePagesWithRedirects(&quot;/error?status={0}&quot;);
-// other middleware setup goes here
-</code></pre>
-<p>Here, the middleware is instructed to redirect any responses (which are not successful) to the <code>/error</code> endpoint. The endpoint can include a <code>{0}</code> placeholder which will contain the <em>http status code</em>.</p>
-<hr />
-<h2 id="error-endpoint">Error endpoint</h2>
-<p>Next, up the <code>/error</code> endpoint is defined.</p>
-<p>Here the <em>Map</em> method is used - this takes an <em>IApplicationBuilder</em> as a parameter:</p>
-<pre><code class="language-csharp">app.Map(&quot;/error&quot;, errorApp =&gt;
+<h2 id="command-line-setup">Command line setup</h2>
+<p>By default, arguments passed to an application will automatically be made available through the <em>IConfiguration</em> interface/implementation. Consider the below minimal endpoint:</p>
+<pre><code class="language-csharp">app.MapGet(&quot;/getarguments&quot;, (IConfiguration config) =&gt;
 {
-    errorApp.Run(async context =&gt;
+    // access the arguments using the key, via
+    // the IConfiguration implementation
+    return new
     {
-        await context.Response.WriteAsync($&quot;This is a redirected &quot; +
-            $&quot;error message status {context.Request.Query[&quot;status&quot;]}&quot;);
-    });
+        Argument1 = config[&quot;argument1&quot;],
+        Argument2 = config[&quot;argument2&quot;],
+    };
 });
 </code></pre>
-<p>For all <em>error</em> responses, the message will be output along with the <em>http status code</em>.</p>
+<p>Command line arguments can be passed to the application with the following command:</p>
+<pre><code class="language-powershell">dotnet run argument1=hello argument2=world
+</code></pre>
+<p>or by specifying the arguments in the <em>launchSettings.json</em> file and executing in Visual Studio:</p>
+<pre><code class="language-json"> &quot;CommandLineMapping&quot;: {
+    &quot;commandName&quot;: &quot;Project&quot;,
+    &quot;commandLineArgs&quot;: &quot;argument1=hello argument2=world&quot;,
+    &quot;launchBrowser&quot;: true,
+    &quot;launchUrl&quot;: &quot;getarguments&quot;,
+    &quot;environmentVariables&quot;: {
+    &quot;ASPNETCORE_ENVIRONMENT&quot;: &quot;Development&quot;
+    },
+    &quot;dotnetRunMessages&quot;: true,
+    &quot;applicationUrl&quot;: &quot;http://localhost:5259&quot;
+}
+</code></pre>
+<p>Browsing to the <em>getarguments</em> endpoint, we see the following response:</p>
+<pre><code class="language-json">{
+  &quot;argument1&quot;: &quot;hello&quot;,
+  &quot;argument2&quot;: &quot;world&quot;
+}
+</code></pre>
+<p>This all functions because under the hood, on startup, <code>builder.Configuration.AddCommandLine(args)</code> is being called. This explicitly maps the command line arguments to the .NET <em>IConfiguration</em> implementation, making the arguments available to access.</p>
+<p>So far so good - but suppose we want change the argument names from <em>argument1</em> and <em>argument2</em> to <code>arg1</code> and <code>arg2</code>. We don't want to remove support for the full names (as we don't want to create a breaking change), but if an argument called <code>arg1</code> is passed in, we want it to map to <em>argument1</em> No code which specifically looks for an argument called <em>argument1</em> is required to change.</p>
 <hr />
-<h2 id="execution">Execution</h2>
-<p>A number of other endpoints were also defined to simulate different status code responses:</p>
-<pre><code class="language-csharp">app.MapGet(&quot;/500response&quot;, context =&gt;
+<h2 id="aliases">Aliases</h2>
+<p>The <code>builder.Configuration.AddCommandLine</code> has an overloaded method which takes in a <code>switch mapping</code> to perform a mapping, which can explicitly be called to created argument aliases.</p>
+<p>On startup:</p>
+<pre><code class="language-csharp">// define the mappings between the alias and the argument
+Dictionary&lt;string, string&gt; mappings = new Dictionary&lt;string, string&gt;()
 {
-    context.Response.StatusCode = 500;
-    return Task.CompletedTask;
-});
+    [&quot;--arg1&quot;] = &quot;argument1&quot;,
+    [&quot;--arg2&quot;] = &quot;argument2&quot;,
+};
+// explicitly call AddCommandLine with the mappings
+builder.Configuration.AddCommandLine(args, mappings);
 
-app.MapGet(&quot;/401response&quot;, context =&gt;
+// build the application
+var app = builder.Build();
+</code></pre>
+<p>Alias switch mappings are defined using a double dash (<code>--</code>) and an alias name (<em>arg1</em>) which then will be mapped to an full argument (<em>argument1</em>).</p>
+<p>If the endpoint it updated:</p>
+<pre><code class="language-csharp">app.MapGet(&quot;/getarguments&quot;, (IConfiguration config) =&gt;
 {
-    context.Response.StatusCode = 401;
-    return Task.CompletedTask;
-});
-
-app.MapGet(&quot;/200response&quot;, context =&gt;
-{
-    context.Response.StatusCode = 200;
-    return Task.CompletedTask;
+    return new
+    {
+        Argument1 = config[&quot;argument1&quot;],
+        Argument2 = config[&quot;argument2&quot;],
+        Arg1 = config[&quot;arg1&quot;],
+        Arg2 = config[&quot;arg2&quot;]
+    };
 });
 </code></pre>
-<p>Browsing to the <code>/500response</code> from a browser, for example, will return the following:</p>
-<pre><code class="language-terminal">This is a redirected error message status 500
+<p>Now when executing:</p>
+<pre><code class="language-powershell"> dotnet run --arg1=hello --arg2=world
 </code></pre>
-<p>And looking at the <em>Network</em> tab of the browse, one can see that the initial status code returned is <code>302</code>, followed by the <code>200 on redirect</code></p>
-<p><img src="statuscode.png" alt="HTTP Status code" /></p>
-<p>Now, on error (500 status code), the caller is routed to a generic error page, with a <em>200</em> response, and the actual error in the content of the page.</p>
+<p>The response is:</p>
+<pre><code class="language-json">{
+  &quot;argument1&quot;: &quot;hello&quot;,
+  &quot;argument2&quot;: &quot;world&quot;,
+  &quot;arg1&quot;: &quot;hello&quot;,
+  &quot;arg2&quot;: &quot;world&quot;
+}
+</code></pre>
+<p>The value supplied for <em>arg1</em>, is available through <em>IConfiguration[&quot;arg1&quot;]</em> as well as <em>IConfiguration[&quot;argument1&quot;]</em>, thanks to the <code>switch mapping!</code></p>
+<p>If the dashes are omitted:</p>
+<pre><code class="language-powershell"> dotnet run arg1=hello arg2=world
+</code></pre>
+<p>Then the response is:</p>
+<pre><code class="language-json">{
+  &quot;argument1&quot;: null,
+  &quot;argument2&quot;: null,
+  &quot;arg1&quot;: &quot;hello&quot;,
+  &quot;arg2&quot;: &quot;world&quot;
+}
+</code></pre>
+<p>The arguments are still available through the normal base configuration mechanism using <em>IConfiguration[&quot;arg1&quot;]</em> but are <strong>not</strong> mapped to, and available through, <em>IConfiguration[&quot;argument1&quot;]</em>.</p>
+<hr />
+<h2 id="short-key">Short key</h2>
+<p>Just as with aliases, it is also possible to map an argument to <code>short key</code> using a single dash prefix <code>-</code>. The setup is the same as described above with aliases:</p>
+<pre><code class="language-csharp">// define the mappings between the alias and the argument
+Dictionary&lt;string, string&gt; mappings = new Dictionary&lt;string, string&gt;()
+{
+    [&quot;--arg1&quot;] = &quot;argument1&quot;,
+    [&quot;--arg2&quot;] = &quot;argument2&quot;,
+    [&quot;-a1&quot;] = &quot;argument1&quot;,
+    [&quot;-a2&quot;] = &quot;argument2&quot;,
+};
+// explicitly call AddCommandLine with the mappings
+builder.Configuration.AddCommandLine(args, mappings);
+
+// build the application
+var app = builder.Build();
+</code></pre>
+<p>And the updated endpoint:</p>
+<pre><code class="language-csharp">app.MapGet(&quot;/getarguments&quot;, (IConfiguration config) =&gt;
+{
+    return new
+    {
+        Argument1 = config[&quot;argument1&quot;],
+        Argument2 = config[&quot;argument2&quot;],
+        Arg1 = config[&quot;arg1&quot;],
+        Arg2 = config[&quot;arg2&quot;],
+        a1 = config[&quot;a1&quot;],
+        a2 = config[&quot;a2&quot;]
+    };
+});
+</code></pre>
+<p><code>Short keys</code> also are used in the similar way to aliases, but with a <code>single dash</code> and a <code>space instead of equals (=)</code>:</p>
+<pre><code class="language-powershell">dotnet run -a1 hello -a2 world
+</code></pre>
+<p>The response from the endpoint:</p>
+<pre><code class="language-json">{
+  &quot;argument1&quot;: &quot;hello&quot;,
+  &quot;argument2&quot;: &quot;world&quot;,
+  &quot;arg1&quot;: null,
+  &quot;arg2&quot;: null,
+  &quot;a1&quot;: null,
+  &quot;a2&quot;: null
+}
+</code></pre>
+<p>A single dash switch value cannot be access directly, as seen in the above results which reflect <code>null</code> when trying to access the values directly. The short keys have to be mapped to and accessed via the full key.</p>
+<hr />
+<h2 id="mix-and-match">Mix and match</h2>
+<p>The various techniques can be mixed and match when supplying the value to the command lines. All of the below options will yield the same (simplified) output:</p>
+<pre><code class="language-powershell"> dotnet run --argument1=hello --arg2 world
+ dotnet run -a1 hello --arg2=world
+ dotnet run --arg1=hello -a2 world
+</code></pre>
+<p>The output</p>
+<pre><code class="language-json">{
+  &quot;argument1&quot;: &quot;hello&quot;,
+  &quot;argument2&quot;: &quot;world&quot;
+}
+</code></pre>
 <hr />
 <h2 id="notes">Notes</h2>
-<p>For a lot of situations this might not be especially useful, as the return message and status code is not especially useful to the calling application to act on.</p>
-<p>For a customer facing application this could be useful (providing the actual error is logged and recorded somewhere) as the customer doesn't care about the details of the eror, but for a backend api-to-api call, the string response is not especially useful.</p>
+<p>If your application requires command line argument - consider configuring <code>alias keys</code> and <code>short keys</code>. They are simple to configure, and provide an easier, quicker and more convenient way to pass in arguments to the application for the end user.</p>
 <hr />
 <h2 id="references">References</h2>
-<p><a href="https://github.com/dodyg/practical-aspnetcore/tree/net6.0/projects/diagnostics/diagnostics-5">Status Pages</a><br />
-<a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/error-handling?view=aspnetcore-6.0#usestatuscodepageswithredirects">UseStatusCodePages</a></p>
+<p><a href="https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.configuration.commandlineconfigurationextensions.addcommandline?view=dotnet-plat-ext-6.0#microsoft-extensions-configuration-commandlineconfigurationextensions-addcommandline(microsoft-extensions-configuration-iconfigurationbuilder-system-string()-system-collections-generic-idictionary((system-string-system-string)))">CommandLineConfigurationExtensions.AddCommandLine Method</a></p>
 
 <blockquote class="daily-drop">
     <div>
@@ -208,7 +298,7 @@ app.MapGet(&quot;/200response&quot;, context =&gt;
             </svg>
         </div>
         <div class="drop-header">
-            Daily Drop 178: 10-10-2022
+            Daily Drop 165: 21-09-2022
         </div>
         <div>
             <br>At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br> It could be anything - some.NET / C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
@@ -222,8 +312,9 @@ app.MapGet(&quot;/200response&quot;, context =&gt;
 <div>
             <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
             <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
-            <a role="button" href="/tags/httpstatus" class="badge badge-light"> httpstatus</a>
-            <a role="button" href="/tags/statuscode" class="badge badge-light"> statuscode</a>
+            <a role="button" href="/tags/commandline" class="badge badge-light"> commandline</a>
+            <a role="button" href="/tags/mapping" class="badge badge-light"> mapping</a>
+            <a role="button" href="/tags/switchmappping" class="badge badge-light"> switchmappping</a>
 </div>
                     </div>
                     <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
@@ -233,9 +324,10 @@ app.MapGet(&quot;/200response&quot;, context =&gt;
             <h3 class="no-anchor">On This Page</h3>
             <ul>
         <li><a href="#daily-knowledge-drop">Daily Knowledge Drop</a></li>
-        <li><a href="#middleware-setup">Middleware setup</a></li>
-        <li><a href="#error-endpoint">Error endpoint</a></li>
-        <li><a href="#execution">Execution</a></li>
+        <li><a href="#command-line-setup">Command line setup</a></li>
+        <li><a href="#aliases">Aliases</a></li>
+        <li><a href="#short-key">Short key</a></li>
+        <li><a href="#mix-and-match">Mix and match</a></li>
         <li><a href="#notes">Notes</a></li>
         <li><a href="#references">References</a></li>
             </ul>
