@@ -4,8 +4,175 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-09-21T05:07:36Z</updated>
+	<updated>2022-09-22T05:05:05Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/09/22-startup-filters</id>
+		<title>Extend the middleware pipeline with IStartupFilter</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/09/22-startup-filters" />
+		<updated>2022-09-22T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;IStartupFilter&lt;/code&gt; interface can be used to extend either the &lt;em&gt;start&lt;/em&gt; or the &lt;em&gt;end&lt;/em&gt; the middleware pipeline.&lt;/p&gt;
+&lt;p&gt;Any implementations of &lt;code&gt;IStartupFilter&lt;/code&gt; will automatically be called on application build &lt;code&gt;before any other middleware configuration&lt;/code&gt; is called.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="manual-middleware"&gt;Manual middleware&lt;/h2&gt;
+&lt;p&gt;In the below example the basic &lt;em&gt;weatherforecast&lt;/em&gt; template is being extended to contain a manually added middleware component:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
+
+var summaries = new[]
+{
+    &amp;quot;Freezing&amp;quot;, &amp;quot;Bracing&amp;quot;, &amp;quot;Chilly&amp;quot;, &amp;quot;Cool&amp;quot;, &amp;quot;Mild&amp;quot;, &amp;quot;Warm&amp;quot;, &amp;quot;Balmy&amp;quot;, &amp;quot;Hot&amp;quot;, &amp;quot;Sweltering&amp;quot;, &amp;quot;Scorching&amp;quot;
+};
+
+app.MapGet(&amp;quot;/weatherforecast&amp;quot;, () =&amp;gt;
+{
+    // print out a message
+    Console.WriteLine(&amp;quot;Weatherforecast endpoint called&amp;quot;);
+
+    var forecast = Enumerable.Range(1, 5).Select(index =&amp;gt;
+        new WeatherForecast
+        (
+            DateTime.Now.AddDays(index),
+            Random.Shared.Next(-20, 55),
+            summaries[Random.Shared.Next(summaries.Length)]
+        ))
+        .ToArray();
+    return forecast;
+});
+
+// add the custom middleware manually
+app.UseMiddleware&amp;lt;ManualMiddleware&amp;gt;();
+
+app.Run();
+
+internal record WeatherForecast(DateTime Date, int TemperatureC, string? Summary)
+{
+    public int TemperatureF =&amp;gt; 32 + (int)(TemperatureC / 0.5556);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The definition of &lt;code&gt;ManualMiddleware&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class ManualMiddleware
+{
+    private readonly RequestDelegate _next;
+
+    public ManualMiddleware(RequestDelegate next)
+    {
+        _next = next;
+    }
+
+    public async Task Invoke(HttpContext httpContext)
+    {
+       // this should be output before the request to 
+       // forwarded onto the next component in the pipeline
+       Console.WriteLine($&amp;quot;In the manually added &amp;quot; +
+            $&amp;quot;middleware: {nameof(ManualMiddleware)}. &amp;quot; +
+            $&amp;quot;The current datetime is '{DateTime.Now}'&amp;quot;);
+
+        // call the next component with the context
+        await _next.Invoke(httpContext);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;When calling the endpoint, the console output is as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;In the manually added middleware: ManualMiddleware. The current datetime is '2022/09/20 06:40:23'
+Weatherforecast endpoint called
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As expected, the component added to the middleware is invoked before forwarding the request onto the next component, and eventually the endpoint.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="istartupfilter-middleware"&gt;IStartupFilter middleware&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;IStartupFilter&lt;/code&gt; only has one method to implement, &lt;code&gt;Configure&lt;/code&gt;, which takes an &lt;code&gt;Action&amp;lt;IApplicationBuilder&amp;gt;&lt;/code&gt; as an argument, and also return an &lt;code&gt;Action&amp;lt;IApplicationBuilder&amp;gt;&lt;/code&gt;. Below is our custom implementation of the class:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class CustomFilter : IStartupFilter
+{
+    public Action&amp;lt;IApplicationBuilder&amp;gt; Configure(Action&amp;lt;IApplicationBuilder&amp;gt; next)
+    {
+        return builder =&amp;gt;
+        {
+            // perform the custom build configuration
+            Console.WriteLine($&amp;quot;Configured via {nameof(CustomFilter)}&amp;quot;);
+            builder.UseMiddleware&amp;lt;HelloMiddleware&amp;gt;();
+
+            // call the next item in the build pipeline
+            next(builder);
+
+            // add here to  change the end of the middleware pipeline
+        };
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This &lt;code&gt;build pipeline&lt;/code&gt; operates similarly to how the &lt;code&gt;middleware pipeline&lt;/code&gt; operates - the custom component performs its build logic, before passing on the &lt;em&gt;build request&lt;/em&gt; to the next item in the build pipeline.&lt;/p&gt;
+&lt;p&gt;In the above, the custom logic is writing a message to the console and then adding &lt;code&gt;another custom middleware component&lt;/code&gt; to the middleware pipeline:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class HelloMiddleware
+{
+    private readonly RequestDelegate _next;
+
+    public HelloMiddleware(RequestDelegate next)
+    {
+        _next = next;
+    }
+
+    public async Task Invoke(HttpContext httpContext)
+    {
+        Console.WriteLine($&amp;quot;Hello from {nameof(HelloMiddleware)}. &amp;quot; +
+            $&amp;quot;The current datetime is '{DateTime.Now}'&amp;quot;);
+
+        await _next.Invoke(httpContext);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The final step to putting it all together is to add the &lt;code&gt;CustomFilter&lt;/code&gt; implementation to the dependency injection container:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;builder.Services.AddTransient&amp;lt;IStartupFilter, CustomFilter&amp;gt;();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;When the application start, the following is output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Configured via CustomFilter
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Then when calling the endpoint:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Hello from HelloMiddleware. The current datetime is '2022/08/25 06:48:35'
+In the manually added middleware: ManualMiddleware. The current datetime is '2022/08/25 06:48:35'
+Weatherforecast endpoint called
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;From the output we can see, that the &lt;code&gt;middleware added using the IStartupFilter is invoked before the manually added middleware&lt;/code&gt;. We have used the &lt;em&gt;IStartupFilter&lt;/em&gt; implementation to add an item to the start of the middleware pipeline , achieved by only adding the &lt;em&gt;IStartupFilter&lt;/em&gt; implementation to the dependency injection container.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="flow-summary"&gt;Flow summary&lt;/h2&gt;
+&lt;p&gt;A summary of what we have covered so far, and how the various pieces fit together&lt;/p&gt;
+&lt;h3 id="application-startup"&gt;Application startup&lt;/h3&gt;
+&lt;p&gt;On application startup:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;The &lt;em&gt;IStartupFilter&lt;/em&gt; implementation &lt;em&gt;CustomFilter&lt;/em&gt; is &lt;code&gt;added to the dependency injection&lt;/code&gt; container.&lt;/li&gt;
+&lt;li&gt;When the &lt;code&gt;WebApplication instance is run&lt;/code&gt;, with the &lt;em&gt;app.Run()&lt;/em&gt; command:
+&lt;ol&gt;
+&lt;li&gt;All implementations of &lt;em&gt;IStartupFilter&lt;/em&gt; are retrieved from the dependency injection container, and the &lt;code&gt;Configure&lt;/code&gt; method on the implementation invoked
+In this above sample, the &lt;code&gt;Configure&lt;/code&gt; adds the &lt;em&gt;HelloMiddleware&lt;/em&gt; component to the start of the middleware pipeline.&lt;/li&gt;
+&lt;li&gt;All other middleware components are configured
+In this above sample, the &lt;em&gt;ManualMiddleware&lt;/em&gt; component is added to the middleware pipeline&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;The middleware pipeline is now ready to receive requests.&lt;/p&gt;
+&lt;h3 id="request-received"&gt;Request received&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;When a request is received, it will flow through the middleware pipeline, component by component in the order in which they were added to the pipeline:
+&lt;ol&gt;
+&lt;li&gt;The request is passed to the &lt;em&gt;HelloMiddleware&lt;/em&gt; component and the &amp;quot;hello&amp;quot; message is output (added via &lt;em&gt;IStartupFilter&lt;/em&gt; implementation)&lt;/li&gt;
+&lt;li&gt;The request is passed to the &lt;em&gt;ManualMiddleware&lt;/em&gt; components and the relevent message is output (added explicitly)&lt;/li&gt;
+&lt;li&gt;The request is then passed to the endpoint handler, to return generate the weather data (defined explicitly)&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;Generally most applications would not have a need for this functionality, but there are a couple of cases where it could be especially useful:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;As a library author, and the library needs to inject middleware at the beginning or the end of the middleware pipeline&lt;/li&gt;
+&lt;li&gt;Conversely, if a library is injecting middleware at the beginning or end of the pipeline and you as the application author needs to inject a component before/after the library.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://andrewlock.net/exploring-istartupfilter-in-asp-net-core/"&gt;Exploring IStartupFilter in ASP.NET Core &lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;166: 22-09-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/09/21-commandline-mappings</id>
 		<title>Simplifying command line argument with switch mappings</title>
@@ -1035,106 +1202,6 @@ GO
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://www.mssqltips.com/sqlservertip/7344/delay-sql-code-execution-with-sql-waitfor/"&gt;SQL WAITFOR Command to Delay SQL Code Execution&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;157: 09-09-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/09/08-interpolation-formatting</id>
-		<title>Formatting interpolated strings</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/09/08-interpolation-formatting" />
-		<updated>2022-09-08T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;When using &lt;code&gt;string interpolation&lt;/code&gt;, the colon &lt;code&gt;:&lt;/code&gt; operator can be used, followed by the &lt;code&gt;format string&lt;/code&gt; to specify how the string should be formatted. This can be used instead of the &lt;code&gt;ToString&lt;/code&gt; method with a specified format.&lt;/p&gt;
-&lt;p&gt;This post is about &lt;code&gt;interpolated strings&lt;/code&gt; however the technique will also work when using the &lt;code&gt;index component&lt;/code&gt; (using &lt;em&gt;String.Format&lt;/em&gt; with &lt;code&gt;{0}&lt;/code&gt; instead the string).&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="format"&gt;Format&lt;/h2&gt;
-&lt;p&gt;In a previous post, we learnt how to &lt;a href="https://alwaysdeveloping.net/08/03-string-interpolation-alignment"&gt;align the string when performing string interpolation&lt;/a&gt; - but when using this method (and other composite string techniques) there also an optional &lt;em&gt;formatString&lt;/em&gt; component.&lt;/p&gt;
-&lt;p&gt;The full syntax for:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;string interpolation&lt;/code&gt; is: &lt;code&gt;{&amp;lt;interpolationExpression&amp;gt;[,&amp;lt;alignment&amp;gt;][:&amp;lt;formatString&amp;gt;]}&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;composite formatting&lt;/code&gt; is: &lt;code&gt;{index[,alignment][:formatString]}&lt;/code&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;This post will focus on the &lt;em&gt;formatString&lt;/em&gt; portion - this provides a shortcut to using the &lt;code&gt;.ToString(format)&lt;/code&gt; method on the relevent entity.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="examples"&gt;Examples&lt;/h2&gt;
-&lt;p&gt;In the examples below, the &lt;em&gt;ToString&lt;/em&gt; method, and the &lt;em&gt;interpolated format string&lt;/em&gt; method are compared, with the same format string, and shown to produce the same output. It is also shown when no format string is specified, the `general ("G") format specifier is used (for numeric, datetime and enumeration).&lt;/p&gt;
-&lt;h3 id="datetime"&gt;DateTime&lt;/h3&gt;
-&lt;p&gt;Below we see how to format a &lt;code&gt;DateTime&lt;/code&gt; using the more traditional &lt;em&gt;ToString&lt;/em&gt; method, and then the &lt;em&gt;format string&lt;/em&gt; method:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;DateTime current  = DateTime.Now;
-Console.WriteLine($"Current Datetime:{current}");
-Console.WriteLine($"Current Datetime:{current.ToString("MM/dd/yyyy hh:mm:ss.fff")}");
-Console.WriteLine($"Current Datetime:{current:MM/dd/yyyy hh:mm:ss.fff}");
-
-Console.WriteLine($"Current Datetime:{current.ToString("hh:mm")}");
-Console.WriteLine($"Current Datetime:{current:hh:mm}");
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Executing the above:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Current Datetime:2022/08/15 05:56:53
-Current Datetime:09/07/2022 05:54:25.527
-Current Datetime:09/07/2022 05:54:25.527
-Current Datetime:05:54
-Current Datetime:05:54
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Same output with the two methods, but when using the &lt;em&gt;interpolated format string&lt;/em&gt; method, the code is more concise and (arguably) cleaner.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h3 id="guid"&gt;Guid&lt;/h3&gt;
-&lt;p&gt;A &lt;code&gt;Guid&lt;/code&gt; example:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;Guid newGuid = Guid.NewGuid();
-Console.WriteLine($"Guid value: {newGuid}");
-Console.WriteLine($"Guid value: {newGuid.ToString("B")}");
-Console.WriteLine($"Guid value: {newGuid:B}");
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Executing the above:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Guid value: bcaf5b5e-14be-4156-a480-a87614a900f4
-Guid value: {bcaf5b5e-14be-4156-a480-a87614a900f4}
-Guid value: {bcaf5b5e-14be-4156-a480-a87614a900f4}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr&gt;
-&lt;h3 id="timespan"&gt;TimeSpan&lt;/h3&gt;
-&lt;p&gt;A &lt;code&gt;TimeSpan&lt;/code&gt; example:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;TimeSpan travelTime = new TimeSpan(1, 6, 24, 1);
-Console.WriteLine($"Travel time: {travelTime}");
-Console.WriteLine($"Travel time: {travelTime.ToString("g")}");
-Console.WriteLine($"Travel time: {travelTime:g}");
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Executing the above:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Travel time: 1.06:24:01
-Travel time: 1:6:24:01
-Travel time: 1:6:24:01
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr&gt;
-&lt;h3 id="numeric"&gt;Numeric&lt;/h3&gt;
-&lt;p&gt;A &lt;code&gt;numeric&lt;/code&gt; example:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;int cost = 5699;
-Console.WriteLine($"Cost: {cost}");
-Console.WriteLine($"Cost: {cost.ToString("c")}");
-Console.WriteLine($"Cost: {cost:c}");
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Executing the above:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Cost: 5699
-Cost: R5&amp;nbsp;699,00
-Cost: R5&amp;nbsp;699,00
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr&gt;
-&lt;h3 id="enum"&gt;Enum&lt;/h3&gt;
-&lt;p&gt;A &lt;code&gt;Enum&lt;/code&gt; example:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;ConsoleColor drawColor = ConsoleColor.Green;
-Console.WriteLine($"Draw color: {drawColor}");
-Console.WriteLine($"Draw color: {drawColor.ToString("D")}");
-Console.WriteLine($"Draw color: {drawColor:D}");
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Executing the above:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Draw color: Green
-Draw color: 10
-Draw color: 10
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;This is &lt;code&gt;not a new or revolutionary feature&lt;/code&gt;. I tend to use the &lt;code&gt;ToString&lt;/code&gt; method when formatting strings, not really aware that there was an alternative. Using the &lt;code&gt;:formatString&lt;/code&gt; method is not going to drastically change the maintainability, readability or performance of the code - but it does require slightly less typing and removes one additional method call (&lt;em&gt;ToString&lt;/em&gt;) so personally I will be using this method more frequently going forward.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/standard/base-types/composite-formatting#format-string-component"&gt;Composite formatting: Format string component&lt;/a&gt;&lt;/p&gt;
-&lt;!--?# DailyDrop ?--&gt;156: 08-09-2022&lt;!--?#/ DailyDrop ?--&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
