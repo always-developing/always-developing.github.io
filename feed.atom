@@ -4,8 +4,172 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-09-22T05:05:05Z</updated>
+	<updated>2022-09-23T05:06:56Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/09/23-ef-bulk-update</id>
+		<title>Bulk update (and delete) in EF7</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/09/23-ef-bulk-update" />
+		<updated>2022-09-23T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;New functionality is being introduced with Entity Framework 7 which enables the ability to perform &lt;code&gt;bulk updates and deletes&lt;/code&gt; on the database, without having to first load the relevent records into memory. This results in &lt;code&gt;better memory usage&lt;/code&gt;, as well as &lt;code&gt;increased performance&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="availability"&gt;Availability&lt;/h2&gt;
+&lt;p&gt;As of the time of this post, this functionality is only available via the EF nightly builds for &lt;code&gt;Microsoft.EntityFrameworkCore&lt;/code&gt; and &lt;code&gt;Microsoft.EntityFrameworkCore.SqlServer&lt;/code&gt; available at the &lt;a href="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet7/nuget/v3/index.json"&gt;following NuGet feed: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet7/nuget/v3/index.json&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;This URL can be added as a package source in the &lt;em&gt;NuGet Package Manager -&amp;gt; Package Sources&lt;/em&gt; in Visual Studio to enable access to the nightly build NuGet packages.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="examples"&gt;Examples&lt;/h2&gt;
+&lt;p&gt;In the sample below, we have a table of 10 000 &lt;em&gt;Blog&lt;/em&gt; records - we want to update the &lt;em&gt;Description&lt;/em&gt; column value for all records which have an &lt;code&gt;Id value of 20 or less&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;In both EF6 and EF7 examples, the &lt;em&gt;OnConfiguring&lt;/em&gt; method of the DbContext has been updated to enable &lt;em&gt;sensitive logging&lt;/em&gt; and &lt;em&gt;console logging&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;optionsBuilder.EnableSensitiveDataLogging(true);
+    optionsBuilder.LogTo((string query) =&amp;gt;
+    {
+        Console.WriteLine(query);
+    }, LogLevel.Information);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="prior-to-ef7"&gt;Prior to EF7&lt;/h3&gt;
+&lt;p&gt;In existing versions of Entity Framework, the relevent records have to be selected into memory (so the change tracker is tracking them), updated, and then the changes saved back to the database:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// get all blogs into memory/change tracker
+var updateBlogs = context.Blogs.Where(b =&amp;gt; b.Id &amp;lt;= 20).ToList();
+
+// update the value
+updateBlogs.ForEach(ub =&amp;gt; ub.Description = &amp;quot;EF6 Bulk Update&amp;quot;);
+
+// save...multiple updates
+context.Blogs.UpdateRange(updateBlogs);
+var result = await context.SaveChangesAsync();
+
+Console.WriteLine($&amp;quot;Numbers of records updated: {result}&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Executing the update code, results in the following output (abbreviated in places):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt; Executed DbCommand (90ms) [Parameters=[&amp;#64;p3='1', &amp;#64;p0='2022-07-12T06:47:24.1400000', 
+ &amp;#64;p1='EF6 Bulk Update' (Size = 4000), &amp;#64;p2='DD50AA26-FB55-4985-B5D5-C9D2DE98AFB3' (Size = 4000), 
+ &amp;#64;p7='2', &amp;#64;p4='2022-07-12T06:47:24.1400000', &amp;#64;p5='EF6 Bulk Update' (Size = 4000), 
+ &amp;#64;p6='4BF98BB3-A4BD-4652-AC29-F6A6EE1BE524' (Size = 4000), &amp;#64;p11='3', &amp;#64;p8='2022-07-12T06:47:24.1400000', 
+ &amp;#64;p9='EF6 Bulk Update' (Size = 4000), &amp;#64;p10='3C41C714-1670-4978-85DF-956F14FB8863' (Size = 4000), 
+ &amp;#64;p15='4', &amp;#64;p12='2022-07-12T06:47:24.1430000', &amp;#64;p13='EF6 Bulk Update' (Size = 4000), 
+ &amp;#64;p14='91929DC9-BE25-4027-9554-1B6EEF108E12' (Size = 4000), &amp;#64;p19='5', &amp;#64;p16='2022-07-12T06:47:24.1430000', 
+ &amp;#64;p17='EF6 Bulk Update' (Size = 4000), &amp;#64;p18='28DAF144-2ADB-42F4-9838-64F2DC192480' (Size = 4000), &amp;#64;p23='6' 
+ .... 
+ ....
+SET NOCOUNT ON;
+UPDATE [Blog] SET [DateCreated] = &amp;#64;p0, [Description] = &amp;#64;p1, [Title] = &amp;#64;p2
+OUTPUT 1
+WHERE [Id] = &amp;#64;p3;
+UPDATE [Blog] SET [DateCreated] = &amp;#64;p4, [Description] = &amp;#64;p5, [Title] = &amp;#64;p6
+OUTPUT 1
+WHERE [Id] = &amp;#64;p7;
+UPDATE [Blog] SET [DateCreated] = &amp;#64;p8, [Description] = &amp;#64;p9, [Title] = &amp;#64;p10
+OUTPUT 1
+...
+...
+Numbers of records updated: 20
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;From the output, we can see that multiple &lt;em&gt;UPDATE&lt;/em&gt; statements are executed, &lt;code&gt;one UPDATE for each record&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="ef7"&gt;EF7&lt;/h3&gt;
+&lt;p&gt;With EF 7, an &lt;code&gt;ExecuteUpdateAsync extension method&lt;/code&gt; is now available on &lt;code&gt;IQueryable&lt;/code&gt;, enabling bulk updates.&lt;/p&gt;
+&lt;p&gt;The syntax is a little more complex than using the EF6 technique:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var updatedCount = await context
+    .Blogs
+    // filter records to be updated
+    .Where(b =&amp;gt; b.Id &amp;lt;= 20)
+    // execute the bulk update
+    .ExecuteUpdateAsync(record =&amp;gt; record
+        // specify which column to update
+        // as well as the value
+        .SetProperty(blog =&amp;gt; blog.Description, desc =&amp;gt; &amp;quot;EF7 Bulk Update&amp;quot;)
+    );
+
+Console.WriteLine($&amp;quot;Numbers of records updated: {updatedCount}&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Looking at the output when executed:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;UPDATE [b]
+    SET [b].[Description] = N'EF7 Bulk Update'
+FROM [Blog] AS [b]
+WHERE [b].[Id] &amp;lt;= 20
+
+Numbers of records updated: 20
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The generated SQL is &lt;code&gt;much simpler and more concise&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;It is possible to also &lt;em&gt;update multiple columns&lt;/em&gt; at the same time by &lt;code&gt;chaining SetProperty methods together&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var updatedCount = await context
+    .Blogs
+    .Where(b =&amp;gt; b.Id &amp;lt;= 20)
+    .ExecuteUpdateAsync(record =&amp;gt; record
+        // update the description and date modified
+        .SetProperty(blog =&amp;gt; blog.Description, desc =&amp;gt; &amp;quot;EF7 Bulk Update&amp;quot;)
+        .SetProperty(blog =&amp;gt; blog.DateModified, date =&amp;gt; DateTime.Now)
+    );
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="benchmarks"&gt;Benchmarks&lt;/h2&gt;
+&lt;p&gt;Benchmarking the two samples above using BenchmarkDotnet::&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Method&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Ratio&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;RatioSD&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Gen 0&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Gen 1&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Allocated&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;EF6Update&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2,222.8 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;126.60 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;367.29 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.00&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;302 KB&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;EF7Update&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;428.9 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;5.23 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;5.81 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.19&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.03&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;12.6953&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.9766&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;79 KB&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;From the results, we can see that the EF7 methods:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;is &lt;code&gt;5 times faster than EF6&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;uses almost &lt;code&gt;4 times less memory&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr /&gt;
+&lt;h2 id="bulk-delete"&gt;Bulk Delete&lt;/h2&gt;
+&lt;p&gt;For completeness, a &lt;code&gt;bulk delete method&lt;/code&gt; is also available as part of EF7. It can be leveraged as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var deletedCount = await context
+    .Blogs
+    .Where(b =&amp;gt; b.Id &amp;lt;= 20)
+    .ExecuteDeleteAsync();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This will result in SQL similar to that of the bulk update - a &lt;em&gt;single bulk delete statement&lt;/em&gt; instead of multiple, one per record.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;A very welcome addition to the Entity Framework libraries, greatly speeding up specific uses cases. A specific use case I'm personally interested in, is &lt;em&gt;extracting data for publishing, and then flagging the data as &amp;quot;published&amp;quot;&lt;/em&gt;. Currently this involves having to load the data into memory, so the change tracker is tracking it, updating the records, and then having EF update each record as &amp;quot;published&amp;quot; individually.&lt;/p&gt;
+&lt;p&gt;With EF7, the data can be retrieved without tracking, thus saving on memory usage, and then updated as &amp;quot;published&amp;quot; in bulk.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://timdeschryver.dev/blog/new-in-entity-framework-7-bulk-operations-with-executedelete-and-executeupdate#number-of-rows-affected"&gt;New in Entity Framework 7: Bulk Operations with ExecuteDelete and ExecuteUpdate&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;167: 23-09-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/09/22-startup-filters</id>
 		<title>Extend the middleware pipeline with IStartupFilter</title>
@@ -1102,106 +1266,6 @@ app.MapGet(&amp;quot;/name&amp;quot;, ([FromServices]IDependencyInterface? injec
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://twitter.com/CFDevelop/status/1556055501661929472"&gt;Christian Findlay Tweet&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;158: 12-09-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/09/09-sql-waitfor</id>
-		<title>Delay SQL execution with WAITFOR</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/09/09-sql-waitfor" />
-		<updated>2022-09-09T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;SQL is a &lt;code&gt;WAITFOR&lt;/code&gt; command which an be used to delay the execution of a proceeding SQL statement. One of two options can be supplied to the &lt;code&gt;WAITFOR&lt;/code&gt; statement:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;TIME&lt;/code&gt;: waits until the  time of day specified before executing the next statement&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;DELAY&lt;/code&gt;: waits for the time span specified before executing the next statement&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr /&gt;
-&lt;h2 id="waitfor-format"&gt;WAITFOR Format&lt;/h2&gt;
-&lt;p&gt;The format and usage of &lt;code&gt;WAITFOR&lt;/code&gt; is straightforward:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;WAITFOR DELAY 'time_to_pass' | TIME 'time_to_execute'
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="waitfor-delay"&gt;WAITFOR DELAY&lt;/h2&gt;
-&lt;p&gt;&lt;code&gt;WAITFOR DELAY&lt;/code&gt; will wait the &lt;code&gt;specified time span&lt;/code&gt; before executing the next command:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;PRINT CONVERT(varchar, SYSDATETIME(), 121)
-GO
-
-WAITFOR DELAY '00:00:05';
-GO
-
-PRINT CONVERT(varchar, SYSDATETIME(), 121)
-GO
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Executing the above will result in the following output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;2022-09-08 20:39:51.2166773
-2022-09-08 20:39:56.2387040
-
-Completion time: 2022-09-08T20:39:56.2397037+02:00
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;A time span between &lt;code&gt;00:00:00.001&lt;/code&gt; and &lt;code&gt;23:59:59.998&lt;/code&gt; can be specified - anything longer will result in an error.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="waitfor-time"&gt;WAITFOR TIME&lt;/h2&gt;
-&lt;p&gt;&lt;code&gt;WAITFOR TIME&lt;/code&gt; will wait until the &lt;code&gt;specified time of day&lt;/code&gt; before executing the next command:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;PRINT CONVERT(varchar, SYSDATETIME(), 121)
-GO
-
-WAITFOR TIME '20:47:00';
-GO
-
-PRINT CONVERT(varchar, SYSDATETIME(), 121)
-GO
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Executing the above will result in the following output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;2022-08-15 20:46:48.9212859
-2022-08-15 20:47:00.0130443
-
-Completion time: 2022-08-15T20:47:00.0140433+02:00
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;In this example, we only had to wait &lt;em&gt;12 seconds&lt;/em&gt;, but the wait could be longer depending on the time specified. Only a &lt;code&gt;time can be specified, not a particular date&lt;/code&gt;. If the next execution of the specified time is the following day, the wait until the time is reached the following day.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="scheduling"&gt;Scheduling&lt;/h2&gt;
-&lt;p&gt;The below is an &lt;em&gt;example&lt;/em&gt; of how the functionality can be used to executing a command on a specific schedule. This technique is used for demo purposes not necessarily recommended for a production use case.&lt;/p&gt;
-&lt;p&gt;The following will execute the command every second for a full minute, once a day:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;-- wait until a specific time
-WAITFOR TIME '20:52:00';
-GO
-
--- while it is the 53th minute
-WHILE(DATEPART(MINUTE, GETDATE()) &amp;lt; 54)
-BEGIN
-        -- print out the date time
-	BEGIN
-		PRINT CONVERT(varchar, SYSDATETIME(), 121)
-	END
-
-        -- wait for 1 second
-	BEGIN
-		WAITFOR DELAY '00:00:01';
-	END
-END
-GO
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;2022-08-15 20:52:00.0145585
-2022-08-15 20:52:01.0162047
-2022-08-15 20:52:02.0209920
-2022-08-15 20:52:03.0229534
-.
-.
-.
-2022-08-15 20:53:56.6402032
-2022-08-15 20:53:57.6424606
-2022-08-15 20:53:58.6450557
-2022-08-15 20:53:59.6499793
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;While not necessarily a command which will see every day usage, it could prove useful to simulate a specific &amp;quot;real world&amp;quot; scenario when there is a time span between statements, either for testing or investigation purposes.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.mssqltips.com/sqlservertip/7344/delay-sql-code-execution-with-sql-waitfor/"&gt;SQL WAITFOR Command to Delay SQL Code Execution&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;157: 09-09-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
