@@ -5,8 +5,145 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Mon, 26 Sep 2022 05:13:25 GMT</pubDate>
-		<lastBuildDate>Mon, 26 Sep 2022 05:13:25 GMT</lastBuildDate>
+		<pubDate>Tue, 27 Sep 2022 05:01:55 GMT</pubDate>
+		<lastBuildDate>Tue, 27 Sep 2022 05:01:55 GMT</lastBuildDate>
+		<item>
+			<title>dynamic, ExpandoObject and INotifyPropertyChanged</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/09/27-expando-property-change</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/09/27-expando-property-change</guid>
+			<pubDate>Tue, 27 Sep 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;ExpandoObject&lt;/code&gt; implements &lt;em&gt;INotifyPropertyChanged&lt;/em&gt; - a callback delegate can be added to be invoked when a property value on the &lt;code&gt;ExpandoObject&lt;/code&gt; instances changes.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="expandoobject"&gt;ExpandoObject&lt;/h2&gt;
+&lt;p&gt;A quick overview of &lt;code&gt;ExpandoObject&lt;/code&gt; - it represents an object whose members can be dynamically added and removed at run time.&lt;/p&gt;
+&lt;p&gt;In the examples below, it is being used to represent a &lt;em&gt;product&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;dynamic product = new ExpandoObject();
+product.Name = &amp;quot;Green Shirt&amp;quot;;
+product.Rating = 4.3;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The properties &lt;em&gt;Name&lt;/em&gt; and &lt;em&gt;Rating&lt;/em&gt; are added at runtime. The properties can then be accessed as if they were traditional class properties:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;Console.WriteLine(product.Name);
+Console.WriteLine(product.Rating);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="calculation"&gt;Calculation&lt;/h2&gt;
+&lt;p&gt;In the examples below, we have a collection of &lt;em&gt;Products&lt;/em&gt;, each with a customer rating:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public dynamic[] GetProducts()
+{
+    dynamic prod1 = new ExpandoObject();
+    prod1.Name = &amp;quot;Green Shirt&amp;quot;;
+    prod1.Rating = 4.3;
+
+    dynamic prod2 = new ExpandoObject();
+    prod2.Name = &amp;quot;Blue Shirt&amp;quot;;
+    prod2.Rating = 4.9;
+
+    dynamic prod3 = new ExpandoObject();
+    prod3.Name = &amp;quot;Shoes&amp;quot;;
+    prod3.Rating = 3.8;
+
+    dynamic prod4 = new ExpandoObject();
+    prod4.Name = &amp;quot;Jeans&amp;quot;;
+    prod4.Rating = 5.0;
+
+    dynamic prod5 = new ExpandoObject();
+    prod5.Name = &amp;quot;Peak cap&amp;quot;;
+    prod5.Rating = 1.7;
+
+    return new dynamic[] { prod1, prod2, prod3, prod4, prod5 };
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We want to find the &lt;code&gt;average rating for all products&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public void ComputeAverageRating()
+{
+    avgRating = products.Average(p =&amp;gt; (double)p.Rating);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="manual-invocation"&gt;Manual invocation&lt;/h3&gt;
+&lt;p&gt;Getting the average for all products is straight forward - call the &lt;code&gt;ComputeAverageRating&lt;/code&gt; method:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var products = GetProducts();
+
+var avgRating = products.Average(p =&amp;gt; (double)p.Rating);
+Console.WriteLine($&amp;quot;Average product rating is: {avgRating}&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;However, every time a rating on one of the &lt;em&gt;Products&lt;/em&gt; changes, the method needs to manually be called again:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var products = GetProducts();
+
+var avgRating = products.Average(p =&amp;gt; (double)p.Rating);
+Console.WriteLine($&amp;quot;Average product rating is: {avgRating}&amp;quot;);
+
+// the product rating changed from 5 to 4.5
+products[3].Rating = 4.5;
+
+avgRating = products.Average(p =&amp;gt; (double)p.Rating);
+Console.WriteLine($&amp;quot;Average product rating is: {avgRating}&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output from the above is:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Average product rating is: 3,94
+Average product rating is: 3,84
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;While this method works without issue, as mentioned, it requires manually recalculating the average every time one of the &lt;em&gt;Rating&lt;/em&gt; property values changes.&lt;/p&gt;
+&lt;p&gt;A different method, requiring less manual work - is to leverage the &lt;code&gt;INotifyPropertyChanged&lt;/code&gt; functionality of &lt;code&gt;ExpandoObject&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="inotifypropertychanged"&gt;INotifyPropertyChanged&lt;/h3&gt;
+&lt;p&gt;With this method, once we have the list of &lt;em&gt;Products&lt;/em&gt; we can &lt;code&gt;register a method to be called whenever a property on the Product changes&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;void RegisterPropertyChange(dynamic[] products)
+{
+    foreach(var product in products)
+    {
+        // cast each product to INotifyPropertyChanged
+        // and register a callback method to be called
+        // every time a property changes.
+        // The cast is valid as ExpandoObject implements
+        // INotifyPropertyChanged
+        ((INotifyPropertyChanged)product).PropertyChanged += 
+            new PropertyChangedEventHandler(
+                (sender, e) =&amp;gt;
+                {
+                    // when a property changes, call this method
+                    ComputeAverageRating();
+                }
+            );
+    }
+
+    // calculate the average for the first time once 
+    // the callbacks have all been registered
+    ComputeAverageRating();
+}
+
+public void ComputeAverageRating()
+{
+    // avgRating is defined on the parent class
+    avgRating = products.Average(p =&amp;gt; (double)p.Rating);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This can now be utilized as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var products = GetProducts();
+RegisterPropertyChange(products);
+
+Console.WriteLine($&amp;quot;Average product rating is: {avgRating}&amp;quot;);
+
+products[3].Rating = 4.5;
+
+Console.WriteLine($&amp;quot;Average product rating is: {avgRating}&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;With this approach, the average rating calculation doesn't have to be called manually:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Average product rating is: 3,94
+Average product rating is: 3,84
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;While the &lt;code&gt;ExpandoObject&lt;/code&gt; is a very useful class, it does have it's drawbacks, performance being a big one. However, when it is required it can prove to be invaluable - with the bonus advantage of being able to leverage the &lt;code&gt;INotifyPropertyChanged&lt;/code&gt; functionality if required.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://code-maze.com/create-class-dynamically-csharp/"&gt;How to Create a Class Dynamically in C#?&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;169: 27-09-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Delaying injected dependency instantiation</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/09/26-lazy-injection</link>
@@ -1187,123 +1324,6 @@ Console.WriteLine(blankSong);
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://dev.to/dotnetsafer/5-new-c-11-features-you-might-have-missed-32d8"&gt;Auto-default struct&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;160: 14-09-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Correlation using the Activity class</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/09/13-activity-correlation</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/09/13-activity-correlation</guid>
-			<pubDate>Tue, 13 Sep 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;When working with &lt;code&gt;distributed systems&lt;/code&gt;, the built in &lt;code&gt;Activity&lt;/code&gt; class can be used to automatically correlate requests across the various systems.&lt;/p&gt;
-&lt;p&gt;For each unique request to an api (for example) a new activity root id is generated. If however, the specific api makes a call into another api, the activity root id is persisted across the http call, allowing the two calls to be linked together and related together when querying or reporting on the data.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="single-endpoint"&gt;Single endpoint&lt;/h2&gt;
-&lt;p&gt;First, we'll look at how to get access to the &lt;code&gt;activity id&lt;/code&gt;. To do this we generate a simple minimal endpoint:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/endpoint1&amp;quot;, (IHttpClientFactory httpFactory) =&amp;gt;
-{
-    // Output the root Id, and the current Id
-     Console.WriteLine($&amp;quot;Root Id: {Activity.Current.RootId} | &amp;quot; +
-        $&amp;quot;Id: {Activity.Current.Id}&amp;quot;);
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Here the static &lt;code&gt;Activity&lt;/code&gt; class is used, to access the &lt;em&gt;Current&lt;/em&gt; activity, and output the &lt;em&gt;Root Id&lt;/em&gt; as well as the &lt;em&gt;Id&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;Calling the endpoint a few times, results in the following:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Root Id: 319d4ff500ce3100c2a3017531e023e4 | Id: 00-319d4ff500ce3100c2a3017531e023e4-e4c21e8cfae4db47-00
-Root Id: 7de97ec9692106503aaabab105951bdf | Id: 00-7de97ec9692106503aaabab105951bdf-fa3c7b807eda8800-00
-Root Id: e1868729b9f3db8c40942ffb1daf24c9 | Id: 00-e1868729b9f3db8c40942ffb1daf24c9-79de739f0d38d58c-00
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Each time the endpoint is invoked, and new &lt;em&gt;Root Id and Id&lt;/em&gt; is generated, with the &lt;em&gt;Id&lt;/em&gt; containing the &lt;em&gt;Root Id&lt;/em&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="multiple-endpoints"&gt;Multiple endpoints&lt;/h2&gt;
-&lt;p&gt;Next, we define a second endpoint - for this example the second endpoint is defined in the same project as the first endpoint, but the exact same behavior would be experienced if the endpoint was contained in a separate application.&lt;/p&gt;
-&lt;p&gt;This second endpoint will return it's &lt;em&gt;Root Id and Id&lt;/em&gt; as a string:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/endpoint2&amp;quot;, () =&amp;gt;
-{
-    return $&amp;quot;Second Root Id: {Activity.Current.RootId} | &amp;quot; +
-        $&amp;quot;Second Id: {Activity.Current.Id}&amp;quot;;
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Then we update the first endpoint to call the second endpoint:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/endpoint1&amp;quot;, async (IHttpClientFactory httpFactory) =&amp;gt;
-{
-        Console.WriteLine($&amp;quot;Root Id: {Activity.Current.RootId} | &amp;quot; +
-        $&amp;quot;Id: {Activity.Current.Id}&amp;quot;);
-
-    // call the second endpoint
-    var client = httpFactory.CreateClient();
-    client.BaseAddress = new Uri(&amp;quot;http://localhost:5065&amp;quot;);
-    var response = await client.GetAsync(&amp;quot;endpoint2&amp;quot;);
-
-    // output the response (which contains the Id's)
-    // from the second endpoint
-    Console.WriteLine(await response.Content.ReadAsStringAsync());
-    Console.WriteLine(&amp;quot;------&amp;quot;);
-
-    
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Now, when the first endpoint is called, we see the following (formatted to make it easier to compare):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Root Id:        8f1e949168197f1185135e963eab68bc | Unit Id:   00-8f1e949168197f1185135e963eab68bc-2adc30476d372b95-00
-Second Root Id: 8f1e949168197f1185135e963eab68bc | Second Id: 00-8f1e949168197f1185135e963eab68bc-d18ddb27c96b1a1b-00
-------
-Root Id:        2b39afb72f3773289d8d141b2ef030d4 | Unit Id:   00-2b39afb72f3773289d8d141b2ef030d4-77be0c303ee8028a-00
-Second Root Id: 2b39afb72f3773289d8d141b2ef030d4 | Second Id: 00-2b39afb72f3773289d8d141b2ef030d4-66e8aa928caf5619-00
-------
-Root Id:        46d2eedeacdfe46a89888598886a5186 | Unit Id:   00-46d2eedeacdfe46a89888598886a5186-f7e42f6b6d868069-00
-Second Root Id: 46d2eedeacdfe46a89888598886a5186 | Second Id: 00-46d2eedeacdfe46a89888598886a5186-1af4f5b27e45f9f7-00
-------
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;As you can see, the &lt;code&gt;root id is the same across the http call&lt;/code&gt;, even though it is being returned from a separate endpoint in another service. The &lt;em&gt;Unit Id&lt;/em&gt; portion of the &lt;em&gt;Id&lt;/em&gt; changes though, indicating a smaller unit of work is being performed as part of the larger &lt;em&gt;root&lt;/em&gt; piece of work.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="child-activity"&gt;Child activity&lt;/h2&gt;
-&lt;p&gt;We've seen how the the &lt;em&gt;Root Id&lt;/em&gt; is shared across http calls - now we look at how to get the same functionality when performing smaller units of work not involving http calls.&lt;/p&gt;
-&lt;p&gt;Once again we update first endpoint, this time to start a child activity:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/endpoint1&amp;quot;, async (IHttpClientFactory httpFactory) =&amp;gt;
-{
-    Console.WriteLine($&amp;quot;Root Id: {Activity.Current.RootId} | &amp;quot; +
-        $&amp;quot;Id: {Activity.Current.Id}&amp;quot;);
-
-    var client = httpFactory.CreateClient();
-
-    client.BaseAddress = new Uri(&amp;quot;http://localhost:5065&amp;quot;);
-    var response = await client.GetAsync(&amp;quot;endpoint2&amp;quot;);
-    Console.WriteLine(await response.Content.ReadAsStringAsync());
-    
-    // start with the child activity
-    using var childActivity = new Activity(&amp;quot;MessagePublishing&amp;quot;);
-    childActivity.Start();
-
-    // a message is published to a message broker here, with the 
-    // Id as metadata/correlationId
-    Console.WriteLine($&amp;quot;Child Root Id: {Activity.Current.RootId} | &amp;quot; +
-        $&amp;quot;Child Id: {Activity.Current.Id}&amp;quot;);
-
-    childActivity.Stop();
-    Console.WriteLine(&amp;quot;------&amp;quot;);
-
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Here a child activity is manually started, and within the scope of the child activity - a message is published to a message broker (for example).&lt;/p&gt;
-&lt;p&gt;Invoking the endpoint now results in the following:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Root Id:        00a695a71d140a4105750a0cb04d9408 | Id:        00-00a695a71d140a4105750a0cb04d9408-4aba3488957c9a75-00
-Second Root Id: 00a695a71d140a4105750a0cb04d9408 | Second Id: 00-00a695a71d140a4105750a0cb04d9408-e29b9eb28fe6d34f-00
-Child Root Id:  00a695a71d140a4105750a0cb04d9408 | Child Id:  00-00a695a71d140a4105750a0cb04d9408-2a6e2ad5d7916142-00
-------
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;From the above, we can see that manually declaring and &lt;em&gt;starting&lt;/em&gt; an activity will result in a &lt;em&gt;new Id&lt;/em&gt; to be generated, but using the same &lt;em&gt;Root Id&lt;/em&gt; as the parent.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="why-the-need"&gt;Why the need?&lt;/h2&gt;
-&lt;p&gt;So why the need for a &lt;em&gt;Root Id&lt;/em&gt; and &lt;em&gt;correlation&lt;/em&gt; - all of this is to &lt;code&gt;gain better observability into how an application is performing&lt;/code&gt;. This data can be output and collected, either using industry standard tools and formatting (&lt;a href="https://opentelemetry.io/"&gt;for example OpenTelemetry&lt;/a&gt;), or by rolling our one's own reporting database - either way though, this provides insight into how each portion of a larger distributed transaction are linked together, and how each portion is performing.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;Distributed systems can become very complex, and observability is key in managing the stability and performance of the various systems - the &lt;code&gt;Activity&lt;/code&gt; class provides an easy, simple way to manage the correlation between the various systems and processes.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/api/system.diagnostics.activity?view=net-6.0"&gt;Activity Class&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;159: 13-09-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
