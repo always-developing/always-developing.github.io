@@ -4,8 +4,86 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-09-28T05:10:43Z</updated>
+	<updated>2022-09-29T05:09:50Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/09/29-aot-improvements</id>
+		<title>Native AOT compilation with .NET 7</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/09/29-aot-improvements" />
+		<updated>2022-09-29T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;New functionality is being introduced with .NET 7 adds the ability to do &lt;code&gt;native ahead-of-time (AOT)&lt;/code&gt; compilation - this results in the application starting up faster, and using less memory than the traditional non-AOT alternative.&lt;/p&gt;
+&lt;p&gt;While native AOT is supported in .NET 7, only a limited number of libraries are fully compatible and the functionality is currently targeted towards console-type applications, not web applications.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="aot"&gt;AOT&lt;/h2&gt;
+&lt;p&gt;Publishing an application with native AOT compilation produces an app that is self-contained and that has been ahead-of-time (AOT) compiled to the native code of the architecture specified.&lt;br /&gt;
+When an application is not using AOT, then &lt;em&gt;just-in-time&lt;/em&gt; compilation is used, where the code is compiled into native machine code on the fly as it is being used.&lt;/p&gt;
+&lt;p&gt;From the official documentation:&lt;br /&gt;
+&lt;em&gt;The benefit of native AOT is most significant for workloads with a high number of deployed instances, such as cloud infrastructure and hyper-scale services. It is currently not supported with ASP.NET Core, but only console apps.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;AOT in the broader sense is entirely not new to .NET, which currently makes use of &lt;a href="https://docs.microsoft.com/en-us/dotnet/core/deploying/ready-to-run"&gt;ReadyToRun Compilation&lt;/a&gt; which is a form of AOT.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="publish"&gt;Publish&lt;/h2&gt;
+&lt;p&gt;Let's test the AOT functionality on a simple .NET 7 console application which writes a message to the console, and then waits for a key to be pressed:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// the entire application
+Console.WriteLine(&amp;quot;Learning about Native AOT with alwaysdeveloping.net&amp;quot;);
+Console.ReadKey();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="non-aot"&gt;Non AOT&lt;/h3&gt;
+&lt;p&gt;To start, we'll get a base benchmark, without using AOT:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-powershell"&gt;dotnet publish -c Release
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output is a &lt;code&gt;149 KB&lt;/code&gt; &lt;em&gt;AlwaysDeveloping.exe&lt;/em&gt; which took &lt;code&gt;3 seconds to compile&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h4 id="runtime-specified"&gt;Runtime specified&lt;/h4&gt;
+&lt;p&gt;&lt;em&gt;Native AOT&lt;/em&gt; requires a specific runtime architecture be specified, so let's add that into the publish command to get a better comparison. When specifying the &lt;em&gt;runtime&lt;/em&gt; architecture, &lt;em&gt;self-contained&lt;/em&gt; or &lt;em&gt;no-self-contained&lt;/em&gt; argument needs to also be specified. AOT compiled code will be self contained, so we can specify the publish as &lt;em&gt;self-contained&lt;/em&gt; as well:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-powershell"&gt;dotnet publish -c Release -r win-x64 --self-contained
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output is a &lt;code&gt;67 MB folder&lt;/code&gt;, containing &lt;em&gt;AlwaysDeveloping.exe, as well as all other dependencies&lt;/em&gt; required to run the application, and took &lt;code&gt;1.5 seconds to compile&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h4 id="single-file"&gt;Single file&lt;/h4&gt;
+&lt;p&gt;When using &lt;em&gt;Native AOT&lt;/em&gt;, the output will be a single file, so next we include that:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-powershell"&gt;dotnet publish -c Release -r win-x64 -p:PublishSingleFile=true --self-contained true
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output is now a &lt;code&gt;62 MB&lt;/code&gt; AlwaysDeveloping.exe file, which took &lt;code&gt;3.3 seconds to compile&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h4 id="trimming"&gt;Trimming&lt;/h4&gt;
+&lt;p&gt;Next up, &lt;em&gt;Native AOT&lt;/em&gt;, will perform &lt;em&gt;trimming&lt;/em&gt; (removal of specific portions of code never called):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-powershell"&gt;dotnet publish -c Release -r win-x64 -p:PublishSingleFile=true -p:PublishTrimmed=true --self-contained true
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output is now a &lt;code&gt;11 MB&lt;/code&gt; AlwaysDeveloping.exe file, which took &lt;code&gt;5 seconds to compile.&lt;/code&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h4 id="readytorun"&gt;ReadyToRun&lt;/h4&gt;
+&lt;p&gt;The final step before comparing to &lt;em&gt;Native AOT&lt;/em&gt; is to specify the existing form of AOT, &lt;code&gt;ReadyToRun&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-powershell"&gt;dotnet publish -c Release -r win-x64 -p:PublishSingleFile=true -p:PublishTrimmed=true -p:PublishReadyToRun=true --self-contained true
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output is now a &lt;code&gt;14 MB&lt;/code&gt; AlwaysDeveloping.exe file, which took &lt;code&gt;10 seconds to compile&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="aot-1"&gt;AOT&lt;/h3&gt;
+&lt;p&gt;FInally let's compile using &lt;em&gt;Native AOT&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-powershell"&gt;dotnet publish -c Release -r win-x64 -p:PublishAot=true
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output is now a &lt;code&gt;3.6 MB&lt;/code&gt; AlwaysDeveloping.exe file, which took &lt;code&gt;3-12 seconds to compile&lt;/code&gt; (I ran this a few times, and the compile time was variable between 3 and 12 seconds)&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="limitations"&gt;Limitations&lt;/h2&gt;
+&lt;p&gt;There are &lt;a href="https://docs.microsoft.com/en-us/dotnet/core/deploying/native-aot#limitations-of-native-aot-deployment"&gt;limitations&lt;/a&gt; when working with &lt;em&gt;native AOT&lt;/em&gt; which need to be kept in mind, and may limit the ability to leverage the &lt;em&gt;native AOT&lt;/em&gt; functionality:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;No dynamic loading&lt;/li&gt;
+&lt;li&gt;No runtime code generation&lt;/li&gt;
+&lt;li&gt;Trimming is required (quick has its own limitations)&lt;/li&gt;
+&lt;li&gt;Single file is required (which has known incompatibilities)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;Using &lt;code&gt;Native AOT&lt;/code&gt; compilation results in a &lt;strong&gt;much&lt;/strong&gt; smaller output compared with the equivalent (as much as possible) configuration using non-AOT (3.6MB vs 14MB). With the improved startup performance and memory usage, if the limitations allow it, &lt;em&gt;Native AOT&lt;/em&gt; should definitely be considered. This is just the start, and I am sure there will be more improvements to come with future releases.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/core/deploying/native-aot"&gt;Native AOT Deployment&lt;/a&gt;&lt;br /&gt;
+&lt;a href="https://code.soundaranbu.com/trying-out-native-aot-in-net-7-preview-7/"&gt;Trying out Native AOT in .NET 7 Preview 7&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;171: 29-09-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/09/28-typed-middleware</id>
 		<title>Strongly typed middleware with IMiddleware</title>
@@ -1187,68 +1265,6 @@ Application OnStopped - worker
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/generic-host?view=aspnetcore-6.0#ihostapplicationlifetime"&gt;IHostApplicationLifetime&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;162: 16-09-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/09/15-min-api-yield</id>
-		<title>Streaming responses from a minimal api </title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/09/15-min-api-yield" />
-		<updated>2022-09-15T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;Using &lt;em&gt;&amp;quot;usual techniques&amp;quot;&lt;/em&gt;, it is not possible to stream a response from a minimal api, as the &lt;code&gt;yield keyword cannot be used inside an anonymous method or lambda expression&lt;/code&gt;. To work around this limitation, a &lt;code&gt;local function&lt;/code&gt; can be created which returns &lt;em&gt;IAsyncEnumerable&lt;/em&gt;, and the local function result in turn, is returned from the minimal api.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="limitation"&gt;Limitation&lt;/h2&gt;
-&lt;p&gt;Suppose we need to define an endpoint, which when called will stream a &lt;em&gt;bool response&lt;/em&gt; indicating if current date time minute is 13 or not (not very practical or useful, but will work for demo purposes):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/isminute13&amp;quot;, async () =&amp;gt;
-{
-    // when the endpoint is called, loop until
-    // the user cancels
-    while (true)
-    {
-        // return a bool indicating if the current minute is 13
-        yield return (DateTime.Now.Minute == 13);
-
-        // wait 1 second, and repeat
-        await Task.Delay(1000);
-    }
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The issue here, is that it &lt;code&gt;does not compile&lt;/code&gt;, as:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;The yield statement cannot be used inside an anonymous method or lambda expression
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;But, there is a way around this constraint of the lambda expression!&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="local-function"&gt;Local function&lt;/h2&gt;
-&lt;p&gt;The error itself gives a clue on how to solve the problem - yield cannot be used inside a &lt;em&gt;anonymous method or lambda expression&lt;/em&gt;, so &lt;code&gt;why don't not instead create and use a non-anonymous method!&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/isminute13&amp;quot;, () =&amp;gt;
-{
-    // move all previous logic into this local method
-    async IAsyncEnumerable&amp;lt;bool&amp;gt; DateTimeStream()
-    {
-        while (true)
-        {
-            yield return (DateTime.Now.Minute == 13);
-            await Task.Delay(1000);
-        }
-    }
-
-    // return the result of the method
-    return DateTimeStream();
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Executing the above code, and calling the endpoint will result in the following output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;[false,false,false,false,false,false,false,false,false,true,true,true
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Every second a new bool will be appended to the response, indicating if the minute is 13 or not.&lt;/p&gt;
-&lt;p&gt;Simple, easy solution with minimal additional coding!&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;Streaming responses from an api is not something I've seen leveraged much before - however with the simplicity of configuring a minimal api for streaming, it is quick and easy to get an application up and running to determine if streaming can add value to the application or business.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://twitter.com/davidfowl/status/1436706303586410503"&gt;David Fowler Tweet&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;161: 15-09-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
