@@ -1,0 +1,390 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="always learning | always growing">
+
+    <title>Always Developing - Minimal api&#x27;s and cancellation tokens</title>
+
+    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/09/30-min-api-cancellation">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
+
+    <meta name="application-name" content="Always Developing" />
+    <meta name="msapplication-tooltip" content="Always Developing" />
+    <meta name="msapplication-starturl" content="/" />
+
+    <meta property="og:title" content="Always Developing - Minimal api&#x27;s and cancellation tokens" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/09/30-min-api-cancellation" />
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Bootstrap core CSS -->
+    <link href="/vendor/bootstrap/scss/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom fonts for this template -->
+    <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="/vendor/fontawesome-free/css/brands.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css' data-no-mirror>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css' data-no-mirror>
+
+    <!-- Custom styles for this template -->
+    <link href="/scss/always-developing-blog.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/plugins/autoloader/prism-autoloader.min.js" data-no-mirror></script>
+    <script src="https://cdn.jsdelivr.net/npm/quicklink@2.0.0/dist/quicklink.umd.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/themes/prism.css">
+
+    <!-- Lunr search -->
+        <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/pako@2.0.3/dist/pako_inflate.min.js"></script>
+        <script src="/search.js"></script>
+
+    
+
+
+    
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand"  href="/">
+            <img src="/images/ad_logo.png" alt="" width="25" height="25" class="d-inline-block align-text-top">
+            Always Developing
+        </a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            Menu
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/software">Software</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/tags">Tags</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/posts">Posts</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/about">About</a>
+            </li>
+</ul>
+                <form class="form-inline my-2 my-lg-0" action="/search" method="GET">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="query">
+                    <input type="submit" hidden />
+                </form>
+        </div>
+    </div>
+</nav>
+
+    <!-- Page Header -->
+    <header class="masthead">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 align-middle">
+                <div class="post-header-image">
+                    <a href="/">
+                        <img src="/images/ad_logo.png" class="header-image">
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="post-heading">
+                    <h1>
+                        Minimal api&#x27;s and cancellation tokens
+                    </h1>
+                            <h2 class="subheading">How to cancel aborted api calls with cancellation tokens</h2>
+                        <p class="post-meta">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
+                                <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
+                            </svg> Published on Friday, 30 September 2022
+                        </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <!-- Main Content -->
+    <div class="container">
+            <div class="row ">
+                    <div id="content" class="col-md-9 post-with-toc post-block">
+                        
+<div class="post-header-category">
+    <a class="btn btn-primary btn-sm btn-default btn-home" href="\" role="button"><i class="fas fa-angle-double-left"></i> Home</a>
+            <a class="btn btn-primary btn-sm category-btn" href="/categories/dailydrop" role="button">DailyDrop</a>
+</div>
+
+                        <h2 id="daily-knowledge-drop">Daily Knowledge Drop</h2>
+<p>A <code>CancellationToken</code> can be passed into a minimal api endpoint to be used to <em>cancel processing executed by the endpoint</em> - the cancellation token will automatically be marked as cancelled if the caller either cancels the request or navigates away from the endpoint (if being accessed from the browser)</p>
+<hr />
+<h2 id="process-cancellation">Process cancellation</h2>
+<h3 id="no-token">No token</h3>
+<p>Consider the following minimal api endpoint:</p>
+<pre><code class="language-csharp">app.MapGet(&quot;/long&quot;, async () =&gt;
+{
+    Console.WriteLine($&quot;{DateTime.Now.ToString(&quot;ss&quot;)}: &quot; +
+        $&quot;Starting long process&quot;);
+
+    // simulate a long running process
+    await Task.Delay(5000);
+
+    Console.WriteLine($&quot;{DateTime.Now.ToString(&quot;ss&quot;)}: &quot; +
+        $&quot;Finishing long process&quot;);
+});
+</code></pre>
+<p>If the application is executed, and the endpoint called, the output would be something like this:</p>
+<pre><code class="language-terminal">02: Starting long process
+07: Finishing long process
+</code></pre>
+<p>As expected, it takes approximately 5 seconds for the endpoint to execute and finish.</p>
+<p>If the endpoint is called again, and during those 5 seconds of &quot;processing&quot;, the <em>&quot;Stop loading this page&quot;</em> button is clicked on the browser (wording may differ slightly depending on browser) we see the following:</p>
+<pre><code class="language-terminal">52: Starting long process
+57: Finishing long process
+</code></pre>
+<p>Even though the <code>request from the browser to the endpoint is cancelled, the processing done by the endpoint is not cancelled!</code>. The endpoint isn't aware of the fact the request was cancelled, which results in unnecessary CPU and memory usage, no longer required as the user has decided to cancel the request.</p>
+<hr />
+<h3 id="cancellationtoken">CancellationToken</h3>
+<p><code>CancellationToken</code> to the rescue - a <em>cancellation token</em> can be used to convey information to the endpoint about the status of the request.</p>
+<p>Let's update the endpoint to use a cancellation token:</p>
+<pre><code class="language-csharp">// add cancellation token, which is automatically populated
+app.MapGet(&quot;/long&quot;, async (CancellationToken token) =&gt;
+{
+    Console.WriteLine($&quot;{DateTime.Now.ToString(&quot;ss&quot;)}: &quot; +
+        $&quot;Starting long process&quot;);
+
+    //forward the token onto the method
+    await Task.Delay(5000, token);
+
+    Console.WriteLine($&quot;{DateTime.Now.ToString(&quot;ss&quot;)}: &quot; +
+        $&quot;Finishing long process&quot;);
+});
+</code></pre>
+<p>Here, a <code>CancellationToken</code> is specified to be passed into the endpoint - this automatically gets instantiated and is <em>&quot;linked&quot;</em> to the HTTP context of the request. If the request is cancelled by the caller, the <code>CancellationToken</code> will indicate this fact.</p>
+<p>Most <em>async</em> methods (such as <code>Task.Delay</code> in this instance) have an optional <code>CancellationToken</code> parameter which can be used to pass a token all the way down the call stack to the code doing the actual work/processing, which will then in turn monitor and check if the token has been cancelled.</p>
+<p>Invoking this endpoint now, and clicking the <em>&quot;Stop loading this page&quot;</em> button on the browser while the endpoint is still processing will result in the following:</p>
+<pre><code class="language-terminal">27: Starting long process
+fail: Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware[1]
+      An unhandled exception has occurred while executing the request.
+      System.Threading.Tasks.TaskCanceledException: A task was canceled.
+</code></pre>
+<p>When a <code>CancellationToken</code> is used to cancel a process, it is up to the library author to decide if cancelling means an exception be thrown (such as in the above example with <em>Task.Delay</em>), or if processing simply just stops.</p>
+<p>While the endpoint <code>process is now successfully</code> cancelled when the request is cancelled, not using unnecessary resources - we now have to deal with and cater for the <code>TaskCanceledException</code>.</p>
+<hr />
+<h3 id="cancellation-middleware">Cancellation middleware</h3>
+<p>A <em>custom middleware</em> component can be written to catch any exceptions of type <code>TaskCanceledException</code>, log it and return a different response to the caller (which they will not care about, as they have cancelled the request):</p>
+<pre><code class="language-csharp">public class CancellationMiddleware
+{
+    private readonly RequestDelegate _next;
+
+    public CancellationMiddleware(RequestDelegate next)
+    {
+        _next = next;
+    }
+
+    public async Task Invoke(HttpContext context)
+    {
+        try
+        {
+            await _next(context);
+        }
+        // catch any canceled exceptions
+        // TaskCanceledException inherits from OperationCanceledException
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine($&quot;Cancelled request handled by {nameof(CancellationMiddleware)}&quot;);
+            // the called has cancelled the request
+            // so doesn't care about the response
+            // Totally legit HTTP response code
+            context.Response.StatusCode = StatusCodes.Status418ImATeapot;
+        }
+    }
+}
+</code></pre>
+<p>This middleware is then registered on startup:</p>
+<pre><code class="language-csharp">app.UseMiddleware&lt;CancellationMiddleware&gt;();
+</code></pre>
+<p>And now when invoking the endpoint and cancelling we see the following output:</p>
+<pre><code class="language-terminal">18: Starting long process
+Cancelled request handled by CancellationMiddleware
+</code></pre>
+<p><code>Process successfully cancelled</code> and <code>no more unhandled exception errors</code>.</p>
+<hr />
+<h2 id="notes">Notes</h2>
+<p>Adding <code>CancellationToken</code> support to a minimal endpoint is a fairly low effort improvement, with a (depending on how the endpoint gets used) potential high reward - processing which is no longer required by the caller gets cancelled, freeing up CPU and memory usage.</p>
+<hr />
+<h2 id="references">References</h2>
+<p><a href="https://andrewlock.net/using-cancellationtokens-in-asp-net-core-minimal-apis/">Using CancellationTokens in ASP.NET Core minimal APIs </a></p>
+
+<blockquote class="daily-drop">
+    <div>
+        <div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px; ">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="50" height="50" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffec00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+              <path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+              <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+              <line x1="9.7" y1="17" x2="14.3" y2="17" />
+            </svg>
+        </div>
+        <div class="drop-header">
+            Daily Drop 172: 30-09-2022
+        </div>
+        <div>
+            <br>At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br> It could be anything - some.NET / C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
+            The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+        <div>
+    </div>
+</blockquote>
+
+
+                        
+<div>
+            <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
+            <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
+            <a role="button" href="/tags/minimalapi" class="badge badge-light"> minimalapi</a>
+            <a role="button" href="/tags/cancellation" class="badge badge-light"> cancellation</a>
+            <a role="button" href="/tags/token" class="badge badge-light"> token</a>
+</div>
+                    </div>
+                    <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
+                        
+
+        <div class="box sticky-top toc-block">
+            <h3 class="no-anchor">On This Page</h3>
+            <ul>
+        <li><a href="#daily-knowledge-drop">Daily Knowledge Drop</a></li>
+        <li><a href="#process-cancellation">Process cancellation</a></li>
+            <ul>
+        <li><a href="#no-token">No token</a></li>
+        <li><a href="#cancellationtoken">CancellationToken</a></li>
+        <li><a href="#cancellation-middleware">Cancellation middleware</a></li>
+            </ul>
+        <li><a href="#notes">Notes</a></li>
+        <li><a href="#references">References</a></li>
+            </ul>
+        </div>
+
+                    </div>
+            </div>
+            <div class="row ">
+                    <div id="content" class="col-md-9">
+                        <div>
+    <script src="https://giscus.app/client.js"
+            data-repo="always-developing/always-developing.github.io"
+            data-repo-id="R_kgDOGQJLBQ"
+            data-category="Comments"
+            data-category-id="DIC_kwDOGQJLBc4B_pUA"
+            data-mapping="pathname"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="bottom"
+            data-theme="transparent_dark"
+            data-lang="en"
+            crossorigin="anonymous"
+            async>
+    </script>
+</div>
+                    </div>
+            </div>
+    </div>
+
+    <hr class="horizontal-rule" />
+
+    <!-- Footer -->
+    <footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <ul class="list-inline text-center">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://www.linkedin.com/in/jean-pierre-seini">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-linkedin fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                <div>
+                    <p class="copyright text-footer">
+                        Copyright © 2022 Always Developing</a>.
+                    </p>
+                </div>
+                <ul class="list-inline text-center small text-feeds">
+                        <li class="list-inline-item">
+                            <a href="/feed.rss"><i class="fa fa-rss"></i> RSS Feed</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="/feed.atom"><i class="fa fa-rss"></i> Atom Feed</a>
+                        </li>
+                </ul>
+                <ul class="list-inline text-center small">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing/alwaysdeveloping-website-src"><i class="fab fa-github"></i> This site on GitHub</a>                    
+                    </li>
+                    <li class="list-inline-item">
+                        |
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing/alwaysdeveloping-website-src/tree/main/theme"><i class="fa fa-code"></i> Custom Always-Developing theme</a>
+                    </li>
+                    <li class="list-inline-item">
+                        |
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://github.com/statiqdev/CleanBlog"><i class="fa fa-blog"></i> Adapted from Clean Blog theme</a>
+                    </li>
+                </ul>
+                <div class="small text-footer">
+                    <a href="https://statiq.dev"><i class="fa fa-cogs"></i> Generated by Statiq</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="/vendor/jquery/jquery.min.js"></script>
+    <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CXPLFS7K38"></script>
+
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){window.dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-CXPLFS7K38');
+</script>
+
+    
+
+    <!-- Custom scripts for this template -->
+    <script src="/js/always-developing-blog.js"></script>
+
+</body>
+
+</html>
