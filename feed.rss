@@ -5,8 +5,91 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Fri, 30 Sep 2022 05:10:21 GMT</pubDate>
-		<lastBuildDate>Fri, 30 Sep 2022 05:10:21 GMT</lastBuildDate>
+		<pubDate>Mon, 03 Oct 2022 04:30:38 GMT</pubDate>
+		<lastBuildDate>Mon, 03 Oct 2022 04:30:38 GMT</lastBuildDate>
+		<item>
+			<title>Obtaining a list of app URLs</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/10/03-server-addresses</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/10/03-server-addresses</guid>
+			<pubDate>Mon, 03 Oct 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;IServerAddressesFeature&lt;/code&gt; or &lt;code&gt;IServer&lt;/code&gt; implementations can be used to get a list of URLs your application is responding to. In a landscape with a large number of applications which serve on multiple URLs, this could be leveraged to easily self-document all URLs currently in use.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="multiple-urls"&gt;Multiple urls&lt;/h2&gt;
+&lt;p&gt;For the samples below, the application has been configured to use multiple urls using the &lt;code&gt;UseUrls&lt;/code&gt; method:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;builder.WebHost.UseUrls(&amp;quot;http://*:5096;http://*:5097;http://localhost:5098&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If we had a &lt;em&gt;&amp;quot;hello&amp;quot;&lt;/em&gt; endpoint:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/hello&amp;quot;, () =&amp;gt;
+{
+    return &amp;quot;world&amp;quot;;
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We would get a &lt;em&gt;&amp;quot;world&amp;quot;&lt;/em&gt; response by browsing to any of the below:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;http://localhost:5096/hello&lt;/li&gt;
+&lt;li&gt;http://localhost:5097/hello&lt;/li&gt;
+&lt;li&gt;http://localhost:5098/hello&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr /&gt;
+&lt;h2 id="address-list"&gt;Address list&lt;/h2&gt;
+&lt;h3 id="iserveraddressesfeature"&gt;IServerAddressesFeature&lt;/h3&gt;
+&lt;p&gt;The first method to get a list of addresses is by casting the &lt;code&gt;WebApplication&lt;/code&gt; instance to &lt;code&gt;IApplicationBuilder&lt;/code&gt; and leveraging the &lt;em&gt;ServerFeatures&lt;/em&gt; method available:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// app is obtained from var app = builder.Build();
+// in this example, serverAddress is a free variable
+var serverAddress = (app as IApplicationBuilder)
+    .ServerFeatures.Get&amp;lt;IServerAddressesFeature&amp;gt;();
+
+app.MapGet(&amp;quot;/addresses&amp;quot;, (context) =&amp;gt;
+{
+    // get all addresses and output
+    foreach(var address in serverAddress.Addresses)
+    {
+        context.Response.WriteAsync($&amp;quot;- {address}{Environment.NewLine}&amp;quot;);
+    }
+
+    return Task.CompletedTask;
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output from browsing to the above endpoint:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;- http://[::]:5096
+- http://[::]:5097
+- http://localhost:5098
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="iserver"&gt;IServer&lt;/h3&gt;
+&lt;p&gt;When &lt;code&gt;IApplicationBuilder&lt;/code&gt; is not available (outside of application startup), the information is also available by injecting &lt;code&gt;IServer&lt;/code&gt; into the required constructor or delegate:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/iserver&amp;quot;, (HttpContext context, IServer server) =&amp;gt;
+{
+    // get the address from IServer instead of IApplicationBuilder
+    // otherwise everything else is the same
+    var addressFeature = server.Features.Get&amp;lt;IServerAddressesFeature&amp;gt;();
+
+    foreach (var address in addressFeature.Addresses)
+    {
+        context.Response.WriteAsync($&amp;quot;- {address}{Environment.NewLine}&amp;quot;);
+    }
+
+    return Task.CompletedTask;
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output from browsing to the above endpoint:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;- http://[::]:5096
+- http://[::]:5097
+- http://localhost:5098
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;We've looked at two different ways to get a list of addresses the application is serving on. For most applications, this might never be useful as most applications serve on a single address. However in the case where there &lt;em&gt;are&lt;/em&gt; multiple addresses, this could be used to self document and easily keep track of application's addresses.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://github.com/dodyg/practical-aspnetcore/blob/net6.0/projects/features/features-server-addresses"&gt;Server Addresses Feature&lt;/a&gt;&lt;br /&gt;
+&lt;a href="https://github.com/dodyg/practical-aspnetcore/tree/net6.0/projects/features/features-server-addresses-2"&gt;Server Addresses Feature - 2&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;173: 03-10-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Minimal api's and cancellation tokens</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/09/30-min-api-cancellation</link>
@@ -1159,113 +1242,6 @@ End of 'GetWebsiteInformation' method
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://youtu.be/N-ofc345-58?list=PLqqD43D6Mqz0AIDkHqaZDKaEKXdfMiIAo&amp;amp;t=1610"&gt;Async Web API testing with TaskCompletionSource (Microservices with .NET 6.0) - FeedR episode #11&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;164: 20-09-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>UTF8 string literals in C#11</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/09/19-string-literals</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/09/19-string-literals</guid>
-			<pubDate>Mon, 19 Sep 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;Coming with C# 11 (being released later this year, coinciding with the .NET 7 release) the conversion from a &lt;code&gt;string literal to a byte[]&lt;/code&gt; is becoming &lt;em&gt;easier, faster, and more efficient&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;The byte[] is often used in dealing with streams (for example) and with the current, and prior C# versions, the conversation from a string to byte[] required as explicit conversion. However with C#11, this conversion is simplified, but also gains a large performance boost.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="c-10-and-prior"&gt;C# 10 and prior&lt;/h2&gt;
-&lt;p&gt;In the current (and prior) versions of C#, when a string literal is required to be converted to a byte[], the &lt;code&gt; System.Text.Encoding.X.GetBytes&lt;/code&gt; method is used (where X is the encoding method, UTF8 specifically in this post):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;byte[] bytes = System.Text.Encoding.UTF8.GetBytes(&amp;quot;alwaysdeveloping.net&amp;quot;);
-
-using var stream = new MemoryStream();
-stream.Write(bytes);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;While not especially complicated, this does involve an explicit method call to perform the conversion.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="c-11"&gt;C# 11&lt;/h2&gt;
-&lt;p&gt;With C#11, it's possible to do this with an implicit conversion:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;ReadOnlySpan&amp;lt;byte&amp;gt; spanBytes = &amp;quot;alwaysdeveloping.net&amp;quot;u8;
-
-using var stream = new MemoryStream();
-stream.Write(spanBytes);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Although a &lt;em&gt;ReadOnlySpan&lt;/em&gt; can be used whereever a &lt;em&gt;byte[]&lt;/em&gt; is required, if a &lt;em&gt;byte[]&lt;/em&gt; is specifically needed:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;ReadOnlySpan&amp;lt;byte&amp;gt; spanBytes = &amp;quot;alwaysdeveloping.net&amp;quot;u8;
-byte[] bytes = spanBytes.ToArray();
-
-using var stream = new MemoryStream();
-stream.Write(bytes);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The &lt;code&gt;u8&lt;/code&gt; suffix on the string, indicates to the compiler that it should convert the string value into an array of bytes - or more specifically in this case, a &lt;code&gt;ReadOnlySpan of bytes&lt;/code&gt;. Using a &lt;em&gt;ReadOnlySpan&lt;/em&gt; is more efficient and uses no additional memory - but if a byte[] is specifically required, the &lt;em&gt;ToArray&lt;/em&gt; method can be leveraged to get a &lt;em&gt;byte[]&lt;/em&gt; from the &lt;em&gt;ReadOnlySpan&lt;/em&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="performance"&gt;Performance&lt;/h2&gt;
-&lt;p&gt;Below are a couple of simple benchmarks run to compare the performance and memory usage of the old and new methods:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;
-[Benchmark(Baseline = true)]
-public void GetBytes()
-{
-    byte[] bytes = System.Text.Encoding.UTF8.GetBytes(&amp;quot;alwaysdeveloping.net&amp;quot;);
-}
-
-[Benchmark]
-public void StringLiteral()
-{
-    ReadOnlySpan&amp;lt;byte&amp;gt; spanBytes = &amp;quot;alwaysdeveloping.net&amp;quot;u8;
-}
-
-&lt;/code&gt;&lt;/pre&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;Method&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Median&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Ratio&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Gen 0&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Allocated&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;GetBytes&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;19.5843 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.4163 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.6956 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;19.6017 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.000&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0076&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;48 B&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;StringLiteral&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0198 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0209 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0241 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0085 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.001&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;As one can see, the new method is &lt;code&gt;exponentially faster&lt;/code&gt; and requires &lt;code&gt;zero additional memory&lt;/code&gt; when compared with the current method.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="extend-features"&gt;Extend features&lt;/h2&gt;
-&lt;p&gt;In the initial announcement and previews of this feature, the implicit conversion was done without specifying the &lt;code&gt;u8&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;byte[] array = &amp;quot;hello&amp;quot;;  
-Span&amp;lt;byte&amp;gt; span = &amp;quot;dog&amp;quot;; 
-ReadOnlySpan&amp;lt;byte&amp;gt; span = &amp;quot;cat&amp;quot;; 
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;However, in subsequent previews, the &lt;code&gt;u8&lt;/code&gt; was added to specifically indicate that the string literal should be converted to &lt;em&gt;UTF8&lt;/em&gt;. Hopefully in future C# language updates, more encoding methods are added, to at least bring this feature on par with using &lt;em&gt;System.Text.Encoding.X.GetBytes&lt;/em&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;A relatively small update on the surface, but if your application makes heavy use of string literals and encoding, converting to this new feature should gain you a performance boost.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://gsferreira.com/archive/2022/csharp-11-utf-8-string-literals-ignore-everything-you-have-seen-so-far/"&gt;Literals - Ignore everything you have seen so far&lt;/a&gt;&lt;br /&gt;
-&lt;a href="https://devblogs.microsoft.com/dotnet/csharp-11-preview-updates/#utf-8-string-literals"&gt;C# 11 Preview Updates – Raw string literals, UTF-8 and more!&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;163: 19-09-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
