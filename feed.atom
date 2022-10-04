@@ -4,8 +4,85 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-10-03T04:30:38Z</updated>
+	<updated>2022-10-04T04:41:42Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/10/04-app-run</id>
+		<title>Map all urls with IApplicationBuilder.Run</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/10/04-app-run" />
+		<updated>2022-10-04T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;Run&lt;/code&gt; method on the &lt;code&gt;WebApplication&lt;/code&gt; (which implements &lt;em&gt;IApplicationBuilder&lt;/em&gt;) can be used to map &lt;strong&gt;any and all&lt;/strong&gt; urls to the specific delegate.&lt;/p&gt;
+&lt;p&gt;This can be leveraged in the case where the api doesn't expose any functional endpoints (such as with a &lt;em&gt;Background Service&lt;/em&gt;) to always display a consistent message to the caller.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="root-endpoint"&gt;Root endpoint&lt;/h2&gt;
+&lt;p&gt;Usually when a web application doesn't expose any endpoints, the root endpoint might be mapped so when browsing to the url, a message is returned to at least inform the caller that the service is up and running:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddTransient&amp;lt;RunMiddleware&amp;gt;();
+
+WebApplication? app = builder.Build();
+
+app.MapGet(&amp;quot;/&amp;quot;, async context =&amp;gt;
+{
+    await context.Response.WriteAsync(&amp;quot;Sample application - no endpoints exposed&amp;quot;);
+});
+
+app.Run();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Browsing to &lt;code&gt;/&lt;/code&gt; will display:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Sample application - no endpoints exposed
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The downside of this approach, is that if the user browses to any URL other than &lt;code&gt;/&lt;/code&gt;, nothing will be returned. For example, browsing to &lt;code&gt;/api&lt;/code&gt; just returns a blank page.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="run-method"&gt;Run method&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;Run&lt;/code&gt; method can be leveraged to map a &lt;em&gt;delegate&lt;/em&gt; to &lt;strong&gt;all&lt;/strong&gt; endpoints:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddTransient&amp;lt;RunMiddleware&amp;gt;();
+
+WebApplication? app = builder.Build();
+
+app.Run(async context =&amp;gt;
+{
+   await context.Response.WriteAsync(&amp;quot;Sample application - no endpoints exposed&amp;quot;);
+});
+
+app.Run();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;With this approach, browsing to &lt;code&gt;/&lt;/code&gt; or &lt;code&gt;/api&lt;/code&gt; or &lt;strong&gt;any&lt;/strong&gt; other url, will return the following:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Sample application - no endpoints exposed
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now, no matter the endpoint called - the &lt;code&gt;same message&lt;/code&gt; is returned.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="endpoint-override"&gt;Endpoint override&lt;/h2&gt;
+&lt;p&gt;A word of warning - using the &lt;code&gt;Run&lt;/code&gt; method will cause the specific delegate to be called on all endpoints - even if another endpoint has specifically been defined:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddTransient&amp;lt;RunMiddleware&amp;gt;();
+
+WebApplication? app = builder.Build();
+
+app.MapGet(&amp;quot;hello&amp;quot;, async context =&amp;gt;
+{
+    await context.Response.WriteAsync(&amp;quot;World&amp;quot;);
+});
+
+app.Run(async context =&amp;gt;
+{
+    await context.Response.WriteAsync(&amp;quot;Sample application - no endpoints exposed&amp;quot;);
+});
+
+app.Run();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In the above, browsing to &lt;code&gt;/hello&lt;/code&gt; will return &lt;code&gt;Sample application - no endpoints exposed&lt;/code&gt; and &lt;strong&gt;NOT&lt;/strong&gt; &lt;code&gt;World&lt;/code&gt; - the &lt;em&gt;Run&lt;/em&gt; method delegate overrides all over endpoint delegates.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;This is not a technique to be used for every application, but in the cases where the application is running as a background service (for example) which doesn't expose any specific endpoints, this technique can be leveraged to always display &lt;em&gt;something&lt;/em&gt; to the user.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://github.com/dodyg/practical-aspnetcore/blob/net6.0/projects/application-environment/Program.cs"&gt;Application Environment&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;174: 04-10-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/10/03-server-addresses</id>
 		<title>Obtaining a list of app URLs</title>
@@ -1108,129 +1185,6 @@ var app = builder.Build();
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.configuration.commandlineconfigurationextensions.addcommandline?view=dotnet-plat-ext-6.0#microsoft-extensions-configuration-commandlineconfigurationextensions-addcommandline(microsoft-extensions-configuration-iconfigurationbuilder-system-string()-system-collections-generic-idictionary((system-string-system-string)))"&gt;CommandLineConfigurationExtensions.AddCommandLine Method&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;165: 21-09-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/09/20-taskcompletionsource</id>
-		<title>Representing an external operation with TaskCompletionSource</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/09/20-taskcompletionsource" />
-		<updated>2022-09-20T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;A &lt;code&gt;TaskCompletionSource&lt;/code&gt; instance can be used to represent an external asynchronous operation, allowing the external operation to be &lt;em&gt;awaited&lt;/em&gt; on.&lt;/p&gt;
-&lt;p&gt;This is especially useful when required to wait on a callback method to be invoked before proceeding with the execution of code.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="requirement"&gt;Requirement&lt;/h2&gt;
-&lt;p&gt;Consider the use case where an application can request that a file (containing website information in this example) be created asynchronous. Once the file is created, a callback handler method will be invoked to notify the caller that the file has been created.&lt;/p&gt;
-&lt;p&gt;Consider the below async method to request the file. The calling application has no control over this method - it just calls the &lt;em&gt;RequestFileCreation&lt;/em&gt; method, specifying the &lt;em&gt;folder&lt;/em&gt; and the &lt;em&gt;callback event&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;Task RequestFileCreation(string folder, Func&amp;lt;string, Task&amp;gt; callback)
-{
-    Task.Run(async () =&amp;gt;
-    {
-        // simulate the time it takes to create the file!
-        await Task.Delay(1000);
-
-        // invoke the callback method, notifying the called
-        // the file has been created
-        // filename is hardcoded in the example
-        await callback.Invoke(&amp;quot;alwaysdeveloping.txt&amp;quot;);
-    });
-
-    return Task.CompletedTask;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;When the method is invoked, a separate task is created (and not &lt;em&gt;awaited&lt;/em&gt;) to run a process to have the file created asynchronously. Once the file is created, the specified callback back is invoked.&lt;/p&gt;
-&lt;p&gt;The issue with this approach is that when invoking the &lt;code&gt;RequestFileCreation&lt;/code&gt; method there is &lt;code&gt;no reliable way to wait for the file to be created&lt;/code&gt; if we need to perform some additional processing on the file after it has been created:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;async Task GetWebsiteInformation()
-{
-    Console.WriteLine($&amp;quot;Start of '{nameof(GetWebsiteInformation)}' method&amp;quot;);
-
-    // call the method to request the file be created
-    // the await is NOT awaiting the creation of the file, but is 
-    // awaiting the request to create the file
-    await RequestFileCreation(&amp;quot;C:\\inputfiles&amp;quot;, (file) =&amp;gt;
-    {
-        Console.WriteLine($&amp;quot;File '{file}' processed successfully&amp;quot;);
-
-        return Task.CompletedTask;
-    });
-
-    // Need to do some additional processing based on the
-    // contents of the file here
-
-    Console.WriteLine($&amp;quot;End of '{nameof(GetWebsiteInformation)}' method&amp;quot;);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;When executed, the result is the following:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Start of 'GetWebsiteInformation' method
-End of 'GetWebsiteInformation' method
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The method is executed and exits &lt;code&gt;without waiting for the file to be created and subsequent processing to be done&lt;/code&gt;. We need a way to &lt;code&gt;wait for the file to be created&lt;/code&gt;, before performing additional processing and exiting the method.&lt;/p&gt;
-&lt;p&gt;This is exactly the situation &lt;code&gt;TaskCompletionSource&lt;/code&gt; is able to solve!&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="taskcompletionsource"&gt;TaskCompletionSource&lt;/h2&gt;
-&lt;p&gt;Incorporating the &lt;code&gt;TaskCompletionSource&lt;/code&gt; into the process is very straight forward.&lt;/p&gt;
-&lt;p&gt;The &lt;em&gt;RequestFileCreation&lt;/em&gt; method remains exactly as it was above, but the &lt;code&gt;GetWebsiteInformation&lt;/code&gt; is updated to be as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;async Task GetWebsiteInformation()
-{
-    Console.WriteLine($&amp;quot;Start of '{nameof(GetWebsiteInformation)}' method&amp;quot;);
-
-    // create a TaskCompletionSource&amp;lt;T&amp;gt; instance where T
-    // is the return type 
-    TaskCompletionSource&amp;lt;string&amp;gt; tcs = new TaskCompletionSource&amp;lt;string&amp;gt;();
-
-    // in the callback handler method, call the SetResult
-    // on TaskCompletionSource instance.
-    await RequestFileCreation(&amp;quot;C:\\inputfiles&amp;quot;, (file) =&amp;gt;
-    {
-        Console.WriteLine($&amp;quot;File '{file}' processed successfully&amp;quot;);
-
-        tcs.SetResult(file);
-
-        return Task.CompletedTask;
-    });
-
-    Console.WriteLine($&amp;quot;Waiting for a file to be created&amp;quot;);
-    // await the TaskCompletionSource instance task
-    // Once the SetResult method has been set, the task will be 
-    // considered completed
-    var fileName = await tcs.Task;
-
-    Console.WriteLine($&amp;quot;File created! Performing additional processing&amp;quot;);
-    // Need to do some additional processing based on the
-    // contents of the file here
-    
-    Console.WriteLine($&amp;quot;End of '{nameof(GetWebsiteInformation)}' method&amp;quot;);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;There are a few moving parts here:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;Declare an instance of &lt;em&gt;TaskCompletionSource&amp;lt;T&amp;gt;&lt;/em&gt; where T is the type to be returned&lt;/li&gt;
-&lt;li&gt;When the callback method is invoked (once the file is created), the &lt;em&gt;SetResult&lt;/em&gt; method of &lt;em&gt;TaskCompletionSource&lt;/em&gt; is called with the information to be passed through the &lt;em&gt;TaskCompletionSource&lt;/em&gt; Task (the string filename in this example)&lt;/li&gt;
-&lt;li&gt;When required to wait for the file to be created, the &lt;em&gt;TaskCompletionSource.Task&lt;/em&gt; is awaited. This task will be considered completed once the &lt;em&gt;SetResult method is called&lt;/em&gt; in the callback&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;Executing the above method now has the following output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Start of 'GetWebsiteInformation' method
-Waiting for a file to be created
-File 'alwaysdeveloping.txt' processed successfully
-File created! Performing additional processing
-End of 'GetWebsiteInformation' method
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;From this we can see, the output is exactly what we want. A request for the file to be created is initiated - the code then waits for the file to be created (the callback method being invoked), before processing continues.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="other-set-methods"&gt;Other Set methods&lt;/h2&gt;
-&lt;p&gt;Not demonstrated in this post, but there are two other &lt;code&gt;Set&lt;/code&gt; methods available on the _&lt;em&gt;TaskCompletionSource&lt;/em&gt;:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;SetException&lt;/code&gt;: transitions the underlying Task into a &lt;em&gt;Failed&lt;/em&gt; state.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;SetCanceled&lt;/code&gt;: transitions the underlying Task into a &lt;em&gt;Canceled&lt;/em&gt; state.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;An incredibly valuable class to be aware of when one needs to wait on an &lt;em&gt;external asynchronous operation&lt;/em&gt; (such as a callback event), while also being able to convey information out of the external operation to the scope &lt;em&gt;awaiting&lt;/em&gt; the call.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://youtu.be/N-ofc345-58?list=PLqqD43D6Mqz0AIDkHqaZDKaEKXdfMiIAo&amp;amp;t=1610"&gt;Async Web API testing with TaskCompletionSource (Microservices with .NET 6.0) - FeedR episode #11&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;164: 20-09-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
