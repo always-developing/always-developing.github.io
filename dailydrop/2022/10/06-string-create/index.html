@@ -1,0 +1,423 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="always learning | always growing">
+
+    <title>Always Developing - Culture specific strings with String.Create</title>
+
+    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/10/06-string-create">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
+
+    <meta name="application-name" content="Always Developing" />
+    <meta name="msapplication-tooltip" content="Always Developing" />
+    <meta name="msapplication-starturl" content="/" />
+
+    <meta property="og:title" content="Always Developing - Culture specific strings with String.Create" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/10/06-string-create" />
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Bootstrap core CSS -->
+    <link href="/vendor/bootstrap/scss/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom fonts for this template -->
+    <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="/vendor/fontawesome-free/css/brands.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css' data-no-mirror>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css' data-no-mirror>
+
+    <!-- Custom styles for this template -->
+    <link href="/scss/always-developing-blog.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/plugins/autoloader/prism-autoloader.min.js" data-no-mirror></script>
+    <script src="https://cdn.jsdelivr.net/npm/quicklink@2.0.0/dist/quicklink.umd.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/themes/prism.css">
+
+    <!-- Lunr search -->
+        <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/pako@2.0.3/dist/pako_inflate.min.js"></script>
+        <script src="/search.js"></script>
+
+    
+
+
+    
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand"  href="/">
+            <img src="/images/ad_logo.png" alt="" width="25" height="25" class="d-inline-block align-text-top">
+            Always Developing
+        </a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            Menu
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/software">Software</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/tags">Tags</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/posts">Posts</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/about">About</a>
+            </li>
+</ul>
+                <form class="form-inline my-2 my-lg-0" action="/search" method="GET">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="query">
+                    <input type="submit" hidden />
+                </form>
+        </div>
+    </div>
+</nav>
+
+    <!-- Page Header -->
+    <header class="masthead">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 align-middle">
+                <div class="post-header-image">
+                    <a href="/">
+                        <img src="/images/ad_logo.png" class="header-image">
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="post-heading">
+                    <h1>
+                        Culture specific strings with String.Create
+                    </h1>
+                            <h2 class="subheading">Evaluating interpolated strings to a specific culture using String.Create</h2>
+                        <p class="post-meta">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
+                                <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
+                            </svg> Published on Thursday, 06 October 2022
+                        </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <!-- Main Content -->
+    <div class="container">
+            <div class="row ">
+                    <div id="content" class="col-md-9 post-with-toc post-block">
+                        
+<div class="post-header-category">
+    <a class="btn btn-primary btn-sm btn-default btn-home" href="\" role="button"><i class="fas fa-angle-double-left"></i> Home</a>
+            <a class="btn btn-primary btn-sm category-btn" href="/categories/dailydrop" role="button">DailyDrop</a>
+</div>
+
+                        <h2 id="daily-knowledge-drop">Daily Knowledge Drop</h2>
+<p>Introduced in C# 10 (.NET 6), the <code>String.Create</code> method can be used to evaluate an <em>interpolated string</em> to a specific culture (including the invariant culture). This method is faster, and uses less resources than the previously available method of using <code>FormattableString</code>.</p>
+<hr />
+<h2 id="formattablestring">FormattableString</h2>
+<h3 id="invariant">Invariant</h3>
+<p>Prior to C# 10 <code>FormattableString</code> was the method used, and evaluating an <em>interpolated string</em> to <em>invariant culture</em> was fairly straightforward:</p>
+<pre><code class="language-csharp">private decimal decValue = 1.99m;
+private DateTime dateValue = DateTime.UtcNow;
+
+// output the default interpolated string
+Console.WriteLine($&quot;Decimal: {decValue} | Date: {dateValue}&quot;);
+
+// output the string formatted to &quot;invariant culture&quot;
+Console.WriteLine(FormattableString.Invariant(
+    $&quot;Decimal: {decValue} | Date: {dateValue}&quot;));
+</code></pre>
+<p>The output of the above:</p>
+<pre><code class="language-terminal">Decimal: 1,99 | Date: 2022/09/12 03:49:41
+Decimal: 1.99 | Date: 09/12/2022 03:49:41
+</code></pre>
+<hr />
+<h3 id="culture-specific">Culture specific</h3>
+<p>Evaluating an <em>interpolated string</em> to <em>a specific culture</em> is slightly more complicated when using <code>FormattableString</code>:</p>
+<pre><code class="language-csharp">private decimal decValue = 1.99m;
+private DateTime dateValue = DateTime.UtcNow;
+
+// output the default interpolated string
+Console.WriteLine($&quot;Decimal: {decValue} | Date: {dateValue}&quot;);
+
+// output the string formatted in the specific culture
+// first declare the FormattableString
+FormattableString formattable = $&quot;Decimal: {decValue} | Date: {dateValue}&quot;;
+// ToString specifying the culture
+Console.Write(formattable.ToString(CultureInfo.GetCultureInfo(&quot;en-US&quot;)));
+</code></pre>
+<p>The output of the above:</p>
+<pre><code class="language-terminal">Decimal: 1,99 | Date: 2022/09/12 04:00:47
+Decimal: 1.99 | Date: 9/12/2022 4:00:47 AM
+</code></pre>
+<hr />
+<h2 id="string.create">String.Create</h2>
+<h3 id="invariant-1">Invariant</h3>
+<p>The new <code>String.Create</code> method introduced in .NET6 with C# 10, simplifies the evaluation of a interpolated string to a specific culture:</p>
+<pre><code class="language-csharp">private decimal decValue = 1.99m;
+private DateTime dateValue = DateTime.UtcNow;
+
+// output the default interpolated string
+Console.WriteLine($&quot;Decimal: {decValue} | Date: {dateValue}&quot;);
+
+// output string with the specific culture (invariant)
+Console.WriteLine(String.Create(CultureInfo.InvariantCulture,
+    $&quot;Decimal: {decValue} | Date: {dateValue}&quot;));
+</code></pre>
+<p>The output of the above (which is the same as when using <em>FormattableString.Invariant</em> above):</p>
+<pre><code class="language-terminal">Decimal: 1,99 | Date: 2022/09/12 04:02:59
+Decimal: 1.99 | Date: 09/12/2022 04:02:59
+</code></pre>
+<hr />
+<h3 id="culture-specific-1">Culture specific</h3>
+<p>Specifying a <em>specific culture</em> with <code>String.Create</code> is just as simple as specifying <em>InvariantCulture</em>, and definitely simpler than the <em>FormattableString</em> equivalent:</p>
+<pre><code class="language-csharp">private decimal decValue = 1.99m;
+private DateTime dateValue = DateTime.UtcNow;
+
+// output the default interpolated string
+Console.WriteLine($&quot;Decimal: {decValue} | Date: {dateValue}&quot;);
+
+// output string with the specific culture (en-US)
+Console.WriteLine(String.Create(CultureInfo.GetCultureInfo(&quot;en-US&quot;),
+    $&quot;Decimal: {decValue} | Date: {dateValue}&quot;));
+</code></pre>
+<p>The output of the above (which is the same as when using <em>FormattableString</em> with the specific culture above):</p>
+<pre><code class="language-terminal">Decimal: 1,99 | Date: 2022/09/12 04:05:15
+Decimal: 1.99 | Date: 9/12/2022 4:05:15 AM
+</code></pre>
+<hr />
+<h2 id="performance">Performance</h2>
+<p>Using <code>BenchmarkDotNet</code> to compare the speed and memory usage of the above 4 methods, we can see that in all cases, using the <em>String.Create</em> version is <code>faster, and uses less memory</code> than the <em>FormattableString versions</em>:</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th style="text-align: right;">Mean</th>
+<th style="text-align: right;">Error</th>
+<th style="text-align: right;">StdDev</th>
+<th style="text-align: right;">Gen0</th>
+<th style="text-align: right;">Allocated</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>StringFormatterInvariant</td>
+<td style="text-align: right;">342.6 ns</td>
+<td style="text-align: right;">4.92 ns</td>
+<td style="text-align: right;">4.60 ns</td>
+<td style="text-align: right;">0.0367</td>
+<td style="text-align: right;">232 B</td>
+</tr>
+<tr>
+<td>StringFormatterCulture</td>
+<td style="text-align: right;">400.2 ns</td>
+<td style="text-align: right;">7.81 ns</td>
+<td style="text-align: right;">9.87 ns</td>
+<td style="text-align: right;">0.0429</td>
+<td style="text-align: right;">272 B</td>
+</tr>
+<tr>
+<td>StringCreateInvariant</td>
+<td style="text-align: right;">272.5 ns</td>
+<td style="text-align: right;">3.86 ns</td>
+<td style="text-align: right;">3.42 ns</td>
+<td style="text-align: right;">0.0162</td>
+<td style="text-align: right;">104 B</td>
+</tr>
+<tr>
+<td>StringCreateCulture</td>
+<td style="text-align: right;">326.5 ns</td>
+<td style="text-align: right;">4.41 ns</td>
+<td style="text-align: right;">3.91 ns</td>
+<td style="text-align: right;">0.0229</td>
+<td style="text-align: right;">144 B</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="notes">Notes</h2>
+<p>Even though the performance and memory improvements are slight (nano-seconds and bytes), if your application is making <code>heavy use of FormattableString</code> to format strings to specific cultures, then there are gains to be had by converting to using <code>String.Create</code>.</p>
+<hr />
+<h2 id="references">References</h2>
+<p><a href="https://www.meziantou.net/performance-string-create-vs-formattablestring.htm">Performance: string.Create vs FormattableString</a></p>
+
+<blockquote class="daily-drop">
+    <div>
+        <div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px; ">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="50" height="50" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffec00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+              <path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+              <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+              <line x1="9.7" y1="17" x2="14.3" y2="17" />
+            </svg>
+        </div>
+        <div class="drop-header">
+            Daily Drop 176: 06-10-2022
+        </div>
+        <div>
+            <br>At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br> It could be anything - some.NET / C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
+            The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+        <div>
+    </div>
+</blockquote>
+
+
+                        
+<div>
+            <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
+            <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
+            <a role="button" href="/tags/string" class="badge badge-light"> string</a>
+            <a role="button" href="/tags/format" class="badge badge-light"> format</a>
+</div>
+                    </div>
+                    <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
+                        
+
+        <div class="box sticky-top toc-block">
+            <h3 class="no-anchor">On This Page</h3>
+            <ul>
+        <li><a href="#daily-knowledge-drop">Daily Knowledge Drop</a></li>
+        <li><a href="#formattablestring">FormattableString</a></li>
+            <ul>
+        <li><a href="#invariant">Invariant</a></li>
+        <li><a href="#culture-specific">Culture specific</a></li>
+            </ul>
+        <li><a href="#string.create">String.Create</a></li>
+            <ul>
+        <li><a href="#invariant-1">Invariant</a></li>
+        <li><a href="#culture-specific-1">Culture specific</a></li>
+            </ul>
+        <li><a href="#performance">Performance</a></li>
+        <li><a href="#notes">Notes</a></li>
+        <li><a href="#references">References</a></li>
+            </ul>
+        </div>
+
+                    </div>
+            </div>
+            <div class="row ">
+                    <div id="content" class="col-md-9">
+                        <div>
+    <script src="https://giscus.app/client.js"
+            data-repo="always-developing/always-developing.github.io"
+            data-repo-id="R_kgDOGQJLBQ"
+            data-category="Comments"
+            data-category-id="DIC_kwDOGQJLBc4B_pUA"
+            data-mapping="pathname"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="bottom"
+            data-theme="transparent_dark"
+            data-lang="en"
+            crossorigin="anonymous"
+            async>
+    </script>
+</div>
+                    </div>
+            </div>
+    </div>
+
+    <hr class="horizontal-rule" />
+
+    <!-- Footer -->
+    <footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <ul class="list-inline text-center">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://www.linkedin.com/in/jean-pierre-seini">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-linkedin fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                <div>
+                    <p class="copyright text-footer">
+                        Copyright © 2022 Always Developing</a>.
+                    </p>
+                </div>
+                <ul class="list-inline text-center small text-feeds">
+                        <li class="list-inline-item">
+                            <a href="/feed.rss"><i class="fa fa-rss"></i> RSS Feed</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="/feed.atom"><i class="fa fa-rss"></i> Atom Feed</a>
+                        </li>
+                </ul>
+                <ul class="list-inline text-center small">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing/alwaysdeveloping-website-src"><i class="fab fa-github"></i> This site on GitHub</a>                    
+                    </li>
+                    <li class="list-inline-item">
+                        |
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing/alwaysdeveloping-website-src/tree/main/theme"><i class="fa fa-code"></i> Custom Always-Developing theme</a>
+                    </li>
+                    <li class="list-inline-item">
+                        |
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://github.com/statiqdev/CleanBlog"><i class="fa fa-blog"></i> Adapted from Clean Blog theme</a>
+                    </li>
+                </ul>
+                <div class="small text-footer">
+                    <a href="https://statiq.dev"><i class="fa fa-cogs"></i> Generated by Statiq</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="/vendor/jquery/jquery.min.js"></script>
+    <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CXPLFS7K38"></script>
+
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){window.dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-CXPLFS7K38');
+</script>
+
+    
+
+    <!-- Custom scripts for this template -->
+    <script src="/js/always-developing-blog.js"></script>
+
+</body>
+
+</html>

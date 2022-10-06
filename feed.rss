@@ -5,8 +5,147 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Wed, 05 Oct 2022 04:26:35 GMT</pubDate>
-		<lastBuildDate>Wed, 05 Oct 2022 04:26:35 GMT</lastBuildDate>
+		<pubDate>Thu, 06 Oct 2022 04:23:29 GMT</pubDate>
+		<lastBuildDate>Thu, 06 Oct 2022 04:23:29 GMT</lastBuildDate>
+		<item>
+			<title>Culture specific strings with String.Create</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/10/06-string-create</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/10/06-string-create</guid>
+			<pubDate>Thu, 06 Oct 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;Introduced in C# 10 (.NET 6), the &lt;code&gt;String.Create&lt;/code&gt; method can be used to evaluate an &lt;em&gt;interpolated string&lt;/em&gt; to a specific culture (including the invariant culture). This method is faster, and uses less resources than the previously available method of using &lt;code&gt;FormattableString&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="formattablestring"&gt;FormattableString&lt;/h2&gt;
+&lt;h3 id="invariant"&gt;Invariant&lt;/h3&gt;
+&lt;p&gt;Prior to C# 10 &lt;code&gt;FormattableString&lt;/code&gt; was the method used, and evaluating an &lt;em&gt;interpolated string&lt;/em&gt; to &lt;em&gt;invariant culture&lt;/em&gt; was fairly straightforward:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;private decimal decValue = 1.99m;
+private DateTime dateValue = DateTime.UtcNow;
+
+// output the default interpolated string
+Console.WriteLine($&amp;quot;Decimal: {decValue} | Date: {dateValue}&amp;quot;);
+
+// output the string formatted to &amp;quot;invariant culture&amp;quot;
+Console.WriteLine(FormattableString.Invariant(
+    $&amp;quot;Decimal: {decValue} | Date: {dateValue}&amp;quot;));
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output of the above:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Decimal: 1,99 | Date: 2022/09/12 03:49:41
+Decimal: 1.99 | Date: 09/12/2022 03:49:41
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="culture-specific"&gt;Culture specific&lt;/h3&gt;
+&lt;p&gt;Evaluating an &lt;em&gt;interpolated string&lt;/em&gt; to &lt;em&gt;a specific culture&lt;/em&gt; is slightly more complicated when using &lt;code&gt;FormattableString&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;private decimal decValue = 1.99m;
+private DateTime dateValue = DateTime.UtcNow;
+
+// output the default interpolated string
+Console.WriteLine($&amp;quot;Decimal: {decValue} | Date: {dateValue}&amp;quot;);
+
+// output the string formatted in the specific culture
+// first declare the FormattableString
+FormattableString formattable = $&amp;quot;Decimal: {decValue} | Date: {dateValue}&amp;quot;;
+// ToString specifying the culture
+Console.Write(formattable.ToString(CultureInfo.GetCultureInfo(&amp;quot;en-US&amp;quot;)));
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output of the above:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Decimal: 1,99 | Date: 2022/09/12 04:00:47
+Decimal: 1.99 | Date: 9/12/2022 4:00:47 AM
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="string.create"&gt;String.Create&lt;/h2&gt;
+&lt;h3 id="invariant-1"&gt;Invariant&lt;/h3&gt;
+&lt;p&gt;The new &lt;code&gt;String.Create&lt;/code&gt; method introduced in .NET6 with C# 10, simplifies the evaluation of a interpolated string to a specific culture:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;private decimal decValue = 1.99m;
+private DateTime dateValue = DateTime.UtcNow;
+
+// output the default interpolated string
+Console.WriteLine($&amp;quot;Decimal: {decValue} | Date: {dateValue}&amp;quot;);
+
+// output string with the specific culture (invariant)
+Console.WriteLine(String.Create(CultureInfo.InvariantCulture,
+    $&amp;quot;Decimal: {decValue} | Date: {dateValue}&amp;quot;));
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output of the above (which is the same as when using &lt;em&gt;FormattableString.Invariant&lt;/em&gt; above):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Decimal: 1,99 | Date: 2022/09/12 04:02:59
+Decimal: 1.99 | Date: 09/12/2022 04:02:59
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="culture-specific-1"&gt;Culture specific&lt;/h3&gt;
+&lt;p&gt;Specifying a &lt;em&gt;specific culture&lt;/em&gt; with &lt;code&gt;String.Create&lt;/code&gt; is just as simple as specifying &lt;em&gt;InvariantCulture&lt;/em&gt;, and definitely simpler than the &lt;em&gt;FormattableString&lt;/em&gt; equivalent:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;private decimal decValue = 1.99m;
+private DateTime dateValue = DateTime.UtcNow;
+
+// output the default interpolated string
+Console.WriteLine($&amp;quot;Decimal: {decValue} | Date: {dateValue}&amp;quot;);
+
+// output string with the specific culture (en-US)
+Console.WriteLine(String.Create(CultureInfo.GetCultureInfo(&amp;quot;en-US&amp;quot;),
+    $&amp;quot;Decimal: {decValue} | Date: {dateValue}&amp;quot;));
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output of the above (which is the same as when using &lt;em&gt;FormattableString&lt;/em&gt; with the specific culture above):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Decimal: 1,99 | Date: 2022/09/12 04:05:15
+Decimal: 1.99 | Date: 9/12/2022 4:05:15 AM
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="performance"&gt;Performance&lt;/h2&gt;
+&lt;p&gt;Using &lt;code&gt;BenchmarkDotNet&lt;/code&gt; to compare the speed and memory usage of the above 4 methods, we can see that in all cases, using the &lt;em&gt;String.Create&lt;/em&gt; version is &lt;code&gt;faster, and uses less memory&lt;/code&gt; than the &lt;em&gt;FormattableString versions&lt;/em&gt;:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Method&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Gen0&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Allocated&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;StringFormatterInvariant&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;342.6 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;4.92 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;4.60 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0367&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;232 B&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;StringFormatterCulture&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;400.2 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;7.81 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;9.87 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0429&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;272 B&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;StringCreateInvariant&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;272.5 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;3.86 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;3.42 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0162&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;104 B&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;StringCreateCulture&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;326.5 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;4.41 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;3.91 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0229&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;144 B&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;Even though the performance and memory improvements are slight (nano-seconds and bytes), if your application is making &lt;code&gt;heavy use of FormattableString&lt;/code&gt; to format strings to specific cultures, then there are gains to be had by converting to using &lt;code&gt;String.Create&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://www.meziantou.net/performance-string-create-vs-formattablestring.htm"&gt;Performance: string.Create vs FormattableString&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;176: 06-10-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Manually passing parameters to a middleware component</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/10/05-middleware-parameter</link>
@@ -953,174 +1092,6 @@ Numbers of records updated: 20
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://timdeschryver.dev/blog/new-in-entity-framework-7-bulk-operations-with-executedelete-and-executeupdate#number-of-rows-affected"&gt;New in Entity Framework 7: Bulk Operations with ExecuteDelete and ExecuteUpdate&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;167: 23-09-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Extend the middleware pipeline with IStartupFilter</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/09/22-startup-filters</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/09/22-startup-filters</guid>
-			<pubDate>Thu, 22 Sep 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;IStartupFilter&lt;/code&gt; interface can be used to extend either the &lt;em&gt;start&lt;/em&gt; or the &lt;em&gt;end&lt;/em&gt; the middleware pipeline.&lt;/p&gt;
-&lt;p&gt;Any implementations of &lt;code&gt;IStartupFilter&lt;/code&gt; will automatically be called on application build &lt;code&gt;before any other middleware configuration&lt;/code&gt; is called.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="manual-middleware"&gt;Manual middleware&lt;/h2&gt;
-&lt;p&gt;In the below example the basic &lt;em&gt;weatherforecast&lt;/em&gt; template is being extended to contain a manually added middleware component:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
-var app = builder.Build();
-
-var summaries = new[]
-{
-    &amp;quot;Freezing&amp;quot;, &amp;quot;Bracing&amp;quot;, &amp;quot;Chilly&amp;quot;, &amp;quot;Cool&amp;quot;, &amp;quot;Mild&amp;quot;, &amp;quot;Warm&amp;quot;, &amp;quot;Balmy&amp;quot;, &amp;quot;Hot&amp;quot;, &amp;quot;Sweltering&amp;quot;, &amp;quot;Scorching&amp;quot;
-};
-
-app.MapGet(&amp;quot;/weatherforecast&amp;quot;, () =&amp;gt;
-{
-    // print out a message
-    Console.WriteLine(&amp;quot;Weatherforecast endpoint called&amp;quot;);
-
-    var forecast = Enumerable.Range(1, 5).Select(index =&amp;gt;
-        new WeatherForecast
-        (
-            DateTime.Now.AddDays(index),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-});
-
-// add the custom middleware manually
-app.UseMiddleware&amp;lt;ManualMiddleware&amp;gt;();
-
-app.Run();
-
-internal record WeatherForecast(DateTime Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF =&amp;gt; 32 + (int)(TemperatureC / 0.5556);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The definition of &lt;code&gt;ManualMiddleware&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class ManualMiddleware
-{
-    private readonly RequestDelegate _next;
-
-    public ManualMiddleware(RequestDelegate next)
-    {
-        _next = next;
-    }
-
-    public async Task Invoke(HttpContext httpContext)
-    {
-       // this should be output before the request to 
-       // forwarded onto the next component in the pipeline
-       Console.WriteLine($&amp;quot;In the manually added &amp;quot; +
-            $&amp;quot;middleware: {nameof(ManualMiddleware)}. &amp;quot; +
-            $&amp;quot;The current datetime is '{DateTime.Now}'&amp;quot;);
-
-        // call the next component with the context
-        await _next.Invoke(httpContext);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;When calling the endpoint, the console output is as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;In the manually added middleware: ManualMiddleware. The current datetime is '2022/09/20 06:40:23'
-Weatherforecast endpoint called
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;As expected, the component added to the middleware is invoked before forwarding the request onto the next component, and eventually the endpoint.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="istartupfilter-middleware"&gt;IStartupFilter middleware&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;IStartupFilter&lt;/code&gt; only has one method to implement, &lt;code&gt;Configure&lt;/code&gt;, which takes an &lt;code&gt;Action&amp;lt;IApplicationBuilder&amp;gt;&lt;/code&gt; as an argument, and also return an &lt;code&gt;Action&amp;lt;IApplicationBuilder&amp;gt;&lt;/code&gt;. Below is our custom implementation of the class:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class CustomFilter : IStartupFilter
-{
-    public Action&amp;lt;IApplicationBuilder&amp;gt; Configure(Action&amp;lt;IApplicationBuilder&amp;gt; next)
-    {
-        return builder =&amp;gt;
-        {
-            // perform the custom build configuration
-            Console.WriteLine($&amp;quot;Configured via {nameof(CustomFilter)}&amp;quot;);
-            builder.UseMiddleware&amp;lt;HelloMiddleware&amp;gt;();
-
-            // call the next item in the build pipeline
-            next(builder);
-
-            // add here to  change the end of the middleware pipeline
-        };
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This &lt;code&gt;build pipeline&lt;/code&gt; operates similarly to how the &lt;code&gt;middleware pipeline&lt;/code&gt; operates - the custom component performs its build logic, before passing on the &lt;em&gt;build request&lt;/em&gt; to the next item in the build pipeline.&lt;/p&gt;
-&lt;p&gt;In the above, the custom logic is writing a message to the console and then adding &lt;code&gt;another custom middleware component&lt;/code&gt; to the middleware pipeline:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class HelloMiddleware
-{
-    private readonly RequestDelegate _next;
-
-    public HelloMiddleware(RequestDelegate next)
-    {
-        _next = next;
-    }
-
-    public async Task Invoke(HttpContext httpContext)
-    {
-        Console.WriteLine($&amp;quot;Hello from {nameof(HelloMiddleware)}. &amp;quot; +
-            $&amp;quot;The current datetime is '{DateTime.Now}'&amp;quot;);
-
-        await _next.Invoke(httpContext);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The final step to putting it all together is to add the &lt;code&gt;CustomFilter&lt;/code&gt; implementation to the dependency injection container:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;builder.Services.AddTransient&amp;lt;IStartupFilter, CustomFilter&amp;gt;();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;When the application start, the following is output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Configured via CustomFilter
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Then when calling the endpoint:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Hello from HelloMiddleware. The current datetime is '2022/08/25 06:48:35'
-In the manually added middleware: ManualMiddleware. The current datetime is '2022/08/25 06:48:35'
-Weatherforecast endpoint called
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;From the output we can see, that the &lt;code&gt;middleware added using the IStartupFilter is invoked before the manually added middleware&lt;/code&gt;. We have used the &lt;em&gt;IStartupFilter&lt;/em&gt; implementation to add an item to the start of the middleware pipeline , achieved by only adding the &lt;em&gt;IStartupFilter&lt;/em&gt; implementation to the dependency injection container.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="flow-summary"&gt;Flow summary&lt;/h2&gt;
-&lt;p&gt;A summary of what we have covered so far, and how the various pieces fit together&lt;/p&gt;
-&lt;h3 id="application-startup"&gt;Application startup&lt;/h3&gt;
-&lt;p&gt;On application startup:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;The &lt;em&gt;IStartupFilter&lt;/em&gt; implementation &lt;em&gt;CustomFilter&lt;/em&gt; is &lt;code&gt;added to the dependency injection&lt;/code&gt; container.&lt;/li&gt;
-&lt;li&gt;When the &lt;code&gt;WebApplication instance is run&lt;/code&gt;, with the &lt;em&gt;app.Run()&lt;/em&gt; command:
-&lt;ol&gt;
-&lt;li&gt;All implementations of &lt;em&gt;IStartupFilter&lt;/em&gt; are retrieved from the dependency injection container, and the &lt;code&gt;Configure&lt;/code&gt; method on the implementation invoked
-In this above sample, the &lt;code&gt;Configure&lt;/code&gt; adds the &lt;em&gt;HelloMiddleware&lt;/em&gt; component to the start of the middleware pipeline.&lt;/li&gt;
-&lt;li&gt;All other middleware components are configured
-In this above sample, the &lt;em&gt;ManualMiddleware&lt;/em&gt; component is added to the middleware pipeline&lt;/li&gt;
-&lt;/ol&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;The middleware pipeline is now ready to receive requests.&lt;/p&gt;
-&lt;h3 id="request-received"&gt;Request received&lt;/h3&gt;
-&lt;ol&gt;
-&lt;li&gt;When a request is received, it will flow through the middleware pipeline, component by component in the order in which they were added to the pipeline:
-&lt;ol&gt;
-&lt;li&gt;The request is passed to the &lt;em&gt;HelloMiddleware&lt;/em&gt; component and the &amp;quot;hello&amp;quot; message is output (added via &lt;em&gt;IStartupFilter&lt;/em&gt; implementation)&lt;/li&gt;
-&lt;li&gt;The request is passed to the &lt;em&gt;ManualMiddleware&lt;/em&gt; components and the relevent message is output (added explicitly)&lt;/li&gt;
-&lt;li&gt;The request is then passed to the endpoint handler, to return generate the weather data (defined explicitly)&lt;/li&gt;
-&lt;/ol&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;Generally most applications would not have a need for this functionality, but there are a couple of cases where it could be especially useful:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;As a library author, and the library needs to inject middleware at the beginning or the end of the middleware pipeline&lt;/li&gt;
-&lt;li&gt;Conversely, if a library is injecting middleware at the beginning or end of the pipeline and you as the application author needs to inject a component before/after the library.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://andrewlock.net/exploring-istartupfilter-in-asp-net-core/"&gt;Exploring IStartupFilter in ASP.NET Core &lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;166: 22-09-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
