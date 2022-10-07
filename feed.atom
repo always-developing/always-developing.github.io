@@ -4,8 +4,164 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-10-06T04:23:29Z</updated>
+	<updated>2022-10-07T04:35:10Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/10/07-linq-type-performance</id>
+		<title>Performant LINQ type checks</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/10/07-linq-type-performance" />
+		<updated>2022-10-07T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;In a previous post, we had a look at &lt;a href="https://alwaysdeveloping.net/08/19-linq-oftype"&gt;LINQ's OfType&lt;/a&gt; method - while personally this is still my preferred method (for readability) to do &lt;em&gt;type comparisons&lt;/em&gt; using LINQ, it is not the most performant.&lt;/p&gt;
+&lt;p&gt;If performing &lt;em&gt;type checks&lt;/em&gt; using LINQ, a &lt;code&gt;GetType() == typeof&lt;/code&gt; check is the most performant.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="type-checks"&gt;Type checks&lt;/h2&gt;
+&lt;p&gt;First, we'll have a look at the various methods for doing &lt;em&gt;type comparisons&lt;/em&gt; in LINQ which will be benchmarked.&lt;/p&gt;
+&lt;p&gt;In all of the below example, as well as the benchmarks, a &lt;code&gt;List&amp;lt;object&amp;gt;&lt;/code&gt; is used, which contains &lt;code&gt;100 items&lt;/code&gt; either a &lt;em&gt;TypeA&lt;/em&gt; class, or a &lt;em&gt;TypeB&lt;/em&gt; class:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// sample of the items - in the actual benchmark, _items
+// contained 100 items
+private List&amp;lt;object&amp;gt; _items = new List&amp;lt;object&amp;gt; {
+    new TypeA(), new TypeA(), new TypeB(), new TypeA(), new TypeB()
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Where applicable,  different variations on the techniques, one using &lt;code&gt;Select&lt;/code&gt; method to &lt;em&gt;cast&lt;/em&gt; the cast, and the other using the &lt;code&gt;Cast&lt;/code&gt; method, were also benchmarked.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id="oftype"&gt;OfType&lt;/h3&gt;
+&lt;p&gt;The first method is by using the &lt;code&gt;OfType&lt;/code&gt; method, explored in a &lt;a href="https://alwaysdeveloping.net/08/19-linq-oftype"&gt;previous post&lt;/a&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;    var filter = _items
+            .OfType&amp;lt;TypeA&amp;gt;()
+            .ToList();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;I still find this to be the cleanest and easiest to read method.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id="cast-with-is"&gt;Cast with is&lt;/h3&gt;
+&lt;p&gt;The next approach is to use the &lt;code&gt;is&lt;/code&gt; keyword to check the &lt;em&gt;type&lt;/em&gt; and then use the &lt;code&gt;Cast&lt;/code&gt; method to cast the filtered items to the desired type:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;    var filter = _items
+        .Where(t =&amp;gt; t is TypeA)
+        .Cast&amp;lt;TypeA&amp;gt;()
+        .ToList();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The &lt;code&gt;Where&lt;/code&gt; method filters down the list to items of only &lt;em&gt;TypeA&lt;/em&gt; however, the filtered list is still of type &lt;em&gt;object&lt;/em&gt;, and hence the &lt;code&gt;Cast&lt;/code&gt; method needs to be used to convert to the correct type.&lt;/p&gt;
+&lt;p&gt;The variation is the same as the above, but instead using the &lt;code&gt;Select&lt;/code&gt; method to &lt;em&gt;cast&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;    var filter = _items
+        .Where(t =&amp;gt; t is TypeA)
+        .Select(t =&amp;gt; (TypeA)t)
+        .ToList();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr&gt;
+&lt;h3 id="cast-with-is-1"&gt;Cast with is&lt;/h3&gt;
+&lt;p&gt;Next up we use the &lt;code&gt;as&lt;/code&gt; keyword to check the &lt;em&gt;type&lt;/em&gt;. This casts the object to &lt;em&gt;TypeA&lt;/em&gt;, and checks that the result is not null (the cast is possible). Then like the previous example, the &lt;code&gt;Cast&lt;/code&gt; method to cast the filtered items to the desired type:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;    var filter = _items
+        .Where(t =&amp;gt; t as TypeA is not null)
+        .Cast&amp;lt;TypeA&amp;gt;()
+        .ToList();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As before, the &lt;code&gt;Where&lt;/code&gt; method filters down the list to items of only &lt;em&gt;TypeA&lt;/em&gt; however, the filtered list is still of type &lt;em&gt;object&lt;/em&gt;, and hence the &lt;code&gt;Cast&lt;/code&gt; method needs to be used to convert to the correct type.&lt;/p&gt;
+&lt;p&gt;As above, variation is the same as the above technique, but instead using the &lt;code&gt;Select&lt;/code&gt; method to &lt;em&gt;cast&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;    var filter = _items
+        .Where(t =&amp;gt; t.GetType() == typeof(TypeA))
+        .Select(t =&amp;gt; (TypeA)t)
+        .ToList();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr&gt;
+&lt;h3 id="gettype-with-typeof"&gt;GetType with typeof&lt;/h3&gt;
+&lt;p&gt;The last method is the most &lt;em&gt;raw&lt;/em&gt; method - manually get the type of the item in the list, and check if its of the same type we desire. Then as before, perform the &lt;code&gt;Cast&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;    var filter = _items
+        .Where(t =&amp;gt; t.GetType() == typeof(TypeA))
+        .Cast&amp;lt;TypeA&amp;gt;()
+        .ToList();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The variation:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;    var filter = _items
+        .Where(t =&amp;gt; t.GetType() == typeof(TypeA))
+        .Select(t =&amp;gt; (TypeA)t)
+        .ToList();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr&gt;
+&lt;h2 id="performance-results"&gt;Performance Results&lt;/h2&gt;
+&lt;p&gt;Running the above queries against a list of 100 items, the result are:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Method&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Median&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Allocated&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;IsType&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2.759 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0334 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0279 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2.749 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2.27 KB&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;IsTypeSelect&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.430 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0275 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0609 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.416 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2.29 KB&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;AsType&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2.862 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0570 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.1071 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2.844 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2.27 KB&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;AsTypeSelect&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.265 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0298 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0846 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.296 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2.29 KB&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;OfType&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2.873 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0320 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0284 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2.870 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2.23 KB&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;GetTypeTypeOf&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2.520 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0495 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0463 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2.510 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2.27 KB&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;GetTypeTypeOfSelect&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.121 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0100 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0093 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.124 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2.29 KB&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;From the result, using &lt;code&gt;GetType == typeof&lt;/code&gt; is the &lt;code&gt;fastest method&lt;/code&gt; (while also very slightly using the most memory), while using &lt;code&gt;OfType&lt;/code&gt; is the &lt;code&gt;slowest method&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Using &lt;em&gt;Select&lt;/em&gt; to cast is also approximately &lt;code&gt;twice as fast&lt;/code&gt; as using &lt;em&gt;Cast&lt;/em&gt;.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;While the &lt;em&gt;GetTypeTypeOfSelect&lt;/em&gt; method was my far the fastest method, when performing a single LINQ command, the difference is not going to be noticeable (nano-seconds scale) - however if the collections are larger, and the time frames start moving into the milliseconds or seconds realm, then the method used starts to make a difference. However as usual, benchmark your specific use case and result may vary based on the type of entity, as well as the collection size.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://www.youtube.com/watch?v=dIu5EisoB_s"&gt;The fastest way to cast objects in C# is not so obvious&lt;/a&gt;&lt;/p&gt;
+&lt;!--?# DailyDrop ?--&gt;177: 07-10-2022&lt;!--?#/ DailyDrop ?--&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/10/06-string-create</id>
 		<title>Culture specific strings with String.Create</title>
@@ -917,170 +1073,6 @@ In `maybe-do-work-provider` endpoint
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://thecodeblogger.com/2021/04/28/delayed-instantiation-using-dependency-injection-in-net/"&gt;Delayed Instantiation Using Dependency Injection In .NET&lt;/a&gt;&lt;/p&gt;
 &lt;!--?# DailyDrop ?--&gt;168: 26-09-2022&lt;!--?#/ DailyDrop ?--&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/09/23-ef-bulk-update</id>
-		<title>Bulk update (and delete) in EF7</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/09/23-ef-bulk-update" />
-		<updated>2022-09-23T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;New functionality is being introduced with Entity Framework 7 which enables the ability to perform &lt;code&gt;bulk updates and deletes&lt;/code&gt; on the database, without having to first load the relevent records into memory. This results in &lt;code&gt;better memory usage&lt;/code&gt;, as well as &lt;code&gt;increased performance&lt;/code&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="availability"&gt;Availability&lt;/h2&gt;
-&lt;p&gt;As of the time of this post, this functionality is only available via the EF nightly builds for &lt;code&gt;Microsoft.EntityFrameworkCore&lt;/code&gt; and &lt;code&gt;Microsoft.EntityFrameworkCore.SqlServer&lt;/code&gt; available at the &lt;a href="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet7/nuget/v3/index.json"&gt;following NuGet feed: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet7/nuget/v3/index.json&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;This URL can be added as a package source in the &lt;em&gt;NuGet Package Manager -&amp;gt; Package Sources&lt;/em&gt; in Visual Studio to enable access to the nightly build NuGet packages.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="examples"&gt;Examples&lt;/h2&gt;
-&lt;p&gt;In the sample below, we have a table of 10 000 &lt;em&gt;Blog&lt;/em&gt; records - we want to update the &lt;em&gt;Description&lt;/em&gt; column value for all records which have an &lt;code&gt;Id value of 20 or less&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;In both EF6 and EF7 examples, the &lt;em&gt;OnConfiguring&lt;/em&gt; method of the DbContext has been updated to enable &lt;em&gt;sensitive logging&lt;/em&gt; and &lt;em&gt;console logging&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;optionsBuilder.EnableSensitiveDataLogging(true);
-    optionsBuilder.LogTo((string query) =&amp;gt;
-    {
-        Console.WriteLine(query);
-    }, LogLevel.Information);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h3 id="prior-to-ef7"&gt;Prior to EF7&lt;/h3&gt;
-&lt;p&gt;In existing versions of Entity Framework, the relevent records have to be selected into memory (so the change tracker is tracking them), updated, and then the changes saved back to the database:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// get all blogs into memory/change tracker
-var updateBlogs = context.Blogs.Where(b =&amp;gt; b.Id &amp;lt;= 20).ToList();
-
-// update the value
-updateBlogs.ForEach(ub =&amp;gt; ub.Description = &amp;quot;EF6 Bulk Update&amp;quot;);
-
-// save...multiple updates
-context.Blogs.UpdateRange(updateBlogs);
-var result = await context.SaveChangesAsync();
-
-Console.WriteLine($&amp;quot;Numbers of records updated: {result}&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Executing the update code, results in the following output (abbreviated in places):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt; Executed DbCommand (90ms) [Parameters=[&amp;#64;p3='1', &amp;#64;p0='2022-07-12T06:47:24.1400000', 
- &amp;#64;p1='EF6 Bulk Update' (Size = 4000), &amp;#64;p2='DD50AA26-FB55-4985-B5D5-C9D2DE98AFB3' (Size = 4000), 
- &amp;#64;p7='2', &amp;#64;p4='2022-07-12T06:47:24.1400000', &amp;#64;p5='EF6 Bulk Update' (Size = 4000), 
- &amp;#64;p6='4BF98BB3-A4BD-4652-AC29-F6A6EE1BE524' (Size = 4000), &amp;#64;p11='3', &amp;#64;p8='2022-07-12T06:47:24.1400000', 
- &amp;#64;p9='EF6 Bulk Update' (Size = 4000), &amp;#64;p10='3C41C714-1670-4978-85DF-956F14FB8863' (Size = 4000), 
- &amp;#64;p15='4', &amp;#64;p12='2022-07-12T06:47:24.1430000', &amp;#64;p13='EF6 Bulk Update' (Size = 4000), 
- &amp;#64;p14='91929DC9-BE25-4027-9554-1B6EEF108E12' (Size = 4000), &amp;#64;p19='5', &amp;#64;p16='2022-07-12T06:47:24.1430000', 
- &amp;#64;p17='EF6 Bulk Update' (Size = 4000), &amp;#64;p18='28DAF144-2ADB-42F4-9838-64F2DC192480' (Size = 4000), &amp;#64;p23='6' 
- .... 
- ....
-SET NOCOUNT ON;
-UPDATE [Blog] SET [DateCreated] = &amp;#64;p0, [Description] = &amp;#64;p1, [Title] = &amp;#64;p2
-OUTPUT 1
-WHERE [Id] = &amp;#64;p3;
-UPDATE [Blog] SET [DateCreated] = &amp;#64;p4, [Description] = &amp;#64;p5, [Title] = &amp;#64;p6
-OUTPUT 1
-WHERE [Id] = &amp;#64;p7;
-UPDATE [Blog] SET [DateCreated] = &amp;#64;p8, [Description] = &amp;#64;p9, [Title] = &amp;#64;p10
-OUTPUT 1
-...
-...
-Numbers of records updated: 20
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;From the output, we can see that multiple &lt;em&gt;UPDATE&lt;/em&gt; statements are executed, &lt;code&gt;one UPDATE for each record&lt;/code&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="ef7"&gt;EF7&lt;/h3&gt;
-&lt;p&gt;With EF 7, an &lt;code&gt;ExecuteUpdateAsync extension method&lt;/code&gt; is now available on &lt;code&gt;IQueryable&lt;/code&gt;, enabling bulk updates.&lt;/p&gt;
-&lt;p&gt;The syntax is a little more complex than using the EF6 technique:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var updatedCount = await context
-    .Blogs
-    // filter records to be updated
-    .Where(b =&amp;gt; b.Id &amp;lt;= 20)
-    // execute the bulk update
-    .ExecuteUpdateAsync(record =&amp;gt; record
-        // specify which column to update
-        // as well as the value
-        .SetProperty(blog =&amp;gt; blog.Description, desc =&amp;gt; &amp;quot;EF7 Bulk Update&amp;quot;)
-    );
-
-Console.WriteLine($&amp;quot;Numbers of records updated: {updatedCount}&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Looking at the output when executed:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;UPDATE [b]
-    SET [b].[Description] = N'EF7 Bulk Update'
-FROM [Blog] AS [b]
-WHERE [b].[Id] &amp;lt;= 20
-
-Numbers of records updated: 20
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The generated SQL is &lt;code&gt;much simpler and more concise&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;It is possible to also &lt;em&gt;update multiple columns&lt;/em&gt; at the same time by &lt;code&gt;chaining SetProperty methods together&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var updatedCount = await context
-    .Blogs
-    .Where(b =&amp;gt; b.Id &amp;lt;= 20)
-    .ExecuteUpdateAsync(record =&amp;gt; record
-        // update the description and date modified
-        .SetProperty(blog =&amp;gt; blog.Description, desc =&amp;gt; &amp;quot;EF7 Bulk Update&amp;quot;)
-        .SetProperty(blog =&amp;gt; blog.DateModified, date =&amp;gt; DateTime.Now)
-    );
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="benchmarks"&gt;Benchmarks&lt;/h2&gt;
-&lt;p&gt;Benchmarking the two samples above using BenchmarkDotnet::&lt;/p&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;Method&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Ratio&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;RatioSD&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Gen 0&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Gen 1&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Allocated&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;EF6Update&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2,222.8 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;126.60 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;367.29 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.00&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;302 KB&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;EF7Update&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;428.9 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;5.23 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;5.81 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.19&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.03&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;12.6953&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.9766&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;79 KB&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;From the results, we can see that the EF7 methods:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;is &lt;code&gt;5 times faster than EF6&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;uses almost &lt;code&gt;4 times less memory&lt;/code&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr /&gt;
-&lt;h2 id="bulk-delete"&gt;Bulk Delete&lt;/h2&gt;
-&lt;p&gt;For completeness, a &lt;code&gt;bulk delete method&lt;/code&gt; is also available as part of EF7. It can be leveraged as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var deletedCount = await context
-    .Blogs
-    .Where(b =&amp;gt; b.Id &amp;lt;= 20)
-    .ExecuteDeleteAsync();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This will result in SQL similar to that of the bulk update - a &lt;em&gt;single bulk delete statement&lt;/em&gt; instead of multiple, one per record.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;A very welcome addition to the Entity Framework libraries, greatly speeding up specific uses cases. A specific use case I'm personally interested in, is &lt;em&gt;extracting data for publishing, and then flagging the data as &amp;quot;published&amp;quot;&lt;/em&gt;. Currently this involves having to load the data into memory, so the change tracker is tracking it, updating the records, and then having EF update each record as &amp;quot;published&amp;quot; individually.&lt;/p&gt;
-&lt;p&gt;With EF7, the data can be retrieved without tracking, thus saving on memory usage, and then updated as &amp;quot;published&amp;quot; in bulk.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://timdeschryver.dev/blog/new-in-entity-framework-7-bulk-operations-with-executedelete-and-executeupdate#number-of-rows-affected"&gt;New in Entity Framework 7: Bulk Operations with ExecuteDelete and ExecuteUpdate&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;167: 23-09-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
