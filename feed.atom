@@ -4,8 +4,84 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-10-07T04:35:10Z</updated>
+	<updated>2022-10-10T05:06:09Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/10/10-status-code-pages</id>
+		<title>Automatic redirect on http status code</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/10/10-status-code-pages" />
+		<updated>2022-10-10T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;UseStatusCodePagesWithRedirects&lt;/code&gt; method can be used to redirect the client to an error page in the case of a non-successful request (400-599 range)&lt;/p&gt;
+&lt;p&gt;This method returns a &lt;em&gt;301-Found&lt;/em&gt; to the client, and then redirects to the &lt;em&gt;redirect endpoint&lt;/em&gt; which will return a status code of &lt;em&gt;200-Success&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;This is often used when the app:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Should redirect the client to a different endpoint, perhaps to have a different application process the error. In the browser, the redirect endpoint will be reflected&lt;/li&gt;
+&lt;li&gt;Doesn't need to preserve and return the original status code with the initial redirect response back to the client&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h2 id="middleware-setup"&gt;Middleware setup&lt;/h2&gt;
+&lt;p&gt;First step is to enable the automatic redirect functionality - this step is very straight-froward, and entails adding a single middleware components:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var app = builder.Build();
+
+// other middleware setup goes here
+app.UseStatusCodePagesWithRedirects("/error?status={0}");
+// other middleware setup goes here
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Here, the middleware is instructed to redirect any responses (which are not successful) to the &lt;code&gt;/error&lt;/code&gt; endpoint. The endpoint can include a &lt;code&gt;{0}&lt;/code&gt; placeholder which will contain the &lt;em&gt;http status code&lt;/em&gt;.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="error-endpoint"&gt;Error endpoint&lt;/h2&gt;
+&lt;p&gt;Next, up the &lt;code&gt;/error&lt;/code&gt; endpoint is defined.&lt;/p&gt;
+&lt;p&gt;Here the &lt;em&gt;Map&lt;/em&gt; method is used - this takes an &lt;em&gt;IApplicationBuilder&lt;/em&gt; as a parameter:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.Map("/error", errorApp =&amp;gt;
+{
+    errorApp.Run(async context =&amp;gt;
+    {
+        await context.Response.WriteAsync($"This is a redirected " +
+            $"error message status {context.Request.Query["status"]}");
+    });
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;For all &lt;em&gt;error&lt;/em&gt; responses, the message will be output along with the &lt;em&gt;http status code&lt;/em&gt;.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="execution"&gt;Execution&lt;/h2&gt;
+&lt;p&gt;A number of other endpoints were also defined to simulate different status code responses:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet("/500response", context =&amp;gt;
+{
+    context.Response.StatusCode = 500;
+    return Task.CompletedTask;
+});
+
+app.MapGet("/401response", context =&amp;gt;
+{
+    context.Response.StatusCode = 401;
+    return Task.CompletedTask;
+});
+
+app.MapGet("/200response", context =&amp;gt;
+{
+    context.Response.StatusCode = 200;
+    return Task.CompletedTask;
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Browsing to the &lt;code&gt;/500response&lt;/code&gt; from a browser, for example, will return the following:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;This is a redirected error message status 500
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And looking at the &lt;em&gt;Network&lt;/em&gt; tab of the browse, one can see that the initial status code returned is &lt;code&gt;302&lt;/code&gt;, followed by the &lt;code&gt;200 on redirect&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/statuscode.png" alt="HTTP Status code"&gt;&lt;/p&gt;
+&lt;p&gt;Now, on error (500 status code), the caller is routed to a generic error page, with a &lt;em&gt;200&lt;/em&gt; response, and the actual error in the content of the page.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;For a lot of situations this might not be especially useful, as the return message and status code is not especially useful to the calling application to act on.&lt;/p&gt;
+&lt;p&gt;For a customer facing application this could be useful (providing the actual error is logged and recorded somewhere) as the customer doesn't care about the details of the eror, but for a backend api-to-api call, the string response is not especially useful.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://github.com/dodyg/practical-aspnetcore/tree/net6.0/projects/diagnostics/diagnostics-5"&gt;Status Pages&lt;/a&gt;&lt;br&gt;
+&lt;a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/error-handling?view=aspnetcore-6.0#usestatuscodepageswithredirects"&gt;UseStatusCodePages&lt;/a&gt;&lt;/p&gt;
+&lt;!--?# DailyDrop ?--&gt;178: 10-10-2022&lt;!--?#/ DailyDrop ?--&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/10/07-linq-type-performance</id>
 		<title>Performant LINQ type checks</title>
@@ -950,129 +1026,6 @@ Average product rating is: 3,84
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://code-maze.com/create-class-dynamically-csharp/"&gt;How to Create a Class Dynamically in C#?&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;169: 27-09-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/09/26-lazy-injection</id>
-		<title>Delaying injected dependency instantiation</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/09/26-lazy-injection" />
-		<updated>2022-09-26T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;Lazy&lt;/code&gt; class can be leveraged to delay instantiation of implementations &lt;code&gt;injected via dependency injection&lt;/code&gt;. This is especially useful if the &lt;em&gt;instantiation is high cost&lt;/em&gt; (it has a nigh number of dependencies) and the &lt;em&gt;functionality of the dependency is not used in every code path&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;We have previously looked at the &lt;a href="https://alwaysdeveloping.net/03/09-lazy-class"&gt;Lazy class&lt;/a&gt;, but not how its functionality can be used in conjunction with &lt;em&gt;dependency injection&lt;/em&gt;, covered by this post.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="methods"&gt;Methods&lt;/h2&gt;
-&lt;h3 id="normal-injection"&gt;Normal injection&lt;/h3&gt;
-&lt;p&gt;In the examples below, we have a &lt;code&gt;IDatabaseAccess&lt;/code&gt; interface, and a &lt;code&gt;SqlDatabaseAccess&lt;/code&gt; implementation:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// basic interface
-public interface IDatabaseAccess 
-{
-    void PerformDatabaseUpdate();
-}
-
-// the SQL implementation of the interface
-public class SqlDatabaseAccess : IDatabaseAccess 
-{
-    public SqlDatabaseAccess()
-    {
-        Console.WriteLine($"In constructor of '{nameof(SqlDatabaseAccess)}'");
-    }
-
-    public void PerformDatabaseUpdate()
-    {
-        Console.WriteLine($"Database update performed");
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We also have an endpoint, where only on &lt;em&gt;some paths&lt;/em&gt; is the database accessed:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet("/maybe-do-work", (IDatabaseAccess databaseAccess) =&amp;gt;
-{
-    // perform a random check
-    var rando = new Random();
-    if(rando.Next(10) &amp;gt; 5)
-    {
-         databaseAccess.PerformDatabaseUpdate();
-    }
-
-    return "'maybe-do-work' endpoint successfully called";
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;With the dependency injection container setup as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;builder.Services.AddTransient&amp;lt;IDatabaseAccess, SqlDatabaseAccess&amp;gt;();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The problem here is that the &lt;code&gt;IDatabaseAccess implementation is always initialized even if not used&lt;/code&gt;. This might be fine if the implementation construction is low cost, but if the &lt;em&gt;IDatabaseAccess&lt;/em&gt; implementation is high cost, and and itself has many dependencies, this could have an impact on performance.&lt;/p&gt;
-&lt;p&gt;Let's look at how the &lt;code&gt;Lazy&lt;/code&gt; class can be used to achieve a delayed instantiation.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h3 id="lazy-injection"&gt;Lazy injection&lt;/h3&gt;
-&lt;p&gt;To leverage the &lt;code&gt;Lazy&lt;/code&gt; class, the first step involves setting up the dependency injection container with &lt;code&gt;Lazy&amp;lt;IDatabaseAccess&amp;gt;&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;builder.Services.AddTransient&amp;lt;IDatabaseAccess, SqlDatabaseAccess&amp;gt;();
-builder.Services.AddTransient&amp;lt;Lazy&amp;lt;IDatabaseAccess&amp;gt;&amp;gt;(
-    provider =&amp;gt;
-    {
-        Console.WriteLine("In 'Lazy&amp;lt;IDatabaseAccess&amp;gt;' implementation factory");
-
-        // be sure to use the "valueFactory" constructor and 
-        // NOT the "value" constructor
-        return new Lazy&amp;lt;IDatabaseAccess&amp;gt;(
-            () =&amp;gt; provider.GetRequiredService&amp;lt;IDatabaseAccess&amp;gt;());
-    });
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;And then injecting &lt;code&gt;Lazy&amp;lt;IDatabaseAccess&amp;gt;&lt;/code&gt; into the delegate, instead of &lt;code&gt;IDatabaseAccess&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet("/maybe-do-work-lazy", (Lazy&amp;lt;IDatabaseAccess&amp;gt; databaseAccess) =&amp;gt;
-{
-    var rando = new Random();
-
-    if (rando.Next(10) &amp;gt; 5)
-    {
-        databaseAccess.Value.PerformDatabaseUpdate();
-    }
-
-    return "'maybe-do-work-lazy' endpoint successfully called";
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Executing the code and calling the endpoint, results in the following (example output):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;In Lazy&amp;lt;IDatabaseAccess&amp;gt; implementation factory
-In Lazy&amp;lt;IDatabaseAccess&amp;gt; implementation factory
-In Lazy&amp;lt;IDatabaseAccess&amp;gt; implementation factory
-In constructor of 'SqlDatabaseAccess'
-Database update performed
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;As we can see, &lt;code&gt;SqlDatabaseAccess is only initialized when it is being used&lt;/code&gt; - exactly what we are after.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h3 id="serviceprovider-injection"&gt;ServiceProvider injection&lt;/h3&gt;
-&lt;p&gt;Another option is to &lt;code&gt;inject IServiceProvider directly&lt;/code&gt; and get the service only when required - however this is considered by some to be an &lt;em&gt;anti-pattern&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;The above example is updated to look as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet("/maybe-do-work-provider", (IServiceProvider provider) =&amp;gt;
-{
-    Console.WriteLine("In `maybe-do-work-provider` endpoint");
-    var rando = new Random();
-
-    if (rando.Next(10) &amp;gt; 5)
-    {
-        var databaseAccess = provider.GetRequiredService&amp;lt;IDatabaseAccess&amp;gt;();
-        databaseAccess.PerformDatabaseUpdate();
-    }
-
-    return "'maybe-do-work-provider' endpoint successfully called";
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;And calling the endpoint:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;In `maybe-do-work-provider` endpoint
-In `maybe-do-work-provider` endpoint
-In constructor of 'SqlDatabaseAccess'
-Database update performed
-In `maybe-do-work-provider` endpoint
-In `maybe-do-work-provider` endpoint
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Again, &lt;code&gt;SqlDatabaseAccess is only initialized when it is being used&lt;/code&gt;.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;A very useful technique to use when the instantiation of an object has a large overhead, but it not used in all code paths. The constructor in general should be kept as quick and performant as possible, but sometimes its unavoidable to have to use a &lt;em&gt;high cost&lt;/em&gt; constructor (if using a 3rd party package, for example).&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://thecodeblogger.com/2021/04/28/delayed-instantiation-using-dependency-injection-in-net/"&gt;Delayed Instantiation Using Dependency Injection In .NET&lt;/a&gt;&lt;/p&gt;
-&lt;!--?# DailyDrop ?--&gt;168: 26-09-2022&lt;!--?#/ DailyDrop ?--&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
