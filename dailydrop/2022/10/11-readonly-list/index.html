@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -7,9 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <meta name="description" content="always learning | always growing">
 
-    <title>Always Developing - Blog</title>
+    <title>Always Developing - ReadOnlyList and runtime errors</title>
 
-    <link rel="canonical" href="https://alwaysdeveloping.net/categories/blog/2">
+    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/10/11-readonly-list">
 
             <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
             <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
@@ -18,9 +18,9 @@
     <meta name="msapplication-tooltip" content="Always Developing" />
     <meta name="msapplication-starturl" content="/" />
 
-    <meta property="og:title" content="Always Developing - Blog" />
+    <meta property="og:title" content="Always Developing - ReadOnlyList and runtime errors" />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://alwaysdeveloping.net/categories/blog/2" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/10/11-readonly-list" />
 
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
@@ -102,10 +102,17 @@
                 </div>
             </div>
             <div class="col-md-10">
-                <div class="site-heading">
+                <div class="post-heading">
                     <h1>
-                        Blog
+                        ReadOnlyList and runtime errors
                     </h1>
+                            <h2 class="subheading">Compile vs runtime error occurs with readonly lists</h2>
+                        <p class="post-meta">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
+                                <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
+                            </svg> Published on Tuesday, 11 October 2022
+                        </p>
                 </div>
             </div>
         </div>
@@ -114,77 +121,118 @@
 
     <!-- Main Content -->
     <div class="container">
-            <div class="row">
-                <div id="content" class="col-md-12">
-                        <div class="container-sm-height">
-        <div class="row row-sm-height">
-            <div class="col-md-6 right-border col-sm-height">
-                
+            <div class="row ">
+                    <div id="content" class="col-md-9 post-with-toc post-block">
+                        
+<div class="post-header-category">
+    <a class="btn btn-primary btn-sm btn-default btn-home" href="\" role="button"><i class="fas fa-angle-double-left"></i> Home</a>
+            <a class="btn btn-primary btn-sm category-btn" href="/categories/dailydrop" role="button">DailyDrop</a>
+</div>
 
-<div class="post-preview">
-    <div class="post-category">
-                <a class="btn btn-primary btn-sm category-btn" href="/categories/blog" role="button">Blog</a>
-    </div>
-    <h2 class="post-title"><a href="/p/multiple-implementations">Multiple implementations of same interface - the options</a></h2>
-    <p class="post-meta">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
-            <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
-            <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
-        </svg> Published on Saturday, 06 November 2021
-    </p>
-        <div class="post-subtitle">Different methods of registering the same interface with multiple implementations using .NET dependency injection</div>
-    <p class="post-read-more"><br /><a href="/p/multiple-implementations">Read more...</a></p>
-</div>
-<div class="post-buffer"><br /></div>
-<div class="post-preview">
-    <div class="post-category">
-                <a class="btn btn-primary btn-sm category-btn" href="/categories/blog" role="button">Blog</a>
-    </div>
-    <h2 class="post-title"><a href="/p/vs-keyboard-shortcuts">Useful Visual Studio keyboard shortcuts</a></h2>
-    <p class="post-meta">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
-            <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
-            <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
-        </svg> Published on Monday, 25 October 2021
-    </p>
-        <div class="post-subtitle">Be up to 20% more productive!</div>
-    <p class="post-read-more"><br /><a href="/p/vs-keyboard-shortcuts">Read more...</a></p>
-</div>
-<div class="post-buffer"><br /></div>
-<div class="post-preview">
-    <div class="post-category">
-                <a class="btn btn-primary btn-sm category-btn" href="/categories/blog" role="button">Blog</a>
-    </div>
-    <h2 class="post-title"><a href="/p/string-vs-string">C# String vs string</a></h2>
-    <p class="post-meta">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
-            <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
-            <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
-        </svg> Published on Thursday, 21 October 2021
-    </p>
-        <div class="post-subtitle">Which to use? Does it matter?</div>
-    <p class="post-read-more"><br /><a href="/p/string-vs-string">Read more...</a></p>
-</div>
-<div class="post-buffer"><br /></div>
+                        <h2 id="daily-knowledge-drop">Daily Knowledge Drop</h2>
+<p>When working with a <code>ReadOnlyList</code>, depending on how the list is defined, it is possible to <em>accidentally try</em> change a value in the list, with the exception only becoming apparent at runtime and not compile time.</p>
+<hr />
+<h2 id="runtime">Runtime</h2>
+<p>Suppose we have the following code:</p>
+<pre><code class="language-csharp">List&lt;int&gt; golden = new List&lt;int&gt; { 1, 6, 1, 8 };
+
+// readonlyGolden is a readonly list
+IList&lt;int&gt; readonlyGolden = golden.AsReadOnly();
+
+// still allows for trying to change the value
+readonlyGolden[1] = 7;
+</code></pre>
+<p>Even though <em>golden</em> is being <code>converted to readonly list with the AsReadOnly method</code>, as it is being cast to <em>IList&lt;int&gt;</em>, the compiler does recognize <em>readonlyGolden</em> are read only.</p>
+<p>&quot;Changing&quot; the value in the readonly list is &quot;allowed&quot; at compiled, however at runtime a <code>NotSupportedException</code> will be thrown:</p>
+<pre><code class="language-terminal">Collection is read-only.
+</code></pre>
+<hr />
+<h2 id="compile-time">Compile time</h2>
+<p>Instead, of <em>IList&lt;int&gt;</em> the <em>golden</em> variable is cast to <em>IReadOnlyList&lt;int&gt;</em>:</p>
+<pre><code class="language-csharp">List&lt;int&gt; golden = new List&lt;int&gt; { 1, 6, 1, 8 };
+
+// readonlyGolden is a readonly list
+IReadOnlyList&lt;int&gt; readonlyGolden = golden.AsReadOnly();
+// OR
+// IReadOnlyList&lt;int&gt; readonlyGolden = golden
+
+// this will cause a compiler error
+readonlyGolden[1] = 7;
+</code></pre>
+<p>Now the code will not compile, as the compile recognizes <em>readonlyGolden</em> as read-only.</p>
+<pre><code class="language-terminal">Property or indexer 'IReadOnlyList&lt;int&gt;.this[int]' cannot be assigned to -- it is read only
+</code></pre>
+<hr />
+<h2 id="notes">Notes</h2>
+<p>The above may seem obvious - cast a list to <em>IList</em> and it's not (necessarily) readonly, while casting it to <em>IReadOnlyList</em> will definitely make it readonly. However, the take away is that one <code>cannot assume that an IList is mutable</code>, just because the compiler does not stop the code from compiling - the implementation could be a <em>ReadOnlyList</em>, which will only become apparent at runtime, with an exception.</p>
+<hr />
+<h2 id="references">References</h2>
+<p><a href="https://twitter.com/BelloneDavide/status/1567562406271885313">Davide Bellone tweet</a></p>
+
+<blockquote class="daily-drop">
     <div>
-        <div class="float-sm-left">
-                <a class="btn btn-primary btn-default" href="/categories/blog" role="button "><i class="fas fa-angle-double-left"></i> Newer</a>
+        <div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px; ">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="50" height="50" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffec00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+              <path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+              <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+              <line x1="9.7" y1="17" x2="14.3" y2="17" />
+            </svg>
         </div>
-        <div class="float-sm-right">
+        <div class="drop-header">
+            Daily Drop 179: 11-10-2022
         </div>
-        <div class="clearfix"></div>
+        <div>
+            <br>At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br> It could be anything - some.NET / C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
+            The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+        <div>
     </div>
+</blockquote>
 
-            </div>
-            <div class="col-md-4 mt-4 mt-md-0 col-sm-height">
-                    <a href="/categories/dailydrop" class="badge badge-light"> DailyDrop (180)</a>
-                    <a href="/categories/blog" class="badge badge-dark"> Blog (13)</a>
-                    <a href="/categories/series" class="badge badge-light"> Series (5)</a>
-            </div>
+
+                        
+<div>
+            <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
+            <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
+            <a role="button" href="/tags/list" class="badge badge-light"> list</a>
+            <a role="button" href="/tags/readonly" class="badge badge-light"> readonly</a>
+</div>
+                    </div>
+                    <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
+                        
+
+        <div class="box sticky-top toc-block">
+            <h3 class="no-anchor">On This Page</h3>
+            <ul>
+        <li><a href="#daily-knowledge-drop">Daily Knowledge Drop</a></li>
+        <li><a href="#runtime">Runtime</a></li>
+        <li><a href="#compile-time">Compile time</a></li>
+        <li><a href="#notes">Notes</a></li>
+        <li><a href="#references">References</a></li>
+            </ul>
         </div>
-    </div>
 
-                </div>
+                    </div>
+            </div>
+            <div class="row ">
+                    <div id="content" class="col-md-9">
+                        <div>
+    <script src="https://giscus.app/client.js"
+            data-repo="always-developing/always-developing.github.io"
+            data-repo-id="R_kgDOGQJLBQ"
+            data-category="Comments"
+            data-category-id="DIC_kwDOGQJLBc4B_pUA"
+            data-mapping="pathname"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="bottom"
+            data-theme="transparent_dark"
+            data-lang="en"
+            crossorigin="anonymous"
+            async>
+    </script>
+</div>
+                    </div>
             </div>
     </div>
 

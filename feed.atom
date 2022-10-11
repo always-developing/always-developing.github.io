@@ -4,8 +4,56 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-10-10T05:06:09Z</updated>
+	<updated>2022-10-11T05:06:13Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/10/11-readonly-list</id>
+		<title>ReadOnlyList and runtime errors</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/10/11-readonly-list" />
+		<updated>2022-10-11T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;When working with a &lt;code&gt;ReadOnlyList&lt;/code&gt;, depending on how the list is defined, it is possible to &lt;em&gt;accidentally try&lt;/em&gt; change a value in the list, with the exception only becoming apparent at runtime and not compile time.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="runtime"&gt;Runtime&lt;/h2&gt;
+&lt;p&gt;Suppose we have the following code:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;List&amp;lt;int&amp;gt; golden = new List&amp;lt;int&amp;gt; { 1, 6, 1, 8 };
+
+// readonlyGolden is a readonly list
+IList&amp;lt;int&amp;gt; readonlyGolden = golden.AsReadOnly();
+
+// still allows for trying to change the value
+readonlyGolden[1] = 7;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Even though &lt;em&gt;golden&lt;/em&gt; is being &lt;code&gt;converted to readonly list with the AsReadOnly method&lt;/code&gt;, as it is being cast to &lt;em&gt;IList&amp;lt;int&amp;gt;&lt;/em&gt;, the compiler does recognize &lt;em&gt;readonlyGolden&lt;/em&gt; are read only.&lt;/p&gt;
+&lt;p&gt;&amp;quot;Changing&amp;quot; the value in the readonly list is &amp;quot;allowed&amp;quot; at compiled, however at runtime a &lt;code&gt;NotSupportedException&lt;/code&gt; will be thrown:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Collection is read-only.
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="compile-time"&gt;Compile time&lt;/h2&gt;
+&lt;p&gt;Instead, of &lt;em&gt;IList&amp;lt;int&amp;gt;&lt;/em&gt; the &lt;em&gt;golden&lt;/em&gt; variable is cast to &lt;em&gt;IReadOnlyList&amp;lt;int&amp;gt;&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;List&amp;lt;int&amp;gt; golden = new List&amp;lt;int&amp;gt; { 1, 6, 1, 8 };
+
+// readonlyGolden is a readonly list
+IReadOnlyList&amp;lt;int&amp;gt; readonlyGolden = golden.AsReadOnly();
+// OR
+// IReadOnlyList&amp;lt;int&amp;gt; readonlyGolden = golden
+
+// this will cause a compiler error
+readonlyGolden[1] = 7;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now the code will not compile, as the compile recognizes &lt;em&gt;readonlyGolden&lt;/em&gt; as read-only.&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Property or indexer 'IReadOnlyList&amp;lt;int&amp;gt;.this[int]' cannot be assigned to -- it is read only
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;The above may seem obvious - cast a list to &lt;em&gt;IList&lt;/em&gt; and it's not (necessarily) readonly, while casting it to &lt;em&gt;IReadOnlyList&lt;/em&gt; will definitely make it readonly. However, the take away is that one &lt;code&gt;cannot assume that an IList is mutable&lt;/code&gt;, just because the compiler does not stop the code from compiling - the implementation could be a &lt;em&gt;ReadOnlyList&lt;/em&gt;, which will only become apparent at runtime, with an exception.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/BelloneDavide/status/1567562406271885313"&gt;Davide Bellone tweet&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;179: 11-10-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/10/10-status-code-pages</id>
 		<title>Automatic redirect on http status code</title>
@@ -890,142 +938,6 @@ Console.ReadKey();
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://www.mikesdotnetting.com/article/359/strongly-typed-middleware-in-asp-net-core"&gt;Strongly Typed Middleware in ASP.NET Core&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;170: 28-09-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/09/27-expando-property-change</id>
-		<title>dynamic, ExpandoObject and INotifyPropertyChanged</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/09/27-expando-property-change" />
-		<updated>2022-09-27T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;&lt;code&gt;ExpandoObject&lt;/code&gt; implements &lt;em&gt;INotifyPropertyChanged&lt;/em&gt; - a callback delegate can be added to be invoked when a property value on the &lt;code&gt;ExpandoObject&lt;/code&gt; instances changes.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="expandoobject"&gt;ExpandoObject&lt;/h2&gt;
-&lt;p&gt;A quick overview of &lt;code&gt;ExpandoObject&lt;/code&gt; - it represents an object whose members can be dynamically added and removed at run time.&lt;/p&gt;
-&lt;p&gt;In the examples below, it is being used to represent a &lt;em&gt;product&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;dynamic product = new ExpandoObject();
-product.Name = &amp;quot;Green Shirt&amp;quot;;
-product.Rating = 4.3;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The properties &lt;em&gt;Name&lt;/em&gt; and &lt;em&gt;Rating&lt;/em&gt; are added at runtime. The properties can then be accessed as if they were traditional class properties:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;Console.WriteLine(product.Name);
-Console.WriteLine(product.Rating);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="calculation"&gt;Calculation&lt;/h2&gt;
-&lt;p&gt;In the examples below, we have a collection of &lt;em&gt;Products&lt;/em&gt;, each with a customer rating:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public dynamic[] GetProducts()
-{
-    dynamic prod1 = new ExpandoObject();
-    prod1.Name = &amp;quot;Green Shirt&amp;quot;;
-    prod1.Rating = 4.3;
-
-    dynamic prod2 = new ExpandoObject();
-    prod2.Name = &amp;quot;Blue Shirt&amp;quot;;
-    prod2.Rating = 4.9;
-
-    dynamic prod3 = new ExpandoObject();
-    prod3.Name = &amp;quot;Shoes&amp;quot;;
-    prod3.Rating = 3.8;
-
-    dynamic prod4 = new ExpandoObject();
-    prod4.Name = &amp;quot;Jeans&amp;quot;;
-    prod4.Rating = 5.0;
-
-    dynamic prod5 = new ExpandoObject();
-    prod5.Name = &amp;quot;Peak cap&amp;quot;;
-    prod5.Rating = 1.7;
-
-    return new dynamic[] { prod1, prod2, prod3, prod4, prod5 };
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We want to find the &lt;code&gt;average rating for all products&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public void ComputeAverageRating()
-{
-    avgRating = products.Average(p =&amp;gt; (double)p.Rating);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h3 id="manual-invocation"&gt;Manual invocation&lt;/h3&gt;
-&lt;p&gt;Getting the average for all products is straight forward - call the &lt;code&gt;ComputeAverageRating&lt;/code&gt; method:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var products = GetProducts();
-
-var avgRating = products.Average(p =&amp;gt; (double)p.Rating);
-Console.WriteLine($&amp;quot;Average product rating is: {avgRating}&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;However, every time a rating on one of the &lt;em&gt;Products&lt;/em&gt; changes, the method needs to manually be called again:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var products = GetProducts();
-
-var avgRating = products.Average(p =&amp;gt; (double)p.Rating);
-Console.WriteLine($&amp;quot;Average product rating is: {avgRating}&amp;quot;);
-
-// the product rating changed from 5 to 4.5
-products[3].Rating = 4.5;
-
-avgRating = products.Average(p =&amp;gt; (double)p.Rating);
-Console.WriteLine($&amp;quot;Average product rating is: {avgRating}&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output from the above is:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Average product rating is: 3,94
-Average product rating is: 3,84
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;While this method works without issue, as mentioned, it requires manually recalculating the average every time one of the &lt;em&gt;Rating&lt;/em&gt; property values changes.&lt;/p&gt;
-&lt;p&gt;A different method, requiring less manual work - is to leverage the &lt;code&gt;INotifyPropertyChanged&lt;/code&gt; functionality of &lt;code&gt;ExpandoObject&lt;/code&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="inotifypropertychanged"&gt;INotifyPropertyChanged&lt;/h3&gt;
-&lt;p&gt;With this method, once we have the list of &lt;em&gt;Products&lt;/em&gt; we can &lt;code&gt;register a method to be called whenever a property on the Product changes&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;void RegisterPropertyChange(dynamic[] products)
-{
-    foreach(var product in products)
-    {
-        // cast each product to INotifyPropertyChanged
-        // and register a callback method to be called
-        // every time a property changes.
-        // The cast is valid as ExpandoObject implements
-        // INotifyPropertyChanged
-        ((INotifyPropertyChanged)product).PropertyChanged += 
-            new PropertyChangedEventHandler(
-                (sender, e) =&amp;gt;
-                {
-                    // when a property changes, call this method
-                    ComputeAverageRating();
-                }
-            );
-    }
-
-    // calculate the average for the first time once 
-    // the callbacks have all been registered
-    ComputeAverageRating();
-}
-
-public void ComputeAverageRating()
-{
-    // avgRating is defined on the parent class
-    avgRating = products.Average(p =&amp;gt; (double)p.Rating);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This can now be utilized as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var products = GetProducts();
-RegisterPropertyChange(products);
-
-Console.WriteLine($&amp;quot;Average product rating is: {avgRating}&amp;quot;);
-
-products[3].Rating = 4.5;
-
-Console.WriteLine($&amp;quot;Average product rating is: {avgRating}&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;With this approach, the average rating calculation doesn't have to be called manually:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Average product rating is: 3,94
-Average product rating is: 3,84
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;While the &lt;code&gt;ExpandoObject&lt;/code&gt; is a very useful class, it does have it's drawbacks, performance being a big one. However, when it is required it can prove to be invaluable - with the bonus advantage of being able to leverage the &lt;code&gt;INotifyPropertyChanged&lt;/code&gt; functionality if required.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://code-maze.com/create-class-dynamically-csharp/"&gt;How to Create a Class Dynamically in C#?&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;169: 27-09-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
