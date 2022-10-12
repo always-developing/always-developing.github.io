@@ -4,8 +4,126 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-10-11T05:06:13Z</updated>
+	<updated>2022-10-12T04:51:19Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/10/12-list-sort-performance</id>
+		<title>Primitive collection performance</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/10/12-list-sort-performance" />
+		<updated>2022-10-12T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;.NET 7 introduces a small update when using LINQ to perform &lt;code&gt;sorting on a collection&lt;/code&gt; to slightly &lt;code&gt;simplifying the code&lt;/code&gt; - however, when working with arrays, the &lt;code&gt;Array.Sort&lt;/code&gt; method is the most performant method to use to perform the sort.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="net-7-updates"&gt;.NET 7 updates&lt;/h2&gt;
+&lt;p&gt;Prior to .NET 7, when performing a &lt;em&gt;sort&lt;/em&gt; on a collection of items, the &lt;code&gt;OrderBy&lt;/code&gt; or &lt;code&gt;OrderByDescending&lt;/code&gt; method is generally used to sort the items (&lt;em&gt;OrderBy&lt;/em&gt; and &lt;em&gt;OrderByDescending&lt;/em&gt; are extension methods on IEnumerable):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// generate a random list of 500 entities into an item array
+var rando = new Random(1001);
+var items = Enumerable.Range(1, 500).Select(i =&amp;gt; rando.Next()).ToArray();
+
+Console.WriteLine(items[0]);
+// sort the items
+var sortedItems = items.OrderBy(item =&amp;gt; item).ToArray();
+Console.WriteLine(sortedItems[0]);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output being:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;First item before sort: 1447366984
+First item after sort: 1250278
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;When working with primitives, in the &lt;em&gt;OrderBy&lt;/em&gt; method the &lt;code&gt;keySelector&lt;/code&gt; (&lt;em&gt;item&lt;/em&gt; in the above example) is required to be specified, even though there is only one selector - the item in the collection. This is versus a collection of &lt;em&gt;classes&lt;/em&gt;, where the &lt;code&gt;keySelector&lt;/code&gt; could be any property on the class.&lt;/p&gt;
+&lt;p&gt;With .Net 7, the &lt;code&gt;keySelector&lt;/code&gt; is no longer required:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var rando = new Random(1001);
+var items = Enumerable.Range(1, 500).Select(i =&amp;gt; rando.Next()).ToArray();
+
+Console.WriteLine($&amp;quot;First item before sort: {items[0]}&amp;quot;);
+// sort the items, NO SELECTOR
+var newSortedItems = items.Order().ToArray();
+Console.WriteLine($&amp;quot;First item after sort: {newSortedItems[0]}&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output being:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;First item before sort: 1447366984
+First item after sort: 1250278
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The same output, however &lt;code&gt;slightly more readable and concise code&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="array.sort"&gt;Array.Sort&lt;/h2&gt;
+&lt;p&gt;Using the LINQ &lt;code&gt;OrderBy&lt;/code&gt; or &lt;code&gt;OrderByDescending&lt;/code&gt; methods is the default go-to when wanting to sort a collection - however there is another option when &lt;em&gt;working with arrays&lt;/em&gt; - the static &lt;code&gt;Array.Sort&lt;/code&gt; method.&lt;/p&gt;
+&lt;p&gt;The method usage is straight forward - it takes an array as a parameter, and will &lt;code&gt;sort the supplied array, NOT return a sorted copy&lt;/code&gt;, as with the LINQ methods:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var rando = new Random(1001);
+var items = Enumerable.Range(1, 500).Select(i =&amp;gt; rando.Next()).ToArray();
+
+Console.WriteLine($&amp;quot;First item before sort: {items[0]}&amp;quot;);
+// Perform the sort
+Array.Sort(items);
+// use the SAME array
+Console.WriteLine($&amp;quot;First item after sort: {items[0]}&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;One again, the same output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;First item before sort: 1447366984
+First item after sort: 1250278
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="performance"&gt;Performance&lt;/h2&gt;
+&lt;p&gt;Let's benchmark the three methods:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;the pre-dotnet 7 &lt;code&gt;OrderBy&lt;/code&gt; with a &lt;code&gt;keySelector&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;the new .NET 7 &lt;code&gt;OrderBy&lt;/code&gt; without a &lt;code&gt;keySelector&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Array.Sort&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The below was run on the same 500 item collection as shown in the above examples:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Method&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Ratio&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Allocated&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Alloc Ratio&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;OrderBy&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;41.56 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.216 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.181 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;10.2 KB&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Order&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;40.75 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.304 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.285 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.98&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;8.23 KB&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.81&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;ArraySort&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;18.10 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.180 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.168 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.44&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2.13 KB&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.21&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;The new and old version of &lt;code&gt;OrderBy&lt;/code&gt; practically have the same performance, however for this use case, the &lt;code&gt;Array.Sort&lt;/code&gt; is &lt;code&gt;over 200% faster&lt;/code&gt;, and uses only &lt;code&gt;20% of the memory&lt;/code&gt;!&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;The .NET 7 LINQ &lt;em&gt;OrderBy&lt;/em&gt; enhancements definitely make the code slightly more readable and concise - however if performance is critical, consider using &lt;code&gt;AArray.Sort&lt;/code&gt; and avoiding &lt;em&gt;OrderBy&lt;/em&gt; entirely. Result may vary based on the size of the array, so as always benchmark with your specific expected workload to get a comparison and make an informed choice.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/okyrylchuk/status/1567620600599908352"&gt;Oleg Kyrylchuk tweet&lt;/a&gt;&lt;br /&gt;
+&lt;a href="https://www.youtube.com/watch?v=K1Ye_QEpAq8"&gt;Stop using LINQ to order your primitive collections in C#&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;180: 12-10-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/10/11-readonly-list</id>
 		<title>ReadOnlyList and runtime errors</title>
@@ -858,86 +976,6 @@ Console.ReadKey();
 &lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/core/deploying/native-aot"&gt;Native AOT Deployment&lt;/a&gt;&lt;br /&gt;
 &lt;a href="https://code.soundaranbu.com/trying-out-native-aot-in-net-7-preview-7/"&gt;Trying out Native AOT in .NET 7 Preview 7&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;171: 29-09-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/09/28-typed-middleware</id>
-		<title>Strongly typed middleware with IMiddleware</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/09/28-typed-middleware" />
-		<updated>2022-09-28T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;To create &lt;code&gt;custom ASP.NET Core middleware&lt;/code&gt;, all that is required is a class with an &lt;code&gt;Invoke or InvokeAsync method&lt;/code&gt;. However, if configured incorrectly, the error will not be apparent until &lt;em&gt;runtime&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;The &lt;code&gt;IMiddleware&lt;/code&gt; interface can be used to ensure custom middleware contains the correct method, through the implementation of the interface, ensuring any configuration errors are apparent at &lt;em&gt;compile time&lt;/em&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="weakly-typed"&gt;Weakly typed&lt;/h2&gt;
-&lt;p&gt;To define a &lt;em&gt;working&lt;/em&gt; middleware component, a class with an &lt;code&gt;Invoke&lt;/code&gt; or &lt;code&gt;InvokeAsync&lt;/code&gt; method needs to be defined:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class WeakTypeMiddleware
-{
-    private readonly RequestDelegate _next;
-
-    public WeakTypeMiddleware(RequestDelegate next)
-    {
-        _next = next;
-    }
-
-    public async Task Invoke(HttpContext httpContext)
-    {
-        Console.WriteLine($&amp;quot;Hello from {nameof(WeakTypeMiddleware)}&amp;quot;);
-
-        await _next.Invoke(httpContext);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;And the components must be added to the middleware pipeline:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.UseMiddleware&amp;lt;WeakTypeMiddleware&amp;gt;();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;However, &lt;code&gt;nothing is preventing the middleware component from accidentally being configured incorrectly&lt;/code&gt; - in the below example the class doesn't contain a method with the correct name:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class WeakTypeMiddleware
-{
-    private readonly RequestDelegate _next;
-
-    public WeakTypeMiddleware(RequestDelegate next)
-    {
-        _next = next;
-    }
-
-    // incorrect method name used
-    public async Task InvokePipeline(HttpContext httpContext)
-    {
-        Console.WriteLine($&amp;quot;Hello from {nameof(WeakTypeMiddleware)}&amp;quot;);
-
-        await _next.Invoke(httpContext);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The above class is a &lt;em&gt;valid class&lt;/em&gt;, but not a valid &lt;em&gt;middleware component&lt;/em&gt;. The above code will compile, but an exception will occur when trying to call an endpoint which makes use of the component:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;System.InvalidOperationException: 'No public 'Invoke' or 'InvokeAsync' 
-    method found for middleware of type 'WeakTypeMiddleware'.'
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The exception tells us exactly what the problem is, and how to resolve it - it is easily fixed. However a better and cleaner approach is to &lt;em&gt;never encounter the exception in the first place&lt;/em&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="strongly-typed"&gt;Strongly typed&lt;/h2&gt;
-&lt;p&gt;A middleware component can be strongly typed by using the &lt;code&gt;IMiddleware&lt;/code&gt; interface:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class StrongTypeMiddleware : IMiddleware
-{
-    public async Task InvokeAsync(HttpContext context, RequestDelegate next)
-    {
-        Console.WriteLine($&amp;quot;Hello from {nameof(StrongTypeMiddleware)}&amp;quot;);
-
-        await next.Invoke(context);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The interface enforces the &lt;code&gt;InvokeAsync&lt;/code&gt; method on the implementation, ensuring it will be configured correctly.&lt;/p&gt;
-&lt;p&gt;A slight difference between the two,is that with the &lt;em&gt;weakly typed&lt;/em&gt; implementation, the &lt;code&gt;next delegate is passed into the constructor&lt;/code&gt;, however with the &lt;em&gt;strongly typed&lt;/em&gt; implementation, the &lt;code&gt;next delegate is passed into the InvokeAsync method&lt;/code&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;Implementing &lt;em&gt;strongly typed&lt;/em&gt; middleware using &lt;code&gt;IMiddleware&lt;/code&gt; instead of having the components &lt;em&gt;weakly typed&lt;/em&gt; is a minor code change, and may not offer any immediately obvious benefits - however, using the interface will ensure code uniformity across all middleware components, as well as make it easier to find and identify middleware components in a large code base.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.mikesdotnetting.com/article/359/strongly-typed-middleware-in-asp-net-core"&gt;Strongly Typed Middleware in ASP.NET Core&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;170: 28-09-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
