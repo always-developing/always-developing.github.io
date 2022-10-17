@@ -5,10 +5,106 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Fri, 14 Oct 2022 05:07:33 GMT</pubDate>
-		<lastBuildDate>Fri, 14 Oct 2022 05:07:33 GMT</lastBuildDate>
+		<pubDate>Mon, 17 Oct 2022 05:14:39 GMT</pubDate>
+		<lastBuildDate>Mon, 17 Oct 2022 05:14:39 GMT</lastBuildDate>
 		<item>
-			<title>Deserializing incomparable types using JsonConverter</title>
+			<title>Access cache stats with MemoryCacheStatistics</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/10/17-cache-stats</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/10/17-cache-stats</guid>
+			<pubDate>Mon, 17 Oct 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;Coming with .NET 7, the &lt;code&gt;MemoryCacheStatistics&lt;/code&gt; class, accessed through &lt;code&gt;IMemoryCache.GetCurrentStatistics&lt;/code&gt; can provider useful statistics regarding the state of the memory cache. These include:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;how many items are currently in the cache&lt;/li&gt;
+&lt;li&gt;the current estimate size of the cache&lt;/li&gt;
+&lt;li&gt;the number of times the cache has been queried for a value, and the value was not present (misses)&lt;/li&gt;
+&lt;li&gt;the number of times the cache has been queried for a value, and the value was present (hits)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;These stats can be leveraged to better understand how/if the cache mechanism is correctly configured and being used optimally.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="cache-configuration"&gt;Cache configuration&lt;/h2&gt;
+&lt;p&gt;The first step is to register the require cache implementation instances with the dependency injection container. This is done using the &lt;em&gt;AddMemoryCache&lt;/em&gt; extension method:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;builder.Services
+    .AddMemoryCache(memCacheOptions =&amp;gt; 
+        { 
+            memCacheOptions.TrackStatistics = true; 
+            memCacheOptions.SizeLimit = 1024; 
+        });
+&lt;/code&gt;&lt;/pre&gt;
+&lt;ul&gt;
+&lt;li&gt;For stats to be tracked, the &lt;code&gt;MemoryCacheOptions.TrackStatistics&lt;/code&gt; value (&lt;em&gt;memCacheOptions.TrackStatistics&lt;/em&gt; in the above example) needs to be set to &lt;code&gt;true&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;For the &lt;code&gt;EstimateSize&lt;/code&gt; property of the statistics to be tracked, the cache needs to have a &lt;em&gt;SizeLimit&lt;/em&gt; specified. The &lt;em&gt;SizeLimit&lt;/em&gt; does not represent memory size, but &lt;em&gt;number of units&lt;/em&gt; - in the above example, the limit has been set to &lt;em&gt;1024 units&lt;/em&gt;, and when items are added to the cache &lt;em&gt;one byte will be treated as a unit&lt;/em&gt; (this is not a required, its up to the developer to decide how many &amp;quot;units&amp;quot; each item added to the cache is worth)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr /&gt;
+&lt;h2 id="cache-usage"&gt;Cache usage&lt;/h2&gt;
+&lt;h3 id="set-values"&gt;Set values&lt;/h3&gt;
+&lt;p&gt;Now that the cache is configured, the next step is to start using it to store values. A simple &lt;code&gt;getnumber&lt;/code&gt; endpoint is defined, which will &lt;em&gt;return the number passed in&lt;/em&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;if the number does not exist in the cache, it will be added to the cache and returned&lt;/li&gt;
+&lt;li&gt;if the number already exists in the cache, it will be returned from the cache&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// get the number from the route
+// get the IMemoryCache from the DI container
+app.MapGet(&amp;quot;/getnumber/{number}&amp;quot;, ([FromRoute]int number, 
+    [FromServices] IMemoryCache cache) =&amp;gt;
+{
+    // first check the cache to see if the number
+    // exists there
+    if(cache.TryGetValue(number, out var value))
+    {
+        return $&amp;quot;'{value}' retrieved from cache&amp;quot;;
+    }
+
+    // if it didn't exist, add it to the cache
+    cache.Set(number, number, new MemoryCacheEntryOptions { Size = sizeof(int)});
+
+    // return
+    return $&amp;quot;'{number}' added to cache&amp;quot;;
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Invoking the endpoint with a number for the first time &lt;code&gt;/getnumber/1&lt;/code&gt;, will result in:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;'1' added to cache
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;While invoking subsequent times with the same number will result in:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;'1' retrieved from cache
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The cache has been configured and the &lt;em&gt;endpoint called a number of times, with unique and duplicate numbers&lt;/em&gt;, so next let's have a look at the stats.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="get-statistics"&gt;Get statistics&lt;/h3&gt;
+&lt;p&gt;To get a &lt;em&gt;snapshot of the IMemoryCache statistics&lt;/em&gt;, the &lt;code&gt;GetCurrentStatistics&lt;/code&gt; method is used:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/getstats&amp;quot;, ([FromServices] IMemoryCache cache) =&amp;gt;
+{
+    return cache.GetCurrentStatistics();
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;A sample return snapshot:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-json"&gt;{
+    &amp;quot;currentEntryCount&amp;quot;:6,
+    &amp;quot;currentEstimatedSize&amp;quot;:24,
+    &amp;quot;totalMisses&amp;quot;:6,
+    &amp;quot;totalHits&amp;quot;:2
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In this example:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;6 items have been added&lt;/code&gt; to the cache&lt;/li&gt;
+&lt;li&gt;the 6 items take up &lt;code&gt;24 of the available 1024 units&lt;/code&gt; available (6 x 4 bytes)&lt;/li&gt;
+&lt;li&gt;the cache has been checked and did &lt;code&gt;not contain the queried value 6 times&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;the cache has been checked and &lt;code&gt;did contain the queried value twice&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;This information is very valuable and can be leveraged to confirm if the cache configured for an application is successfully being used - over time, one would want to see a high number of hits and relatively low number of misses. This information can be used to determine if the cache strategy needs to be modified (cache based on a different key) or maybe increase or decrease the cache size.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.caching.memory.imemorycache.getcurrentstatistics?view=dotnet-plat-ext-7.0"&gt;IMemoryCache.GetCurrentStatistics Method&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;183: 17-10-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
+		<item>
+			<title>Deserializing incompatible types using JsonConverter</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/10/14-newtonsoft-jsonconverter</link>
 			<description>always learning | always growing</description>
 			<guid>https://alwaysdeveloping.net/dailydrop/2022/10/14-newtonsoft-jsonconverter</guid>
@@ -919,89 +1015,6 @@ app.Run();
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://github.com/dodyg/practical-aspnetcore/blob/net6.0/projects/application-environment/Program.cs"&gt;Application Environment&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;174: 04-10-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Obtaining a list of app URLs</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/10/03-server-addresses</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/10/03-server-addresses</guid>
-			<pubDate>Mon, 03 Oct 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;IServerAddressesFeature&lt;/code&gt; or &lt;code&gt;IServer&lt;/code&gt; implementations can be used to get a list of URLs your application is responding to. In a landscape with a large number of applications which serve on multiple URLs, this could be leveraged to easily self-document all URLs currently in use.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="multiple-urls"&gt;Multiple urls&lt;/h2&gt;
-&lt;p&gt;For the samples below, the application has been configured to use multiple urls using the &lt;code&gt;UseUrls&lt;/code&gt; method:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;builder.WebHost.UseUrls(&amp;quot;http://*:5096;http://*:5097;http://localhost:5098&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;If we had a &lt;em&gt;&amp;quot;hello&amp;quot;&lt;/em&gt; endpoint:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/hello&amp;quot;, () =&amp;gt;
-{
-    return &amp;quot;world&amp;quot;;
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We would get a &lt;em&gt;&amp;quot;world&amp;quot;&lt;/em&gt; response by browsing to any of the below:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;http://localhost:5096/hello&lt;/li&gt;
-&lt;li&gt;http://localhost:5097/hello&lt;/li&gt;
-&lt;li&gt;http://localhost:5098/hello&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr /&gt;
-&lt;h2 id="address-list"&gt;Address list&lt;/h2&gt;
-&lt;h3 id="iserveraddressesfeature"&gt;IServerAddressesFeature&lt;/h3&gt;
-&lt;p&gt;The first method to get a list of addresses is by casting the &lt;code&gt;WebApplication&lt;/code&gt; instance to &lt;code&gt;IApplicationBuilder&lt;/code&gt; and leveraging the &lt;em&gt;ServerFeatures&lt;/em&gt; method available:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// app is obtained from var app = builder.Build();
-// in this example, serverAddress is a free variable
-var serverAddress = (app as IApplicationBuilder)
-    .ServerFeatures.Get&amp;lt;IServerAddressesFeature&amp;gt;();
-
-app.MapGet(&amp;quot;/addresses&amp;quot;, (context) =&amp;gt;
-{
-    // get all addresses and output
-    foreach(var address in serverAddress.Addresses)
-    {
-        context.Response.WriteAsync($&amp;quot;- {address}{Environment.NewLine}&amp;quot;);
-    }
-
-    return Task.CompletedTask;
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output from browsing to the above endpoint:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;- http://[::]:5096
-- http://[::]:5097
-- http://localhost:5098
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h3 id="iserver"&gt;IServer&lt;/h3&gt;
-&lt;p&gt;When &lt;code&gt;IApplicationBuilder&lt;/code&gt; is not available (outside of application startup), the information is also available by injecting &lt;code&gt;IServer&lt;/code&gt; into the required constructor or delegate:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/iserver&amp;quot;, (HttpContext context, IServer server) =&amp;gt;
-{
-    // get the address from IServer instead of IApplicationBuilder
-    // otherwise everything else is the same
-    var addressFeature = server.Features.Get&amp;lt;IServerAddressesFeature&amp;gt;();
-
-    foreach (var address in addressFeature.Addresses)
-    {
-        context.Response.WriteAsync($&amp;quot;- {address}{Environment.NewLine}&amp;quot;);
-    }
-
-    return Task.CompletedTask;
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output from browsing to the above endpoint:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;- http://[::]:5096
-- http://[::]:5097
-- http://localhost:5098
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;We've looked at two different ways to get a list of addresses the application is serving on. For most applications, this might never be useful as most applications serve on a single address. However in the case where there &lt;em&gt;are&lt;/em&gt; multiple addresses, this could be used to self document and easily keep track of application's addresses.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://github.com/dodyg/practical-aspnetcore/blob/net6.0/projects/features/features-server-addresses"&gt;Server Addresses Feature&lt;/a&gt;&lt;br /&gt;
-&lt;a href="https://github.com/dodyg/practical-aspnetcore/tree/net6.0/projects/features/features-server-addresses-2"&gt;Server Addresses Feature - 2&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;173: 03-10-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
