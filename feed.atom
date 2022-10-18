@@ -4,8 +4,200 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-10-17T05:14:39Z</updated>
+	<updated>2022-10-18T05:12:51Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/10/18-utf8jsonreader</id>
+		<title>Performant deserialization with Utf8JsonReader</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/10/18-utf8jsonreader" />
+		<updated>2022-10-18T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;When deserializing a string to a class, if only limited fields on the entity are required or used after the deserialization process, then it might be faster and more performant to use the &lt;code&gt;Utf8JsonReader&lt;/code&gt; class read te values.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;Utf8JsonReader&lt;/code&gt; is a &lt;em&gt;high-performance, low allocation, forward-only reader for UTF-8 encoded JSON text&lt;/em&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="serialization"&gt;Serialization&lt;/h2&gt;
+&lt;p&gt;First, let's set the stage and get a serialized JSON string. In the examples a &lt;code&gt;Song&lt;/code&gt; class will be used for &lt;em&gt;serialization&lt;/em&gt; and &lt;em&gt;deserialization&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Song
+{
+    public int Id { get; set; }
+
+    public string Name { get; set; }
+
+    public string Artist { get; set; }
+
+    public int YearReleased { get; set; }
+
+    public DateTime DateCreated { get; set; }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;To serialize a &lt;em&gt;Song&lt;/em&gt; instance, &lt;code&gt;System.Text.Json.JsonSerializer&lt;/code&gt; is used:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var song = new Song
+{
+    Id = 1,
+    Name = &amp;quot;Everlong&amp;quot;,
+    Artist = &amp;quot;Foo Fighters&amp;quot;,
+    YearReleased = 1997,
+    DateCreated = DateTime.Now
+};
+
+var jsonSong = JsonSerializer.Serialize(song);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We now have a &lt;em&gt;json string representation&lt;/em&gt; of the a Song instance to be used in the below deserialization examples.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="deserialization"&gt;Deserialization&lt;/h2&gt;
+&lt;p&gt;In the use cases below, a JSON string is sent to the application (maybe via an API call, or a message broker) but the application is only interested in the &lt;code&gt;Name&lt;/code&gt; field in the serialized &lt;em&gt;Song&lt;/em&gt; instance. We are going to look at the various ways to deserialize the data to get access to that specific field.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="system.text.json"&gt;System.Text.Json&lt;/h3&gt;
+&lt;p&gt;The first method is to deserialize the entire string into the class, and then access the field - this is usually the &lt;em&gt;default&lt;/em&gt; method most developers might use:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var options = new JsonSerializerOptions
+{
+    AllowTrailingCommas = true
+};
+
+var song = JsonSerializer.Deserialize&amp;lt;Song&amp;gt;(strSong, options);
+var name = song.Name;
+
+Console.WriteLine(name);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This will work, is straight forward - but requires that all fields be deserialized (impacting performance), when only one field is required.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="system.text.json-trimmed"&gt;System.Text.Json trimmed&lt;/h3&gt;
+&lt;p&gt;Another method is to create a new &lt;em&gt;Song&lt;/em&gt; class, which only contains the interested fields, and deserialize to that class.&lt;/p&gt;
+&lt;p&gt;First, and &lt;em&gt;TrimmedSong&lt;/em&gt; class is created, trimmed of all the fields not required:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public  class TrimmedSong
+{
+    public string Name { get; set; }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The deserialization process is exactly the same as the previous method, only the new &lt;em&gt;TrimmedSong&lt;/em&gt; class is used instead of &lt;em&gt;Song&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var options = new JsonSerializerOptions
+{
+    AllowTrailingCommas = true
+};
+
+// TrimmedSong used here
+var song = JsonSerializer.Deserialize&amp;lt;TrimmedSong&amp;gt;(strSong, options);
+var name = song.Name;
+
+Console.WriteLine(name);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The benefit of this approach is that only the required fields are deserialized, using less memory for fields which are never used.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="utf8jsonreader"&gt;Utf8JsonReader&lt;/h3&gt;
+&lt;p&gt;The final option we'll look is using the &lt;code&gt;Utf8JsonReader&lt;/code&gt; class - as mentioned, this is a high-performance, low allocation, forward-only reader.&lt;/p&gt;
+&lt;p&gt;Using this is a little more complex than a straight deserialization, but not overly so:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// convert the json string, to a byte array
+var jsonBytes = Encoding.UTF8.GetBytes(jsonSong);
+
+// setup some optional options
+var options = new JsonReaderOptions
+{
+    AllowTrailingCommas = true,
+    CommentHandling = JsonCommentHandling.Skip
+};
+
+// instantiate the reader with the byte array
+// and the options
+var reader = new Utf8JsonReader(jsonBytes, options);
+
+var songName = string.Empty;
+
+// read each token in the json from front to back
+// (forward only)
+while (reader.Read() &amp;amp;&amp;amp; songName == String.Empty)
+{
+    // switch on the token type read
+    switch (reader.TokenType)
+    {
+        // if its a property
+        case JsonTokenType.PropertyName:
+            {
+                // if its the property we care about
+                // (which is the song name)
+                if (reader.GetString() == nameof(Song.Name))
+                {
+                    // get the next token, which is the 
+                    // property value
+                    reader.Read();
+                    // get the token value
+                    songName = reader.GetString();
+                }
+                break;
+            }
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The reader will read each token in the json start to finish, while there are tokens to read. During this process, the token type (&lt;em&gt;PropertyName&lt;/em&gt;) is checked and the token string value (&lt;em&gt;Name&lt;/em&gt;) is checked until the required property is reached - the value of the property is then read, and the read loop is exited.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="benchmarks"&gt;Benchmarks&lt;/h2&gt;
+&lt;p&gt;So, how do the methods compare - &lt;code&gt;BenchmarkDotNet&lt;/code&gt; was used to benchmark each of the above three scenarios:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Deserialization using &lt;code&gt;System.Text.Json&lt;/code&gt; into a full class&lt;/li&gt;
+&lt;li&gt;Deserialization using &lt;code&gt;System.Text.Json&lt;/code&gt; into a class with only the require fields&lt;/li&gt;
+&lt;li&gt;Reading the json byte array using &lt;code&gt;Utf8JsonReader&lt;/code&gt; until the required field is found&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Using the same snippets of code as above, to get the &lt;em&gt;Song Name&lt;/em&gt; from the json string - the results:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Method&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Ratio&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Gen0&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Gen1&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Allocated&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Alloc Ratio&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;FullJson&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;517,707.6 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;8,451.42 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;7,905.46 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.000&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2.9297&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.9766&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;20471 B&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.000&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;TrimmedJson&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;149,723.5 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2,904.13 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2,982.33 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.290&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.2207&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.4883&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;8787 B&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.429&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;JsonReader&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;188.6 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.28 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.07 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.000&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0165&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;104 B&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.005&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;From the results one can see that the &lt;code&gt;Utf8JsonReader&lt;/code&gt; is orders of magnitude quicker than the &lt;code&gt;System.Text.Json&lt;/code&gt; method, while using a fraction of the memory.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;If the entire JSON string is not required to be deserialized, consider using &lt;code&gt;Utf8JsonReader&lt;/code&gt;. Benchmark its performance against &lt;code&gt;System.Text.Json&lt;/code&gt; (or _NewtonSoft.Json, or which ever deserialization library is being used) to determine which is more beneficial for the specific use case, as potentially massive performance gains can be had.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-use-dom-utf8jsonreader-utf8jsonwriter?pivots=dotnet-6-0#use-utf8jsonreader"&gt;Use Utf8JsonReader&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;184: 18-10-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/10/17-cache-stats</id>
 		<title>Access cache stats with MemoryCacheStatistics</title>
@@ -927,83 +1119,6 @@ app.UseMiddleware&amp;lt;DuplicateTypeParamMiddleware&amp;gt;(&amp;quot;Middlewa
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://github.com/dodyg/practical-aspnetcore/blob/net6.0/projects/middleware/middleware-8/Program.cs"&gt;Inject dependency to your middleware class manually&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;175: 05-10-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/10/04-app-run</id>
-		<title>Map all urls with IApplicationBuilder.Run</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/10/04-app-run" />
-		<updated>2022-10-04T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;Run&lt;/code&gt; method on the &lt;code&gt;WebApplication&lt;/code&gt; (which implements &lt;em&gt;IApplicationBuilder&lt;/em&gt;) can be used to map &lt;strong&gt;any and all&lt;/strong&gt; urls to the specific delegate.&lt;/p&gt;
-&lt;p&gt;This can be leveraged in the case where the api doesn't expose any functional endpoints (such as with a &lt;em&gt;Background Service&lt;/em&gt;) to always display a consistent message to the caller.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="root-endpoint"&gt;Root endpoint&lt;/h2&gt;
-&lt;p&gt;Usually when a web application doesn't expose any endpoints, the root endpoint might be mapped so when browsing to the url, a message is returned to at least inform the caller that the service is up and running:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddTransient&amp;lt;RunMiddleware&amp;gt;();
-
-WebApplication? app = builder.Build();
-
-app.MapGet(&amp;quot;/&amp;quot;, async context =&amp;gt;
-{
-    await context.Response.WriteAsync(&amp;quot;Sample application - no endpoints exposed&amp;quot;);
-});
-
-app.Run();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Browsing to &lt;code&gt;/&lt;/code&gt; will display:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Sample application - no endpoints exposed
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The downside of this approach, is that if the user browses to any URL other than &lt;code&gt;/&lt;/code&gt;, nothing will be returned. For example, browsing to &lt;code&gt;/api&lt;/code&gt; just returns a blank page.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="run-method"&gt;Run method&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;Run&lt;/code&gt; method can be leveraged to map a &lt;em&gt;delegate&lt;/em&gt; to &lt;strong&gt;all&lt;/strong&gt; endpoints:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddTransient&amp;lt;RunMiddleware&amp;gt;();
-
-WebApplication? app = builder.Build();
-
-app.Run(async context =&amp;gt;
-{
-   await context.Response.WriteAsync(&amp;quot;Sample application - no endpoints exposed&amp;quot;);
-});
-
-app.Run();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;With this approach, browsing to &lt;code&gt;/&lt;/code&gt; or &lt;code&gt;/api&lt;/code&gt; or &lt;strong&gt;any&lt;/strong&gt; other url, will return the following:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Sample application - no endpoints exposed
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Now, no matter the endpoint called - the &lt;code&gt;same message&lt;/code&gt; is returned.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="endpoint-override"&gt;Endpoint override&lt;/h2&gt;
-&lt;p&gt;A word of warning - using the &lt;code&gt;Run&lt;/code&gt; method will cause the specific delegate to be called on all endpoints - even if another endpoint has specifically been defined:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddTransient&amp;lt;RunMiddleware&amp;gt;();
-
-WebApplication? app = builder.Build();
-
-app.MapGet(&amp;quot;hello&amp;quot;, async context =&amp;gt;
-{
-    await context.Response.WriteAsync(&amp;quot;World&amp;quot;);
-});
-
-app.Run(async context =&amp;gt;
-{
-    await context.Response.WriteAsync(&amp;quot;Sample application - no endpoints exposed&amp;quot;);
-});
-
-app.Run();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;In the above, browsing to &lt;code&gt;/hello&lt;/code&gt; will return &lt;code&gt;Sample application - no endpoints exposed&lt;/code&gt; and &lt;strong&gt;NOT&lt;/strong&gt; &lt;code&gt;World&lt;/code&gt; - the &lt;em&gt;Run&lt;/em&gt; method delegate overrides all over endpoint delegates.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;This is not a technique to be used for every application, but in the cases where the application is running as a background service (for example) which doesn't expose any specific endpoints, this technique can be leveraged to always display &lt;em&gt;something&lt;/em&gt; to the user.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://github.com/dodyg/practical-aspnetcore/blob/net6.0/projects/application-environment/Program.cs"&gt;Application Environment&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;174: 04-10-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
