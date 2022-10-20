@@ -5,8 +5,58 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Wed, 19 Oct 2022 05:14:30 GMT</pubDate>
-		<lastBuildDate>Wed, 19 Oct 2022 05:14:30 GMT</lastBuildDate>
+		<pubDate>Thu, 20 Oct 2022 04:46:04 GMT</pubDate>
+		<lastBuildDate>Thu, 20 Oct 2022 04:46:04 GMT</lastBuildDate>
+		<item>
+			<title>Built in HTTP header properties</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/10/20-http-headers</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/10/20-http-headers</guid>
+			<pubDate>Thu, 20 Oct 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;ASP.NET Core has &lt;code&gt;built in properties for common HTTP headers&lt;/code&gt;, which are &lt;em&gt;faster and better&lt;/em&gt; than using an indexer manually.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="manual-indexers"&gt;Manual indexers&lt;/h2&gt;
+&lt;p&gt;In this example, the &lt;em&gt;ContextType&lt;/em&gt;, &lt;em&gt;Date&lt;/em&gt; and &lt;em&gt;Link&lt;/em&gt; headers are manually set using indexers on the endpoint response:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet("/getheadersmanual", async context =&amp;gt;
+{
+    context.Response.Headers.ContentType = MediaTypeNames.Application.Json;
+    context.Response.Headers.Date = DateTime.UtcNow.ToString();
+    context.Response.Headers.Link = "/getheadersmanual";
+
+    await context.Response.WriteAsync(@"{""Message"" : ""Look at the headers""}");
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This works without issue, and calling the endpoint will result in the following response and headers:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;{"Message" : "Look at the headers"}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/manualheaders.png" alt="Response Headers"&gt;&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="built-in-properties"&gt;Built-in properties&lt;/h2&gt;
+&lt;p&gt;The other option is to use the built-in header properties:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet("/getheaders", async context =&amp;gt;
+{
+    context.Response.Headers.ContentType = MediaTypeNames.Application.Json;
+    context.Response.Headers.Date = DateTime.UtcNow.ToString();
+    context.Response.Headers.Link = "/getheaders";
+
+    await context.Response.WriteAsync(@"{""Message"" : ""Look at the headers""}");
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This version will same response and headers as the above technique:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;{"Message" : "Look at the headers"}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/autoheaders.png" alt="Response Headers"&gt;&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;While the output from both techniques are effectively the same - in addition to the property method being faster than using indexers (although probably not effectively noticeable), using the property method will results in less errors and safer code, as the HTTP header name cannot be misspelt.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/JamesNK/status/1572876608553517056"&gt;James Newton-King Tweet&lt;/a&gt;&lt;/p&gt;
+&lt;!--?# DailyDrop ?--&gt;186: 20-10-2022&lt;!--?#/ DailyDrop ?--&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Binding query string values to an array</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/10/19-query-array</link>
@@ -996,145 +1046,6 @@ private List&amp;lt;object&amp;gt; _items = new List&amp;lt;object&amp;gt; {
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://www.youtube.com/watch?v=dIu5EisoB_s"&gt;The fastest way to cast objects in C# is not so obvious&lt;/a&gt;&lt;/p&gt;
 &lt;!--?# DailyDrop ?--&gt;177: 07-10-2022&lt;!--?#/ DailyDrop ?--&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Culture specific strings with String.Create</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/10/06-string-create</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/10/06-string-create</guid>
-			<pubDate>Thu, 06 Oct 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;Introduced in C# 10 (.NET 6), the &lt;code&gt;String.Create&lt;/code&gt; method can be used to evaluate an &lt;em&gt;interpolated string&lt;/em&gt; to a specific culture (including the invariant culture). This method is faster, and uses less resources than the previously available method of using &lt;code&gt;FormattableString&lt;/code&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="formattablestring"&gt;FormattableString&lt;/h2&gt;
-&lt;h3 id="invariant"&gt;Invariant&lt;/h3&gt;
-&lt;p&gt;Prior to C# 10 &lt;code&gt;FormattableString&lt;/code&gt; was the method used, and evaluating an &lt;em&gt;interpolated string&lt;/em&gt; to &lt;em&gt;invariant culture&lt;/em&gt; was fairly straightforward:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;private decimal decValue = 1.99m;
-private DateTime dateValue = DateTime.UtcNow;
-
-// output the default interpolated string
-Console.WriteLine($&amp;quot;Decimal: {decValue} | Date: {dateValue}&amp;quot;);
-
-// output the string formatted to &amp;quot;invariant culture&amp;quot;
-Console.WriteLine(FormattableString.Invariant(
-    $&amp;quot;Decimal: {decValue} | Date: {dateValue}&amp;quot;));
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output of the above:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Decimal: 1,99 | Date: 2022/09/12 03:49:41
-Decimal: 1.99 | Date: 09/12/2022 03:49:41
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h3 id="culture-specific"&gt;Culture specific&lt;/h3&gt;
-&lt;p&gt;Evaluating an &lt;em&gt;interpolated string&lt;/em&gt; to &lt;em&gt;a specific culture&lt;/em&gt; is slightly more complicated when using &lt;code&gt;FormattableString&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;private decimal decValue = 1.99m;
-private DateTime dateValue = DateTime.UtcNow;
-
-// output the default interpolated string
-Console.WriteLine($&amp;quot;Decimal: {decValue} | Date: {dateValue}&amp;quot;);
-
-// output the string formatted in the specific culture
-// first declare the FormattableString
-FormattableString formattable = $&amp;quot;Decimal: {decValue} | Date: {dateValue}&amp;quot;;
-// ToString specifying the culture
-Console.Write(formattable.ToString(CultureInfo.GetCultureInfo(&amp;quot;en-US&amp;quot;)));
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output of the above:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Decimal: 1,99 | Date: 2022/09/12 04:00:47
-Decimal: 1.99 | Date: 9/12/2022 4:00:47 AM
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="string.create"&gt;String.Create&lt;/h2&gt;
-&lt;h3 id="invariant-1"&gt;Invariant&lt;/h3&gt;
-&lt;p&gt;The new &lt;code&gt;String.Create&lt;/code&gt; method introduced in .NET6 with C# 10, simplifies the evaluation of a interpolated string to a specific culture:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;private decimal decValue = 1.99m;
-private DateTime dateValue = DateTime.UtcNow;
-
-// output the default interpolated string
-Console.WriteLine($&amp;quot;Decimal: {decValue} | Date: {dateValue}&amp;quot;);
-
-// output string with the specific culture (invariant)
-Console.WriteLine(String.Create(CultureInfo.InvariantCulture,
-    $&amp;quot;Decimal: {decValue} | Date: {dateValue}&amp;quot;));
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output of the above (which is the same as when using &lt;em&gt;FormattableString.Invariant&lt;/em&gt; above):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Decimal: 1,99 | Date: 2022/09/12 04:02:59
-Decimal: 1.99 | Date: 09/12/2022 04:02:59
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h3 id="culture-specific-1"&gt;Culture specific&lt;/h3&gt;
-&lt;p&gt;Specifying a &lt;em&gt;specific culture&lt;/em&gt; with &lt;code&gt;String.Create&lt;/code&gt; is just as simple as specifying &lt;em&gt;InvariantCulture&lt;/em&gt;, and definitely simpler than the &lt;em&gt;FormattableString&lt;/em&gt; equivalent:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;private decimal decValue = 1.99m;
-private DateTime dateValue = DateTime.UtcNow;
-
-// output the default interpolated string
-Console.WriteLine($&amp;quot;Decimal: {decValue} | Date: {dateValue}&amp;quot;);
-
-// output string with the specific culture (en-US)
-Console.WriteLine(String.Create(CultureInfo.GetCultureInfo(&amp;quot;en-US&amp;quot;),
-    $&amp;quot;Decimal: {decValue} | Date: {dateValue}&amp;quot;));
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output of the above (which is the same as when using &lt;em&gt;FormattableString&lt;/em&gt; with the specific culture above):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Decimal: 1,99 | Date: 2022/09/12 04:05:15
-Decimal: 1.99 | Date: 9/12/2022 4:05:15 AM
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="performance"&gt;Performance&lt;/h2&gt;
-&lt;p&gt;Using &lt;code&gt;BenchmarkDotNet&lt;/code&gt; to compare the speed and memory usage of the above 4 methods, we can see that in all cases, using the &lt;em&gt;String.Create&lt;/em&gt; version is &lt;code&gt;faster, and uses less memory&lt;/code&gt; than the &lt;em&gt;FormattableString versions&lt;/em&gt;:&lt;/p&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;Method&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Gen0&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Allocated&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;StringFormatterInvariant&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;342.6 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;4.92 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;4.60 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0367&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;232 B&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;StringFormatterCulture&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;400.2 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;7.81 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;9.87 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0429&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;272 B&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;StringCreateInvariant&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;272.5 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;3.86 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;3.42 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0162&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;104 B&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;StringCreateCulture&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;326.5 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;4.41 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;3.91 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0229&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;144 B&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;Even though the performance and memory improvements are slight (nano-seconds and bytes), if your application is making &lt;code&gt;heavy use of FormattableString&lt;/code&gt; to format strings to specific cultures, then there are gains to be had by converting to using &lt;code&gt;String.Create&lt;/code&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.meziantou.net/performance-string-create-vs-formattablestring.htm"&gt;Performance: string.Create vs FormattableString&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;176: 06-10-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
