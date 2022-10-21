@@ -5,8 +5,49 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Thu, 20 Oct 2022 04:46:04 GMT</pubDate>
-		<lastBuildDate>Thu, 20 Oct 2022 04:46:04 GMT</lastBuildDate>
+		<pubDate>Fri, 21 Oct 2022 04:47:54 GMT</pubDate>
+		<lastBuildDate>Fri, 21 Oct 2022 04:47:54 GMT</lastBuildDate>
+		<item>
+			<title>Using math functions on numeric types</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/10/21-math-update</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/10/21-math-update</guid>
+			<pubDate>Fri, 21 Oct 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;.NET 7 introduces the ability to &lt;code&gt;call math methods on numeric types&lt;/code&gt; and not have to use the static &lt;em&gt;Math&lt;/em&gt; class.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="pre.net-7"&gt;Pre .NET 7&lt;/h2&gt;
+&lt;p&gt;Prior to .NET 7, the static &lt;code&gt;Math&lt;/code&gt; class was used:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;double value = 100.33;
+
+// get the absolute value
+double mathAbs = Math.Abs(value);
+
+// get the cube root
+double mathCbrt = Math.Cbrt(125);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="net-7"&gt;.NET 7&lt;/h2&gt;
+&lt;p&gt;In .NET 7, these methods are now available on the numeric type:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;double value = 100.33;
+
+double doubleAbs = double.Abs(value);
+double doubleCbrt = double.Cbrt(125);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Under the hood, these methods are still using the &lt;code&gt;Math&lt;/code&gt; static class:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// source code for the double Abs method
+public static double Abs(double value) =&amp;gt; Math.Abs(value);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;The two techniques effectively use the same code, and perform the same operation - so which one to use comes down to preference and readability. Personally, I find using the numeric types is more informative, because at a glance one can see the return type of the calculation (the &lt;em&gt;Abs&lt;/em&gt; method on &lt;em&gt;double&lt;/em&gt;, will return a &lt;em&gt;double&lt;/em&gt;) - but this will not be the preference for everyone.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/fonssonnemans/status/1573274358910525442"&gt;Fons Sonnemans Tweet&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;187: 21-10-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Built in HTTP header properties</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/10/20-http-headers</link>
@@ -889,163 +930,6 @@ app.MapGet("/200response", context =&amp;gt;
 &lt;p&gt;&lt;a href="https://github.com/dodyg/practical-aspnetcore/tree/net6.0/projects/diagnostics/diagnostics-5"&gt;Status Pages&lt;/a&gt;&lt;br&gt;
 &lt;a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/error-handling?view=aspnetcore-6.0#usestatuscodepageswithredirects"&gt;UseStatusCodePages&lt;/a&gt;&lt;/p&gt;
 &lt;!--?# DailyDrop ?--&gt;178: 10-10-2022&lt;!--?#/ DailyDrop ?--&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Performant LINQ type checks</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/10/07-linq-type-performance</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/10/07-linq-type-performance</guid>
-			<pubDate>Fri, 07 Oct 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;In a previous post, we had a look at &lt;a href="https://alwaysdeveloping.net/08/19-linq-oftype"&gt;LINQ's OfType&lt;/a&gt; method - while personally this is still my preferred method (for readability) to do &lt;em&gt;type comparisons&lt;/em&gt; using LINQ, it is not the most performant.&lt;/p&gt;
-&lt;p&gt;If performing &lt;em&gt;type checks&lt;/em&gt; using LINQ, a &lt;code&gt;GetType() == typeof&lt;/code&gt; check is the most performant.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="type-checks"&gt;Type checks&lt;/h2&gt;
-&lt;p&gt;First, we'll have a look at the various methods for doing &lt;em&gt;type comparisons&lt;/em&gt; in LINQ which will be benchmarked.&lt;/p&gt;
-&lt;p&gt;In all of the below example, as well as the benchmarks, a &lt;code&gt;List&amp;lt;object&amp;gt;&lt;/code&gt; is used, which contains &lt;code&gt;100 items&lt;/code&gt; either a &lt;em&gt;TypeA&lt;/em&gt; class, or a &lt;em&gt;TypeB&lt;/em&gt; class:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// sample of the items - in the actual benchmark, _items
-// contained 100 items
-private List&amp;lt;object&amp;gt; _items = new List&amp;lt;object&amp;gt; {
-    new TypeA(), new TypeA(), new TypeB(), new TypeA(), new TypeB()
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Where applicable,  different variations on the techniques, one using &lt;code&gt;Select&lt;/code&gt; method to &lt;em&gt;cast&lt;/em&gt; the cast, and the other using the &lt;code&gt;Cast&lt;/code&gt; method, were also benchmarked.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h3 id="oftype"&gt;OfType&lt;/h3&gt;
-&lt;p&gt;The first method is by using the &lt;code&gt;OfType&lt;/code&gt; method, explored in a &lt;a href="https://alwaysdeveloping.net/08/19-linq-oftype"&gt;previous post&lt;/a&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;    var filter = _items
-            .OfType&amp;lt;TypeA&amp;gt;()
-            .ToList();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;I still find this to be the cleanest and easiest to read method.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h3 id="cast-with-is"&gt;Cast with is&lt;/h3&gt;
-&lt;p&gt;The next approach is to use the &lt;code&gt;is&lt;/code&gt; keyword to check the &lt;em&gt;type&lt;/em&gt; and then use the &lt;code&gt;Cast&lt;/code&gt; method to cast the filtered items to the desired type:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;    var filter = _items
-        .Where(t =&amp;gt; t is TypeA)
-        .Cast&amp;lt;TypeA&amp;gt;()
-        .ToList();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The &lt;code&gt;Where&lt;/code&gt; method filters down the list to items of only &lt;em&gt;TypeA&lt;/em&gt; however, the filtered list is still of type &lt;em&gt;object&lt;/em&gt;, and hence the &lt;code&gt;Cast&lt;/code&gt; method needs to be used to convert to the correct type.&lt;/p&gt;
-&lt;p&gt;The variation is the same as the above, but instead using the &lt;code&gt;Select&lt;/code&gt; method to &lt;em&gt;cast&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;    var filter = _items
-        .Where(t =&amp;gt; t is TypeA)
-        .Select(t =&amp;gt; (TypeA)t)
-        .ToList();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr&gt;
-&lt;h3 id="cast-with-is-1"&gt;Cast with is&lt;/h3&gt;
-&lt;p&gt;Next up we use the &lt;code&gt;as&lt;/code&gt; keyword to check the &lt;em&gt;type&lt;/em&gt;. This casts the object to &lt;em&gt;TypeA&lt;/em&gt;, and checks that the result is not null (the cast is possible). Then like the previous example, the &lt;code&gt;Cast&lt;/code&gt; method to cast the filtered items to the desired type:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;    var filter = _items
-        .Where(t =&amp;gt; t as TypeA is not null)
-        .Cast&amp;lt;TypeA&amp;gt;()
-        .ToList();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;As before, the &lt;code&gt;Where&lt;/code&gt; method filters down the list to items of only &lt;em&gt;TypeA&lt;/em&gt; however, the filtered list is still of type &lt;em&gt;object&lt;/em&gt;, and hence the &lt;code&gt;Cast&lt;/code&gt; method needs to be used to convert to the correct type.&lt;/p&gt;
-&lt;p&gt;As above, variation is the same as the above technique, but instead using the &lt;code&gt;Select&lt;/code&gt; method to &lt;em&gt;cast&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;    var filter = _items
-        .Where(t =&amp;gt; t.GetType() == typeof(TypeA))
-        .Select(t =&amp;gt; (TypeA)t)
-        .ToList();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr&gt;
-&lt;h3 id="gettype-with-typeof"&gt;GetType with typeof&lt;/h3&gt;
-&lt;p&gt;The last method is the most &lt;em&gt;raw&lt;/em&gt; method - manually get the type of the item in the list, and check if its of the same type we desire. Then as before, perform the &lt;code&gt;Cast&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;    var filter = _items
-        .Where(t =&amp;gt; t.GetType() == typeof(TypeA))
-        .Cast&amp;lt;TypeA&amp;gt;()
-        .ToList();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The variation:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;    var filter = _items
-        .Where(t =&amp;gt; t.GetType() == typeof(TypeA))
-        .Select(t =&amp;gt; (TypeA)t)
-        .ToList();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr&gt;
-&lt;h2 id="performance-results"&gt;Performance Results&lt;/h2&gt;
-&lt;p&gt;Running the above queries against a list of 100 items, the result are:&lt;/p&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;Method&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Median&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Allocated&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;IsType&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.759 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0334 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0279 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.749 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.27 KB&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;IsTypeSelect&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.430 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0275 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0609 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.416 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.29 KB&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;AsType&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.862 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0570 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.1071 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.844 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.27 KB&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;AsTypeSelect&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.265 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0298 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0846 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.296 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.29 KB&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;OfType&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.873 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0320 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0284 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.870 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.23 KB&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;GetTypeTypeOf&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.520 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0495 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0463 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.510 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.27 KB&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;GetTypeTypeOfSelect&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.121 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0100 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0093 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.124 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.29 KB&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;From the result, using &lt;code&gt;GetType == typeof&lt;/code&gt; is the &lt;code&gt;fastest method&lt;/code&gt; (while also very slightly using the most memory), while using &lt;code&gt;OfType&lt;/code&gt; is the &lt;code&gt;slowest method&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;Using &lt;em&gt;Select&lt;/em&gt; to cast is also approximately &lt;code&gt;twice as fast&lt;/code&gt; as using &lt;em&gt;Cast&lt;/em&gt;.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;While the &lt;em&gt;GetTypeTypeOfSelect&lt;/em&gt; method was my far the fastest method, when performing a single LINQ command, the difference is not going to be noticeable (nano-seconds scale) - however if the collections are larger, and the time frames start moving into the milliseconds or seconds realm, then the method used starts to make a difference. However as usual, benchmark your specific use case and result may vary based on the type of entity, as well as the collection size.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.youtube.com/watch?v=dIu5EisoB_s"&gt;The fastest way to cast objects in C# is not so obvious&lt;/a&gt;&lt;/p&gt;
-&lt;!--?# DailyDrop ?--&gt;177: 07-10-2022&lt;!--?#/ DailyDrop ?--&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
