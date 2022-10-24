@@ -4,8 +4,91 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-10-21T04:47:54Z</updated>
+	<updated>2022-10-24T05:15:48Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/10/24-data-protection</id>
+		<title>Protecting sensitive data with data protection api</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/10/24-data-protection" />
+		<updated>2022-10-24T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;.NET has built in methods to &lt;code&gt;protect and unprotected&lt;/code&gt; sensitive data.&lt;/p&gt;
+&lt;p&gt;These methods are typically used to protect sensitive data, but could be used to protect any data. It could also be used to expose information for a &lt;em&gt;given period of time&lt;/em&gt; only, after which trying unprotecting the data will not work.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="configuration"&gt;Configuration&lt;/h2&gt;
+&lt;p&gt;There are effectively three steps to using the data protection apis:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Create the &lt;code&gt;protector&lt;/code&gt; from a data protection provider&lt;/li&gt;
+&lt;li&gt;Invoke the &lt;code&gt;Protect&lt;/code&gt; method to protect the data specified&lt;/li&gt;
+&lt;li&gt;Invoke the &lt;code&gt;Unprotect&lt;/code&gt; method to convert the specified protected value to plain text&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;In the startup of the application, the protector is configured as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// register base data protection
+// with DI container
+builder.Services
+    .AddDataProtection()
+    .SetDefaultKeyLifetime(TimeSpan.FromDays(7));
+
+// register the protector with DI
+builder.Services
+    .AddTransient&amp;lt;ITimeLimitedDataProtector&amp;gt;(sp =&amp;gt;
+    {
+        // specify where the provider key information will be stored
+        IDataProtectionProvider? provider = DataProtectionProvider
+            .Create(new DirectoryInfo(&amp;#64;&amp;quot;secrets&amp;quot;));
+
+        // specify the purpose string for the creator
+        IDataProtector? protector = provider
+            .CreateProtector(&amp;quot;customerdata&amp;quot;);
+
+        return protector.ToTimeLimitedDataProtector();
+    });
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Some notes on the above:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The key information is stored in a &lt;code&gt;secrets&lt;/code&gt; folder on the host machine. As such, the key information is only available to that one machine. If multiple machines need to access the key information, there are other storage providers available (Azure KeyVault, DbContext)&lt;/li&gt;
+&lt;li&gt;The protector is created with a specific &lt;em&gt;purpose&lt;/em&gt;, &lt;code&gt;customerdata&lt;/code&gt; above. A value protected using a specific purpose, cannot be unprotected using a different purpose value.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr /&gt;
+&lt;h2 id="protect"&gt;Protect&lt;/h2&gt;
+&lt;p&gt;To &lt;em&gt;protect&lt;/em&gt; a string, the &lt;code&gt;Protect&lt;/code&gt; method is called. Below, an endpoint has been defined which has the &lt;em&gt;ITimeLimitedDataProtector&lt;/em&gt; protector implementation (configured in the previous step) injected:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// get the value to protect from the route
+app.MapGet(&amp;quot;/protect/{protectValue}&amp;quot;, (
+    [FromRoute]string protectValue, 
+    ITimeLimitedDataProtector protector) =&amp;gt;
+{
+    // return the protected value
+    return protector.Protect(protectValue);
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Invoking the endpoint &lt;code&gt;/protect/abc123&lt;/code&gt; results in the following protected value being returned:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;CfDJ8BdtcMmju6ZKiKJtRHvTt2BidaZbPEirTP_KEi4-_2xVBYbs58hqVxWGQmTQBjQaO_tXTiFRAxGUPGSqXkvlfIzhd80r3AavXi0m3PiCXYfuaRhmnrzCXk6apOIqXOCvHA
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="unprotect"&gt;Unprotect&lt;/h2&gt;
+&lt;p&gt;&lt;em&gt;Unprotecting&lt;/em&gt; is as simple as protecting a value - the &lt;code&gt;Unprotect&lt;/code&gt; method is called, with the previously protected value supplied:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/unprotect/{unprotectValue}&amp;quot;, (
+    [FromRoute] string unprotectValue, 
+    ITimeLimitedDataProtector protector) =&amp;gt;
+{
+    return protector.Unprotect(unprotectValue);
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Invoking the endpoint &lt;code&gt;/unprotect/CfDJ8BdtcMmju6ZKiKJtRHvTt2BidaZbPEirTP_KEi4-_2xVBYbs58hqVxWGQmTQBjQaO_tXTiFRAxGUPGSqXkvlfIzhd80r3AavXi0m3PiCXYfuaRhmnrzCXk6apOIqXOCvHA&lt;/code&gt; results in the following output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;abc123
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;When needing to protect sensitive data (for example, &lt;em&gt;authentication cookie&lt;/em&gt; or &lt;em&gt;bearer token&lt;/em&gt;) this set of classes and functionality provides an easy, simple and effective way to protect the data.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/ppenza/status/1573676247812653058"&gt;Piotr Penza&lt;/a&gt;&lt;br /&gt;
+&lt;a href="https://learn.microsoft.com/en-us/aspnet/core/security/data-protection/introduction?view=aspnetcore-6.0"&gt;ASP.NET Core Data Protection Overview&lt;/a&gt;&lt;br /&gt;
+&lt;a href="https://learn.microsoft.com/en-us/aspnet/core/security/data-protection/configuration/overview?view=aspnetcore-6.0"&gt;Configure ASP.NET Core Data Protection&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;188: 24-10-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/10/21-math-update</id>
 		<title>Using math functions on numeric types</title>
@@ -843,82 +926,6 @@ readonlyGolden[1] = 7;
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://twitter.com/BelloneDavide/status/1567562406271885313"&gt;Davide Bellone tweet&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;179: 11-10-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/10/10-status-code-pages</id>
-		<title>Automatic redirect on http status code</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/10/10-status-code-pages" />
-		<updated>2022-10-10T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;UseStatusCodePagesWithRedirects&lt;/code&gt; method can be used to redirect the client to an error page in the case of a non-successful request (400-599 range)&lt;/p&gt;
-&lt;p&gt;This method returns a &lt;em&gt;301-Found&lt;/em&gt; to the client, and then redirects to the &lt;em&gt;redirect endpoint&lt;/em&gt; which will return a status code of &lt;em&gt;200-Success&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;This is often used when the app:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Should redirect the client to a different endpoint, perhaps to have a different application process the error. In the browser, the redirect endpoint will be reflected&lt;/li&gt;
-&lt;li&gt;Doesn't need to preserve and return the original status code with the initial redirect response back to the client&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr&gt;
-&lt;h2 id="middleware-setup"&gt;Middleware setup&lt;/h2&gt;
-&lt;p&gt;First step is to enable the automatic redirect functionality - this step is very straight-froward, and entails adding a single middleware components:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var app = builder.Build();
-
-// other middleware setup goes here
-app.UseStatusCodePagesWithRedirects("/error?status={0}");
-// other middleware setup goes here
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Here, the middleware is instructed to redirect any responses (which are not successful) to the &lt;code&gt;/error&lt;/code&gt; endpoint. The endpoint can include a &lt;code&gt;{0}&lt;/code&gt; placeholder which will contain the &lt;em&gt;http status code&lt;/em&gt;.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="error-endpoint"&gt;Error endpoint&lt;/h2&gt;
-&lt;p&gt;Next, up the &lt;code&gt;/error&lt;/code&gt; endpoint is defined.&lt;/p&gt;
-&lt;p&gt;Here the &lt;em&gt;Map&lt;/em&gt; method is used - this takes an &lt;em&gt;IApplicationBuilder&lt;/em&gt; as a parameter:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.Map("/error", errorApp =&amp;gt;
-{
-    errorApp.Run(async context =&amp;gt;
-    {
-        await context.Response.WriteAsync($"This is a redirected " +
-            $"error message status {context.Request.Query["status"]}");
-    });
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;For all &lt;em&gt;error&lt;/em&gt; responses, the message will be output along with the &lt;em&gt;http status code&lt;/em&gt;.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="execution"&gt;Execution&lt;/h2&gt;
-&lt;p&gt;A number of other endpoints were also defined to simulate different status code responses:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet("/500response", context =&amp;gt;
-{
-    context.Response.StatusCode = 500;
-    return Task.CompletedTask;
-});
-
-app.MapGet("/401response", context =&amp;gt;
-{
-    context.Response.StatusCode = 401;
-    return Task.CompletedTask;
-});
-
-app.MapGet("/200response", context =&amp;gt;
-{
-    context.Response.StatusCode = 200;
-    return Task.CompletedTask;
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Browsing to the &lt;code&gt;/500response&lt;/code&gt; from a browser, for example, will return the following:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;This is a redirected error message status 500
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;And looking at the &lt;em&gt;Network&lt;/em&gt; tab of the browse, one can see that the initial status code returned is &lt;code&gt;302&lt;/code&gt;, followed by the &lt;code&gt;200 on redirect&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/statuscode.png" alt="HTTP Status code"&gt;&lt;/p&gt;
-&lt;p&gt;Now, on error (500 status code), the caller is routed to a generic error page, with a &lt;em&gt;200&lt;/em&gt; response, and the actual error in the content of the page.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;For a lot of situations this might not be especially useful, as the return message and status code is not especially useful to the calling application to act on.&lt;/p&gt;
-&lt;p&gt;For a customer facing application this could be useful (providing the actual error is logged and recorded somewhere) as the customer doesn't care about the details of the eror, but for a backend api-to-api call, the string response is not especially useful.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://github.com/dodyg/practical-aspnetcore/tree/net6.0/projects/diagnostics/diagnostics-5"&gt;Status Pages&lt;/a&gt;&lt;br&gt;
-&lt;a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/error-handling?view=aspnetcore-6.0#usestatuscodepageswithredirects"&gt;UseStatusCodePages&lt;/a&gt;&lt;/p&gt;
-&lt;!--?# DailyDrop ?--&gt;178: 10-10-2022&lt;!--?#/ DailyDrop ?--&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
