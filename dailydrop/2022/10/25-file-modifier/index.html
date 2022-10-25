@@ -1,0 +1,359 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="always learning | always growing">
+
+    <title>Always Developing - File access modifier</title>
+
+    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/10/25-file-modifier">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
+
+    <meta name="application-name" content="Always Developing" />
+    <meta name="msapplication-tooltip" content="Always Developing" />
+    <meta name="msapplication-starturl" content="/" />
+
+    <meta property="og:title" content="Always Developing - File access modifier" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/10/25-file-modifier" />
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Bootstrap core CSS -->
+    <link href="/vendor/bootstrap/scss/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom fonts for this template -->
+    <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="/vendor/fontawesome-free/css/brands.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css' data-no-mirror>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css' data-no-mirror>
+
+    <!-- Custom styles for this template -->
+    <link href="/scss/always-developing-blog.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/plugins/autoloader/prism-autoloader.min.js" data-no-mirror></script>
+    <script src="https://cdn.jsdelivr.net/npm/quicklink@2.0.0/dist/quicklink.umd.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/themes/prism.css">
+
+    <!-- Lunr search -->
+        <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/pako@2.0.3/dist/pako_inflate.min.js"></script>
+        <script src="/search.js"></script>
+
+    
+
+
+    
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand"  href="/">
+            <img src="/images/ad_logo.png" alt="" width="25" height="25" class="d-inline-block align-text-top">
+            Always Developing
+        </a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            Menu
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/software">Software</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/tags">Tags</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/posts">Posts</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/about">About</a>
+            </li>
+</ul>
+                <form class="form-inline my-2 my-lg-0" action="/search" method="GET">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="query">
+                    <input type="submit" hidden />
+                </form>
+        </div>
+    </div>
+</nav>
+
+    <!-- Page Header -->
+    <header class="masthead">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 align-middle">
+                <div class="post-header-image">
+                    <a href="/">
+                        <img src="/images/ad_logo.png" class="header-image">
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="post-heading">
+                    <h1>
+                        File access modifier
+                    </h1>
+                            <h2 class="subheading">Discovering the file access modifier in C#11</h2>
+                        <p class="post-meta">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
+                                <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
+                            </svg> Published on Tuesday, 25 October 2022
+                        </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <!-- Main Content -->
+    <div class="container">
+            <div class="row ">
+                    <div id="content" class="col-md-9 post-with-toc post-block">
+                        
+<div class="post-header-category">
+    <a class="btn btn-primary btn-sm btn-default btn-home" href="\" role="button"><i class="fas fa-angle-double-left"></i> Home</a>
+            <a class="btn btn-primary btn-sm category-btn" href="/categories/dailydrop" role="button">DailyDrop</a>
+</div>
+
+                        <h2 id="daily-knowledge-drop">Daily Knowledge Drop</h2>
+<p>A new access modifier is being introduced with C#11, the <code>file</code> modifier - this will limit the accessibility of the type to the <em>file in which it is declared</em>.</p>
+<hr />
+<h2 id="modifier-recap">Modifier recap</h2>
+<p>A quick recap of the existing access modifiers, along with the new <code>file</code> modifier (as they relate to <em>classes</em>).</p>
+<p>Existing modifiers:</p>
+<ul>
+<li><code>private</code> - the class is only accessible inside the class in which it was defined</li>
+<li><code>public</code> - the class is accessible from everywhere in the project</li>
+<li><code>protected</code> - the class is accessible from within the class and all types which derive from the class</li>
+<li><code>internal</code> - the class is accessible from within its own assembly, but not other assemblies</li>
+</ul>
+<p>The new modifier:</p>
+<ul>
+<li><code>file</code> - the class is accessible only from within the <em>file</em> in which it was defined</li>
+</ul>
+<hr />
+<h2 id="example">Example</h2>
+<p>When a class is defined, the <code>file</code> modifier is applied (as opposed to public, private, etc.)</p>
+<pre><code class="language-csharp">file class Class1
+{
+    public string Name { get; set; }
+}
+</code></pre>
+<p>This class now cannot be used anywhere outside the file in which is was defined. Trying to use in a different class defined in a different file, will result in a compilation error:</p>
+<pre><code class="language-csharp">public class Class3
+{
+    public Class3()
+    {
+        // NOT allowed
+        Class1 ca = new Class1();
+    }
+}
+</code></pre>
+<pre><code class="language-terminal">The type or namespace name 'Class1' could not be found
+</code></pre>
+<p>However, as mentioned, it can be used in the same file:</p>
+<pre><code class="language-csharp">// all in the same physical file
+file class Class1
+{
+    public string Name { get; set; }
+}
+
+file class Class2
+{
+    public Class2()
+    {
+        // Totally okay
+        Class1 c1 = new Class1();
+    }
+}
+</code></pre>
+<p>The <code>file</code> access modifier can be applied to <code>classes, records, structs and enums</code>, but cannot be used for <em>methods</em> or <em>properties</em>.</p>
+<hr />
+<h2 id="why">Why?</h2>
+<p>This functionality was primarily introduced to assist <code>source generator</code> authors. When a <em>source generator</em> generates a class, its tricky to ensure it's not going to conflict with a file already in the consumer's code base. The <code>file</code> modifier helps solves this by ensuring (where specified) the the <em>source generated</em> file is only visible where defined, and not in conflict with any developer specified class name.</p>
+<hr />
+<h2 id="lowered-code">Lowered code</h2>
+<p>One can use <a href="https://sharplab.io/">sharplab.io</a> to see how the <code>file</code> keyword is lowered:</p>
+<p>Original code:</p>
+<pre><code class="language-csharp">file class FileScopedClass { }
+</code></pre>
+<p>Lowered code:</p>
+<pre><code class="language-csharp">internal class &lt;_&gt;FD2E2ADF7177B7A8AFDDBC12D1634CF23EA1A71020F6A1308070A16400FB68FDE__FileScopedClass { }
+</code></pre>
+<p>From this we can see that the <code>file</code> keyword is translated into an <code>internal class with a uniquely generated name</code>, as to not conflict with any existing name</p>
+<hr />
+<h2 id="notes">Notes</h2>
+<p>While the intended target audience for this feature is very narrow (source generator authors), it can be leveraged by anyone if the use case calls for it. Even then, it may not get wide usage in general applications - however it is useful to know it exists and is an option if required.</p>
+<hr />
+<h2 id="references">References</h2>
+<p><a href="https://www.youtube.com/watch?v=xm8eQenL7wA">What is the NEW &quot;file&quot; keyword of C# 11?</a></p>
+
+<blockquote class="daily-drop">
+    <div>
+        <div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px; ">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="50" height="50" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffec00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+              <path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+              <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+              <line x1="9.7" y1="17" x2="14.3" y2="17" />
+            </svg>
+        </div>
+        <div class="drop-header">
+            Daily Drop 189: 25-10-2022
+        </div>
+        <div>
+            <br>At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br> It could be anything - some.NET / C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
+            The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+        <div>
+    </div>
+</blockquote>
+
+
+                        
+<div>
+            <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
+            <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
+            <a role="button" href="/tags/net7" class="badge badge-light"> .net7</a>
+            <a role="button" href="/tags/filemodifier" class="badge badge-light"> filemodifier</a>
+</div>
+                    </div>
+                    <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
+                        
+
+        <div class="box sticky-top toc-block">
+            <h3 class="no-anchor">On This Page</h3>
+            <ul>
+        <li><a href="#daily-knowledge-drop">Daily Knowledge Drop</a></li>
+        <li><a href="#modifier-recap">Modifier recap</a></li>
+        <li><a href="#example">Example</a></li>
+        <li><a href="#why">Why?</a></li>
+        <li><a href="#lowered-code">Lowered code</a></li>
+        <li><a href="#notes">Notes</a></li>
+        <li><a href="#references">References</a></li>
+            </ul>
+        </div>
+
+                    </div>
+            </div>
+            <div class="row ">
+                    <div id="content" class="col-md-9">
+                        <div>
+    <script src="https://giscus.app/client.js"
+            data-repo="always-developing/always-developing.github.io"
+            data-repo-id="R_kgDOGQJLBQ"
+            data-category="Comments"
+            data-category-id="DIC_kwDOGQJLBc4B_pUA"
+            data-mapping="pathname"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="bottom"
+            data-theme="transparent_dark"
+            data-lang="en"
+            crossorigin="anonymous"
+            async>
+    </script>
+</div>
+                    </div>
+            </div>
+    </div>
+
+    <hr class="horizontal-rule" />
+
+    <!-- Footer -->
+    <footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <ul class="list-inline text-center">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://www.linkedin.com/in/jean-pierre-seini">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-linkedin fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                <div>
+                    <p class="copyright text-footer">
+                        Copyright © 2022 Always Developing</a>.
+                    </p>
+                </div>
+                <ul class="list-inline text-center small text-feeds">
+                        <li class="list-inline-item">
+                            <a href="/feed.rss"><i class="fa fa-rss"></i> RSS Feed</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="/feed.atom"><i class="fa fa-rss"></i> Atom Feed</a>
+                        </li>
+                </ul>
+                <ul class="list-inline text-center small">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing/alwaysdeveloping-website-src"><i class="fab fa-github"></i> This site on GitHub</a>                    
+                    </li>
+                    <li class="list-inline-item">
+                        |
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing/alwaysdeveloping-website-src/tree/main/theme"><i class="fa fa-code"></i> Custom Always-Developing theme</a>
+                    </li>
+                    <li class="list-inline-item">
+                        |
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://github.com/statiqdev/CleanBlog"><i class="fa fa-blog"></i> Adapted from Clean Blog theme</a>
+                    </li>
+                </ul>
+                <div class="small text-footer">
+                    <a href="https://statiq.dev"><i class="fa fa-cogs"></i> Generated by Statiq</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="/vendor/jquery/jquery.min.js"></script>
+    <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CXPLFS7K38"></script>
+
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){window.dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-CXPLFS7K38');
+</script>
+
+    
+
+    <!-- Custom scripts for this template -->
+    <script src="/js/always-developing-blog.js"></script>
+
+</body>
+
+</html>
