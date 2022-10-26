@@ -1,0 +1,446 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="always learning | always growing">
+
+    <title>Always Developing - OpenAPI documentation from XML documentation comments</title>
+
+    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/10/26-xml-swagger">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
+
+    <meta name="application-name" content="Always Developing" />
+    <meta name="msapplication-tooltip" content="Always Developing" />
+    <meta name="msapplication-starturl" content="/" />
+
+    <meta property="og:title" content="Always Developing - OpenAPI documentation from XML documentation comments" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/10/26-xml-swagger" />
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Bootstrap core CSS -->
+    <link href="/vendor/bootstrap/scss/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom fonts for this template -->
+    <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="/vendor/fontawesome-free/css/brands.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css' data-no-mirror>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css' data-no-mirror>
+
+    <!-- Custom styles for this template -->
+    <link href="/scss/always-developing-blog.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/plugins/autoloader/prism-autoloader.min.js" data-no-mirror></script>
+    <script src="https://cdn.jsdelivr.net/npm/quicklink@2.0.0/dist/quicklink.umd.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/themes/prism.css">
+
+    <!-- Lunr search -->
+        <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/pako@2.0.3/dist/pako_inflate.min.js"></script>
+        <script src="/search.js"></script>
+
+    
+
+
+    
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand"  href="/">
+            <img src="/images/ad_logo.png" alt="" width="25" height="25" class="d-inline-block align-text-top">
+            Always Developing
+        </a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            Menu
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/software">Software</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/tags">Tags</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/posts">Posts</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/about">About</a>
+            </li>
+</ul>
+                <form class="form-inline my-2 my-lg-0" action="/search" method="GET">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="query">
+                    <input type="submit" hidden />
+                </form>
+        </div>
+    </div>
+</nav>
+
+    <!-- Page Header -->
+    <header class="masthead">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 align-middle">
+                <div class="post-header-image">
+                    <a href="/">
+                        <img src="/images/ad_logo.png" class="header-image">
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="post-heading">
+                    <h1>
+                        OpenAPI documentation from XML documentation comments
+                    </h1>
+                            <h2 class="subheading">How XML documentation comments can be used to populate a swagger document</h2>
+                        <p class="post-meta">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
+                                <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
+                            </svg> Published on Wednesday, 26 October 2022
+                        </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <!-- Main Content -->
+    <div class="container">
+            <div class="row ">
+                    <div id="content" class="col-md-9 post-with-toc post-block">
+                        
+<div class="post-header-category">
+    <a class="btn btn-primary btn-sm btn-default btn-home" href="\" role="button"><i class="fas fa-angle-double-left"></i> Home</a>
+            <a class="btn btn-primary btn-sm category-btn" href="/categories/dailydrop" role="button">DailyDrop</a>
+</div>
+
+                        <h2 id="daily-knowledge-drop">Daily Knowledge Drop</h2>
+<p>Code comments can be used to <code>populate the swagger document</code> with helpful comments when working with minimal API's.</p>
+<p>The <code>XML Documentation comments</code> (those comments starting with <code>///</code>) are output to an XML documentation file on application build - this file is then be user to populate the swagger document at runtime.</p>
+<hr />
+<h2 id="code">Code</h2>
+<p>For the below sample, the default <em>weatherforecast</em> endpoint will be used, but modified slightly.</p>
+<h3 id="endpoint-definition">Endpoint definition</h3>
+<p>The first step is break out the various components to make them easier to comment.</p>
+<p>Move the <em>WeatherForecast</em> response object into its own file, <em>WeatherForecast.cs</em>:</p>
+<pre><code class="language-csharp">public record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+{
+    public int TemperatureF =&gt; 32 + (int)(TemperatureC / 0.5556);
+}
+</code></pre>
+<p>The lambda delegate which is called when the <em>GET &quot;weatherforecast&quot;</em> endpoint is called, is also moved into its own static method in the <em>WeatherCalculator</em> class:</p>
+<pre><code class="language-csharp">public class WeatherCalculator
+{
+    static string[] summaries = new[]
+    {
+        &quot;Freezing&quot;, &quot;Bracing&quot;, &quot;Chilly&quot;, &quot;Cool&quot;, &quot;Mild&quot;, 
+        &quot;Warm&quot;, &quot;Balmy&quot;, &quot;Hot&quot;, &quot;Sweltering&quot;, &quot;Scorching&quot;
+    };
+
+    public static WeatherForecast[] GetWeather([FromRoute]string city)
+    {
+        _ = city;
+
+        var forecast = Enumerable.Range(1, 5).Select(index =&gt;
+        new WeatherForecast
+        (
+            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+            Random.Shared.Next(-20, 55),
+            summaries[Random.Shared.Next(summaries.Length)]
+        ))
+        .ToArray();
+
+        return forecast;
+    }
+}
+</code></pre>
+<p>A <em>city</em> field was also added to the <em>GetWeather</em> as a parameter - this is not used and is just added to demonstrate how it is reflected on the swagger document.</p>
+<p>The endpoint is then updated to invoke the static <code>GetWeather</code> method instead of invoking the delegate:</p>
+<pre><code class="language-csharp">// the swagger and api dependency injection
+// and middleware components will automatically
+// be added if the correct template settings 
+// were chosen
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+// change from delegate to call the static method
+// created above
+app.MapGet(&quot;/weatherforecast/{city}&quot;, WeatherCalculator.GetWeather);
+</code></pre>
+<p>If running the application and browsing to the swagger endpoint, it should work as before (before the code modifications), but still not documentation added:</p>
+<p><img src="no-doc.png" alt="Swagger without documentation" /></p>
+<hr />
+<h3 id="xml-documentation">XML Documentation</h3>
+<p>The next step is to add XML documentation comments to the code. In Visual Studio, <em>auto-complete</em> will create the XML document structure by <code>typing /// above a class or method</code></p>
+<p>Updated <em>WeatherForecast</em> response object:</p>
+<pre><code class="language-csharp">/// &lt;summary&gt;
+/// Represents the weather for a specific date
+/// &lt;/summary&gt;
+/// &lt;param name=&quot;Date&quot;&gt;The date for the weather forecast&lt;/param&gt;
+/// &lt;param name=&quot;TemperatureC&quot;&gt;The temperature in degrees celsius&lt;/param&gt;
+/// &lt;param name=&quot;Summary&quot;&gt;A summary description of the weather&lt;/param&gt;
+public record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+{
+    public int TemperatureF =&gt; 32 + (int)(TemperatureC / 0.5556);
+}
+</code></pre>
+<p>The updated <em>WeatherCalculator</em> class and static <em>GetWeather</em> method:</p>
+<pre><code class="language-csharp">/// &lt;summary&gt;
+/// Contains logic to get the weather forecast details
+/// &lt;/summary&gt;
+public class WeatherCalculator
+{
+    static string[] summaries = new[]
+    {
+        &quot;Freezing&quot;, &quot;Bracing&quot;, &quot;Chilly&quot;, &quot;Cool&quot;, &quot;Mild&quot;, 
+        &quot;Warm&quot;, &quot;Balmy&quot;, &quot;Hot&quot;, &quot;Sweltering&quot;, &quot;Scorching&quot;
+    };
+
+    /// &lt;summary&gt;
+    /// Retrieve the weather forecast for the next 5 days for the city specified
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;city&quot;&gt;The city for the weather forecasts should be retrieved&lt;/param&gt;
+    /// &lt;returns&gt;The forecast details for the next 5 days&lt;/returns&gt;
+    public static WeatherForecast[] GetWeather(string city)
+    {
+        _ = city;
+
+        var forecast = Enumerable.Range(1, 5).Select(index =&gt;
+        new WeatherForecast
+        (
+            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+            Random.Shared.Next(-20, 55),
+            summaries[Random.Shared.Next(summaries.Length)]
+        ))
+        .ToArray();
+
+        return forecast;
+    }
+}
+</code></pre>
+<p>Doing the above is good practice whether using this technique to populate the swagger document or not, as it provides context and information for future developers of the code.</p>
+<p>At this point this information is not available publicly. Next step we'll make the XML documentation details available outside the code.</p>
+<hr />
+<h3 id="file-generation">File generation</h3>
+<p>This step is very straight forward - the <code>Documentation file</code> option needs to be set on the project. This can be done in one of two ways:</p>
+<ul>
+<li>Add the <code>GenerateDocumentationFile</code> node directly to the csproj file:</li>
+</ul>
+<pre><code class="language-xml">&lt;PropertyGroup&gt;
+    &lt;TargetFramework&gt;net6.0&lt;/TargetFramework&gt;
+    &lt;Nullable&gt;enable&lt;/Nullable&gt;
+    &lt;ImplicitUsings&gt;enable&lt;/ImplicitUsings&gt;
+    &lt;GenerateDocumentationFile&gt;true&lt;/GenerateDocumentationFile&gt;
+&lt;/PropertyGroup&gt;
+</code></pre>
+<ul>
+<li>Set the flag in the <code>project properties</code>:</li>
+</ul>
+<p><img src="xml-doc.png" alt="Project properties Documentation file flag" /></p>
+<p>Compiling the code will now also <em>generate a XML document file along with the binary</em>.</p>
+<p>Now that we have XML file, next we can instruct the application to populate the swagger document with the details in the XML document file.</p>
+<hr />
+<h3 id="swagger-setup">Swagger Setup</h3>
+<p>During application startup, the <code>builder.Services.AddSwaggerGen()</code> line should be <em>replaced</em> with the following:</p>
+<pre><code class="language-csharp">builder.Services.AddSwaggerGen(c =&gt;
+{
+    c.SwaggerDoc(&quot;v1&quot;, new() { Title = &quot;My API&quot;, Version = &quot;v1&quot; });
+    // build up the file path to the XML document
+    var filePath = Path.Combine(AppContext.BaseDirectory, &quot;XmlDocs.xml&quot;);
+    // instruct the swagger generation process to include details
+    // from the file
+    c.IncludeXmlComments(filePath);
+});
+</code></pre>
+<p>Now, when browsing to the swagger endpoint the XML comments are included:</p>
+<p><img src="swagger-doc.png" alt="Swagger with comments" /></p>
+<hr />
+<h2 id="notes">Notes</h2>
+<p>I personally find this method to be clean and very easy to implement and will definitely be using this on all my own API's going forward. This method ensures the code is well documented (for developers), and is also well documented for consumers with minimal additional effort.
+Keep in mind though that the code comments will be publicly exposed to the consumer, so would need to make sense in that context.</p>
+<hr />
+<h2 id="references">References</h2>
+<p><a href="https://khalidabuhakmeh.com/using-xml-documentation-with-aspnetcore-minimal-api-apps-and-openapi">Using XML Documentation With ASP.NET Core Minimal API Apps and OpenAPI</a></p>
+
+<blockquote class="daily-drop">
+    <div>
+        <div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px; ">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="50" height="50" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffec00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+              <path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+              <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+              <line x1="9.7" y1="17" x2="14.3" y2="17" />
+            </svg>
+        </div>
+        <div class="drop-header">
+            Daily Drop 189: 26-10-2022
+        </div>
+        <div>
+            <br>At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br> It could be anything - some.NET / C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
+            The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+        <div>
+    </div>
+</blockquote>
+
+
+                        
+<div>
+            <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
+            <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
+            <a role="button" href="/tags/swagger" class="badge badge-light"> swagger</a>
+            <a role="button" href="/tags/xml" class="badge badge-light"> xml</a>
+            <a role="button" href="/tags/documentation" class="badge badge-light"> documentation</a>
+</div>
+                    </div>
+                    <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
+                        
+
+        <div class="box sticky-top toc-block">
+            <h3 class="no-anchor">On This Page</h3>
+            <ul>
+        <li><a href="#daily-knowledge-drop">Daily Knowledge Drop</a></li>
+        <li><a href="#code">Code</a></li>
+            <ul>
+        <li><a href="#endpoint-definition">Endpoint definition</a></li>
+        <li><a href="#xml-documentation">XML Documentation</a></li>
+        <li><a href="#file-generation">File generation</a></li>
+        <li><a href="#swagger-setup">Swagger Setup</a></li>
+            </ul>
+        <li><a href="#notes">Notes</a></li>
+        <li><a href="#references">References</a></li>
+            </ul>
+        </div>
+
+                    </div>
+            </div>
+            <div class="row ">
+                    <div id="content" class="col-md-9">
+                        <div>
+    <script src="https://giscus.app/client.js"
+            data-repo="always-developing/always-developing.github.io"
+            data-repo-id="R_kgDOGQJLBQ"
+            data-category="Comments"
+            data-category-id="DIC_kwDOGQJLBc4B_pUA"
+            data-mapping="pathname"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="bottom"
+            data-theme="transparent_dark"
+            data-lang="en"
+            crossorigin="anonymous"
+            async>
+    </script>
+</div>
+                    </div>
+            </div>
+    </div>
+
+    <hr class="horizontal-rule" />
+
+    <!-- Footer -->
+    <footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <ul class="list-inline text-center">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://www.linkedin.com/in/jean-pierre-seini">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-linkedin fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                <div>
+                    <p class="copyright text-footer">
+                        Copyright © 2022 Always Developing</a>.
+                    </p>
+                </div>
+                <ul class="list-inline text-center small text-feeds">
+                        <li class="list-inline-item">
+                            <a href="/feed.rss"><i class="fa fa-rss"></i> RSS Feed</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="/feed.atom"><i class="fa fa-rss"></i> Atom Feed</a>
+                        </li>
+                </ul>
+                <ul class="list-inline text-center small">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing/alwaysdeveloping-website-src"><i class="fab fa-github"></i> This site on GitHub</a>                    
+                    </li>
+                    <li class="list-inline-item">
+                        |
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing/alwaysdeveloping-website-src/tree/main/theme"><i class="fa fa-code"></i> Custom Always-Developing theme</a>
+                    </li>
+                    <li class="list-inline-item">
+                        |
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://github.com/statiqdev/CleanBlog"><i class="fa fa-blog"></i> Adapted from Clean Blog theme</a>
+                    </li>
+                </ul>
+                <div class="small text-footer">
+                    <a href="https://statiq.dev"><i class="fa fa-cogs"></i> Generated by Statiq</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="/vendor/jquery/jquery.min.js"></script>
+    <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CXPLFS7K38"></script>
+
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){window.dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-CXPLFS7K38');
+</script>
+
+    
+
+    <!-- Custom scripts for this template -->
+    <script src="/js/always-developing-blog.js"></script>
+
+</body>
+
+</html>

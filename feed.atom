@@ -4,8 +4,172 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-10-25T05:16:01Z</updated>
+	<updated>2022-10-26T04:35:39Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/10/26-xml-swagger</id>
+		<title>OpenAPI documentation from XML documentation comments</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/10/26-xml-swagger" />
+		<updated>2022-10-26T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;Code comments can be used to &lt;code&gt;populate the swagger document&lt;/code&gt; with helpful comments when working with minimal API's.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;XML Documentation comments&lt;/code&gt; (those comments starting with &lt;code&gt;///&lt;/code&gt;) are output to an XML documentation file on application build - this file is then be user to populate the swagger document at runtime.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="code"&gt;Code&lt;/h2&gt;
+&lt;p&gt;For the below sample, the default &lt;em&gt;weatherforecast&lt;/em&gt; endpoint will be used, but modified slightly.&lt;/p&gt;
+&lt;h3 id="endpoint-definition"&gt;Endpoint definition&lt;/h3&gt;
+&lt;p&gt;The first step is break out the various components to make them easier to comment.&lt;/p&gt;
+&lt;p&gt;Move the &lt;em&gt;WeatherForecast&lt;/em&gt; response object into its own file, &lt;em&gt;WeatherForecast.cs&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+{
+    public int TemperatureF =&amp;gt; 32 + (int)(TemperatureC / 0.5556);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The lambda delegate which is called when the &lt;em&gt;GET "weatherforecast"&lt;/em&gt; endpoint is called, is also moved into its own static method in the &lt;em&gt;WeatherCalculator&lt;/em&gt; class:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class WeatherCalculator
+{
+    static string[] summaries = new[]
+    {
+        "Freezing", "Bracing", "Chilly", "Cool", "Mild", 
+        "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+    };
+
+    public static WeatherForecast[] GetWeather([FromRoute]string city)
+    {
+        _ = city;
+
+        var forecast = Enumerable.Range(1, 5).Select(index =&amp;gt;
+        new WeatherForecast
+        (
+            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+            Random.Shared.Next(-20, 55),
+            summaries[Random.Shared.Next(summaries.Length)]
+        ))
+        .ToArray();
+
+        return forecast;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;A &lt;em&gt;city&lt;/em&gt; field was also added to the &lt;em&gt;GetWeather&lt;/em&gt; as a parameter - this is not used and is just added to demonstrate how it is reflected on the swagger document.&lt;/p&gt;
+&lt;p&gt;The endpoint is then updated to invoke the static &lt;code&gt;GetWeather&lt;/code&gt; method instead of invoking the delegate:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// the swagger and api dependency injection
+// and middleware components will automatically
+// be added if the correct template settings 
+// were chosen
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+// change from delegate to call the static method
+// created above
+app.MapGet("/weatherforecast/{city}", WeatherCalculator.GetWeather);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If running the application and browsing to the swagger endpoint, it should work as before (before the code modifications), but still not documentation added:&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/no-doc.png" alt="Swagger without documentation"&gt;&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id="xml-documentation"&gt;XML Documentation&lt;/h3&gt;
+&lt;p&gt;The next step is to add XML documentation comments to the code. In Visual Studio, &lt;em&gt;auto-complete&lt;/em&gt; will create the XML document structure by &lt;code&gt;typing /// above a class or method&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Updated &lt;em&gt;WeatherForecast&lt;/em&gt; response object:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;/// &amp;lt;summary&amp;gt;
+/// Represents the weather for a specific date
+/// &amp;lt;/summary&amp;gt;
+/// &amp;lt;param name="Date"&amp;gt;The date for the weather forecast&amp;lt;/param&amp;gt;
+/// &amp;lt;param name="TemperatureC"&amp;gt;The temperature in degrees celsius&amp;lt;/param&amp;gt;
+/// &amp;lt;param name="Summary"&amp;gt;A summary description of the weather&amp;lt;/param&amp;gt;
+public record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+{
+    public int TemperatureF =&amp;gt; 32 + (int)(TemperatureC / 0.5556);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The updated &lt;em&gt;WeatherCalculator&lt;/em&gt; class and static &lt;em&gt;GetWeather&lt;/em&gt; method:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;/// &amp;lt;summary&amp;gt;
+/// Contains logic to get the weather forecast details
+/// &amp;lt;/summary&amp;gt;
+public class WeatherCalculator
+{
+    static string[] summaries = new[]
+    {
+        "Freezing", "Bracing", "Chilly", "Cool", "Mild", 
+        "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+    };
+
+    /// &amp;lt;summary&amp;gt;
+    /// Retrieve the weather forecast for the next 5 days for the city specified
+    /// &amp;lt;/summary&amp;gt;
+    /// &amp;lt;param name="city"&amp;gt;The city for the weather forecasts should be retrieved&amp;lt;/param&amp;gt;
+    /// &amp;lt;returns&amp;gt;The forecast details for the next 5 days&amp;lt;/returns&amp;gt;
+    public static WeatherForecast[] GetWeather(string city)
+    {
+        _ = city;
+
+        var forecast = Enumerable.Range(1, 5).Select(index =&amp;gt;
+        new WeatherForecast
+        (
+            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+            Random.Shared.Next(-20, 55),
+            summaries[Random.Shared.Next(summaries.Length)]
+        ))
+        .ToArray();
+
+        return forecast;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Doing the above is good practice whether using this technique to populate the swagger document or not, as it provides context and information for future developers of the code.&lt;/p&gt;
+&lt;p&gt;At this point this information is not available publicly. Next step we'll make the XML documentation details available outside the code.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id="file-generation"&gt;File generation&lt;/h3&gt;
+&lt;p&gt;This step is very straight forward - the &lt;code&gt;Documentation file&lt;/code&gt; option needs to be set on the project. This can be done in one of two ways:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Add the &lt;code&gt;GenerateDocumentationFile&lt;/code&gt; node directly to the csproj file:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre&gt;&lt;code class="language-xml"&gt;&amp;lt;PropertyGroup&amp;gt;
+    &amp;lt;TargetFramework&amp;gt;net6.0&amp;lt;/TargetFramework&amp;gt;
+    &amp;lt;Nullable&amp;gt;enable&amp;lt;/Nullable&amp;gt;
+    &amp;lt;ImplicitUsings&amp;gt;enable&amp;lt;/ImplicitUsings&amp;gt;
+    &amp;lt;GenerateDocumentationFile&amp;gt;true&amp;lt;/GenerateDocumentationFile&amp;gt;
+&amp;lt;/PropertyGroup&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;ul&gt;
+&lt;li&gt;Set the flag in the &lt;code&gt;project properties&lt;/code&gt;:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/xml-doc.png" alt="Project properties Documentation file flag"&gt;&lt;/p&gt;
+&lt;p&gt;Compiling the code will now also &lt;em&gt;generate a XML document file along with the binary&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;Now that we have XML file, next we can instruct the application to populate the swagger document with the details in the XML document file.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id="swagger-setup"&gt;Swagger Setup&lt;/h3&gt;
+&lt;p&gt;During application startup, the &lt;code&gt;builder.Services.AddSwaggerGen()&lt;/code&gt; line should be &lt;em&gt;replaced&lt;/em&gt; with the following:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;builder.Services.AddSwaggerGen(c =&amp;gt;
+{
+    c.SwaggerDoc("v1", new() { Title = "My API", Version = "v1" });
+    // build up the file path to the XML document
+    var filePath = Path.Combine(AppContext.BaseDirectory, "XmlDocs.xml");
+    // instruct the swagger generation process to include details
+    // from the file
+    c.IncludeXmlComments(filePath);
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now, when browsing to the swagger endpoint the XML comments are included:&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/swagger-doc.png" alt="Swagger with comments"&gt;&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;I personally find this method to be clean and very easy to implement and will definitely be using this on all my own API's going forward. This method ensures the code is well documented (for developers), and is also well documented for consumers with minimal additional effort.
+Keep in mind though that the code comments will be publicly exposed to the consumer, so would need to make sense in that context.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://khalidabuhakmeh.com/using-xml-documentation-with-aspnetcore-minimal-api-apps-and-openapi"&gt;Using XML Documentation With ASP.NET Core Minimal API Apps and OpenAPI&lt;/a&gt;&lt;/p&gt;
+&lt;!--?# DailyDrop ?--&gt;189: 26-10-2022&lt;!--?#/ DailyDrop ?--&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/10/25-file-modifier</id>
 		<title>File access modifier</title>
@@ -841,124 +1005,6 @@ It is beneficial to be aware of Newtonsoft.Json and how it can be leveraged when
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://learn.microsoft.com/en-us/aspnet/core/performance/objectpool?view=aspnetcore-6.0"&gt;Object reuse with ObjectPool in ASP.NET Core&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;181: 13-10-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/10/12-list-sort-performance</id>
-		<title>Primitive collection performance</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/10/12-list-sort-performance" />
-		<updated>2022-10-12T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;.NET 7 introduces a small update when using LINQ to perform &lt;code&gt;sorting on a collection&lt;/code&gt; to slightly &lt;code&gt;simplifying the code&lt;/code&gt; - however, when working with arrays, the &lt;code&gt;Array.Sort&lt;/code&gt; method is the most performant method to use to perform the sort.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="net-7-updates"&gt;.NET 7 updates&lt;/h2&gt;
-&lt;p&gt;Prior to .NET 7, when performing a &lt;em&gt;sort&lt;/em&gt; on a collection of items, the &lt;code&gt;OrderBy&lt;/code&gt; or &lt;code&gt;OrderByDescending&lt;/code&gt; method is generally used to sort the items (&lt;em&gt;OrderBy&lt;/em&gt; and &lt;em&gt;OrderByDescending&lt;/em&gt; are extension methods on IEnumerable):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// generate a random list of 500 entities into an item array
-var rando = new Random(1001);
-var items = Enumerable.Range(1, 500).Select(i =&amp;gt; rando.Next()).ToArray();
-
-Console.WriteLine(items[0]);
-// sort the items
-var sortedItems = items.OrderBy(item =&amp;gt; item).ToArray();
-Console.WriteLine(sortedItems[0]);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output being:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;First item before sort: 1447366984
-First item after sort: 1250278
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;When working with primitives, in the &lt;em&gt;OrderBy&lt;/em&gt; method the &lt;code&gt;keySelector&lt;/code&gt; (&lt;em&gt;item&lt;/em&gt; in the above example) is required to be specified, even though there is only one selector - the item in the collection. This is versus a collection of &lt;em&gt;classes&lt;/em&gt;, where the &lt;code&gt;keySelector&lt;/code&gt; could be any property on the class.&lt;/p&gt;
-&lt;p&gt;With .Net 7, the &lt;code&gt;keySelector&lt;/code&gt; is no longer required:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var rando = new Random(1001);
-var items = Enumerable.Range(1, 500).Select(i =&amp;gt; rando.Next()).ToArray();
-
-Console.WriteLine($&amp;quot;First item before sort: {items[0]}&amp;quot;);
-// sort the items, NO SELECTOR
-var newSortedItems = items.Order().ToArray();
-Console.WriteLine($&amp;quot;First item after sort: {newSortedItems[0]}&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output being:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;First item before sort: 1447366984
-First item after sort: 1250278
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The same output, however &lt;code&gt;slightly more readable and concise code&lt;/code&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="array.sort"&gt;Array.Sort&lt;/h2&gt;
-&lt;p&gt;Using the LINQ &lt;code&gt;OrderBy&lt;/code&gt; or &lt;code&gt;OrderByDescending&lt;/code&gt; methods is the default go-to when wanting to sort a collection - however there is another option when &lt;em&gt;working with arrays&lt;/em&gt; - the static &lt;code&gt;Array.Sort&lt;/code&gt; method.&lt;/p&gt;
-&lt;p&gt;The method usage is straight forward - it takes an array as a parameter, and will &lt;code&gt;sort the supplied array, NOT return a sorted copy&lt;/code&gt;, as with the LINQ methods:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var rando = new Random(1001);
-var items = Enumerable.Range(1, 500).Select(i =&amp;gt; rando.Next()).ToArray();
-
-Console.WriteLine($&amp;quot;First item before sort: {items[0]}&amp;quot;);
-// Perform the sort
-Array.Sort(items);
-// use the SAME array
-Console.WriteLine($&amp;quot;First item after sort: {items[0]}&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;One again, the same output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;First item before sort: 1447366984
-First item after sort: 1250278
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="performance"&gt;Performance&lt;/h2&gt;
-&lt;p&gt;Let's benchmark the three methods:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;the pre-dotnet 7 &lt;code&gt;OrderBy&lt;/code&gt; with a &lt;code&gt;keySelector&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;the new .NET 7 &lt;code&gt;OrderBy&lt;/code&gt; without a &lt;code&gt;keySelector&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;Array.Sort&lt;/code&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;The below was run on the same 500 item collection as shown in the above examples:&lt;/p&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;Method&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Ratio&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Allocated&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Alloc Ratio&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;OrderBy&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;41.56 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.216 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.181 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;10.2 KB&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;Order&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;40.75 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.304 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.285 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.98&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;8.23 KB&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.81&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;ArraySort&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;18.10 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.180 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.168 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.44&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.13 KB&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.21&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;The new and old version of &lt;code&gt;OrderBy&lt;/code&gt; practically have the same performance, however for this use case, the &lt;code&gt;Array.Sort&lt;/code&gt; is &lt;code&gt;over 200% faster&lt;/code&gt;, and uses only &lt;code&gt;20% of the memory&lt;/code&gt;!&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;The .NET 7 LINQ &lt;em&gt;OrderBy&lt;/em&gt; enhancements definitely make the code slightly more readable and concise - however if performance is critical, consider using &lt;code&gt;AArray.Sort&lt;/code&gt; and avoiding &lt;em&gt;OrderBy&lt;/em&gt; entirely. Result may vary based on the size of the array, so as always benchmark with your specific expected workload to get a comparison and make an informed choice.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://twitter.com/okyrylchuk/status/1567620600599908352"&gt;Oleg Kyrylchuk tweet&lt;/a&gt;&lt;br /&gt;
-&lt;a href="https://www.youtube.com/watch?v=K1Ye_QEpAq8"&gt;Stop using LINQ to order your primitive collections in C#&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;180: 12-10-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
