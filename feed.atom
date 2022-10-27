@@ -4,8 +4,102 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-10-26T04:35:39Z</updated>
+	<updated>2022-10-27T04:31:49Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/10/27-linq-tolookup</id>
+		<title>LINQ's ToLookup method</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/10/27-linq-tolookup" />
+		<updated>2022-10-27T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;LINQ has a &lt;code&gt;ToLookup&lt;/code&gt; method which which is used to create a &lt;em&gt;lookup&lt;/em&gt; - &lt;code&gt;a key which points to a list of (1 or more) objects&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="example"&gt;Example&lt;/h2&gt;
+&lt;p&gt;Suppose we have a collections of &lt;em&gt;Songs&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// Song record
+record Song(string Artist, string Name, int LengthInSeconds);
+
+// an array of songs
+Song[]? songs = new[]
+{
+    new Song(&amp;quot;Foo Fighters&amp;quot;, &amp;quot;EverLong&amp;quot;, 250),
+    new Song(&amp;quot;Foo Fighters&amp;quot;, &amp;quot;My Hero&amp;quot;, 283),
+    new Song(&amp;quot;Foo Fighters&amp;quot;, &amp;quot;All My Life&amp;quot;, 250),
+    new Song(&amp;quot;John Mayer&amp;quot;, &amp;quot;Clarity&amp;quot;, 238),
+    new Song(&amp;quot;John Mayer&amp;quot;, &amp;quot;Daughters&amp;quot;, 238),
+};
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id="simple-lookup"&gt;Simple lookup&lt;/h3&gt;
+&lt;p&gt;The &lt;code&gt;ToLookup&lt;/code&gt; can be used to &lt;code&gt;group songs together by artist&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// perform the lookup, using Artist as the key
+ILookup&amp;lt;string, Song&amp;gt;? lookupByArtist = 
+    songs.ToLookup(s =&amp;gt; s.Artist, item =&amp;gt; item);
+
+// iterate through each key (artist) grouping
+foreach(IGrouping&amp;lt;string, Song&amp;gt; artist in lookupByArtist)
+{
+    Console.WriteLine($&amp;quot;Artist: {artist.Key}&amp;quot;);
+    // iterate through each item in the grouping
+    foreach(Song song in artist.ToList())
+    {
+        Console.WriteLine($&amp;quot;- Song name: {song.Name}&amp;quot;);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output of the above is as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Artist: Foo Fighters
+- Song name: EverLong
+- Song name: My Hero
+- Song name: All My Life
+Artist: John Mayer
+- Song name: Clarity
+- Song name: Daughters
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="complex-lookup"&gt;Complex lookup&lt;/h3&gt;
+&lt;p&gt;In the above example, the &lt;em&gt;lookup was done on a single field, Artist&lt;/em&gt;, however this doesn't have to be the case. The &lt;code&gt;grouping can be done on multiple fields&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// group the data by artist AND song length
+var lookupByArtistTime = 
+    songs.ToLookup(s =&amp;gt; new { s.Artist, s.LengthInSeconds}, item =&amp;gt; item);
+
+foreach (var artistTime in lookupByArtistTime)
+{
+    Console.WriteLine($&amp;quot;Artist/Time: {artistTime.Key}&amp;quot;);
+    foreach (Song song in artistTime.ToList())
+    {
+        Console.WriteLine($&amp;quot;- Song name: {song.Name}&amp;quot;);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In the above, the key was the &lt;code&gt;Artist + LengthInSeconds anonymous object&lt;/code&gt;. The output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Artist/Time: { Artist = Foo Fighters, LengthInSeconds = 250 }
+- Song name: EverLong
+- Song name: All My Life
+Artist/Time: { Artist = Foo Fighters, LengthInSeconds = 283 }
+- Song name: My Hero
+Artist/Time: { Artist = John Mayer, LengthInSeconds = 238 }
+- Song name: Clarity
+- Song name: Daughters
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="tolookup-vs-groupby"&gt;ToLookup vs GroupBy&lt;/h2&gt;
+&lt;p&gt;A note on &lt;code&gt;ToLookup&lt;/code&gt;, which on the surface appears to be the same as &lt;code&gt;GroupBy&lt;/code&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;ToLookup&lt;/code&gt; performs execution immediately and returns an &lt;em&gt;ILookup&lt;/em&gt; implementation&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;GroupBy&lt;/code&gt; defers execution until a &lt;em&gt;ToList&lt;/em&gt; (or similar) is called on the returned &lt;em&gt;IEnumerable&lt;/em&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;So while the final result of the operations are the same, the timing of the execution is different.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;This is not new functionality and has been part of LINQ from the beginning - having said that, I personally wasn't aware that the method existed, and under the right use cases, can be used in place of &lt;em&gt;GroupBy&lt;/em&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://anthonygiretti.com/2022/09/29/net-learn-linq-as-you-never-have-before/"&gt;.NET: Learn LINQ as you never have before - page 27&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;189: 27-10-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/10/26-xml-swagger</id>
 		<title>OpenAPI documentation from XML documentation comments</title>
@@ -921,90 +1015,6 @@ DestinationEntity destinationDate = Newtonsoft.Json.JsonConvert
 It is beneficial to be aware of Newtonsoft.Json and how it can be leveraged when System.Text.Json doesn't provide the required functionality.&lt;/p&gt;
 &lt;hr /&gt;
 &lt;?# DailyDrop ?&gt;182: 14-10-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/10/13-objectpool</id>
-		<title>ObjectPool for resource management</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/10/13-objectpool" />
-		<updated>2022-10-13T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;Th &lt;code&gt;ObjectPool&lt;/code&gt; class can be leveraged to keep a &lt;em&gt;group of objects in memory for reuse&lt;/em&gt; rather than allowing the objects to be garbage collected and having to be reinitialized every time required.&lt;/p&gt;
-&lt;p&gt;This is especially useful if the object:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;is expensive to allocate/initialize.&lt;/li&gt;
-&lt;li&gt;represent some limited resource.&lt;/li&gt;
-&lt;li&gt;is used predictably and frequently.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr /&gt;
-&lt;h2 id="usage"&gt;Usage&lt;/h2&gt;
-&lt;p&gt;Usage of the &lt;code&gt;ObjectPool&lt;/code&gt; consists of a few steps:&lt;/p&gt;
-&lt;h3 id="objectpoolprovider"&gt;ObjectPoolProvider&lt;/h3&gt;
-&lt;p&gt;The &lt;code&gt;ObjectPoolProvider&lt;/code&gt; is used to ultimately &lt;em&gt;create the ObjectPool&lt;/em&gt; based on a &lt;em&gt;policy&lt;/em&gt;. The below code snippet uses the &lt;code&gt;DefaultObjectPoolProvider&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;The dependency injection container is configured as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;builder.Services.TryAddSingleton&amp;lt;ObjectPoolProvider, DefaultObjectPoolProvider&amp;gt;();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;When the &lt;code&gt;DefaultObjectPoolProvider&lt;/code&gt; is used and the item stored in the pool (&lt;em&gt;StringBuilder&lt;/em&gt; in the following examples) implements IDisposable, Then:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;items that are not returned to the pool will be disposed&lt;/li&gt;
-&lt;li&gt;when the pool gets disposed by the dependency injection container, all items in the pool are disposed&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr /&gt;
-&lt;h3 id="objectpool"&gt;ObjectPool&lt;/h3&gt;
-&lt;p&gt;The next step is to register the &lt;code&gt;ObjectPool&lt;/code&gt; itself with the dependency injection container, in this case using an implementation factory:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;builder.Services.TryAddSingleton&amp;lt;ObjectPool&amp;lt;StringBuilder&amp;gt;&amp;gt;(serviceProvider =&amp;gt;
-{
-    // get the provider registered in the previous step
-    var provider = serviceProvider.GetRequiredService&amp;lt;ObjectPoolProvider&amp;gt;();
-    // create a policy, using the built in string builder policy
-    var policy = new StringBuilderPooledObjectPolicy();
-    // return an ObjectPool&amp;lt;StringBuilder&amp;gt; instance created using the policy
-    return provider.Create(policy);
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h3 id="injection"&gt;Injection&lt;/h3&gt;
-&lt;p&gt;&lt;code&gt;ObjectPool&amp;lt;StringBuilder&amp;gt;&lt;/code&gt; can now be injected into the relevent method/delegate:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/buildstring&amp;quot;, (ObjectPool&amp;lt;StringBuilder&amp;gt; pool) =&amp;gt;
-{
-    // get a StringBuilder instance from the pool
-    var sBuilder = pool.Get();
-
-    try
-    {
-        // use the string builder
-        sBuilder.Append(&amp;quot;This string has been built up using &amp;quot;);
-        sBuilder.Append(&amp;quot;a StringBuilder instance from an &amp;quot;);
-        sBuilder.Append(&amp;quot;ObjectPool&amp;lt;StringBuilder&amp;gt; instance&amp;quot;);
-
-        return sBuilder.ToString();
-    }
-    finally
-    {
-        // return it to the pool
-        pool.Return(sBuilder);
-    }
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;ul&gt;
-&lt;li&gt;The &lt;code&gt;Get&lt;/code&gt; method on &lt;code&gt;ObjectPool&lt;/code&gt; is used to get an instance of the class from the pool (&lt;em&gt;StringBuilder&lt;/em&gt; in this example)&lt;/li&gt;
-&lt;li&gt;The &lt;code&gt;Return&lt;/code&gt; method is used to return the instance back to the &lt;code&gt;ObjectPool&lt;/code&gt;, making it available for reused in the future&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr /&gt;
-&lt;h2 id="performance"&gt;Performance&lt;/h2&gt;
-&lt;p&gt;While using the &lt;code&gt;ObjectPool&lt;/code&gt; can definitely increase performance, it does not always guarantee it. Object pooling usually won't improve performance:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;unless the initialization cost of an object is high, it's usually slower to get the object from the pool.&lt;/li&gt;
-&lt;li&gt;objects managed by the pool aren't de-allocated until the pool is de-allocated.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;Under the right use-case object pool can definitely make a difference to the performance of an application. However, if used incorrect it can be detrimental - so if performance is a concern, benchmark and make an informed decision for the specific use case.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://learn.microsoft.com/en-us/aspnet/core/performance/objectpool?view=aspnetcore-6.0"&gt;Object reuse with ObjectPool in ASP.NET Core&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;181: 13-10-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
