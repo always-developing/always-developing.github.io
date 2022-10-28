@@ -4,8 +4,110 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-10-27T04:31:49Z</updated>
+	<updated>2022-10-28T04:28:54Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/10/28-sql-coalesce</id>
+		<title>SQL COALESCE uses</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/10/28-sql-coalesce" />
+		<updated>2022-10-28T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;The SQL COALESCE method will &lt;code&gt;return the first non-null expressing among its arguments&lt;/code&gt;. On the surface this is a relatively simple, but useful feature, however it can be leveraged to also perform more complex operations.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="first-non-null"&gt;First non-NULL&lt;/h2&gt;
+&lt;p&gt;The first use of &lt;code&gt;COALESCE&lt;/code&gt; is straight-forward, and aligns with official definition - it &lt;em&gt;can be used to find the first non-null in a list of values&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;-- declare variables
+DECLARE &amp;#64;one int, &amp;#64;two int, &amp;#64;three int, &amp;#64;firstNonNull int
+-- set all to NULL except one
+SELECT &amp;#64;one = null, &amp;#64;two = null, &amp;#64;three = 3
+
+-- nulls are ignored
+SELECT &amp;#64;firstNonNull = COALESCE(&amp;#64;one, &amp;#64;two, &amp;#64;three)
+PRINT &amp;#64;firstNonNull
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output of the above is &lt;code&gt;3&lt;/code&gt;, the first &lt;em&gt;non-null&lt;/em&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="data-pivot"&gt;Data pivot&lt;/h2&gt;
+&lt;p&gt;Another useful, but maybe not obvious (based on the definition) use of &lt;code&gt;COALESCE&lt;/code&gt; is to pivot data - that is &lt;em&gt;convert rows of data into a single row and column&lt;/em&gt;:&lt;/p&gt;
+&lt;p&gt;In this example we have a table of &lt;em&gt;Songs&lt;/em&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT * FROM Song
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Id&lt;/th&gt;
+&lt;th&gt;Name&lt;/th&gt;
+&lt;th&gt;Artist&lt;/th&gt;
+&lt;th&gt;YearReleased&lt;/th&gt;
+&lt;th&gt;LengthInSeconds&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;8&lt;/td&gt;
+&lt;td&gt;Everlong&lt;/td&gt;
+&lt;td&gt;Foo Fighters&lt;/td&gt;
+&lt;td&gt;1997&lt;/td&gt;
+&lt;td&gt;250&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;9&lt;/td&gt;
+&lt;td&gt;Learn to Fly&lt;/td&gt;
+&lt;td&gt;Foo Fighters&lt;/td&gt;
+&lt;td&gt;1999&lt;/td&gt;
+&lt;td&gt;238&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;10&lt;/td&gt;
+&lt;td&gt;Monkey Wrench&lt;/td&gt;
+&lt;td&gt;Foo Fighters&lt;/td&gt;
+&lt;td&gt;1997&lt;/td&gt;
+&lt;td&gt;231&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;11&lt;/td&gt;
+&lt;td&gt;My Hero&lt;/td&gt;
+&lt;td&gt;Foo Fighters&lt;/td&gt;
+&lt;td&gt;1998&lt;/td&gt;
+&lt;td&gt;260&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;Executing the following:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;DECLARE &amp;#64;AllSongs VARCHAR(1000)
+SELECT &amp;#64;AllSongs = COALESCE(&amp;#64;AllSongs, '') + [Name] + ';'
+FROM Song
+
+PRINT &amp;#64;AllSongs
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Will result in &lt;code&gt;Everlong;Learn to Fly;Monkey Wrench;My Hero;&lt;/code&gt; being printed.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;COALESCE&lt;/code&gt; method will take each &lt;em&gt;Name&lt;/em&gt; field, and provided it is not null, append it to the &lt;em&gt;&amp;#64;AllSongs&lt;/em&gt; variable.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="execute-multiple-statements"&gt;Execute multiple statements&lt;/h2&gt;
+&lt;p&gt;Another useful use of &lt;code&gt;COALESCE&lt;/code&gt; is to build up a SQL string to execute multiple statements at once. This extends on the previous example - instead of a table column value being appended to a variable, a built up string is appended.&lt;/p&gt;
+&lt;p&gt;If we need to &lt;em&gt;select the data from ALL of the tables in the database&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;DECLARE &amp;#64;AllTablesSQL VARCHAR(1000)
+
+-- query sys.tables to get a list of tables in the database
+-- build up a SELECT statement based on the table name
+SELECT  &amp;#64;AllTablesSQL = COALESCE(&amp;#64;AllTablesSQL, '') + 'SELECT * FROM [' + name + ']' + '; '
+from sys.tables
+
+PRINT &amp;#64;AllTablesSQL
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output here is something along these lines (will obviously differ based on the tables in the database):
+&lt;code&gt;SELECT * FROM [Auditing]; SELECT * FROM [Song]; SELECT * FROM [AlbumSales]; SELECT * FROM [Order]; &lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;This can now be manually executed to get all the data from the tables.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;I must admit I have encountered the &lt;code&gt;COALESCE&lt;/code&gt; method before, but never fully understood what it did or how it worked - but just understanding the basics of its usage will allow for very useful queries to be executed.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://www.mssqltips.com/sqlservertip/1521/the-many-uses-of-coalesce-in-sql-server/"&gt;The Many Uses of Coalesce in SQL Server&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;190: 28-10-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/10/27-linq-tolookup</id>
 		<title>LINQ's ToLookup method</title>
@@ -897,124 +999,6 @@ app.MapGet(&amp;quot;/getnumber/{number}&amp;quot;, ([FromRoute]int number,
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.caching.memory.imemorycache.getcurrentstatistics?view=dotnet-plat-ext-7.0"&gt;IMemoryCache.GetCurrentStatistics Method&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;183: 17-10-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/10/14-newtonsoft-jsonconverter</id>
-		<title>Deserializing incompatible types using JsonConverter</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/10/14-newtonsoft-jsonconverter" />
-		<updated>2022-10-14T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;When using &lt;code&gt;Newtonsoft.Json&lt;/code&gt; to perform deserialization, the &lt;code&gt;JsonConverter&lt;/code&gt; class can be used to customize how the data of a specific type is deserialized - this allows to perform custom logic, allowing seemingly incompatible types to be &lt;em&gt;&amp;quot;compatible&amp;quot;&lt;/em&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="real-world-scenario"&gt;Real world scenario&lt;/h2&gt;
-&lt;h3 id="summary"&gt;Summary&lt;/h3&gt;
-&lt;p&gt;In this use case, &lt;code&gt;Newtonsoft.Json&lt;/code&gt; is being used to serialize a simplified &lt;em&gt;source entity&lt;/em&gt; which looks as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class SourceEntity
-{
-    public int Id { get; set; }
-
-    public DateTime DateCreated { get; set; }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The json string is then being deserialized into a separate &lt;em&gt;destination entity&lt;/em&gt; which looks as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class DestinationEntity
-{
-    public int Id { get; set; }
-
-    public DateTimeOffset DateCreated { get; set; }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The &lt;em&gt;DateCreated&lt;/em&gt; property is defined as &lt;code&gt;DateTime&lt;/code&gt; in the source and &lt;code&gt;DateTimeOffset&lt;/code&gt; in the destination - &lt;code&gt;aren't those two types compatible&lt;/code&gt;?&lt;/p&gt;
-&lt;p&gt;Generally yes, those two types are compatible and the deserialization/serialization will occur without issue - that is unless the &lt;code&gt;SourceEntity DateCreated field contains DateTime.MinValue&lt;/code&gt;.&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var sourceDate = new SourceEntity
-{
-    Id = 100,
-    // set to minimum value possible
-    DateCreated = DateTime.MinValue
-};
-
-// serialize the source entity with a DateCreated value
-// of DateTime.MinValue
-string jsonEntity = 
-    Newtonsoft.Json.JsonConvert.SerializeObject(sourceDate);
-
-// this will cause an exception to occur
-DestinationEntity destinationDate = Newtonsoft.Json.JsonConvert
-    .DeserializeObject&amp;lt;DestinationEntity&amp;gt;(jsonEntity);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;When this happens, then the deserialization fails with the following error:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;An unhandled exception of type 'Newtonsoft.Json.JsonReaderException' occurred in Newtonsoft.Json.dll
-Could not convert string to DateTimeOffset: 0001-01-01T00:00:00. Path 'DateCreated', line 1, position 45.
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;To solve this issue, a custom &lt;code&gt;JsonConvert&lt;/code&gt; implementation can be used.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="jsonconvert"&gt;JsonConvert&lt;/h3&gt;
-&lt;p&gt;To implement a custom converter one needs to inherit from the  the &lt;em&gt;abstract&lt;/em&gt; &lt;code&gt;JsonConverter&lt;/code&gt; class. There are a number of methods to override and implement:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class DateTimeConverter : JsonConverter
-{
-    public override bool CanRead =&amp;gt; true;
-    public override bool CanWrite =&amp;gt; false;
-
-    // this converter should only apply when the 
-    // destination type being converted is a
-    // datetimeoffset    
-    public override bool CanConvert(Type objectType) 
-        =&amp;gt; objectType == typeof(DateTimeOffset);
-
-    // method is called when reading the json
-    // this method is only called when the destination 
-    // type is DateTimeOffset (as defined by the 
-    // CanConvert method)
-    public override object ReadJson(JsonReader reader, 
-        Type objectType, object existingValue, 
-        JsonSerializer serializer)
-    {
-        // try convert the value to a datetime offset
-        if (DateTimeOffset.TryParse(reader.Value.ToString(), 
-            out DateTimeOffset result))
-        {
-            // if it was converted successfully
-            return result;
-        }
-
-        // return min value if it cannot
-        return DateTimeOffset.MinValue;
-    }
-
-    // converter should not be used on serialization
-    // so don't need to implement this method
-    public override void WriteJson(JsonWriter writer, 
-        object value, JsonSerializer serializer)
-    {
-        throw new NotImplementedException();
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h3 id="deserialization"&gt;Deserialization&lt;/h3&gt;
-&lt;p&gt;When deserializing, none or many converters can be passed into the &lt;em&gt;DeserializeObject&lt;/em&gt; method:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var sourceDate = new SourceEntity
-{
-    Id = 100,
-    DateCreated = DateTime.MinValue
-};
-
-string jsonEntity = 
-    Newtonsoft.Json.JsonConvert.SerializeObject(sourceDate);
-
-// pass in the DateTimeConverter when deserializing
-DestinationEntity destinationDate = Newtonsoft.Json.JsonConvert
-        .DeserializeObject&amp;lt;DestinationEntity&amp;gt;(jsonEntity, new DateTimeConverter());
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;With the additional of &lt;code&gt;DateTimeConverter&lt;/code&gt;, the conversion is now performed without any issue.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;While Newtonsoft.Json should, in &lt;em&gt;most&lt;/em&gt; cases, be replaced with &lt;code&gt;System.Text.Json&lt;/code&gt; due to its performance improvements, Newtonsoft.Json still gets &lt;em&gt;a lot&lt;/em&gt; of usage due to the depth of functionality and flexibility it offers (although in this specific use case, System.Text.Json does offer the ability to implement custom converters as well).
-It is beneficial to be aware of Newtonsoft.Json and how it can be leveraged when System.Text.Json doesn't provide the required functionality.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;?# DailyDrop ?&gt;182: 14-10-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
