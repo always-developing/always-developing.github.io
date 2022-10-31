@@ -5,8 +5,59 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Fri, 28 Oct 2022 04:28:54 GMT</pubDate>
-		<lastBuildDate>Fri, 28 Oct 2022 04:28:54 GMT</lastBuildDate>
+		<pubDate>Mon, 31 Oct 2022 04:33:34 GMT</pubDate>
+		<lastBuildDate>Mon, 31 Oct 2022 04:33:34 GMT</lastBuildDate>
+		<item>
+			<title>Jagged array in C#</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/10/31-jagged-array</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/10/31-jagged-array</guid>
+			<pubDate>Mon, 31 Oct 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;A &lt;code&gt;jagged array&lt;/code&gt; is an &lt;em&gt;array of arrays&lt;/em&gt;, where each internal array can be of varying length.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="array"&gt;Array&lt;/h3&gt;
+&lt;p&gt;A quick recap on a traditional one dimensional array:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var array = new int[10];
+int[] array1 = new int[10];
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The array size is defined when the variable is instantiated - this array is defined to hold up to 10 int's.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="multi-dimensional-array"&gt;Multi-dimensional array&lt;/h3&gt;
+&lt;p&gt;A multiple dimensional is declared and instantiated the same way as a one-dimensional array:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// declare a two dimensional array
+int[,] multiArray = new int[10,10];
+
+// a three dimensional array
+int[,,] multiArray1 = new int[10, 10, 10];
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;With multiple directional arrays, the size of the dimension is &lt;em&gt;fixed&lt;/em&gt;. In the above two-dimensional array for example, a 10x10 array is defined - it can be thought of a &lt;em&gt;grid with 10 columns and 10 rows&lt;/em&gt;. The important aspect is that each row &lt;code&gt;will always&lt;/code&gt; have 10 columns at most.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="jagged-array"&gt;Jagged array&lt;/h3&gt;
+&lt;p&gt;A &lt;code&gt;jagged array&lt;/code&gt; is an &lt;em&gt;array of arrays&lt;/em&gt;, where the internal array is of varying length.&lt;/p&gt;
+&lt;p&gt;There is a subtle difference when declaring a &lt;code&gt;jagged array&lt;/code&gt; vs declaring a multiple dimensional array:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// Jagged array
+int[][] jaggedArray1 = new int[10][];
+
+// For comparison - multi directional array
+int[,] multiArray = new int[10,10]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The jagged array &lt;em&gt;jaggedArray1&lt;/em&gt;, has &lt;em&gt;10 rows, but each row has varying column length&lt;/em&gt; - a second size is not specified when declaring the array. As it stands now, each row is null by default - the array in each row needs to be initialized:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;jaggedArray1[0] = new int[5];
+jaggedArray1[1] = new int[3];
+jaggedArray1[2] = new int[1];
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The first 3 rows are being initialized to each have a different number of items. We have an &lt;em&gt;array of arrays&lt;/em&gt;, with each internal array being of different sizes.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;This is not functionality I've personally ever had to use - but I am sure it definitely does have its practical uses cases. Just being aware the functionality exists can help make better, more informed design choices going forward.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/arrays/"&gt;Arrays (C# Programming Guide)&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;191: 31-10-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>SQL COALESCE uses</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/10/28-sql-coalesce</link>
@@ -914,102 +965,6 @@ while (reader.Read() &amp;amp;&amp;amp; songName == String.Empty)
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-use-dom-utf8jsonreader-utf8jsonwriter?pivots=dotnet-6-0#use-utf8jsonreader"&gt;Use Utf8JsonReader&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;184: 18-10-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Access cache stats with MemoryCacheStatistics</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/10/17-cache-stats</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/10/17-cache-stats</guid>
-			<pubDate>Mon, 17 Oct 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;Coming with .NET 7, the &lt;code&gt;MemoryCacheStatistics&lt;/code&gt; class, accessed through &lt;code&gt;IMemoryCache.GetCurrentStatistics&lt;/code&gt; can provider useful statistics regarding the state of the memory cache. These include:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;how many items are currently in the cache&lt;/li&gt;
-&lt;li&gt;the current estimate size of the cache&lt;/li&gt;
-&lt;li&gt;the number of times the cache has been queried for a value, and the value was not present (misses)&lt;/li&gt;
-&lt;li&gt;the number of times the cache has been queried for a value, and the value was present (hits)&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;These stats can be leveraged to better understand how/if the cache mechanism is correctly configured and being used optimally.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="cache-configuration"&gt;Cache configuration&lt;/h2&gt;
-&lt;p&gt;The first step is to register the require cache implementation instances with the dependency injection container. This is done using the &lt;em&gt;AddMemoryCache&lt;/em&gt; extension method:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;builder.Services
-    .AddMemoryCache(memCacheOptions =&amp;gt; 
-        { 
-            memCacheOptions.TrackStatistics = true; 
-            memCacheOptions.SizeLimit = 1024; 
-        });
-&lt;/code&gt;&lt;/pre&gt;
-&lt;ul&gt;
-&lt;li&gt;For stats to be tracked, the &lt;code&gt;MemoryCacheOptions.TrackStatistics&lt;/code&gt; value (&lt;em&gt;memCacheOptions.TrackStatistics&lt;/em&gt; in the above example) needs to be set to &lt;code&gt;true&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;For the &lt;code&gt;EstimateSize&lt;/code&gt; property of the statistics to be tracked, the cache needs to have a &lt;em&gt;SizeLimit&lt;/em&gt; specified. The &lt;em&gt;SizeLimit&lt;/em&gt; does not represent memory size, but &lt;em&gt;number of units&lt;/em&gt; - in the above example, the limit has been set to &lt;em&gt;1024 units&lt;/em&gt;, and when items are added to the cache &lt;em&gt;one byte will be treated as a unit&lt;/em&gt; (this is not a required, its up to the developer to decide how many &amp;quot;units&amp;quot; each item added to the cache is worth)&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr /&gt;
-&lt;h2 id="cache-usage"&gt;Cache usage&lt;/h2&gt;
-&lt;h3 id="set-values"&gt;Set values&lt;/h3&gt;
-&lt;p&gt;Now that the cache is configured, the next step is to start using it to store values. A simple &lt;code&gt;getnumber&lt;/code&gt; endpoint is defined, which will &lt;em&gt;return the number passed in&lt;/em&gt;:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;if the number does not exist in the cache, it will be added to the cache and returned&lt;/li&gt;
-&lt;li&gt;if the number already exists in the cache, it will be returned from the cache&lt;/li&gt;
-&lt;/ul&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// get the number from the route
-// get the IMemoryCache from the DI container
-app.MapGet(&amp;quot;/getnumber/{number}&amp;quot;, ([FromRoute]int number, 
-    [FromServices] IMemoryCache cache) =&amp;gt;
-{
-    // first check the cache to see if the number
-    // exists there
-    if(cache.TryGetValue(number, out var value))
-    {
-        return $&amp;quot;'{value}' retrieved from cache&amp;quot;;
-    }
-
-    // if it didn't exist, add it to the cache
-    cache.Set(number, number, new MemoryCacheEntryOptions { Size = sizeof(int)});
-
-    // return
-    return $&amp;quot;'{number}' added to cache&amp;quot;;
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Invoking the endpoint with a number for the first time &lt;code&gt;/getnumber/1&lt;/code&gt;, will result in:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;'1' added to cache
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;While invoking subsequent times with the same number will result in:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;'1' retrieved from cache
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The cache has been configured and the &lt;em&gt;endpoint called a number of times, with unique and duplicate numbers&lt;/em&gt;, so next let's have a look at the stats.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="get-statistics"&gt;Get statistics&lt;/h3&gt;
-&lt;p&gt;To get a &lt;em&gt;snapshot of the IMemoryCache statistics&lt;/em&gt;, the &lt;code&gt;GetCurrentStatistics&lt;/code&gt; method is used:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/getstats&amp;quot;, ([FromServices] IMemoryCache cache) =&amp;gt;
-{
-    return cache.GetCurrentStatistics();
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;A sample return snapshot:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-json"&gt;{
-    &amp;quot;currentEntryCount&amp;quot;:6,
-    &amp;quot;currentEstimatedSize&amp;quot;:24,
-    &amp;quot;totalMisses&amp;quot;:6,
-    &amp;quot;totalHits&amp;quot;:2
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;In this example:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;6 items have been added&lt;/code&gt; to the cache&lt;/li&gt;
-&lt;li&gt;the 6 items take up &lt;code&gt;24 of the available 1024 units&lt;/code&gt; available (6 x 4 bytes)&lt;/li&gt;
-&lt;li&gt;the cache has been checked and did &lt;code&gt;not contain the queried value 6 times&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;the cache has been checked and &lt;code&gt;did contain the queried value twice&lt;/code&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;This information is very valuable and can be leveraged to confirm if the cache configured for an application is successfully being used - over time, one would want to see a high number of hits and relatively low number of misses. This information can be used to determine if the cache strategy needs to be modified (cache based on a different key) or maybe increase or decrease the cache size.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.caching.memory.imemorycache.getcurrentstatistics?view=dotnet-plat-ext-7.0"&gt;IMemoryCache.GetCurrentStatistics Method&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;183: 17-10-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
