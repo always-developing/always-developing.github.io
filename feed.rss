@@ -5,8 +5,94 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Mon, 31 Oct 2022 04:33:34 GMT</pubDate>
-		<lastBuildDate>Mon, 31 Oct 2022 04:33:34 GMT</lastBuildDate>
+		<pubDate>Tue, 01 Nov 2022 04:57:29 GMT</pubDate>
+		<lastBuildDate>Tue, 01 Nov 2022 04:57:29 GMT</lastBuildDate>
+		<item>
+			<title>Generic List property wrapping</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/11/01-list-property-design</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/11/01-list-property-design</guid>
+			<pubDate>Tue, 01 Nov 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;When a class has a &lt;code&gt;generic list property&lt;/code&gt;, a good idea is to put it behind a class to encapsulate all the functionality specific to the list in a single place, creating cleaner, more maintainable code.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="non-clean-version"&gt;Non-clean version&lt;/h2&gt;
+&lt;p&gt;&lt;em&gt;Non-clean&lt;/em&gt; is not entirely accurate, as there is nothing inherently wrong with this approach, its just not &lt;em&gt;as clean&lt;/em&gt; as the class-wrapped version detailed in the next section.&lt;/p&gt;
+&lt;p&gt;In this example we have a &lt;code&gt;Album&lt;/code&gt; class, which contains a &lt;code&gt;list of Song titles&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Album
+{
+    public string Artist { get; set; }
+
+    public List&amp;lt;string&amp;gt; Songs { get; set; }
+
+    public int ReleaseYear { get; set; }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Suppose throughout the code we are required to get the &lt;code&gt;top 5 songs in the list&lt;/code&gt; (perhaps to display in a summary on various screens within the application).&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="linq-everywhere"&gt;LINQ everywhere&lt;/h3&gt;
+&lt;p&gt;One option is to perform the LINQ query to get the top 5 songs whenever it is required:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// This LINQ will be used every time the top 5 is required
+IEnumerable&amp;lt;string&amp;gt;? top5Songs = album.Songs.OrderBy(s =&amp;gt; s).Take(5);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This will work, but leads to duplication of code, and is difficult to maintain.&lt;/p&gt;
+&lt;h3 id="helper-method"&gt;Helper method&lt;/h3&gt;
+&lt;p&gt;Another option it to add a method into a &lt;em&gt;helper&lt;/em&gt; class, or even into the &lt;em&gt;Album&lt;/em&gt; class&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Album
+{
+    public string Artist { get; set; }
+
+    public List&amp;lt;string&amp;gt; Songs { get; set; }
+
+    public int ReleaseYear { get; set; }
+
+    public IEnumerable&amp;lt;string&amp;gt; GetTop5Songs()
+    {
+        return Songs.OrderBy(s =&amp;gt; s).Take(5);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Again, this will work and solves the code duplication issue. However the &lt;em&gt;helper&lt;/em&gt; class, or &lt;em&gt;Album&lt;/em&gt; class might end up containing numerous methods for numerous properties and ends up containing a wide range of functionality not directly related to it.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="clean-version"&gt;Clean version&lt;/h2&gt;
+&lt;h3 id="class-wrapper"&gt;Class wrapper&lt;/h3&gt;
+&lt;p&gt;Another cleaner option, is to wrap the generic list in its own class, which can then hold all the methods related to the list:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// inherit from List
+public class Songs : List&amp;lt;string&amp;gt;
+{
+    public IEnumerable&amp;lt;string&amp;gt; GetTop5Songs()
+    {
+        return this.OrderBy(s =&amp;gt; s).Take(5);
+    }
+
+    // other methods related to Songs
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The wrapper class inherits from &lt;code&gt;List&lt;/code&gt; so automatically gets all the same functionality which was available when using &lt;code&gt;List&amp;lt;string&amp;gt;&lt;/code&gt; explicitly.&lt;/p&gt;
+&lt;p&gt;The &lt;em&gt;Album&lt;/em&gt; class will then use the &lt;code&gt;Songs&lt;/code&gt; class, instead of &lt;code&gt;List&amp;lt;String&amp;gt;&lt;/code&gt; to represent the songs of an album:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Album
+{
+    public string Artist { get; set; }
+
+    public Songs Songs { get; set; }
+
+    public int ReleaseYear { get; set; }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The relevent methods are now available on the property themselves:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var top5Songs = album.Songs.GetTop5Songs();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Cleaner, more maintainable and easier to find!&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;This is a relatively small change in code structure, but can definitely make a difference in the readability and maintainability of the code, bring related methods together in one place. Easier for a developer to find when using them, as well as when required to make changes to them!&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://www.youtube.com/shorts/FL0qKaumcxo"&gt;Raw Coding-put generics behind classes&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;192: 01-11-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Jagged array in C#</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/10/31-jagged-array</link>
@@ -772,199 +858,6 @@ app.MapGet(&amp;quot;/getsongs&amp;quot;, async ([FromQuery] StringValues[] arti
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://dev.to/bytehide/net-7-microsoft-reveals-new-aspnet-core-features-24f3"&gt;.NET 7: Microsoft Reveals New ASP.NET Core Features&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;185: 19-10-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Performant deserialization with Utf8JsonReader</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/10/18-utf8jsonreader</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/10/18-utf8jsonreader</guid>
-			<pubDate>Tue, 18 Oct 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;When deserializing a string to a class, if only limited fields on the entity are required or used after the deserialization process, then it might be faster and more performant to use the &lt;code&gt;Utf8JsonReader&lt;/code&gt; class read te values.&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;Utf8JsonReader&lt;/code&gt; is a &lt;em&gt;high-performance, low allocation, forward-only reader for UTF-8 encoded JSON text&lt;/em&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="serialization"&gt;Serialization&lt;/h2&gt;
-&lt;p&gt;First, let's set the stage and get a serialized JSON string. In the examples a &lt;code&gt;Song&lt;/code&gt; class will be used for &lt;em&gt;serialization&lt;/em&gt; and &lt;em&gt;deserialization&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Song
-{
-    public int Id { get; set; }
-
-    public string Name { get; set; }
-
-    public string Artist { get; set; }
-
-    public int YearReleased { get; set; }
-
-    public DateTime DateCreated { get; set; }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;To serialize a &lt;em&gt;Song&lt;/em&gt; instance, &lt;code&gt;System.Text.Json.JsonSerializer&lt;/code&gt; is used:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var song = new Song
-{
-    Id = 1,
-    Name = &amp;quot;Everlong&amp;quot;,
-    Artist = &amp;quot;Foo Fighters&amp;quot;,
-    YearReleased = 1997,
-    DateCreated = DateTime.Now
-};
-
-var jsonSong = JsonSerializer.Serialize(song);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We now have a &lt;em&gt;json string representation&lt;/em&gt; of the a Song instance to be used in the below deserialization examples.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="deserialization"&gt;Deserialization&lt;/h2&gt;
-&lt;p&gt;In the use cases below, a JSON string is sent to the application (maybe via an API call, or a message broker) but the application is only interested in the &lt;code&gt;Name&lt;/code&gt; field in the serialized &lt;em&gt;Song&lt;/em&gt; instance. We are going to look at the various ways to deserialize the data to get access to that specific field.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="system.text.json"&gt;System.Text.Json&lt;/h3&gt;
-&lt;p&gt;The first method is to deserialize the entire string into the class, and then access the field - this is usually the &lt;em&gt;default&lt;/em&gt; method most developers might use:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var options = new JsonSerializerOptions
-{
-    AllowTrailingCommas = true
-};
-
-var song = JsonSerializer.Deserialize&amp;lt;Song&amp;gt;(strSong, options);
-var name = song.Name;
-
-Console.WriteLine(name);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This will work, is straight forward - but requires that all fields be deserialized (impacting performance), when only one field is required.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="system.text.json-trimmed"&gt;System.Text.Json trimmed&lt;/h3&gt;
-&lt;p&gt;Another method is to create a new &lt;em&gt;Song&lt;/em&gt; class, which only contains the interested fields, and deserialize to that class.&lt;/p&gt;
-&lt;p&gt;First, and &lt;em&gt;TrimmedSong&lt;/em&gt; class is created, trimmed of all the fields not required:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public  class TrimmedSong
-{
-    public string Name { get; set; }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The deserialization process is exactly the same as the previous method, only the new &lt;em&gt;TrimmedSong&lt;/em&gt; class is used instead of &lt;em&gt;Song&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var options = new JsonSerializerOptions
-{
-    AllowTrailingCommas = true
-};
-
-// TrimmedSong used here
-var song = JsonSerializer.Deserialize&amp;lt;TrimmedSong&amp;gt;(strSong, options);
-var name = song.Name;
-
-Console.WriteLine(name);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The benefit of this approach is that only the required fields are deserialized, using less memory for fields which are never used.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="utf8jsonreader"&gt;Utf8JsonReader&lt;/h3&gt;
-&lt;p&gt;The final option we'll look is using the &lt;code&gt;Utf8JsonReader&lt;/code&gt; class - as mentioned, this is a high-performance, low allocation, forward-only reader.&lt;/p&gt;
-&lt;p&gt;Using this is a little more complex than a straight deserialization, but not overly so:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// convert the json string, to a byte array
-var jsonBytes = Encoding.UTF8.GetBytes(jsonSong);
-
-// setup some optional options
-var options = new JsonReaderOptions
-{
-    AllowTrailingCommas = true,
-    CommentHandling = JsonCommentHandling.Skip
-};
-
-// instantiate the reader with the byte array
-// and the options
-var reader = new Utf8JsonReader(jsonBytes, options);
-
-var songName = string.Empty;
-
-// read each token in the json from front to back
-// (forward only)
-while (reader.Read() &amp;amp;&amp;amp; songName == String.Empty)
-{
-    // switch on the token type read
-    switch (reader.TokenType)
-    {
-        // if its a property
-        case JsonTokenType.PropertyName:
-            {
-                // if its the property we care about
-                // (which is the song name)
-                if (reader.GetString() == nameof(Song.Name))
-                {
-                    // get the next token, which is the 
-                    // property value
-                    reader.Read();
-                    // get the token value
-                    songName = reader.GetString();
-                }
-                break;
-            }
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The reader will read each token in the json start to finish, while there are tokens to read. During this process, the token type (&lt;em&gt;PropertyName&lt;/em&gt;) is checked and the token string value (&lt;em&gt;Name&lt;/em&gt;) is checked until the required property is reached - the value of the property is then read, and the read loop is exited.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="benchmarks"&gt;Benchmarks&lt;/h2&gt;
-&lt;p&gt;So, how do the methods compare - &lt;code&gt;BenchmarkDotNet&lt;/code&gt; was used to benchmark each of the above three scenarios:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Deserialization using &lt;code&gt;System.Text.Json&lt;/code&gt; into a full class&lt;/li&gt;
-&lt;li&gt;Deserialization using &lt;code&gt;System.Text.Json&lt;/code&gt; into a class with only the require fields&lt;/li&gt;
-&lt;li&gt;Reading the json byte array using &lt;code&gt;Utf8JsonReader&lt;/code&gt; until the required field is found&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Using the same snippets of code as above, to get the &lt;em&gt;Song Name&lt;/em&gt; from the json string - the results:&lt;/p&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;Method&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Ratio&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Gen0&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Gen1&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Allocated&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Alloc Ratio&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;FullJson&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;517,707.6 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;8,451.42 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;7,905.46 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.000&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.9297&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.9766&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;20471 B&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.000&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;TrimmedJson&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;149,723.5 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2,904.13 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2,982.33 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.290&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.2207&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.4883&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;8787 B&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.429&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;JsonReader&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;188.6 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.28 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.07 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.000&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0165&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;104 B&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.005&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;From the results one can see that the &lt;code&gt;Utf8JsonReader&lt;/code&gt; is orders of magnitude quicker than the &lt;code&gt;System.Text.Json&lt;/code&gt; method, while using a fraction of the memory.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;If the entire JSON string is not required to be deserialized, consider using &lt;code&gt;Utf8JsonReader&lt;/code&gt;. Benchmark its performance against &lt;code&gt;System.Text.Json&lt;/code&gt; (or _NewtonSoft.Json, or which ever deserialization library is being used) to determine which is more beneficial for the specific use case, as potentially massive performance gains can be had.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-use-dom-utf8jsonreader-utf8jsonwriter?pivots=dotnet-6-0#use-utf8jsonreader"&gt;Use Utf8JsonReader&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;184: 18-10-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
