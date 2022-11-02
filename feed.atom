@@ -4,8 +4,90 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-11-01T04:57:29Z</updated>
+	<updated>2022-11-02T04:44:33Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/11/02-directory-separator</id>
+		<title>Platform specific path separator</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/11/02-directory-separator" />
+		<updated>2022-11-02T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;The static &lt;code&gt;Path&lt;/code&gt; class contains a number of helpful, platform specific properties (and methods) to assist when working with filenames and file paths. These include:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The operating system specific directory separator character&lt;/li&gt;
+&lt;li&gt;The operating system specific alternate directory separator character&lt;/li&gt;
+&lt;li&gt;The operating system specific path separator character&lt;/li&gt;
+&lt;li&gt;The operating system specific volume separator character&lt;/li&gt;
+&lt;li&gt;The operating system specific invalid filename characters&lt;/li&gt;
+&lt;li&gt;The operating system specific invalid path characters&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr /&gt;
+&lt;h2 id="code-snippet"&gt;Code snippet&lt;/h2&gt;
+&lt;p&gt;A simple code snippet to demonstrate how to access the various characters:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// All the separator characters are available on the Path static class
+Console.WriteLine($&amp;quot;DirectorySeparatorChar: '{Path.DirectorySeparatorChar}'&amp;quot;);
+Console.WriteLine($&amp;quot;AltDirectorySeparatorChar: '{Path.AltDirectorySeparatorChar}'&amp;quot;);
+Console.WriteLine($&amp;quot;PathSeparator: '{Path.PathSeparator}'&amp;quot;);
+Console.WriteLine($&amp;quot;VolumeSeparatorChar: '{Path.VolumeSeparatorChar}'&amp;quot;);
+
+// display all the invalid file name characters
+Console.WriteLine($&amp;quot;Invalid filename chars:&amp;quot;);
+foreach(var chr in Path.GetInvalidFileNameChars())
+{
+    Console.WriteLine($&amp;quot;   {chr}&amp;quot;);
+}
+
+// display all the invalid path characters
+Console.WriteLine($&amp;quot;Invalid path chars:&amp;quot;);
+foreach (var chr in Path.GetInvalidPathChars())
+{
+    Console.WriteLine($&amp;quot;   {chr}&amp;quot;);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="windows-output"&gt;Windows output&lt;/h3&gt;
+&lt;p&gt;The output when running the above on a Windows environment - the invalid filename and invalid path characters have been trimmed as the list for Windows is fairly long:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;DirectorySeparatorChar: '\'
+AltDirectorySeparatorChar: '/'
+PathSeparator: ';'
+VolumeSeparatorChar: ':'
+Invalid filename chars:
+   &amp;quot;
+   &amp;lt;
+   &amp;gt;
+   |
+
+   ☺
+   ☻
+   ♥
+   ♦
+   ♣
+   ♠
+// trimmed
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="linux-output"&gt;Linux output&lt;/h3&gt;
+&lt;p&gt;Running the same code in a Linux environment yields different output - no trimming of the list here, as apparently Linux supports a larger list of characters than Windows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;DirectorySeparatorChar: '/'
+AltDirectorySeparatorChar: '/'
+PathSeparator: ':'
+VolumeSeparatorChar: '/'
+Invalid filename chars:
+   ?
+   /
+Invalid path chars:
+   ?
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;Leveraging the above functionality makes building up and validating file names and file paths much easier, simpler and quicker, and should definitely be preferred over rolling out ones own path builder or filename validator.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://code-maze.com/csharp-path-class/"&gt;Path Class in C#&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;193: 02-11-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/11/01-list-property-design</id>
 		<title>Generic List property wrapping</title>
@@ -751,102 +833,6 @@ public static double Abs(double value) =&amp;gt; Math.Abs(value);
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://twitter.com/JamesNK/status/1572876608553517056"&gt;James Newton-King Tweet&lt;/a&gt;&lt;/p&gt;
 &lt;!--?# DailyDrop ?--&gt;186: 20-10-2022&lt;!--?#/ DailyDrop ?--&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/10/19-query-array</id>
-		<title>Binding query string values to an array</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/10/19-query-array" />
-		<updated>2022-10-19T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;.NET 7 introduces the ability to automatically &lt;code&gt;bind a query string value to an array&lt;/code&gt; (or &lt;em&gt;StringValues&lt;/em&gt; class).&lt;/p&gt;
-&lt;p&gt;When the query string value is of variable length and can contain one or more different items - this automatic binding can save time and facilitates cleaner code.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="pre.net7"&gt;Pre .NET7&lt;/h2&gt;
-&lt;p&gt;Prior to .NET 7, a query string parameter with multiple values would manually need to be converted to an array:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/getsongs&amp;quot;, async ([FromQuery] string artists) =&amp;gt;
-{
-    async IAsyncEnumerable&amp;lt;string&amp;gt; GetSongs(string[] artists)
-    {
-        foreach (var name in artists)
-        {
-            /// simulate looking up all the 
-            // songs for the artist
-            yield return $&amp;quot;Retrieving songs for '{name}'&amp;quot;;
-        }
-    }
-
-    // the artist parameter value would be
-    // comma separated of all the values supplied
-    return GetSongs(artists.Split(&amp;quot;,&amp;quot;));
-});
-
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Calling the endpoint with &lt;code&gt;/getsongs?artists=foofighters&amp;amp;artists=johnmayer&lt;/code&gt;, will result in the &lt;em&gt;artists&lt;/em&gt; parameter having a value of &lt;code&gt;foofighters,johnmayer&lt;/code&gt; (all values supplied in a comma separated string). The return value:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;[&amp;quot;Retrieving songs for 'foofighters'&amp;quot;,&amp;quot;Retrieving songs for 'johnmayer'&amp;quot;]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="net7"&gt;.NET7&lt;/h2&gt;
-&lt;h3 id="array-binding"&gt;Array binding&lt;/h3&gt;
-&lt;p&gt;Leveraging this new array binding functionality is very simple:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// Automatically bind the query string value &amp;quot;artists&amp;quot; to the 
-// endpoint array parameter &amp;quot;artists&amp;quot;
-app.MapGet(&amp;quot;/getsongs&amp;quot;, async ([FromQuery] string[] artists) =&amp;gt;
-{
-    // create a local function to be able to yield return
-    // from the endpoint
-    async IAsyncEnumerable&amp;lt;string&amp;gt; GetSongs(string[] artists)
-    {
-        foreach (var name in artists)
-        {
-            /// simulate looking up all the 
-            // songs for the artist
-            yield return $&amp;quot;Retrieving songs for '{name}'&amp;quot;;
-        }
-    }
-
-    // no conversion required
-    return GetSongs(artists);
-
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Calling the endpoint with a single value, by browsing to the endpoint &lt;code&gt;/getsongs?artists=foofighters&lt;/code&gt;, gives the following result:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;[&amp;quot;Retrieving songs for 'foofighters'&amp;quot;]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;While calling the endpoint with multiple values, &lt;code&gt;/getsongs?artists=foofighters&amp;amp;artists=johnmayer&lt;/code&gt;, results in:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;[&amp;quot;Retrieving songs for 'foofighters'&amp;quot;,&amp;quot;Retrieving songs for 'johnmayer'&amp;quot;]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h3 id="stringvalues-binding"&gt;StringValues binding&lt;/h3&gt;
-&lt;p&gt;The query string parameter can also be bound to a &lt;code&gt;StringValues&lt;/code&gt; instance if required. This operates the same as the array:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// Automatically bind the query string value &amp;quot;artists&amp;quot; to the 
-// endpoint StringValues parameter &amp;quot;artists&amp;quot;
-app.MapGet(&amp;quot;/getsongs&amp;quot;, async ([FromQuery] StringValues[] artists) =&amp;gt;
-{
-    // create a local function to be able to yield return
-    // from the endpoint
-    async IAsyncEnumerable&amp;lt;string&amp;gt; GetSongs(StringValues artists)
-    {
-        foreach (var name in artists)
-        {
-            /// simulate looking up all the 
-            // songs for the artist
-            yield return $&amp;quot;Retrieving songs for '{name}'&amp;quot;;
-        }
-    }
-
-    return GetSongs(artists);
-
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;This approach is significantly simpler and cleaner than having to split the query string into an array manually. While this enhancement will not drastically change the performance of an application or add significant new functionality, it does facilitate cleaner, more readable code, which day to day, is probably more important for the vast majority of application.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://dev.to/bytehide/net-7-microsoft-reveals-new-aspnet-core-features-24f3"&gt;.NET 7: Microsoft Reveals New ASP.NET Core Features&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;185: 19-10-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
