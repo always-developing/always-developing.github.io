@@ -4,8 +4,111 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-11-02T04:44:33Z</updated>
+	<updated>2022-11-03T04:11:25Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/11/03-value-records</id>
+		<title>Primitive obsession and Value Records </title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/11/03-value-records" />
+		<updated>2022-11-03T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;The C# &lt;code&gt;record&lt;/code&gt; type can provide a clean, quick and easy way to overcome &lt;em&gt;primitive obsession&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;Primitive obsession&lt;/em&gt;, as the name implies, is the overuse of primitive types (int, string, Guid, etc) to represent more complex business or domain concepts.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="primitive"&gt;Primitive&lt;/h2&gt;
+&lt;p&gt;Let's look at an example, of a (very simplified) &lt;em&gt;Order&lt;/em&gt; entity:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Order
+{
+    public int OrderId { get; set; }
+
+    public decimal OrderTotal { get; set; }
+
+    public int ItemCount { get; set; }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;On the surface, this is all good. This will work and is probably what most developer are familiar with when it comes to entities.&lt;/p&gt;
+&lt;p&gt;However, the above class structure allows for the following code:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var order = new Order
+{
+    OrderId = 100,
+    ItemCount = 2,
+    OrderTotal = 148.95m
+};
+
+// This doesn't make sense!
+order.OrderId = order.OrderId * 2;
+// No!?
+order.ItemCount = -10;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As primitive types are used for &lt;em&gt;domain business concepts&lt;/em&gt; such as &lt;code&gt;OrderId&lt;/code&gt; or &lt;code&gt;ItemCount&lt;/code&gt;, these values can be manipulated in a which doesn't make sense in their business or domain context.&lt;/p&gt;
+&lt;p&gt;Of course an option is to constantly perform validation on the &lt;em&gt;Order&lt;/em&gt; to ensure it is in a valid state - but another option is to use &lt;code&gt;Value Objects&lt;/code&gt;, which will be explored in the next section.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="value-object"&gt;Value object&lt;/h2&gt;
+&lt;p&gt;A &lt;code&gt;Value object&lt;/code&gt; is a simple, light-weight wrapper around the primitive type, which can also provide some validation for the internal primitive type.&lt;/p&gt;
+&lt;h3 id="value-record"&gt;Value record&lt;/h3&gt;
+&lt;p&gt;In the referenced article, Stephen Cleary introduces a concept called &lt;code&gt;Value Record&lt;/code&gt; - leveraging the C# &lt;code&gt;record&lt;/code&gt; and &lt;code&gt;struct&lt;/code&gt; types, a simple &lt;em&gt;Value Object&lt;/em&gt; can easily be defined with one line of code.&lt;/p&gt;
+&lt;p&gt;To replace the &lt;em&gt;int OrderId&lt;/em&gt; above:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public readonly record struct OrderId(int Value);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Using this technique has a number of benefits:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;immutability&lt;/li&gt;
+&lt;li&gt;equality, hash code and &lt;em&gt;ToString&lt;/em&gt; support built in&lt;/li&gt;
+&lt;li&gt;value-type wrapper, with no additional memory allocated&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr /&gt;
+&lt;h3 id="usage"&gt;Usage&lt;/h3&gt;
+&lt;p&gt;The &lt;em&gt;Order&lt;/em&gt; entity can now be updated to use the &lt;em&gt;OrderId&lt;/em&gt; &lt;code&gt;value record&lt;/code&gt; (as well as other properties as well):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Order
+{
+    public OrderId OrderId { get; set; }
+
+    public OrderTotal OrderTotal { get; set; }
+
+    public ItemCount ItemCount { get; set; }
+}
+
+
+public readonly record struct OrderId(int Value);
+
+public readonly record struct OrderTotal(decimal Value);
+
+public readonly record struct ItemCount(int Value);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And the usage:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var order = new Order
+{
+    OrderId = new OrderId(100),
+    ItemCount = new ItemCount(2),
+    OrderTotal = new OrderTotal(148.95m)
+};
+
+// An added benefit of records (over a class) 
+// is that they can be printed as well
+// The ToString() method can also be overwritten
+// if required
+Console.WriteLine(order.OrderId);
+
+// ERROR - compilation error 
+// this is now not possible as the 
+// OrderId is immutable
+
+// order.OrderId.Value = order.OrderId.Value * 2;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output of the above:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;OrderId { Value = 100 }
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The &lt;code&gt;value records&lt;/code&gt; can be expanded with additional (light-weight) validation, but the &lt;em&gt;record struct&lt;/em&gt; method shown above allows for a quick, simple implementation.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;A very useful as well as quick easy technique to implement - but also an technique which can be misused (as it is so easy to implement). Not all properties should be or need to be converted to a value object. However where it does make sense, the &lt;code&gt;value record&lt;/code&gt; method is a slick, minimal way to achieve this.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://blog.stephencleary.com/2022/10/modern-csharp-techniques-2-value-records.html"&gt;Modern C# Techniques, Part 2: Value Records&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;194: 03-11-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/11/02-directory-separator</id>
 		<title>Platform specific path separator</title>
@@ -784,55 +887,6 @@ public static double Abs(double value) =&amp;gt; Math.Abs(value);
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://twitter.com/fonssonnemans/status/1573274358910525442"&gt;Fons Sonnemans Tweet&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;187: 21-10-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/10/20-http-headers</id>
-		<title>Built in HTTP header properties</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/10/20-http-headers" />
-		<updated>2022-10-20T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;ASP.NET Core has &lt;code&gt;built in properties for common HTTP headers&lt;/code&gt;, which are &lt;em&gt;faster and better&lt;/em&gt; than using an indexer manually.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="manual-indexers"&gt;Manual indexers&lt;/h2&gt;
-&lt;p&gt;In this example, the &lt;em&gt;ContextType&lt;/em&gt;, &lt;em&gt;Date&lt;/em&gt; and &lt;em&gt;Link&lt;/em&gt; headers are manually set using indexers on the endpoint response:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet("/getheadersmanual", async context =&amp;gt;
-{
-    context.Response.Headers.ContentType = MediaTypeNames.Application.Json;
-    context.Response.Headers.Date = DateTime.UtcNow.ToString();
-    context.Response.Headers.Link = "/getheadersmanual";
-
-    await context.Response.WriteAsync(@"{""Message"" : ""Look at the headers""}");
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This works without issue, and calling the endpoint will result in the following response and headers:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;{"Message" : "Look at the headers"}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/manualheaders.png" alt="Response Headers"&gt;&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="built-in-properties"&gt;Built-in properties&lt;/h2&gt;
-&lt;p&gt;The other option is to use the built-in header properties:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet("/getheaders", async context =&amp;gt;
-{
-    context.Response.Headers.ContentType = MediaTypeNames.Application.Json;
-    context.Response.Headers.Date = DateTime.UtcNow.ToString();
-    context.Response.Headers.Link = "/getheaders";
-
-    await context.Response.WriteAsync(@"{""Message"" : ""Look at the headers""}");
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This version will same response and headers as the above technique:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;{"Message" : "Look at the headers"}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/autoheaders.png" alt="Response Headers"&gt;&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;While the output from both techniques are effectively the same - in addition to the property method being faster than using indexers (although probably not effectively noticeable), using the property method will results in less errors and safer code, as the HTTP header name cannot be misspelt.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://twitter.com/JamesNK/status/1572876608553517056"&gt;James Newton-King Tweet&lt;/a&gt;&lt;/p&gt;
-&lt;!--?# DailyDrop ?--&gt;186: 20-10-2022&lt;!--?#/ DailyDrop ?--&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
