@@ -4,8 +4,74 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-11-03T04:11:25Z</updated>
+	<updated>2022-11-04T04:26:10Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/11/04-interpolation-switch</id>
+		<title>Switch expression and string interpolation</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/11/04-interpolation-switch" />
+		<updated>2022-11-04T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;C# 11 is introducing the ability to &lt;code&gt;use switch expressions inside a string interpolation expression&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;This allows for more simplified code, as instead of creating a separate method to be used once-off when generating the string, all the &lt;em&gt;string building&lt;/em&gt; logic can be contained in a single place.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="use-case"&gt;Use case&lt;/h2&gt;
+&lt;p&gt;In our use case, we want to convert a numerical grade (e.g. 89%), to a string representation (&amp;quot;A&amp;quot; in this case). We also want to be able to output both of these values in a string.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="separate-expression-pre-c-11"&gt;Separate expression - pre C# 11&lt;/h3&gt;
+&lt;p&gt;Prior to C# 11 it was not possible for &lt;em&gt;interpolation expressions&lt;/em&gt; to be &lt;em&gt;switch expressions&lt;/em&gt; directly - the expression had to be a separate method:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// method which converts a numeric grade value
+// to a string representation
+public string GetGradeAsString(int grade) =&amp;gt; grade switch
+{
+    &amp;gt; 90 =&amp;gt; &amp;quot;A+&amp;quot;,
+    &amp;gt; 80 =&amp;gt; &amp;quot;A&amp;quot;,
+    &amp;gt; 70 =&amp;gt; &amp;quot;B&amp;quot;,
+    &amp;gt; 60 =&amp;gt; &amp;quot;C&amp;quot;,
+    &amp;gt; 50 =&amp;gt; &amp;quot;D&amp;quot;,
+    &amp;gt; 40 =&amp;gt; &amp;quot;E&amp;quot;,
+    _ =&amp;gt; &amp;quot;F&amp;quot;
+};
+
+var studentGrade = 89;
+
+// using string interpolation, and calling the method defined
+Console.WriteLine($&amp;quot;{studentGrade} converted to &amp;quot; +
+    $&amp;quot;a string is {GetGradeAsString(studentGrade)}&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;There is nothing wrong with this approach, and it will continue to work with C# 11 - however the &lt;em&gt;issue&lt;/em&gt; here, is that if the conversion is only ever required once (when outputting the data), a method was required to be defined.&lt;/p&gt;
+&lt;p&gt;Is defining a method a big deal? No
+Will it create massive overhead? No
+Is there a slightly easier way in C# 11? Yes.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="embedded-expression-c-11"&gt;Embedded expression - C# 11&lt;/h3&gt;
+&lt;p&gt;C# 11 allows for &lt;code&gt;switch expressions to be used directly in interpolated strings&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var studentGrade = 89;
+
+// a separate method is not required
+Console.WriteLine($&amp;quot;{studentGrade} converted to a string is {
+    studentGrade switch
+    {
+        &amp;gt; 90 =&amp;gt; &amp;quot;A+&amp;quot;,
+        &amp;gt; 80 =&amp;gt; &amp;quot;A&amp;quot;,
+        &amp;gt; 70 =&amp;gt; &amp;quot;B&amp;quot;,
+        &amp;gt; 60 =&amp;gt; &amp;quot;C&amp;quot;,
+        &amp;gt; 50 =&amp;gt; &amp;quot;D&amp;quot;,
+        &amp;gt; 40 =&amp;gt; &amp;quot;E&amp;quot;,
+        _ =&amp;gt; &amp;quot;F&amp;quot;
+    }}&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The same outcome as below, just slightly more concise and contained code.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;This is not a massive enhancement, but it does help reduce unnecessary ceremony (creating a method) when not required - ultimately resulting in cleaner, more concise and quicker to write code when the use case applies.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://tomaszs2.medium.com/c-11-wants-to-be-your-friend-db4a31ed9710"&gt;What’s new in C# 11? Dev friendly features&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;195: 04-11-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/11/03-value-records</id>
 		<title>Primitive obsession and Value Records </title>
@@ -847,46 +913,6 @@ app.MapGet(&amp;quot;/protect/{protectValue}&amp;quot;, (
 &lt;a href="https://learn.microsoft.com/en-us/aspnet/core/security/data-protection/introduction?view=aspnetcore-6.0"&gt;ASP.NET Core Data Protection Overview&lt;/a&gt;&lt;br /&gt;
 &lt;a href="https://learn.microsoft.com/en-us/aspnet/core/security/data-protection/configuration/overview?view=aspnetcore-6.0"&gt;Configure ASP.NET Core Data Protection&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;188: 24-10-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/10/21-math-update</id>
-		<title>Using math functions on numeric types</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/10/21-math-update" />
-		<updated>2022-10-21T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;.NET 7 introduces the ability to &lt;code&gt;call math methods on numeric types&lt;/code&gt; and not have to use the static &lt;em&gt;Math&lt;/em&gt; class.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="pre.net-7"&gt;Pre .NET 7&lt;/h2&gt;
-&lt;p&gt;Prior to .NET 7, the static &lt;code&gt;Math&lt;/code&gt; class was used:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;double value = 100.33;
-
-// get the absolute value
-double mathAbs = Math.Abs(value);
-
-// get the cube root
-double mathCbrt = Math.Cbrt(125);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="net-7"&gt;.NET 7&lt;/h2&gt;
-&lt;p&gt;In .NET 7, these methods are now available on the numeric type:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;double value = 100.33;
-
-double doubleAbs = double.Abs(value);
-double doubleCbrt = double.Cbrt(125);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Under the hood, these methods are still using the &lt;code&gt;Math&lt;/code&gt; static class:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// source code for the double Abs method
-public static double Abs(double value) =&amp;gt; Math.Abs(value);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;The two techniques effectively use the same code, and perform the same operation - so which one to use comes down to preference and readability. Personally, I find using the numeric types is more informative, because at a glance one can see the return type of the calculation (the &lt;em&gt;Abs&lt;/em&gt; method on &lt;em&gt;double&lt;/em&gt;, will return a &lt;em&gt;double&lt;/em&gt;) - but this will not be the preference for everyone.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://twitter.com/fonssonnemans/status/1573274358910525442"&gt;Fons Sonnemans Tweet&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;187: 21-10-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
