@@ -5,8 +5,382 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Fri, 04 Nov 2022 04:26:10 GMT</pubDate>
-		<lastBuildDate>Fri, 04 Nov 2022 04:26:10 GMT</lastBuildDate>
+		<pubDate>Mon, 07 Nov 2022 04:24:15 GMT</pubDate>
+		<lastBuildDate>Mon, 07 Nov 2022 04:24:15 GMT</lastBuildDate>
+		<item>
+			<title>List capacity and performance</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/11/07-list-capacity</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/11/07-list-capacity</guid>
+			<pubDate>Mon, 07 Nov 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;When declaring an instance of &lt;code&gt;List&lt;/code&gt;, explicitly specifying the &lt;code&gt;expected capacity can improve performance&lt;/code&gt; when adding items to the list. However, specifying the capacity incorrectly could be detrimental to performance.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="example"&gt;Example&lt;/h2&gt;
+&lt;h3 id="no-capacity"&gt;No capacity&lt;/h3&gt;
+&lt;p&gt;In the first example, a new &lt;code&gt;List&lt;/code&gt; is declared &lt;em&gt;without specifying a capacity&lt;/em&gt;, and then 20 items are added to the the list:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var list = new List&amp;lt;int&amp;gt;();
+
+for (int i = 0; i &amp;lt; 20; i++)
+{
+    list.Add(i);
+        Console.WriteLine($&amp;quot;List count: {list.Count} and &amp;quot; +
+        $&amp;quot;the capacity is: {list.Capacity}&amp;quot;);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Looking at the output, the default capacity when not explicitly specified is &lt;code&gt;4&lt;/code&gt;, and when this capacity is reached, &lt;code&gt;the capacity is doubled&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;List count: 1 and the capacity is: 4
+List count: 2 and the capacity is: 4
+List count: 3 and the capacity is: 4
+List count: 4 and the capacity is: 4
+List count: 5 and the capacity is: 8
+List count: 6 and the capacity is: 8
+List count: 7 and the capacity is: 8
+List count: 8 and the capacity is: 8
+List count: 9 and the capacity is: 16
+List count: 10 and the capacity is: 16
+List count: 11 and the capacity is: 16
+List count: 12 and the capacity is: 16
+List count: 13 and the capacity is: 16
+List count: 14 and the capacity is: 16
+List count: 15 and the capacity is: 16
+List count: 16 and the capacity is: 16
+List count: 17 and the capacity is: 32
+List count: 18 and the capacity is: 32
+List count: 19 and the capacity is: 32
+List count: 20 and the capacity is: 32
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="with-capacity"&gt;With capacity&lt;/h3&gt;
+&lt;p&gt;To specify the capacity, the value is passed to the constructor of the &lt;code&gt;List&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// set the capacity to 10. Half the expected capacity
+var list = new List&amp;lt;int&amp;gt;(10);
+
+for (int i = 0; i &amp;lt; 20; i++)
+{
+    list.Add(i);
+    Console.WriteLine($&amp;quot;List count: {list.Count} and &amp;quot; +
+        $&amp;quot;the capacity is: {list.Capacity}&amp;quot;);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Looking at the output, the capacity starts at 10, and is only doubled once:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;List count: 1 and the capacity is: 10
+List count: 2 and the capacity is: 10
+List count: 3 and the capacity is: 10
+List count: 4 and the capacity is: 10
+List count: 5 and the capacity is: 10
+List count: 6 and the capacity is: 10
+List count: 7 and the capacity is: 10
+List count: 8 and the capacity is: 10
+List count: 9 and the capacity is: 10
+List count: 10 and the capacity is: 10
+List count: 11 and the capacity is: 20
+List count: 12 and the capacity is: 20
+List count: 13 and the capacity is: 20
+List count: 14 and the capacity is: 20
+List count: 15 and the capacity is: 20
+List count: 16 and the capacity is: 20
+List count: 17 and the capacity is: 20
+List count: 18 and the capacity is: 20
+List count: 19 and the capacity is: 20
+List count: 20 and the capacity is: 20
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="benchmarks"&gt;Benchmarks&lt;/h2&gt;
+&lt;p&gt;So how does specifying the capacity effect performance?&lt;/p&gt;
+&lt;p&gt;In the below examples, a &lt;code&gt;List&lt;/code&gt; instance is declared, with the capacity explicitly set to varying sizes and then filled with values. The benchmarks evaluated performance when:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;no capacity specified&lt;/li&gt;
+&lt;li&gt;the capacity was defined as exactly the expected size&lt;/li&gt;
+&lt;li&gt;the capacity was defined as a half of the expected size&lt;/li&gt;
+&lt;li&gt;the capacity was defined as a quarter of the expected size&lt;/li&gt;
+&lt;li&gt;the capacity was defined as a tenth of the expected size&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The code snippets for the benchmarks were as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;
+[Benchmark(Baseline = true)]
+public void NoCapacity()
+{
+    /// no capacity specified
+    var list = new List&amp;lt;int&amp;gt;();
+
+    // Iterations was either 10, 1000, or 100000
+    for (int i = 0; i &amp;lt; Iterations; i++)
+    {
+        list.Add(i);
+    }
+}
+
+[Benchmark]
+public void WithExactCapacity()
+{
+    // here the list defined with exact capacity
+    var list = new List&amp;lt;int&amp;gt;(Iterations);
+
+    for (int i = 0; i &amp;lt; Iterations; i++)
+    {
+        list.Add(i);
+    }
+}
+
+[Benchmark]
+public void WithHalfCapacity()
+{
+    // for the fractional tests, Iterations
+    // was divided by 2, 4 and 10 (not all shown here)
+    var list = new List&amp;lt;int&amp;gt;(Iterations / 2);
+
+    for (int i = 0; i &amp;lt; Iterations; i++)
+    {
+        list.Add(i);
+    }
+}
+
+// other tests trimmed
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="items"&gt;10 items&lt;/h3&gt;
+&lt;p&gt;Benchmarking adding 10 items to the list:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Method&lt;/th&gt;
+&lt;th&gt;Iterations&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Ratio&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Gen0&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Gen1&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Gen2&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Allocated&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Alloc Ratio&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;NoCapacity&lt;/td&gt;
+&lt;td&gt;10&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;51.72 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0344&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;216 B&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;WithExactCapacity&lt;/td&gt;
+&lt;td&gt;10&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;22.74 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.44&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0153&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;96 B&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.44&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;WithHalfCapacity&lt;/td&gt;
+&lt;td&gt;10&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;34.05 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.66&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0229&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;144 B&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.67&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;WithQuarterCapacity&lt;/td&gt;
+&lt;td&gt;10&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;57.53 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.11&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0395&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;248 B&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.15&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;WithTenthCapacity&lt;/td&gt;
+&lt;td&gt;10&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;69.32 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.34&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0446&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;280 B&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.30&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;hr /&gt;
+&lt;p&gt;Benchmarking adding 1000 items to the list:&lt;/p&gt;
+&lt;h3 id="items-1"&gt;1000 items&lt;/h3&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Method&lt;/th&gt;
+&lt;th&gt;Iterations&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Ratio&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Gen0&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Gen1&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Gen2&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Allocated&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Alloc Ratio&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;NoCapacity&lt;/td&gt;
+&lt;td&gt;1000&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1,714.12 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.3409&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0248&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;8424 B&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;WithExactCapacity&lt;/td&gt;
+&lt;td&gt;1000&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1,297.63 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.76&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.6447&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0095&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;4056 B&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.48&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;WithHalfCapacity&lt;/td&gt;
+&lt;td&gt;1000&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1,435.71 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.84&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.9689&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0210&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;6080 B&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.72&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;WithQuarterCapacity&lt;/td&gt;
+&lt;td&gt;1000&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1,525.41 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.89&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.1311&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0210&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;7104 B&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.84&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;WithTenthCapacity&lt;/td&gt;
+&lt;td&gt;1000&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1,779.44 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.04&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.9989&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0687&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;12552 B&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.49&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;hr /&gt;
+&lt;p&gt;Benchmarking adding 100 000 items to the list:&lt;/p&gt;
+&lt;h3 id="items-2"&gt;100 000 items&lt;/h3&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Method&lt;/th&gt;
+&lt;th&gt;Iterations&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Ratio&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Gen0&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Gen1&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Gen2&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Allocated&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Alloc Ratio&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;NoCapacity&lt;/td&gt;
+&lt;td&gt;100000&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;344,487.97 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;285.6445&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;285.6445&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;285.6445&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1049072 B&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;WithExactCapacity&lt;/td&gt;
+&lt;td&gt;100000&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;227,840.62 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.66&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;124.7559&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;124.7559&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;124.7559&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;400098 B&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.38&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;WithHalfCapacity&lt;/td&gt;
+&lt;td&gt;100000&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;236,859.59 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.69&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;181.6406&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;181.6406&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;181.6406&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;600141 B&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.57&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;WithQuarterCapacity&lt;/td&gt;
+&lt;td&gt;100000&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;344,779.88 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;199.7070&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;199.7070&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;199.7070&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;700171 B&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.67&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;WithTenthCapacity&lt;/td&gt;
+&lt;td&gt;100000&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;466,319.55 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.37&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;333.0078&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;333.0078&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;333.0078&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1240264 B&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.18&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;From the results, one can see:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;In all cases, setting the list capacity to the &lt;code&gt;exact expected size is twice as fast&lt;/code&gt; as not setting a capacity&lt;/li&gt;
+&lt;li&gt;In most cases, setting the list capacity &lt;code&gt;explicitly can result in significantly faster performance&lt;/code&gt; over not setting the capacity&lt;/li&gt;
+&lt;li&gt;In some cases however, explicitly setting the &lt;code&gt;list capacity to a value which is too small, is slower&lt;/code&gt; than not setting a capacity at all - in the benchmarks, setting the capacity to 1/10th of the expected values&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;When instantiating a list, it can be beneficial to set the capacity to the estimated final size. Even setting it to a fraction of the final expected size can be beneficial to performance.&lt;br /&gt;
+However setting the capacity to a value too small can be detrimental to performance, in which case its better to not set a capacity at all. Benchmark the specific use case, with the expected capacity and make an informed decision on how to set (or not set) the capacity.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://tomaszs2.medium.com/c-11-wants-to-be-your-friend-db4a31ed9710"&gt;What’s new in C# 11? Dev friendly features&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;196: 07-11-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Switch expression and string interpolation</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/11/04-interpolation-switch</link>
@@ -840,90 +1214,6 @@ file class Class2
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://www.youtube.com/watch?v=xm8eQenL7wA"&gt;What is the NEW &amp;quot;file&amp;quot; keyword of C# 11?&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;189: 25-10-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Protecting sensitive data with data protection api</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/10/24-data-protection</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/10/24-data-protection</guid>
-			<pubDate>Mon, 24 Oct 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;.NET has built in methods to &lt;code&gt;protect and unprotected&lt;/code&gt; sensitive data.&lt;/p&gt;
-&lt;p&gt;These methods are typically used to protect sensitive data, but could be used to protect any data. It could also be used to expose information for a &lt;em&gt;given period of time&lt;/em&gt; only, after which trying unprotecting the data will not work.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="configuration"&gt;Configuration&lt;/h2&gt;
-&lt;p&gt;There are effectively three steps to using the data protection apis:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Create the &lt;code&gt;protector&lt;/code&gt; from a data protection provider&lt;/li&gt;
-&lt;li&gt;Invoke the &lt;code&gt;Protect&lt;/code&gt; method to protect the data specified&lt;/li&gt;
-&lt;li&gt;Invoke the &lt;code&gt;Unprotect&lt;/code&gt; method to convert the specified protected value to plain text&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;In the startup of the application, the protector is configured as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// register base data protection
-// with DI container
-builder.Services
-    .AddDataProtection()
-    .SetDefaultKeyLifetime(TimeSpan.FromDays(7));
-
-// register the protector with DI
-builder.Services
-    .AddTransient&amp;lt;ITimeLimitedDataProtector&amp;gt;(sp =&amp;gt;
-    {
-        // specify where the provider key information will be stored
-        IDataProtectionProvider? provider = DataProtectionProvider
-            .Create(new DirectoryInfo(&amp;#64;&amp;quot;secrets&amp;quot;));
-
-        // specify the purpose string for the creator
-        IDataProtector? protector = provider
-            .CreateProtector(&amp;quot;customerdata&amp;quot;);
-
-        return protector.ToTimeLimitedDataProtector();
-    });
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Some notes on the above:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;The key information is stored in a &lt;code&gt;secrets&lt;/code&gt; folder on the host machine. As such, the key information is only available to that one machine. If multiple machines need to access the key information, there are other storage providers available (Azure KeyVault, DbContext)&lt;/li&gt;
-&lt;li&gt;The protector is created with a specific &lt;em&gt;purpose&lt;/em&gt;, &lt;code&gt;customerdata&lt;/code&gt; above. A value protected using a specific purpose, cannot be unprotected using a different purpose value.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr /&gt;
-&lt;h2 id="protect"&gt;Protect&lt;/h2&gt;
-&lt;p&gt;To &lt;em&gt;protect&lt;/em&gt; a string, the &lt;code&gt;Protect&lt;/code&gt; method is called. Below, an endpoint has been defined which has the &lt;em&gt;ITimeLimitedDataProtector&lt;/em&gt; protector implementation (configured in the previous step) injected:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// get the value to protect from the route
-app.MapGet(&amp;quot;/protect/{protectValue}&amp;quot;, (
-    [FromRoute]string protectValue, 
-    ITimeLimitedDataProtector protector) =&amp;gt;
-{
-    // return the protected value
-    return protector.Protect(protectValue);
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Invoking the endpoint &lt;code&gt;/protect/abc123&lt;/code&gt; results in the following protected value being returned:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;CfDJ8BdtcMmju6ZKiKJtRHvTt2BidaZbPEirTP_KEi4-_2xVBYbs58hqVxWGQmTQBjQaO_tXTiFRAxGUPGSqXkvlfIzhd80r3AavXi0m3PiCXYfuaRhmnrzCXk6apOIqXOCvHA
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="unprotect"&gt;Unprotect&lt;/h2&gt;
-&lt;p&gt;&lt;em&gt;Unprotecting&lt;/em&gt; is as simple as protecting a value - the &lt;code&gt;Unprotect&lt;/code&gt; method is called, with the previously protected value supplied:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/unprotect/{unprotectValue}&amp;quot;, (
-    [FromRoute] string unprotectValue, 
-    ITimeLimitedDataProtector protector) =&amp;gt;
-{
-    return protector.Unprotect(unprotectValue);
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Invoking the endpoint &lt;code&gt;/unprotect/CfDJ8BdtcMmju6ZKiKJtRHvTt2BidaZbPEirTP_KEi4-_2xVBYbs58hqVxWGQmTQBjQaO_tXTiFRAxGUPGSqXkvlfIzhd80r3AavXi0m3PiCXYfuaRhmnrzCXk6apOIqXOCvHA&lt;/code&gt; results in the following output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;abc123
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;When needing to protect sensitive data (for example, &lt;em&gt;authentication cookie&lt;/em&gt; or &lt;em&gt;bearer token&lt;/em&gt;) this set of classes and functionality provides an easy, simple and effective way to protect the data.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://twitter.com/ppenza/status/1573676247812653058"&gt;Piotr Penza&lt;/a&gt;&lt;br /&gt;
-&lt;a href="https://learn.microsoft.com/en-us/aspnet/core/security/data-protection/introduction?view=aspnetcore-6.0"&gt;ASP.NET Core Data Protection Overview&lt;/a&gt;&lt;br /&gt;
-&lt;a href="https://learn.microsoft.com/en-us/aspnet/core/security/data-protection/configuration/overview?view=aspnetcore-6.0"&gt;Configure ASP.NET Core Data Protection&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;188: 24-10-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
