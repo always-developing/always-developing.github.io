@@ -5,8 +5,80 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Mon, 07 Nov 2022 04:24:15 GMT</pubDate>
-		<lastBuildDate>Mon, 07 Nov 2022 04:24:15 GMT</lastBuildDate>
+		<pubDate>Tue, 08 Nov 2022 04:23:24 GMT</pubDate>
+		<lastBuildDate>Tue, 08 Nov 2022 04:23:24 GMT</lastBuildDate>
+		<item>
+			<title>Target-type new expressions</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/11/08-target-type-new</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/11/08-target-type-new</guid>
+			<pubDate>Tue, 08 Nov 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;The target-type &lt;code&gt;new&lt;/code&gt; keyword can be used when declaring a new variable instance without having to specify the type, if .NET can infer the instance type (i.e. the &lt;code&gt;var&lt;/code&gt; keyword is not used).&lt;/p&gt;
+&lt;p&gt;In addition, the &lt;code&gt;new keyword can also be used in other instances where .NET is able to infer the type - such as passing object instances to methods&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="instance-declaration"&gt;Instance declaration&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;new&lt;/code&gt; keyword can be used when declaring an instance of an object, as long as .NET can infer the type:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// var is used here,so the CreateRequest type
+// needs to explicitly be stated so .NET knows the var type
+var request = new CreateRequest(1);
+
+// OR
+
+// Explicitly define the type, but then just
+// use the new keyword as the type can be inferred 
+CreateRequest request1 = new(2);
+
+// This is not valid. What is the type?
+// var request2 = new(2);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The above usage is however not what this post is above - there is another more interesting technique using &lt;code&gt;new&lt;/code&gt; and that is using it when passing variables to a method.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="method-invocation"&gt;Method invocation&lt;/h2&gt;
+&lt;p&gt;As mentioned, this technique about to be shown is the the &lt;em&gt;new and interesting&lt;/em&gt; part of this post. The explicit usage of the type can be ignored when .NET can infer the type (as above) - so it makes sense this extends to method parameters, where the parameter type is know.&lt;/p&gt;
+&lt;p&gt;Consider this &lt;em&gt;CreateEntity&lt;/em&gt; method which takes a &lt;em&gt;CreateRequest&lt;/em&gt; as a parameter:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;void CreateEntity(CreateRequest request)
+{
+    // do stuff
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The parameter type is fixed, and known by .NET, so instead of doing this:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;CreateEntity(new CreateRequest(3));
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;One can do this:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;CreateEntity(new (4));
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;More concise, but not necessarily more readable.&lt;/p&gt;
+&lt;p&gt;This technique can also be extended for nested parameters.&lt;/p&gt;
+&lt;p&gt;Consider this absurd setup of nested parameters:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// takes an instance of DeleteRequestOne
+record DeleteRequest(DeleteRequestOne Request);
+// takes an instance of DeleteRequestTwo
+record DeleteRequestOne(DeleteRequestTwo Request);
+// takes an instance of DeleteRequestTwo
+record DeleteRequestTwo(DeleteRequestThree request);
+// takes an instance of DeleteRequestFour
+record DeleteRequestThree(DeleteRequestFour request);
+// takes an instance of DeleteRequestTwo
+record DeleteRequestFour(DeleteRequestFive request);
+// takes an int value
+record DeleteRequestFive(int Id);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The following is possible, as all the types are known and inferred:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;DeleteEntity(new(new(new(new(new(new(6)))))));
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;A very interesting concept, but again, not very readable at all.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;As mentioned, this is an interesting technique which does require less typing and results in more concise code - at the cost of readability. Use this technique sparingly where it makes sense.
+Having said that, there are options in IDEs (in Visual Studio a the very least) to &lt;em&gt;display inline parameter hints&lt;/em&gt; which indicate the inferred types, so in the end the code is still readable, but with less typing. However this might not be available in all applications where the code is read (such as in Github or Azure DevOps code viewer).&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/buhakmeh/status/1580969384696217605"&gt;Khalid Abuhakmeh Tweet&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;197: 08-11-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>List capacity and performance</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/11/07-list-capacity</link>
@@ -1132,88 +1204,6 @@ Keep in mind though that the code comments will be publicly exposed to the consu
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://khalidabuhakmeh.com/using-xml-documentation-with-aspnetcore-minimal-api-apps-and-openapi"&gt;Using XML Documentation With ASP.NET Core Minimal API Apps and OpenAPI&lt;/a&gt;&lt;/p&gt;
 &lt;!--?# DailyDrop ?--&gt;189: 26-10-2022&lt;!--?#/ DailyDrop ?--&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>File access modifier</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/10/25-file-modifier</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/10/25-file-modifier</guid>
-			<pubDate>Tue, 25 Oct 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;A new access modifier is being introduced with C#11, the &lt;code&gt;file&lt;/code&gt; modifier - this will limit the accessibility of the type to the &lt;em&gt;file in which it is declared&lt;/em&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="modifier-recap"&gt;Modifier recap&lt;/h2&gt;
-&lt;p&gt;A quick recap of the existing access modifiers, along with the new &lt;code&gt;file&lt;/code&gt; modifier (as they relate to &lt;em&gt;classes&lt;/em&gt;).&lt;/p&gt;
-&lt;p&gt;Existing modifiers:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;private&lt;/code&gt; - the class is only accessible inside the class in which it was defined&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;public&lt;/code&gt; - the class is accessible from everywhere in the project&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;protected&lt;/code&gt; - the class is accessible from within the class and all types which derive from the class&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;internal&lt;/code&gt; - the class is accessible from within its own assembly, but not other assemblies&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;The new modifier:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;file&lt;/code&gt; - the class is accessible only from within the &lt;em&gt;file&lt;/em&gt; in which it was defined&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr /&gt;
-&lt;h2 id="example"&gt;Example&lt;/h2&gt;
-&lt;p&gt;When a class is defined, the &lt;code&gt;file&lt;/code&gt; modifier is applied (as opposed to public, private, etc.)&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;file class Class1
-{
-    public string Name { get; set; }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This class now cannot be used anywhere outside the file in which is was defined. Trying to use in a different class defined in a different file, will result in a compilation error:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Class3
-{
-    public Class3()
-    {
-        // NOT allowed
-        Class1 ca = new Class1();
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;The type or namespace name 'Class1' could not be found
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;However, as mentioned, it can be used in the same file:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// all in the same physical file
-file class Class1
-{
-    public string Name { get; set; }
-}
-
-file class Class2
-{
-    public Class2()
-    {
-        // Totally okay
-        Class1 c1 = new Class1();
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The &lt;code&gt;file&lt;/code&gt; access modifier can be applied to &lt;code&gt;classes, records, structs and enums&lt;/code&gt;, but cannot be used for &lt;em&gt;methods&lt;/em&gt; or &lt;em&gt;properties&lt;/em&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="why"&gt;Why?&lt;/h2&gt;
-&lt;p&gt;This functionality was primarily introduced to assist &lt;code&gt;source generator&lt;/code&gt; authors. When a &lt;em&gt;source generator&lt;/em&gt; generates a class, its tricky to ensure it's not going to conflict with a file already in the consumer's code base. The &lt;code&gt;file&lt;/code&gt; modifier helps solves this by ensuring (where specified) the the &lt;em&gt;source generated&lt;/em&gt; file is only visible where defined, and not in conflict with any developer specified class name.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="lowered-code"&gt;Lowered code&lt;/h2&gt;
-&lt;p&gt;One can use &lt;a href="https://sharplab.io/"&gt;sharplab.io&lt;/a&gt; to see how the &lt;code&gt;file&lt;/code&gt; keyword is lowered:&lt;/p&gt;
-&lt;p&gt;Original code:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;file class FileScopedClass { }
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Lowered code:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;internal class &amp;lt;_&amp;gt;FD2E2ADF7177B7A8AFDDBC12D1634CF23EA1A71020F6A1308070A16400FB68FDE__FileScopedClass { }
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;From this we can see that the &lt;code&gt;file&lt;/code&gt; keyword is translated into an &lt;code&gt;internal class with a uniquely generated name&lt;/code&gt;, as to not conflict with any existing name&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;While the intended target audience for this feature is very narrow (source generator authors), it can be leveraged by anyone if the use case calls for it. Even then, it may not get wide usage in general applications - however it is useful to know it exists and is an option if required.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.youtube.com/watch?v=xm8eQenL7wA"&gt;What is the NEW &amp;quot;file&amp;quot; keyword of C# 11?&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;189: 25-10-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
