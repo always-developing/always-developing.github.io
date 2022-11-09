@@ -5,8 +5,186 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Tue, 08 Nov 2022 04:23:24 GMT</pubDate>
-		<lastBuildDate>Tue, 08 Nov 2022 04:23:24 GMT</lastBuildDate>
+		<pubDate>Wed, 09 Nov 2022 04:29:14 GMT</pubDate>
+		<lastBuildDate>Wed, 09 Nov 2022 04:29:14 GMT</lastBuildDate>
+		<item>
+			<title>Adding localization with dependency injection</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/11/09-localization-di</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/11/09-localization-di</guid>
+			<pubDate>Wed, 09 Nov 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;Localization&lt;/code&gt; is the &lt;em&gt;process of translating an application's resources into localized versions for each culture that the application will support&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;Enabling this multi-culture, localization support is as easy as adding a few lines of code on application startup, and leveraging the &lt;code&gt;IStringLocalizer&lt;/code&gt; implementation when working with the variable, localized values.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="non-localized"&gt;Non-localized&lt;/h2&gt;
+&lt;p&gt;Suppose we have an endpoint, which when called will return a string containing a random color:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/get&amp;quot;, () =&amp;gt;
+{
+    var random = new Random();
+    var randomValue = random.Next(3);
+
+    var response = randomValue switch
+    {
+        0 =&amp;gt; &amp;quot;Blue&amp;quot;,
+        1 =&amp;gt; &amp;quot;Green&amp;quot;,
+        2 =&amp;gt; &amp;quot;Yellow&amp;quot;
+    };
+
+    return $&amp;quot;The color generated is: {response}&amp;quot;;
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This code will generate a random number between 1 and 3, and return a string indicating the color generated.&lt;/p&gt;
+&lt;p&gt;Calling the endpoint returns the following (the colour value may change with each call):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;The color generated is: Blue
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In the above return message the American spelling of &amp;quot;color&amp;quot; is returned, and not the British/South African spelling, &lt;em&gt;colour&lt;/em&gt;. We are going to add support for either variation, depending on the caller's culture - this is a fairly simple innocuous change, but the steps used here can be expended to add complete support for a different language.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="localized"&gt;Localized&lt;/h2&gt;
+&lt;h3 id="defining-the-variations"&gt;Defining the variations&lt;/h3&gt;
+&lt;p&gt;The first step is to define the various strings which will have different versions based on the culture. In our example this would be:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The return message&lt;/li&gt;
+&lt;li&gt;The three different colours&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;In this specific use case these three different colour values will not change between cultures, but if the application is to support multi-culture, its a good idea to &amp;quot;localize&amp;quot; all string values.&lt;/p&gt;
+&lt;p&gt;The various culture specific strings are stored in &lt;code&gt;resx files&lt;/code&gt;, which usually reside in a &lt;code&gt;Resources&lt;/code&gt; folder. These files follow the naming standard of &lt;code&gt;{Class}.{culture}.resx&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;In this case, two files where added to the &lt;code&gt;Resources&lt;/code&gt; folder:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Program.en-us.resx&lt;/li&gt;
+&lt;li&gt;Program.en-za.resx&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;As we are using minimal apis, the usage of the values will be in the &lt;code&gt;Program&lt;/code&gt; class, hence the name of the resx files is &lt;em&gt;Program&lt;/em&gt;. The cultures supported in our application will be &lt;code&gt;English-Unites States&lt;/code&gt; and &lt;code&gt;English-South African&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;The resx files will both contain the &lt;code&gt;same names&lt;/code&gt; (keys), but each will have the specific localized values:&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;Program.en-us.resx&lt;/code&gt;:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Name&lt;/th&gt;
+&lt;th&gt;Value&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;Blue&lt;/td&gt;
+&lt;td&gt;Blue&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;ColourResponseMessage&lt;/td&gt;
+&lt;td&gt;The color generated is: {0}&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Green&lt;/td&gt;
+&lt;td&gt;Green&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Yellow&lt;/td&gt;
+&lt;td&gt;Yellow&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;&lt;code&gt;Program.en-za.resx&lt;/code&gt;:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Name&lt;/th&gt;
+&lt;th&gt;Value&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;Blue&lt;/td&gt;
+&lt;td&gt;Blue&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;ColourResponseMessage&lt;/td&gt;
+&lt;td&gt;The colour generated is: {0}&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Green&lt;/td&gt;
+&lt;td&gt;Green&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Yellow&lt;/td&gt;
+&lt;td&gt;Yellow&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;As mentioned, in this example only the &lt;em&gt;ColourResponseMessage&lt;/em&gt; will differentiate between the two, with the slightly different spelling&lt;/p&gt;
+&lt;p&gt;Now that we have the variable values defined, we begin by &lt;em&gt;adding localization support to the dependency injection container&lt;/em&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="dependency-injection-configuration"&gt;Dependency injection configuration&lt;/h3&gt;
+&lt;p&gt;During application startup, the following is added:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// add the localization support to the dependency injection container
+// which includes the path to the resx files
+builder.Services.AddLocalization(options =&amp;gt; options.ResourcesPath = &amp;quot;Resources&amp;quot;);
+
+// add the cultures which will be supported
+var supportedCultures = new[]
+{
+    new CultureInfo(&amp;quot;en-za&amp;quot;),
+    new CultureInfo(&amp;quot;en-us&amp;quot;)
+};
+builder.Services.Configure&amp;lt;RequestLocalizationOptions&amp;gt;(options =&amp;gt; {
+    options.DefaultRequestCulture = new RequestCulture(&amp;quot;en-us&amp;quot;);
+    options.SupportedCultures = supportedCultures;
+    options.SupportedUICultures = supportedCultures;
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Here we configured the DI container with the generic localization interfaces and implementations, as well as explicitly specified which cultures will be supported.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="middleware-configuration"&gt;Middleware configuration&lt;/h3&gt;
+&lt;p&gt;The next step is to configure the middleware pipeline (this is defined before any of the endpoints are defined):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.UseRequestLocalization(app.Services
+    .GetRequiredService&amp;lt;IOptions&amp;lt;RequestLocalizationOptions&amp;gt;&amp;gt;().Value);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This middleware components will &lt;em&gt;automatically set culture information for requests based on information provided by the client&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;Finally we are now able to take advantage of the localization capabilities and update the initial &lt;code&gt;/get&lt;/code&gt; endpoint defined above.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="localized-endpoint"&gt;Localized endpoint&lt;/h3&gt;
+&lt;p&gt;To leverage the localization functionality, the &lt;code&gt;IStringLocalizer&lt;/code&gt; interface and implementation is used - this is injected from the dependency injection container. Instead of the string value being hardcoded, &lt;code&gt;IStringLocalizer&lt;/code&gt; is used to lookup the culture specific string by name:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// inject IStringLocalizer with the specific class
+app.MapGet(&amp;quot;/get&amp;quot;, ([FromServices]IStringLocalizer&amp;lt;Program&amp;gt; localizer) =&amp;gt;
+{
+    var random = new Random();
+    var randomValue = random.Next(3);
+
+    // same logic as before
+    var localizedResponse = randomValue switch 
+    {
+        // use IStringLocalizer to get the culture specific string
+        // GetString also allows for arguments to be passed in and 
+        // another localized string (the colour) is being passed in
+        // as a parameter to format the ColourResponseMessage
+        0 =&amp;gt; localizer.GetString(&amp;quot;ColourResponseMessage&amp;quot;, localizer.GetString(&amp;quot;Blue&amp;quot;)),
+        1 =&amp;gt; localizer.GetString(&amp;quot;ColourResponseMessage&amp;quot;, localizer.GetString(&amp;quot;Green&amp;quot;)),
+        2 =&amp;gt; localizer.GetString(&amp;quot;ColourResponseMessage&amp;quot;, localizer.GetString(&amp;quot;Yellow&amp;quot;)),
+    };
+
+    return localizedResponse.Value;
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;When &lt;em&gt;GetString&lt;/em&gt; is called on the &lt;em&gt;IStringLocalizer&lt;/em&gt; implementation, the current culture of the context is used - if no culture is explicitly supplied, then the default culture is used.&lt;/p&gt;
+&lt;p&gt;Calling the endpoint as it stands returns the same result as before - the default culture is used:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;The color generated is: Yellow
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="changing-culture"&gt;Changing culture&lt;/h3&gt;
+&lt;p&gt;When the middleware pipeline was updated in a previous step using &lt;em&gt;UseRequestLocalization&lt;/em&gt;, it added the functionality to &lt;code&gt;change the culture based on a query string&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Calling the endpoint with the culture specified &lt;code&gt;/get?culture=en-za&lt;/code&gt; now results in the following:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;The colour generated is: Blue
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The strings are now culture specific! Localization support has been added to the application.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;Adding localization support to an api is a relatively easy process, and only requires the steps mentioned above. For large api's, if the task seems daunting and over whelming, due to the nature of the updates, it can be done in a phased approach, one endpoint at a time, making it a bit more manageable.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://code-maze.com/aspnetcore-localization/"&gt;Localization in ASP.NET Core&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;198: 09-11-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Target-type new expressions</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/11/08-target-type-new</link>
@@ -1039,171 +1217,6 @@ Artist/Time: { Artist = John Mayer, LengthInSeconds = 238 }
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://anthonygiretti.com/2022/09/29/net-learn-linq-as-you-never-have-before/"&gt;.NET: Learn LINQ as you never have before - page 27&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;189: 27-10-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>OpenAPI documentation from XML documentation comments</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/10/26-xml-swagger</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/10/26-xml-swagger</guid>
-			<pubDate>Wed, 26 Oct 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;Code comments can be used to &lt;code&gt;populate the swagger document&lt;/code&gt; with helpful comments when working with minimal API's.&lt;/p&gt;
-&lt;p&gt;The &lt;code&gt;XML Documentation comments&lt;/code&gt; (those comments starting with &lt;code&gt;///&lt;/code&gt;) are output to an XML documentation file on application build - this file is then be user to populate the swagger document at runtime.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="code"&gt;Code&lt;/h2&gt;
-&lt;p&gt;For the below sample, the default &lt;em&gt;weatherforecast&lt;/em&gt; endpoint will be used, but modified slightly.&lt;/p&gt;
-&lt;h3 id="endpoint-definition"&gt;Endpoint definition&lt;/h3&gt;
-&lt;p&gt;The first step is break out the various components to make them easier to comment.&lt;/p&gt;
-&lt;p&gt;Move the &lt;em&gt;WeatherForecast&lt;/em&gt; response object into its own file, &lt;em&gt;WeatherForecast.cs&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF =&amp;gt; 32 + (int)(TemperatureC / 0.5556);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The lambda delegate which is called when the &lt;em&gt;GET "weatherforecast"&lt;/em&gt; endpoint is called, is also moved into its own static method in the &lt;em&gt;WeatherCalculator&lt;/em&gt; class:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class WeatherCalculator
-{
-    static string[] summaries = new[]
-    {
-        "Freezing", "Bracing", "Chilly", "Cool", "Mild", 
-        "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-    };
-
-    public static WeatherForecast[] GetWeather([FromRoute]string city)
-    {
-        _ = city;
-
-        var forecast = Enumerable.Range(1, 5).Select(index =&amp;gt;
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-
-        return forecast;
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;A &lt;em&gt;city&lt;/em&gt; field was also added to the &lt;em&gt;GetWeather&lt;/em&gt; as a parameter - this is not used and is just added to demonstrate how it is reflected on the swagger document.&lt;/p&gt;
-&lt;p&gt;The endpoint is then updated to invoke the static &lt;code&gt;GetWeather&lt;/code&gt; method instead of invoking the delegate:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// the swagger and api dependency injection
-// and middleware components will automatically
-// be added if the correct template settings 
-// were chosen
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-var app = builder.Build();
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-// change from delegate to call the static method
-// created above
-app.MapGet("/weatherforecast/{city}", WeatherCalculator.GetWeather);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;If running the application and browsing to the swagger endpoint, it should work as before (before the code modifications), but still not documentation added:&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/no-doc.png" alt="Swagger without documentation"&gt;&lt;/p&gt;
-&lt;hr&gt;
-&lt;h3 id="xml-documentation"&gt;XML Documentation&lt;/h3&gt;
-&lt;p&gt;The next step is to add XML documentation comments to the code. In Visual Studio, &lt;em&gt;auto-complete&lt;/em&gt; will create the XML document structure by &lt;code&gt;typing /// above a class or method&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;Updated &lt;em&gt;WeatherForecast&lt;/em&gt; response object:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;/// &amp;lt;summary&amp;gt;
-/// Represents the weather for a specific date
-/// &amp;lt;/summary&amp;gt;
-/// &amp;lt;param name="Date"&amp;gt;The date for the weather forecast&amp;lt;/param&amp;gt;
-/// &amp;lt;param name="TemperatureC"&amp;gt;The temperature in degrees celsius&amp;lt;/param&amp;gt;
-/// &amp;lt;param name="Summary"&amp;gt;A summary description of the weather&amp;lt;/param&amp;gt;
-public record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF =&amp;gt; 32 + (int)(TemperatureC / 0.5556);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The updated &lt;em&gt;WeatherCalculator&lt;/em&gt; class and static &lt;em&gt;GetWeather&lt;/em&gt; method:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;/// &amp;lt;summary&amp;gt;
-/// Contains logic to get the weather forecast details
-/// &amp;lt;/summary&amp;gt;
-public class WeatherCalculator
-{
-    static string[] summaries = new[]
-    {
-        "Freezing", "Bracing", "Chilly", "Cool", "Mild", 
-        "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-    };
-
-    /// &amp;lt;summary&amp;gt;
-    /// Retrieve the weather forecast for the next 5 days for the city specified
-    /// &amp;lt;/summary&amp;gt;
-    /// &amp;lt;param name="city"&amp;gt;The city for the weather forecasts should be retrieved&amp;lt;/param&amp;gt;
-    /// &amp;lt;returns&amp;gt;The forecast details for the next 5 days&amp;lt;/returns&amp;gt;
-    public static WeatherForecast[] GetWeather(string city)
-    {
-        _ = city;
-
-        var forecast = Enumerable.Range(1, 5).Select(index =&amp;gt;
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-
-        return forecast;
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Doing the above is good practice whether using this technique to populate the swagger document or not, as it provides context and information for future developers of the code.&lt;/p&gt;
-&lt;p&gt;At this point this information is not available publicly. Next step we'll make the XML documentation details available outside the code.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h3 id="file-generation"&gt;File generation&lt;/h3&gt;
-&lt;p&gt;This step is very straight forward - the &lt;code&gt;Documentation file&lt;/code&gt; option needs to be set on the project. This can be done in one of two ways:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Add the &lt;code&gt;GenerateDocumentationFile&lt;/code&gt; node directly to the csproj file:&lt;/li&gt;
-&lt;/ul&gt;
-&lt;pre&gt;&lt;code class="language-xml"&gt;&amp;lt;PropertyGroup&amp;gt;
-    &amp;lt;TargetFramework&amp;gt;net6.0&amp;lt;/TargetFramework&amp;gt;
-    &amp;lt;Nullable&amp;gt;enable&amp;lt;/Nullable&amp;gt;
-    &amp;lt;ImplicitUsings&amp;gt;enable&amp;lt;/ImplicitUsings&amp;gt;
-    &amp;lt;GenerateDocumentationFile&amp;gt;true&amp;lt;/GenerateDocumentationFile&amp;gt;
-&amp;lt;/PropertyGroup&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;ul&gt;
-&lt;li&gt;Set the flag in the &lt;code&gt;project properties&lt;/code&gt;:&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/xml-doc.png" alt="Project properties Documentation file flag"&gt;&lt;/p&gt;
-&lt;p&gt;Compiling the code will now also &lt;em&gt;generate a XML document file along with the binary&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;Now that we have XML file, next we can instruct the application to populate the swagger document with the details in the XML document file.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h3 id="swagger-setup"&gt;Swagger Setup&lt;/h3&gt;
-&lt;p&gt;During application startup, the &lt;code&gt;builder.Services.AddSwaggerGen()&lt;/code&gt; line should be &lt;em&gt;replaced&lt;/em&gt; with the following:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;builder.Services.AddSwaggerGen(c =&amp;gt;
-{
-    c.SwaggerDoc("v1", new() { Title = "My API", Version = "v1" });
-    // build up the file path to the XML document
-    var filePath = Path.Combine(AppContext.BaseDirectory, "XmlDocs.xml");
-    // instruct the swagger generation process to include details
-    // from the file
-    c.IncludeXmlComments(filePath);
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Now, when browsing to the swagger endpoint the XML comments are included:&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/swagger-doc.png" alt="Swagger with comments"&gt;&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;I personally find this method to be clean and very easy to implement and will definitely be using this on all my own API's going forward. This method ensures the code is well documented (for developers), and is also well documented for consumers with minimal additional effort.
-Keep in mind though that the code comments will be publicly exposed to the consumer, so would need to make sense in that context.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://khalidabuhakmeh.com/using-xml-documentation-with-aspnetcore-minimal-api-apps-and-openapi"&gt;Using XML Documentation With ASP.NET Core Minimal API Apps and OpenAPI&lt;/a&gt;&lt;/p&gt;
-&lt;!--?# DailyDrop ?--&gt;189: 26-10-2022&lt;!--?#/ DailyDrop ?--&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
