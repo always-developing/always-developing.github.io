@@ -1,0 +1,389 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="always learning | always growing">
+
+    <title>Always Developing - Awaiting anything with GetAwaiter</title>
+
+    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/11/10-awaiting-anything">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
+
+    <meta name="application-name" content="Always Developing" />
+    <meta name="msapplication-tooltip" content="Always Developing" />
+    <meta name="msapplication-starturl" content="/" />
+
+    <meta property="og:title" content="Always Developing - Awaiting anything with GetAwaiter" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/11/10-awaiting-anything" />
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Bootstrap core CSS -->
+    <link href="/vendor/bootstrap/scss/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom fonts for this template -->
+    <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="/vendor/fontawesome-free/css/brands.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css' data-no-mirror>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css' data-no-mirror>
+
+    <!-- Custom styles for this template -->
+    <link href="/scss/always-developing-blog.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/plugins/autoloader/prism-autoloader.min.js" data-no-mirror></script>
+    <script src="https://cdn.jsdelivr.net/npm/quicklink@2.0.0/dist/quicklink.umd.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/themes/prism.css">
+
+    <!-- Lunr search -->
+        <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/pako@2.0.3/dist/pako_inflate.min.js"></script>
+        <script src="/search.js"></script>
+
+    
+
+
+    
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand"  href="/">
+            <img src="/images/ad_logo.png" alt="" width="25" height="25" class="d-inline-block align-text-top">
+            Always Developing
+        </a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            Menu
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/software">Software</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/tags">Tags</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/posts">Posts</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/about">About</a>
+            </li>
+</ul>
+                <form class="form-inline my-2 my-lg-0" action="/search" method="GET">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="query">
+                    <input type="submit" hidden />
+                </form>
+        </div>
+    </div>
+</nav>
+
+    <!-- Page Header -->
+    <header class="masthead">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 align-middle">
+                <div class="post-header-image">
+                    <a href="/">
+                        <img src="/images/ad_logo.png" class="header-image">
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="post-heading">
+                    <h1>
+                        Awaiting anything with GetAwaiter
+                    </h1>
+                            <h2 class="subheading">Using a GetAwaiter extension method to await any type</h2>
+                        <p class="post-meta">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
+                                <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
+                            </svg> Published on Thursday, 10 November 2022
+                        </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <!-- Main Content -->
+    <div class="container">
+            <div class="row ">
+                    <div id="content" class="col-md-9 post-with-toc post-block">
+                        
+<div class="post-header-category">
+    <a class="btn btn-primary btn-sm btn-default btn-home" href="\" role="button"><i class="fas fa-angle-double-left"></i> Home</a>
+            <a class="btn btn-primary btn-sm category-btn" href="/categories/dailydrop" role="button">DailyDrop</a>
+</div>
+
+                        <h2 id="daily-knowledge-drop">Daily Knowledge Drop</h2>
+<p>All that is required to <code>await</code> a specific type, is that the type has a method called <code>GetAwaiter</code> which returns an instance of <code>TaskAwaiter</code>.</p>
+<p>This <code>GetAwaiter</code> method can be an <em>extension method</em> - which means <code>any type can be extended to be awaited</code>.</p>
+<hr />
+<h2 id="use-case-double-parse">Use case: double parse</h2>
+<p>In general, the below use cases are not a recommendation or proposed best technique for solving the use case - but it's interesting to discover what is possible.</p>
+<p>In this use case, we are going to attempt to <em>make an async version of the double.TryParse method</em>.</p>
+<hr />
+<h3 id="tryparseasync">TryParseAsync</h3>
+<p>This solution doesn't require the usage of the <code>GetAwaiter</code> method - in this first option we are just going to create a method which returns a <code>Task</code> (and as such, the <em>Task</em> is awaited):</p>
+<pre><code class="language-csharp">// extension method on string
+public static Task&lt;bool&gt; TryParseAsync(this string s, out double result)
+{
+    // perform the normal TryParse
+    if(double.TryParse(s, out result))
+    {
+        // return a Task instead of the 
+        // TryParse response
+        return Task.FromResult(true);
+    }
+    
+    // return a Task instead of the 
+    // TryParse response
+    return Task.FromResult(false);
+}
+</code></pre>
+<p>This can now be used as follows:</p>
+<pre><code class="language-csharp">// Instead of doing it this OLD way
+if(double.TryParse(&quot;100&quot;, out double result))
+{
+    Console.WriteLine(&quot;100 is a double&quot;);
+}
+
+// This is now possible:
+// The TryParseAsync is called directly 
+// on the string and can be awaited
+if(await &quot;100&quot;.TryParseAsync(out double result1))
+{
+    Console.WriteLine(&quot;100 is a double&quot;);
+}
+</code></pre>
+<p>Here, the <code>TryParseAsync</code> can be used on a string value directly, and as it returns a <code>Task</code>, the call can be <em>awaited</em>.</p>
+<hr />
+<h3 id="await-directly">await directly</h3>
+<p>However, what if there is a requirement to perform the same functionality as <code>TryParseAsync</code>, but to <em>await</em> the string directly - not call the <code>TryParseAsync</code> method. Well, no problem!</p>
+<pre><code class="language-csharp">public static TaskAwaiter&lt;bool&gt; GetAwaiter(this string s)
+{
+    return s.TryParseAsync(out double _).GetAwaiter();
+}
+</code></pre>
+<p>Here, a <code>GetAwaiter</code> extension method is created on <code>string</code> - by convention, this now allows <code>string to be awaited directly</code>. In this instance, awaiting a string will try parse it as a double (using the previously created extension method).</p>
+<p>So now this can be done:</p>
+<pre><code class="language-csharp">// just await the string
+if(await &quot;500&quot;)
+{
+    Console.WriteLine(&quot;500 is a double&quot;);
+}
+</code></pre>
+<p>As mentioned - this is not really a recommended approach at all - while the code is more concise, the readability is not great, with the code making no contextual sense. However, it is what can be done.</p>
+<hr />
+<h2 id="use-case-timespan">Use Case: TimeSpan</h2>
+<p>A more useful use case, is to <em>expand the functionality of TimeSpan</em> to make it easier to <em>wait for specific lengths of time</em>.</p>
+<h3 id="delay">Delay</h3>
+<p>Generally when a delay is required in code, a variation of the following is used:</p>
+<pre><code class="language-csharp">await Task.Delay(TimeSpan.FromMilliseconds(100));
+</code></pre>
+<p>Nothing wrong with this, it works. However if used often throughout code, it's it fairly verbose.</p>
+<hr />
+<h3 id="await">await</h3>
+<p>As before, a <code>GetAwaiter</code> method could be added to <code>TimeSpan</code> to make it <em>awaitable</em>, eliminating the need for the Task.Delay (this will still be required, it will just be wrapped up in the extension method):</p>
+<pre><code class="language-csharp">// extension method on TimeSpan
+public static TaskAwaiter GetAwaiter(this TimeSpan timeSpan)
+{
+    return Task.Delay(timeSpan).GetAwaiter();
+}
+</code></pre>
+<p>This method can now be used as follows:</p>
+<pre><code class="language-csharp">await TimeSpan.FromMilliseconds(100);
+</code></pre>
+<p>Definitely simpler and more concise than the previous version, and I'd argue actually more readable.</p>
+<hr />
+<h3 id="await-extended">await extended</h3>
+<p>This could even be taken a step further with an addition extension method:</p>
+<pre><code class="language-csharp">public static TimeSpan MilliSeconds(this int i) =&gt; TimeSpan.FromMilliseconds(i);
+</code></pre>
+<p>This is an extension method on an <code>int</code>, which will convert the integer to an equivalent TimeSpan object.</p>
+<p>As we already have an existing extension method to <em>await</em> a <code>TimeSpan</code>, the two extensions methods can be used in conjunction - <em>convert an integer to a TimeSpan, which can then be awaited</em>:</p>
+<pre><code class="language-csharp">await 100.MilliSeconds();
+</code></pre>
+<hr />
+<h2 id="notes">Notes</h2>
+<p>While this is a very useful and convenient technique to add the <em>await</em> functionality to <em>any class</em>, it doesn't mean every class <em>should</em> have this functionality. In the case of <code>TryParseAsync</code>, the code was made less readable, for no real benefit. In the case of <code>TimeSpan</code>, the <em>await</em> extension to the class did add value to the developer.  Basically, made an informed choice to use <code>GetAwaiter</code>, and only do so where it makes sense.</p>
+<hr />
+<h2 id="references">References</h2>
+<p><a href="https://steven-giesel.com/blogPost/5360d1c3-89f6-4a08-9ee3-6ddbe1b44236">Cursed C# - Doing shenanigans in C#</a></p>
+
+<blockquote class="daily-drop">
+    <div>
+        <div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px; ">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="50" height="50" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffec00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+              <path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+              <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+              <line x1="9.7" y1="17" x2="14.3" y2="17" />
+            </svg>
+        </div>
+        <div class="drop-header">
+            Daily Drop 199: 10-11-2022
+        </div>
+        <div>
+            <br>At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br> It could be anything - some.NET / C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
+            The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+        <div>
+    </div>
+</blockquote>
+
+
+                        
+<div>
+            <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
+            <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
+            <a role="button" href="/tags/await" class="badge badge-light"> await</a>
+            <a role="button" href="/tags/task" class="badge badge-light"> task</a>
+</div>
+                    </div>
+                    <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
+                        
+
+        <div class="box sticky-top toc-block">
+            <h3 class="no-anchor">On This Page</h3>
+            <ul>
+        <li><a href="#daily-knowledge-drop">Daily Knowledge Drop</a></li>
+        <li><a href="#use-case-double-parse">Use case: double parse</a></li>
+            <ul>
+        <li><a href="#tryparseasync">TryParseAsync</a></li>
+        <li><a href="#await-directly">await directly</a></li>
+            </ul>
+        <li><a href="#use-case-timespan">Use Case: TimeSpan</a></li>
+            <ul>
+        <li><a href="#delay">Delay</a></li>
+        <li><a href="#await">await</a></li>
+        <li><a href="#await-extended">await extended</a></li>
+            </ul>
+        <li><a href="#notes">Notes</a></li>
+        <li><a href="#references">References</a></li>
+            </ul>
+        </div>
+
+                    </div>
+            </div>
+            <div class="row ">
+                    <div id="content" class="col-md-9">
+                        <div>
+    <script src="https://giscus.app/client.js"
+            data-repo="always-developing/always-developing.github.io"
+            data-repo-id="R_kgDOGQJLBQ"
+            data-category="Comments"
+            data-category-id="DIC_kwDOGQJLBc4B_pUA"
+            data-mapping="pathname"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="bottom"
+            data-theme="transparent_dark"
+            data-lang="en"
+            crossorigin="anonymous"
+            async>
+    </script>
+</div>
+                    </div>
+            </div>
+    </div>
+
+    <hr class="horizontal-rule" />
+
+    <!-- Footer -->
+    <footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <ul class="list-inline text-center">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://www.linkedin.com/in/jean-pierre-seini">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-linkedin fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                <div>
+                    <p class="copyright text-footer">
+                        Copyright © 2022 Always Developing</a>.
+                    </p>
+                </div>
+                <ul class="list-inline text-center small text-feeds">
+                        <li class="list-inline-item">
+                            <a href="/feed.rss"><i class="fa fa-rss"></i> RSS Feed</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="/feed.atom"><i class="fa fa-rss"></i> Atom Feed</a>
+                        </li>
+                </ul>
+                <ul class="list-inline text-center small">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing/alwaysdeveloping-website-src"><i class="fab fa-github"></i> This site on GitHub</a>                    
+                    </li>
+                    <li class="list-inline-item">
+                        |
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing/alwaysdeveloping-website-src/tree/main/theme"><i class="fa fa-code"></i> Custom Always-Developing theme</a>
+                    </li>
+                    <li class="list-inline-item">
+                        |
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://github.com/statiqdev/CleanBlog"><i class="fa fa-blog"></i> Adapted from Clean Blog theme</a>
+                    </li>
+                </ul>
+                <div class="small text-footer">
+                    <a href="https://statiq.dev"><i class="fa fa-cogs"></i> Generated by Statiq</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="/vendor/jquery/jquery.min.js"></script>
+    <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CXPLFS7K38"></script>
+
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){window.dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-CXPLFS7K38');
+</script>
+
+    
+
+    <!-- Custom scripts for this template -->
+    <script src="/js/always-developing-blog.js"></script>
+
+</body>
+
+</html>

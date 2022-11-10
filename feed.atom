@@ -4,8 +4,112 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-11-09T04:29:14Z</updated>
+	<updated>2022-11-10T04:11:03Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/11/10-awaiting-anything</id>
+		<title>Awaiting anything with GetAwaiter</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/11/10-awaiting-anything" />
+		<updated>2022-11-10T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;All that is required to &lt;code&gt;await&lt;/code&gt; a specific type, is that the type has a method called &lt;code&gt;GetAwaiter&lt;/code&gt; which returns an instance of &lt;code&gt;TaskAwaiter&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;This &lt;code&gt;GetAwaiter&lt;/code&gt; method can be an &lt;em&gt;extension method&lt;/em&gt; - which means &lt;code&gt;any type can be extended to be awaited&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="use-case-double-parse"&gt;Use case: double parse&lt;/h2&gt;
+&lt;p&gt;In general, the below use cases are not a recommendation or proposed best technique for solving the use case - but it's interesting to discover what is possible.&lt;/p&gt;
+&lt;p&gt;In this use case, we are going to attempt to &lt;em&gt;make an async version of the double.TryParse method&lt;/em&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="tryparseasync"&gt;TryParseAsync&lt;/h3&gt;
+&lt;p&gt;This solution doesn't require the usage of the &lt;code&gt;GetAwaiter&lt;/code&gt; method - in this first option we are just going to create a method which returns a &lt;code&gt;Task&lt;/code&gt; (and as such, the &lt;em&gt;Task&lt;/em&gt; is awaited):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// extension method on string
+public static Task&amp;lt;bool&amp;gt; TryParseAsync(this string s, out double result)
+{
+    // perform the normal TryParse
+    if(double.TryParse(s, out result))
+    {
+        // return a Task instead of the 
+        // TryParse response
+        return Task.FromResult(true);
+    }
+    
+    // return a Task instead of the 
+    // TryParse response
+    return Task.FromResult(false);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This can now be used as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// Instead of doing it this OLD way
+if(double.TryParse(&amp;quot;100&amp;quot;, out double result))
+{
+    Console.WriteLine(&amp;quot;100 is a double&amp;quot;);
+}
+
+// This is now possible:
+// The TryParseAsync is called directly 
+// on the string and can be awaited
+if(await &amp;quot;100&amp;quot;.TryParseAsync(out double result1))
+{
+    Console.WriteLine(&amp;quot;100 is a double&amp;quot;);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Here, the &lt;code&gt;TryParseAsync&lt;/code&gt; can be used on a string value directly, and as it returns a &lt;code&gt;Task&lt;/code&gt;, the call can be &lt;em&gt;awaited&lt;/em&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="await-directly"&gt;await directly&lt;/h3&gt;
+&lt;p&gt;However, what if there is a requirement to perform the same functionality as &lt;code&gt;TryParseAsync&lt;/code&gt;, but to &lt;em&gt;await&lt;/em&gt; the string directly - not call the &lt;code&gt;TryParseAsync&lt;/code&gt; method. Well, no problem!&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public static TaskAwaiter&amp;lt;bool&amp;gt; GetAwaiter(this string s)
+{
+    return s.TryParseAsync(out double _).GetAwaiter();
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Here, a &lt;code&gt;GetAwaiter&lt;/code&gt; extension method is created on &lt;code&gt;string&lt;/code&gt; - by convention, this now allows &lt;code&gt;string to be awaited directly&lt;/code&gt;. In this instance, awaiting a string will try parse it as a double (using the previously created extension method).&lt;/p&gt;
+&lt;p&gt;So now this can be done:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// just await the string
+if(await &amp;quot;500&amp;quot;)
+{
+    Console.WriteLine(&amp;quot;500 is a double&amp;quot;);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As mentioned - this is not really a recommended approach at all - while the code is more concise, the readability is not great, with the code making no contextual sense. However, it is what can be done.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="use-case-timespan"&gt;Use Case: TimeSpan&lt;/h2&gt;
+&lt;p&gt;A more useful use case, is to &lt;em&gt;expand the functionality of TimeSpan&lt;/em&gt; to make it easier to &lt;em&gt;wait for specific lengths of time&lt;/em&gt;.&lt;/p&gt;
+&lt;h3 id="delay"&gt;Delay&lt;/h3&gt;
+&lt;p&gt;Generally when a delay is required in code, a variation of the following is used:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;await Task.Delay(TimeSpan.FromMilliseconds(100));
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Nothing wrong with this, it works. However if used often throughout code, it's it fairly verbose.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="await"&gt;await&lt;/h3&gt;
+&lt;p&gt;As before, a &lt;code&gt;GetAwaiter&lt;/code&gt; method could be added to &lt;code&gt;TimeSpan&lt;/code&gt; to make it &lt;em&gt;awaitable&lt;/em&gt;, eliminating the need for the Task.Delay (this will still be required, it will just be wrapped up in the extension method):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// extension method on TimeSpan
+public static TaskAwaiter GetAwaiter(this TimeSpan timeSpan)
+{
+    return Task.Delay(timeSpan).GetAwaiter();
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This method can now be used as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;await TimeSpan.FromMilliseconds(100);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Definitely simpler and more concise than the previous version, and I'd argue actually more readable.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="await-extended"&gt;await extended&lt;/h3&gt;
+&lt;p&gt;This could even be taken a step further with an addition extension method:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public static TimeSpan MilliSeconds(this int i) =&amp;gt; TimeSpan.FromMilliseconds(i);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This is an extension method on an &lt;code&gt;int&lt;/code&gt;, which will convert the integer to an equivalent TimeSpan object.&lt;/p&gt;
+&lt;p&gt;As we already have an existing extension method to &lt;em&gt;await&lt;/em&gt; a &lt;code&gt;TimeSpan&lt;/code&gt;, the two extensions methods can be used in conjunction - &lt;em&gt;convert an integer to a TimeSpan, which can then be awaited&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;await 100.MilliSeconds();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;While this is a very useful and convenient technique to add the &lt;em&gt;await&lt;/em&gt; functionality to &lt;em&gt;any class&lt;/em&gt;, it doesn't mean every class &lt;em&gt;should&lt;/em&gt; have this functionality. In the case of &lt;code&gt;TryParseAsync&lt;/code&gt;, the code was made less readable, for no real benefit. In the case of &lt;code&gt;TimeSpan&lt;/code&gt;, the &lt;em&gt;await&lt;/em&gt; extension to the class did add value to the developer.  Basically, made an informed choice to use &lt;code&gt;GetAwaiter&lt;/code&gt;, and only do so where it makes sense.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://steven-giesel.com/blogPost/5360d1c3-89f6-4a08-9ee3-6ddbe1b44236"&gt;Cursed C# - Doing shenanigans in C#&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;199: 10-11-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/11/09-localization-di</id>
 		<title>Adding localization with dependency injection</title>
@@ -1112,100 +1216,6 @@ PRINT &amp;#64;AllTablesSQL
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://www.mssqltips.com/sqlservertip/1521/the-many-uses-of-coalesce-in-sql-server/"&gt;The Many Uses of Coalesce in SQL Server&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;190: 28-10-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/10/27-linq-tolookup</id>
-		<title>LINQ's ToLookup method</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/10/27-linq-tolookup" />
-		<updated>2022-10-27T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;LINQ has a &lt;code&gt;ToLookup&lt;/code&gt; method which which is used to create a &lt;em&gt;lookup&lt;/em&gt; - &lt;code&gt;a key which points to a list of (1 or more) objects&lt;/code&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="example"&gt;Example&lt;/h2&gt;
-&lt;p&gt;Suppose we have a collections of &lt;em&gt;Songs&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// Song record
-record Song(string Artist, string Name, int LengthInSeconds);
-
-// an array of songs
-Song[]? songs = new[]
-{
-    new Song(&amp;quot;Foo Fighters&amp;quot;, &amp;quot;EverLong&amp;quot;, 250),
-    new Song(&amp;quot;Foo Fighters&amp;quot;, &amp;quot;My Hero&amp;quot;, 283),
-    new Song(&amp;quot;Foo Fighters&amp;quot;, &amp;quot;All My Life&amp;quot;, 250),
-    new Song(&amp;quot;John Mayer&amp;quot;, &amp;quot;Clarity&amp;quot;, 238),
-    new Song(&amp;quot;John Mayer&amp;quot;, &amp;quot;Daughters&amp;quot;, 238),
-};
-
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id="simple-lookup"&gt;Simple lookup&lt;/h3&gt;
-&lt;p&gt;The &lt;code&gt;ToLookup&lt;/code&gt; can be used to &lt;code&gt;group songs together by artist&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// perform the lookup, using Artist as the key
-ILookup&amp;lt;string, Song&amp;gt;? lookupByArtist = 
-    songs.ToLookup(s =&amp;gt; s.Artist, item =&amp;gt; item);
-
-// iterate through each key (artist) grouping
-foreach(IGrouping&amp;lt;string, Song&amp;gt; artist in lookupByArtist)
-{
-    Console.WriteLine($&amp;quot;Artist: {artist.Key}&amp;quot;);
-    // iterate through each item in the grouping
-    foreach(Song song in artist.ToList())
-    {
-        Console.WriteLine($&amp;quot;- Song name: {song.Name}&amp;quot;);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output of the above is as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Artist: Foo Fighters
-- Song name: EverLong
-- Song name: My Hero
-- Song name: All My Life
-Artist: John Mayer
-- Song name: Clarity
-- Song name: Daughters
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h3 id="complex-lookup"&gt;Complex lookup&lt;/h3&gt;
-&lt;p&gt;In the above example, the &lt;em&gt;lookup was done on a single field, Artist&lt;/em&gt;, however this doesn't have to be the case. The &lt;code&gt;grouping can be done on multiple fields&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// group the data by artist AND song length
-var lookupByArtistTime = 
-    songs.ToLookup(s =&amp;gt; new { s.Artist, s.LengthInSeconds}, item =&amp;gt; item);
-
-foreach (var artistTime in lookupByArtistTime)
-{
-    Console.WriteLine($&amp;quot;Artist/Time: {artistTime.Key}&amp;quot;);
-    foreach (Song song in artistTime.ToList())
-    {
-        Console.WriteLine($&amp;quot;- Song name: {song.Name}&amp;quot;);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;In the above, the key was the &lt;code&gt;Artist + LengthInSeconds anonymous object&lt;/code&gt;. The output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Artist/Time: { Artist = Foo Fighters, LengthInSeconds = 250 }
-- Song name: EverLong
-- Song name: All My Life
-Artist/Time: { Artist = Foo Fighters, LengthInSeconds = 283 }
-- Song name: My Hero
-Artist/Time: { Artist = John Mayer, LengthInSeconds = 238 }
-- Song name: Clarity
-- Song name: Daughters
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="tolookup-vs-groupby"&gt;ToLookup vs GroupBy&lt;/h2&gt;
-&lt;p&gt;A note on &lt;code&gt;ToLookup&lt;/code&gt;, which on the surface appears to be the same as &lt;code&gt;GroupBy&lt;/code&gt;:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;ToLookup&lt;/code&gt; performs execution immediately and returns an &lt;em&gt;ILookup&lt;/em&gt; implementation&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;GroupBy&lt;/code&gt; defers execution until a &lt;em&gt;ToList&lt;/em&gt; (or similar) is called on the returned &lt;em&gt;IEnumerable&lt;/em&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;So while the final result of the operations are the same, the timing of the execution is different.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;This is not new functionality and has been part of LINQ from the beginning - having said that, I personally wasn't aware that the method existed, and under the right use cases, can be used in place of &lt;em&gt;GroupBy&lt;/em&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://anthonygiretti.com/2022/09/29/net-learn-linq-as-you-never-have-before/"&gt;.NET: Learn LINQ as you never have before - page 27&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;189: 27-10-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
