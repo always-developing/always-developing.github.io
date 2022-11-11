@@ -5,8 +5,283 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Thu, 10 Nov 2022 04:11:03 GMT</pubDate>
-		<lastBuildDate>Thu, 10 Nov 2022 04:11:03 GMT</lastBuildDate>
+		<pubDate>Fri, 11 Nov 2022 04:10:19 GMT</pubDate>
+		<lastBuildDate>Fri, 11 Nov 2022 04:10:19 GMT</lastBuildDate>
+		<item>
+			<title>List AddRange performance</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/11/11-list-add-performance</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/11/11-list-add-performance</guid>
+			<pubDate>Fri, 11 Nov 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;When multiple items need to be added to a &lt;code&gt;List&lt;/code&gt;, using the &lt;code&gt;AddRange&lt;/code&gt; method is generally significantly more performant than using the &lt;code&gt;Add&lt;/code&gt; method - however, in some scenarios it might actually be slower!&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="benchmarks"&gt;Benchmarks&lt;/h2&gt;
+&lt;p&gt;In all of the below examples, an initial List of 10, 1000 and 10000 items is used as a source and transferred transferer into another destination List.&lt;/p&gt;
+&lt;h3 id="one-at-a-time"&gt;One at a time&lt;/h3&gt;
+&lt;p&gt;In this benchmark, the &lt;code&gt;Add&lt;/code&gt; method is used to add items to a destination list, one at a time:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public void AllOneAtTime()
+{
+    var newList = new List&amp;lt;int&amp;gt;();
+
+    foreach(var item in items)
+    {
+        newList.Add(item);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="filtered-one-at-a-time"&gt;Filtered one at a time&lt;/h3&gt;
+&lt;p&gt;Here, only certain items are added to the destination list (this divisible by 2). A check is performed, and only if it passes is the specific item added to the list:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public void FilteredOneAtTime()
+{
+    var newList = new List&amp;lt;int&amp;gt;();
+
+    foreach (var item in items)
+    {
+        // only if divisible by 2
+        if (item % 2 == 0)
+        {
+            newList.Add(item);
+        }
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="add-range"&gt;Add range&lt;/h3&gt;
+&lt;p&gt;In this benchmark, the entire source list is copied to the destination list using the &lt;code&gt;AddRange&lt;/code&gt; method:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public void AllOnce()
+{
+    var newList = new List&amp;lt;int&amp;gt;();
+
+    newList.AddRange(items);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="filtered-add-range"&gt;Filtered add range&lt;/h3&gt;
+&lt;p&gt;In the final benchmark, the entire source list is filtered using LINQ, and then &lt;code&gt;AddRange&lt;/code&gt; is used:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public void FilteredOnce()
+{
+    var newList = new List&amp;lt;int&amp;gt;();
+
+    newList.AddRange(items.Where(i =&amp;gt; i % 2 == 0).ToList());
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="performance"&gt;Performance&lt;/h2&gt;
+&lt;p&gt;The full results are below, but in summary:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;AddRange&lt;/code&gt; is 2-3 times faster than using &lt;code&gt;Add&lt;/code&gt; multiple times (depending on the list size)&lt;/li&gt;
+&lt;li&gt;When required to filter the list, its quicker to iterate through each item, perform the check and use &lt;code&gt;Add&lt;/code&gt;. This is in comparison to using LINQ to filter and then &lt;code&gt;AddRange&lt;/code&gt; (the bottleneck here is LINQ, not the &lt;em&gt;AddRange&lt;/em&gt; call)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="items"&gt;10 items&lt;/h3&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Method&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Ratio&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;RatioSD&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Gen0&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Allocated&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Alloc Ratio&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;AllOneAtTime&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;59.21 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.873 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.817 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.00&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0343&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;216 B&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;FilteredOneAtTime&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;40.12 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.738 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.690 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.68&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.01&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0204&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;128 B&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.59&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;AllOnce&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;23.10 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.458 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.450 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.39&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.01&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0153&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;96 B&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.44&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;FilteredOnce&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;97.60 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.395 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.305 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.65&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.04&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0446&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;280 B&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.30&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;hr /&gt;
+&lt;h3 id="items-1"&gt;1000 items&lt;/h3&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Method&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Ratio&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;RatioSD&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Gen0&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Gen1&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Allocated&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Alloc Ratio&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;AllOneAtTime&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2,155.3 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;40.86 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;43.72 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.00&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.3390&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0229&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;8.23 KB&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;FilteredOneAtTime&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1,554.8 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;30.15 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;38.13 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.72&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.02&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.6847&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0057&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;4.2 KB&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.51&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;AllOnce&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;216.5 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;3.27 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;3.06 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.10&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.00&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.6464&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0098&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;3.96 KB&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.48&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;FilteredOnce&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2,870.1 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;36.82 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;34.44 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.33&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.03&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.0223&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0153&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;6.28 KB&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.76&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h3 id="items-2"&gt;10000 items&lt;/h3&gt;
+&lt;hr /&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Method&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Ratio&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;RatioSD&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Gen0&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Gen1&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Allocated&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Alloc Ratio&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;AllOneAtTime&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;21.498 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.4191 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.4659 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.00&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;20.8130&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;4.1504&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;128.32 KB&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;FilteredOneAtTime&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;15.165 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.1404 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.1172 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.71&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.02&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;10.4675&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.2817&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;64.3 KB&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.50&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;AllOnce&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2.127 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0408 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0382 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.10&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.00&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;6.3667&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.7935&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;39.12 KB&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.30&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;FilteredOnce&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;28.335 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.3079 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.2729 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.32&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.03&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;13.6414&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2.2583&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;83.95 KB&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.65&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;Generally, &lt;code&gt;AddRange&lt;/code&gt; is much quicker than multiple iterations of &lt;code&gt;Add&lt;/code&gt; - however, if using &lt;code&gt;AddRange&lt;/code&gt; in conjunction with a slower operation (such as LINQ's &lt;em&gt;where&lt;/em&gt;), then it doesn't really matter which is used, and to improve performance the bottleneck (LINQ) should be optimized.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/SY7K9/status/1580163986347405312"&gt;Sabig Gasim Tweet&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;200: 11-11-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Awaiting anything with GetAwaiter</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/11/10-awaiting-anything</link>
@@ -1124,109 +1399,6 @@ jaggedArray1[2] = new int[1];
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/arrays/"&gt;Arrays (C# Programming Guide)&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;191: 31-10-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>SQL COALESCE uses</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/10/28-sql-coalesce</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/10/28-sql-coalesce</guid>
-			<pubDate>Fri, 28 Oct 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;The SQL COALESCE method will &lt;code&gt;return the first non-null expressing among its arguments&lt;/code&gt;. On the surface this is a relatively simple, but useful feature, however it can be leveraged to also perform more complex operations.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="first-non-null"&gt;First non-NULL&lt;/h2&gt;
-&lt;p&gt;The first use of &lt;code&gt;COALESCE&lt;/code&gt; is straight-forward, and aligns with official definition - it &lt;em&gt;can be used to find the first non-null in a list of values&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;-- declare variables
-DECLARE &amp;#64;one int, &amp;#64;two int, &amp;#64;three int, &amp;#64;firstNonNull int
--- set all to NULL except one
-SELECT &amp;#64;one = null, &amp;#64;two = null, &amp;#64;three = 3
-
--- nulls are ignored
-SELECT &amp;#64;firstNonNull = COALESCE(&amp;#64;one, &amp;#64;two, &amp;#64;three)
-PRINT &amp;#64;firstNonNull
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output of the above is &lt;code&gt;3&lt;/code&gt;, the first &lt;em&gt;non-null&lt;/em&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="data-pivot"&gt;Data pivot&lt;/h2&gt;
-&lt;p&gt;Another useful, but maybe not obvious (based on the definition) use of &lt;code&gt;COALESCE&lt;/code&gt; is to pivot data - that is &lt;em&gt;convert rows of data into a single row and column&lt;/em&gt;:&lt;/p&gt;
-&lt;p&gt;In this example we have a table of &lt;em&gt;Songs&lt;/em&gt;&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT * FROM Song
-&lt;/code&gt;&lt;/pre&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;Id&lt;/th&gt;
-&lt;th&gt;Name&lt;/th&gt;
-&lt;th&gt;Artist&lt;/th&gt;
-&lt;th&gt;YearReleased&lt;/th&gt;
-&lt;th&gt;LengthInSeconds&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;8&lt;/td&gt;
-&lt;td&gt;Everlong&lt;/td&gt;
-&lt;td&gt;Foo Fighters&lt;/td&gt;
-&lt;td&gt;1997&lt;/td&gt;
-&lt;td&gt;250&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;9&lt;/td&gt;
-&lt;td&gt;Learn to Fly&lt;/td&gt;
-&lt;td&gt;Foo Fighters&lt;/td&gt;
-&lt;td&gt;1999&lt;/td&gt;
-&lt;td&gt;238&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;10&lt;/td&gt;
-&lt;td&gt;Monkey Wrench&lt;/td&gt;
-&lt;td&gt;Foo Fighters&lt;/td&gt;
-&lt;td&gt;1997&lt;/td&gt;
-&lt;td&gt;231&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;11&lt;/td&gt;
-&lt;td&gt;My Hero&lt;/td&gt;
-&lt;td&gt;Foo Fighters&lt;/td&gt;
-&lt;td&gt;1998&lt;/td&gt;
-&lt;td&gt;260&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;Executing the following:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;DECLARE &amp;#64;AllSongs VARCHAR(1000)
-SELECT &amp;#64;AllSongs = COALESCE(&amp;#64;AllSongs, '') + [Name] + ';'
-FROM Song
-
-PRINT &amp;#64;AllSongs
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Will result in &lt;code&gt;Everlong;Learn to Fly;Monkey Wrench;My Hero;&lt;/code&gt; being printed.&lt;/p&gt;
-&lt;p&gt;The &lt;code&gt;COALESCE&lt;/code&gt; method will take each &lt;em&gt;Name&lt;/em&gt; field, and provided it is not null, append it to the &lt;em&gt;&amp;#64;AllSongs&lt;/em&gt; variable.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="execute-multiple-statements"&gt;Execute multiple statements&lt;/h2&gt;
-&lt;p&gt;Another useful use of &lt;code&gt;COALESCE&lt;/code&gt; is to build up a SQL string to execute multiple statements at once. This extends on the previous example - instead of a table column value being appended to a variable, a built up string is appended.&lt;/p&gt;
-&lt;p&gt;If we need to &lt;em&gt;select the data from ALL of the tables in the database&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;DECLARE &amp;#64;AllTablesSQL VARCHAR(1000)
-
--- query sys.tables to get a list of tables in the database
--- build up a SELECT statement based on the table name
-SELECT  &amp;#64;AllTablesSQL = COALESCE(&amp;#64;AllTablesSQL, '') + 'SELECT * FROM [' + name + ']' + '; '
-from sys.tables
-
-PRINT &amp;#64;AllTablesSQL
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output here is something along these lines (will obviously differ based on the tables in the database):
-&lt;code&gt;SELECT * FROM [Auditing]; SELECT * FROM [Song]; SELECT * FROM [AlbumSales]; SELECT * FROM [Order]; &lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;This can now be manually executed to get all the data from the tables.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;I must admit I have encountered the &lt;code&gt;COALESCE&lt;/code&gt; method before, but never fully understood what it did or how it worked - but just understanding the basics of its usage will allow for very useful queries to be executed.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.mssqltips.com/sqlservertip/1521/the-many-uses-of-coalesce-in-sql-server/"&gt;The Many Uses of Coalesce in SQL Server&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;190: 28-10-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
