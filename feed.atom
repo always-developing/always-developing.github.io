@@ -4,8 +4,242 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-11-11T04:10:19Z</updated>
+	<updated>2022-11-14T04:11:31Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/11/14-string-comparison</id>
+		<title>String comparison with StringComparer</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/11/14-string-comparison" />
+		<updated>2022-11-14T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;When comparing strings, instead of using &lt;code&gt;ToLower()&lt;/code&gt; (or &lt;code&gt;ToUpper&lt;/code&gt;) with the comparison operator &lt;code&gt;==&lt;/code&gt;, &lt;code&gt;StringComparer.OrdinalIgnoreCase.Equals&lt;/code&gt; can be used, which is faster and uses less memory.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="examples"&gt;Examples&lt;/h2&gt;
+&lt;p&gt;There are a number of different ways to compare strings in C# - this post will explore a number of these methods, as well as compare their performance.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="section"&gt;==&lt;/h3&gt;
+&lt;p&gt;The most basic method is to use the comparison operator &lt;code&gt;==&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var value1 = &amp;quot;String1&amp;quot;;
+var value2 = &amp;quot;STRING1&amp;quot;;
+var value3 = &amp;quot;String2&amp;quot;;
+
+Console.WriteLine(&amp;quot;Using ==&amp;quot;);
+Console.WriteLine($&amp;quot;value1 and value2: {value1 == value2}&amp;quot;);
+Console.WriteLine($&amp;quot;value1 and value3: {value1 == value3}&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Using ==
+value1 and value2: False
+value1 and value3: False
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The issue with this approach is that the &lt;em&gt;case of the string is not taken into account&lt;/em&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="tolowertoupper"&gt;ToLower/ToUpper&lt;/h3&gt;
+&lt;p&gt;An often use method, is to use the comparison operator, but to &lt;code&gt;ToUpper&lt;/code&gt; or &lt;code&gt;ToLower&lt;/code&gt; the string for comparison:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var value1 = &amp;quot;String1&amp;quot;;
+var value2 = &amp;quot;STRING1&amp;quot;;
+var value3 = &amp;quot;String2&amp;quot;;
+
+Console.WriteLine(&amp;quot;Using == and ToLower&amp;quot;);
+Console.WriteLine($&amp;quot;value1 and value2: {value1.ToLower() == value2.ToLower()}&amp;quot;);
+Console.WriteLine($&amp;quot;value1 and value3: {value1.ToLower() == value3.ToLower()}&amp;quot;);
+Console.WriteLine(&amp;quot;-----&amp;quot;);
+
+Console.WriteLine(&amp;quot;Using == and ToUpper&amp;quot;);
+Console.WriteLine($&amp;quot;value1 and value2: {value1.ToUpper() == value2.ToUpper()}&amp;quot;);
+Console.WriteLine($&amp;quot;value1 and value3: {value1.ToUpper() == value3.ToUpper()}&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Using == and ToLower
+value1 and value2: True
+value1 and value3: False
+-----
+Using == and ToUpper
+value1 and value2: True
+value1 and value3: False
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Both methods yield the same, accurate result.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="string.equals"&gt;string.Equals&lt;/h3&gt;
+&lt;p&gt;The &lt;code&gt;string&lt;/code&gt; class has an &lt;code&gt;Equals&lt;/code&gt; method, which can also be used for comparison. One version is a &lt;em&gt;static method&lt;/em&gt;, and the other is an &lt;em&gt;instance method&lt;/em&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var value1 = &amp;quot;String1&amp;quot;;
+var value2 = &amp;quot;STRING1&amp;quot;;
+var value3 = &amp;quot;String2&amp;quot;;
+
+// instance Equals method
+Console.WriteLine(&amp;quot;Using instance Equals&amp;quot;);
+Console.WriteLine($&amp;quot;value1 and value2: {value1.Equals(value2)}&amp;quot;);
+Console.WriteLine($&amp;quot;value1 and value3: {value1.Equals(value3)}&amp;quot;);
+Console.WriteLine(&amp;quot;-----&amp;quot;);
+
+// Static Equals method
+Console.WriteLine(&amp;quot;Using static Equals&amp;quot;);
+Console.WriteLine($&amp;quot;value1 and value2: {string.Equals(value1, value2)}&amp;quot;);
+Console.WriteLine($&amp;quot;value1 and value3: {string.Equals(value1, value3)}&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Using instance Equals
+value1 and value2: False
+value1 and value3: False
+-----
+Using static Equals
+value1 and value2: False
+value1 and value3: False
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This basic version of &lt;code&gt;Equals&lt;/code&gt; does not take the string case into account - however there is an additional parameter which can be passed to the &lt;code&gt;Equals&lt;/code&gt; method to define how the comparison is done:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var value1 = &amp;quot;String1&amp;quot;;
+var value2 = &amp;quot;STRING1&amp;quot;;
+var value3 = &amp;quot;String2&amp;quot;;
+
+Console.WriteLine(&amp;quot;Using static Equals OrdinalIgnoreCase&amp;quot;);
+Console.WriteLine($&amp;quot;value1 and value2: {string.Equals(value1, value2, 
+    StringComparison.OrdinalIgnoreCase)}&amp;quot;);
+Console.WriteLine($&amp;quot;value1 and value3: {string.Equals(value1, value3, 
+    StringComparison.OrdinalIgnoreCase)}&amp;quot;);
+Console.WriteLine(&amp;quot;-----&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output of this:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Using string.Equals OrdinalIgnoreCase
+value1 and value2: True
+value1 and value3: False
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="stringcomparer"&gt;StringComparer&lt;/h3&gt;
+&lt;p&gt;The final method is using &lt;code&gt;StringComparer&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var value1 = &amp;quot;String1&amp;quot;;
+var value2 = &amp;quot;STRING1&amp;quot;;
+var value3 = &amp;quot;String2&amp;quot;;
+
+Console.WriteLine(&amp;quot;Using StringComparer&amp;quot;);
+Console.WriteLine($&amp;quot;value1 and value2: {StringComparer.OrdinalIgnoreCase.Equals(value1, value2)}&amp;quot;);
+Console.WriteLine($&amp;quot;value1 and value3: {StringComparer.OrdinalIgnoreCase.Equals(value1, value3)}&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Using StringComparer
+value1 and value2: True
+value1 and value3: False
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="benchmarks"&gt;Benchmarks&lt;/h2&gt;
+&lt;p&gt;Finally, we can benchmark all the different methods:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Method&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Median&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Ratio&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;RatioSD&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Gen0&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Allocated&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Alloc Ratio&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;BasicComparison&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.972 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0392 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0348 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.974 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.00&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;NA&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;BasicToLower&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;42.073 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.8145 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.7619 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;42.187 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;21.34&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.61&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0127&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;80 B&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;NA&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;BasicToUpper&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;51.095 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;4.6650 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;13.7548 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;42.910 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;21.74&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.32&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0127&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;80 B&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;NA&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;StringInstanceEquals&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.903 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0465 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0388 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.912 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.96&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.02&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;NA&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;StringStaticEquals&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.896 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0272 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0227 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.899 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.96&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.02&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;NA&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;StringEqualOrdinalIgnoreCases&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;6.083 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.1480 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.1584 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;6.078 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;3.09&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.10&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;NA&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;StringComparerOrdinalIgnoreCases&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;4.770 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0669 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.0559 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;4.762 ns&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2.42&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.04&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;NA&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;From the results, once can see that:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;In all instances where the case of the string is taken into account, performance is slower&lt;/li&gt;
+&lt;li&gt;The often used &lt;code&gt;ToUpper/ToLower&lt;/code&gt; method is the slowest a large margin, and the only method to use memory&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;StringComparer&lt;/code&gt; is the most performant technique to use when a comparison needs to be done while ignoring the case&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;Realistically, in most applications the performance of a string comparison is not going to have any material effect on performance. However if the application does a large number of string comparisons, the accumulative effect could be slightly noticeable and it might be worth investigating the use of &lt;code&gt;StringComparer&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/Tullo/status/1583491663577481219"&gt;&amp;#64;Tullo Tweet&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;201: 14-11-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/11/11-list-add-performance</id>
 		<title>List AddRange performance</title>
@@ -1338,56 +1572,6 @@ public class Songs : List&amp;lt;string&amp;gt;
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://www.youtube.com/shorts/FL0qKaumcxo"&gt;Raw Coding-put generics behind classes&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;192: 01-11-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/10/31-jagged-array</id>
-		<title>Jagged array in C#</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/10/31-jagged-array" />
-		<updated>2022-10-31T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;A &lt;code&gt;jagged array&lt;/code&gt; is an &lt;em&gt;array of arrays&lt;/em&gt;, where each internal array can be of varying length.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="array"&gt;Array&lt;/h3&gt;
-&lt;p&gt;A quick recap on a traditional one dimensional array:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var array = new int[10];
-int[] array1 = new int[10];
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The array size is defined when the variable is instantiated - this array is defined to hold up to 10 int's.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="multi-dimensional-array"&gt;Multi-dimensional array&lt;/h3&gt;
-&lt;p&gt;A multiple dimensional is declared and instantiated the same way as a one-dimensional array:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// declare a two dimensional array
-int[,] multiArray = new int[10,10];
-
-// a three dimensional array
-int[,,] multiArray1 = new int[10, 10, 10];
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;With multiple directional arrays, the size of the dimension is &lt;em&gt;fixed&lt;/em&gt;. In the above two-dimensional array for example, a 10x10 array is defined - it can be thought of a &lt;em&gt;grid with 10 columns and 10 rows&lt;/em&gt;. The important aspect is that each row &lt;code&gt;will always&lt;/code&gt; have 10 columns at most.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="jagged-array"&gt;Jagged array&lt;/h3&gt;
-&lt;p&gt;A &lt;code&gt;jagged array&lt;/code&gt; is an &lt;em&gt;array of arrays&lt;/em&gt;, where the internal array is of varying length.&lt;/p&gt;
-&lt;p&gt;There is a subtle difference when declaring a &lt;code&gt;jagged array&lt;/code&gt; vs declaring a multiple dimensional array:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// Jagged array
-int[][] jaggedArray1 = new int[10][];
-
-// For comparison - multi directional array
-int[,] multiArray = new int[10,10]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The jagged array &lt;em&gt;jaggedArray1&lt;/em&gt;, has &lt;em&gt;10 rows, but each row has varying column length&lt;/em&gt; - a second size is not specified when declaring the array. As it stands now, each row is null by default - the array in each row needs to be initialized:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;jaggedArray1[0] = new int[5];
-jaggedArray1[1] = new int[3];
-jaggedArray1[2] = new int[1];
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The first 3 rows are being initialized to each have a different number of items. We have an &lt;em&gt;array of arrays&lt;/em&gt;, with each internal array being of different sizes.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;This is not functionality I've personally ever had to use - but I am sure it definitely does have its practical uses cases. Just being aware the functionality exists can help make better, more informed design choices going forward.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/arrays/"&gt;Arrays (C# Programming Guide)&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;191: 31-10-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
