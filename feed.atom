@@ -4,8 +4,94 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-11-15T04:00:00Z</updated>
+	<updated>2022-11-16T04:01:07Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/11/16-implicit-builder</id>
+		<title>Builder pattern implicit conversions</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/11/16-implicit-builder" />
+		<updated>2022-11-16T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;Usually when using the &lt;code&gt;builder pattern&lt;/code&gt;, a final &lt;code&gt;Build&lt;/code&gt; method (or similarly named method) is invoked to generate the &lt;em&gt;final entity&lt;/em&gt; from the &lt;em&gt;builder entity&lt;/em&gt;. Using an &lt;code&gt;implicit operator&lt;/code&gt;, this final step can be removed, and the &lt;em&gt;final entity&lt;/em&gt; can &lt;code&gt;automatically be generated&lt;/code&gt; from the &lt;em&gt;builder entity&lt;/em&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="examples"&gt;Examples&lt;/h2&gt;
+&lt;p&gt;In these examples, there is a simple &lt;code&gt;Order&lt;/code&gt; entity:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public record Order(int Id, int lineItemCount, double Total);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;There is also an &lt;code&gt;OrderBuilder&lt;/code&gt; class, which is used to build an &lt;code&gt;Order&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class OrderBuilder
+{
+    // store some order information
+    private int _id;
+    private int _lineItemCount;
+    private double _total;
+
+    // method to give an order an id
+    public OrderBuilder WithId(int Id)
+    {
+        _id = Id;
+        return this;
+    }
+
+    // add a simple line item to the order
+    public OrderBuilder WithLineItem(double lineItemAmount)
+    {
+        _lineItemCount++;
+        _total += lineItemAmount;
+
+        return this;
+    }
+
+    // create an Order from the OrderBuilder information
+    public Order Build()
+    {
+        return new Order(_id, _lineItemCount, _total);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="build-method"&gt;Build method&lt;/h3&gt;
+&lt;p&gt;Usage of the above &lt;em&gt;builder&lt;/em&gt; is easy:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var order = new OrderBuilder()
+    .WithId(100) // give the order an id
+    .WithLineItem(99) // add line items
+    .WithLineItem(149)
+    .Build(); // remember to build!
+
+Console.WriteLine(order);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The above is the typical usage of the &lt;em&gt;builder pattern&lt;/em&gt; - building up the entity using various methods, and then at the end calling a &lt;code&gt;Build&lt;/code&gt; method to create the final entity (&lt;code&gt;Order&lt;/code&gt; in this example) using the information supplied to the &lt;em&gt;builder&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;The output of the order:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Order { Id = 100, lineItemCount = 2, Total = 248 }
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Nothing inherently wrong or incorrect with this code or approach - however an implicit operator can be added to the &lt;code&gt;OrderBuilder&lt;/code&gt; class to make the pattern and classes even easier to use.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="implicit"&gt;Implicit&lt;/h3&gt;
+&lt;p&gt;Adding the following &lt;code&gt;implicit operator&lt;/code&gt; to the &lt;em&gt;OrderBuilder&lt;/em&gt; class, allows for the &lt;code&gt;Build&lt;/code&gt; method to &lt;em&gt;automatically be invoked&lt;/em&gt; when converting the &lt;em&gt;OrderBuilder&lt;/em&gt; instance to an &lt;em&gt;Order&lt;/em&gt; instance:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public static implicit operator Order(OrderBuilder b) =&amp;gt; b.Build();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;With the above added to the &lt;em&gt;OrderBuilder&lt;/em&gt; class, the following is now possible:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// instead of &amp;quot;var&amp;quot;, the actual type
+// Order is used
+Order order = new OrderBuilder()
+    .WithId(101)
+    .WithLineItem(100)
+    .WithLineItem(29);
+// No Build required!
+
+Console.WriteLine(order);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;With this code snippet, as the &lt;em&gt;OrderBuilder&lt;/em&gt; is being converted to &lt;em&gt;Order&lt;/em&gt; implicitly, the &lt;code&gt;implicit operator&lt;/code&gt; is called which calls the &lt;em&gt;Build&lt;/em&gt; method to convert the &lt;em&gt;OrderBuilder&lt;/em&gt; to an &lt;em&gt;Order&lt;/em&gt; automatically. No need for the &lt;code&gt;Build&lt;/code&gt; method to be used!&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;This is a small update to the code, but for the developers consuming the classes, the overall &lt;em&gt;developer experience&lt;/em&gt; is improved. This gives the developer the flexibility to use the class how they would like - either using the &lt;em&gt;Build&lt;/em&gt; method, or doing the &lt;em&gt;implicit conversion&lt;/em&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://josef.codes/bonus-builder-pattern-with-the-implicit-operator-using-c-sharp/"&gt;Bonus: Builder Pattern with the implicit operator using c#&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;203: 16-11-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/11/15-foreach-index</id>
 		<title>Foreach loops and indexes</title>
@@ -1485,88 +1571,6 @@ Console.WriteLine(order.OrderId);
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://blog.stephencleary.com/2022/10/modern-csharp-techniques-2-value-records.html"&gt;Modern C# Techniques, Part 2: Value Records&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;194: 03-11-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/11/02-directory-separator</id>
-		<title>Platform specific path separator</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/11/02-directory-separator" />
-		<updated>2022-11-02T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;The static &lt;code&gt;Path&lt;/code&gt; class contains a number of helpful, platform specific properties (and methods) to assist when working with filenames and file paths. These include:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;The operating system specific directory separator character&lt;/li&gt;
-&lt;li&gt;The operating system specific alternate directory separator character&lt;/li&gt;
-&lt;li&gt;The operating system specific path separator character&lt;/li&gt;
-&lt;li&gt;The operating system specific volume separator character&lt;/li&gt;
-&lt;li&gt;The operating system specific invalid filename characters&lt;/li&gt;
-&lt;li&gt;The operating system specific invalid path characters&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr /&gt;
-&lt;h2 id="code-snippet"&gt;Code snippet&lt;/h2&gt;
-&lt;p&gt;A simple code snippet to demonstrate how to access the various characters:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// All the separator characters are available on the Path static class
-Console.WriteLine($&amp;quot;DirectorySeparatorChar: '{Path.DirectorySeparatorChar}'&amp;quot;);
-Console.WriteLine($&amp;quot;AltDirectorySeparatorChar: '{Path.AltDirectorySeparatorChar}'&amp;quot;);
-Console.WriteLine($&amp;quot;PathSeparator: '{Path.PathSeparator}'&amp;quot;);
-Console.WriteLine($&amp;quot;VolumeSeparatorChar: '{Path.VolumeSeparatorChar}'&amp;quot;);
-
-// display all the invalid file name characters
-Console.WriteLine($&amp;quot;Invalid filename chars:&amp;quot;);
-foreach(var chr in Path.GetInvalidFileNameChars())
-{
-    Console.WriteLine($&amp;quot;   {chr}&amp;quot;);
-}
-
-// display all the invalid path characters
-Console.WriteLine($&amp;quot;Invalid path chars:&amp;quot;);
-foreach (var chr in Path.GetInvalidPathChars())
-{
-    Console.WriteLine($&amp;quot;   {chr}&amp;quot;);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h3 id="windows-output"&gt;Windows output&lt;/h3&gt;
-&lt;p&gt;The output when running the above on a Windows environment - the invalid filename and invalid path characters have been trimmed as the list for Windows is fairly long:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;DirectorySeparatorChar: '\'
-AltDirectorySeparatorChar: '/'
-PathSeparator: ';'
-VolumeSeparatorChar: ':'
-Invalid filename chars:
-   &amp;quot;
-   &amp;lt;
-   &amp;gt;
-   |
-
-   ☺
-   ☻
-   ♥
-   ♦
-   ♣
-   ♠
-// trimmed
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h3 id="linux-output"&gt;Linux output&lt;/h3&gt;
-&lt;p&gt;Running the same code in a Linux environment yields different output - no trimming of the list here, as apparently Linux supports a larger list of characters than Windows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;DirectorySeparatorChar: '/'
-AltDirectorySeparatorChar: '/'
-PathSeparator: ':'
-VolumeSeparatorChar: '/'
-Invalid filename chars:
-   ?
-   /
-Invalid path chars:
-   ?
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;Leveraging the above functionality makes building up and validating file names and file paths much easier, simpler and quicker, and should definitely be preferred over rolling out ones own path builder or filename validator.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://code-maze.com/csharp-path-class/"&gt;Path Class in C#&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;193: 02-11-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
