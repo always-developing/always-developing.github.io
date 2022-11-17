@@ -5,8 +5,96 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Wed, 16 Nov 2022 04:01:07 GMT</pubDate>
-		<lastBuildDate>Wed, 16 Nov 2022 04:01:07 GMT</lastBuildDate>
+		<pubDate>Thu, 17 Nov 2022 03:55:14 GMT</pubDate>
+		<lastBuildDate>Thu, 17 Nov 2022 03:55:14 GMT</lastBuildDate>
+		<item>
+			<title>Local functions and attributes</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/11/17-local-attributes</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/11/17-local-attributes</guid>
+			<pubDate>Thu, 17 Nov 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;When using &lt;code&gt;local functions&lt;/code&gt;, it is possible to decorate them, as well as their parameters, with &lt;code&gt;attributes&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="local-function"&gt;Local function&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;Local functions&lt;/code&gt; are methods of a type that are nested in another member. They can only be called from their containing member:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Processor
+{
+
+    // Containing method
+    public void DoProcessing()
+    {
+        // local function/method
+        void PerformInternalLogic()
+        {
+            Console.WriteLine(&amp;quot;Logic being performed...&amp;quot;);
+        }
+
+        PerformInternalLogic();
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In the above sample, the &lt;em&gt;PerformInternalLogic&lt;/em&gt; method is a &lt;code&gt;local method&lt;/code&gt; nested in the &lt;em&gt;DoProcessing&lt;/em&gt; method, and can only be called from within the method.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="attributes"&gt;Attributes&lt;/h2&gt;
+&lt;h3 id="method-attribute"&gt;Method attribute&lt;/h3&gt;
+&lt;p&gt;&lt;em&gt;Method targeting&lt;/em&gt; attributes can be used on local functions:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Processor
+{
+    // Containing method
+    public void DoProcessing()
+    {
+        // local function/method
+        [Obsolete(&amp;quot;This will be deprecated. Not useful for consumers of your method&amp;quot;)]
+        void PerformInternalLogic()
+        {
+            Console.WriteLine(&amp;quot;Logic being performed...&amp;quot;);
+        }
+
+        PerformInternalLogic();
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In the above, the &lt;code&gt;Obsolete&lt;/code&gt; attribute was used to decorate the &lt;em&gt;PerformInternalLogic&lt;/em&gt; method (as an indicator that the local method is obsolete and will be removed in future)&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="parameter-attribute"&gt;Parameter attribute&lt;/h3&gt;
+&lt;p&gt;&lt;em&gt;Parameter targeting&lt;/em&gt; attributes can also be used on &lt;em&gt;local function parameters&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Processor
+{
+    // Containing method
+    public void DoProcessing()
+    {
+        // local function/method
+        [Obsolete(&amp;quot;This will be deprecated. Not useful for consumers of your method&amp;quot;)]
+        void PerformInternalLogic()
+        {
+            Console.WriteLine(&amp;quot;Logic being performed...&amp;quot;);
+        }
+
+        // local function/method
+        void PerformOtherInternalLogic([CallerMemberName] string memberName = &amp;quot;&amp;quot;)
+        {
+            Console.WriteLine($&amp;quot;Logic being performed called from {memberName}&amp;quot;);
+        }
+
+        PerformInternalLogic();
+
+        PerformOtherInternalLogic();
+    }
+
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Here, the &lt;code&gt;CallerMemberName&lt;/code&gt; attribute us applied to the parameter of the &lt;em&gt;PerformOtherInternalLogic&lt;/em&gt; method.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;A fairly niche use case, but if required, it is useful to know it is possible to add attributes to local functions.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://blog.okyrylchuk.dev/a-comprehensive-overview-of-c-9-features#heading-8-attributes-on-local-functions"&gt;8. Attributes on Local Functions&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;204: 17-11-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Builder pattern implicit conversions</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/11/16-implicit-builder</link>
@@ -1478,110 +1566,6 @@ Console.WriteLine($&amp;quot;{studentGrade} converted to a string is {
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://tomaszs2.medium.com/c-11-wants-to-be-your-friend-db4a31ed9710"&gt;What’s new in C# 11? Dev friendly features&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;195: 04-11-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Primitive obsession and Value Records </title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/11/03-value-records</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/11/03-value-records</guid>
-			<pubDate>Thu, 03 Nov 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;The C# &lt;code&gt;record&lt;/code&gt; type can provide a clean, quick and easy way to overcome &lt;em&gt;primitive obsession&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;&lt;em&gt;Primitive obsession&lt;/em&gt;, as the name implies, is the overuse of primitive types (int, string, Guid, etc) to represent more complex business or domain concepts.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="primitive"&gt;Primitive&lt;/h2&gt;
-&lt;p&gt;Let's look at an example, of a (very simplified) &lt;em&gt;Order&lt;/em&gt; entity:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Order
-{
-    public int OrderId { get; set; }
-
-    public decimal OrderTotal { get; set; }
-
-    public int ItemCount { get; set; }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;On the surface, this is all good. This will work and is probably what most developer are familiar with when it comes to entities.&lt;/p&gt;
-&lt;p&gt;However, the above class structure allows for the following code:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var order = new Order
-{
-    OrderId = 100,
-    ItemCount = 2,
-    OrderTotal = 148.95m
-};
-
-// This doesn't make sense!
-order.OrderId = order.OrderId * 2;
-// No!?
-order.ItemCount = -10;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;As primitive types are used for &lt;em&gt;domain business concepts&lt;/em&gt; such as &lt;code&gt;OrderId&lt;/code&gt; or &lt;code&gt;ItemCount&lt;/code&gt;, these values can be manipulated in a which doesn't make sense in their business or domain context.&lt;/p&gt;
-&lt;p&gt;Of course an option is to constantly perform validation on the &lt;em&gt;Order&lt;/em&gt; to ensure it is in a valid state - but another option is to use &lt;code&gt;Value Objects&lt;/code&gt;, which will be explored in the next section.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="value-object"&gt;Value object&lt;/h2&gt;
-&lt;p&gt;A &lt;code&gt;Value object&lt;/code&gt; is a simple, light-weight wrapper around the primitive type, which can also provide some validation for the internal primitive type.&lt;/p&gt;
-&lt;h3 id="value-record"&gt;Value record&lt;/h3&gt;
-&lt;p&gt;In the referenced article, Stephen Cleary introduces a concept called &lt;code&gt;Value Record&lt;/code&gt; - leveraging the C# &lt;code&gt;record&lt;/code&gt; and &lt;code&gt;struct&lt;/code&gt; types, a simple &lt;em&gt;Value Object&lt;/em&gt; can easily be defined with one line of code.&lt;/p&gt;
-&lt;p&gt;To replace the &lt;em&gt;int OrderId&lt;/em&gt; above:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public readonly record struct OrderId(int Value);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Using this technique has a number of benefits:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;immutability&lt;/li&gt;
-&lt;li&gt;equality, hash code and &lt;em&gt;ToString&lt;/em&gt; support built in&lt;/li&gt;
-&lt;li&gt;value-type wrapper, with no additional memory allocated&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr /&gt;
-&lt;h3 id="usage"&gt;Usage&lt;/h3&gt;
-&lt;p&gt;The &lt;em&gt;Order&lt;/em&gt; entity can now be updated to use the &lt;em&gt;OrderId&lt;/em&gt; &lt;code&gt;value record&lt;/code&gt; (as well as other properties as well):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Order
-{
-    public OrderId OrderId { get; set; }
-
-    public OrderTotal OrderTotal { get; set; }
-
-    public ItemCount ItemCount { get; set; }
-}
-
-
-public readonly record struct OrderId(int Value);
-
-public readonly record struct OrderTotal(decimal Value);
-
-public readonly record struct ItemCount(int Value);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;And the usage:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var order = new Order
-{
-    OrderId = new OrderId(100),
-    ItemCount = new ItemCount(2),
-    OrderTotal = new OrderTotal(148.95m)
-};
-
-// An added benefit of records (over a class) 
-// is that they can be printed as well
-// The ToString() method can also be overwritten
-// if required
-Console.WriteLine(order.OrderId);
-
-// ERROR - compilation error 
-// this is now not possible as the 
-// OrderId is immutable
-
-// order.OrderId.Value = order.OrderId.Value * 2;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output of the above:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;OrderId { Value = 100 }
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The &lt;code&gt;value records&lt;/code&gt; can be expanded with additional (light-weight) validation, but the &lt;em&gt;record struct&lt;/em&gt; method shown above allows for a quick, simple implementation.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;A very useful as well as quick easy technique to implement - but also an technique which can be misused (as it is so easy to implement). Not all properties should be or need to be converted to a value object. However where it does make sense, the &lt;code&gt;value record&lt;/code&gt; method is a slick, minimal way to achieve this.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://blog.stephencleary.com/2022/10/modern-csharp-techniques-2-value-records.html"&gt;Modern C# Techniques, Part 2: Value Records&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;194: 03-11-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
