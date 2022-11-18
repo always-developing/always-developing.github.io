@@ -4,8 +4,88 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-11-17T03:55:14Z</updated>
+	<updated>2022-11-18T03:57:19Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/11/18-succinct-init</id>
+		<title>Succinct initialization pattern</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/11/18-succinct-init" />
+		<updated>2022-11-18T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;Sometimes objects need to be initialized &lt;em&gt;lazily&lt;/em&gt; - two newer C# features, the &lt;em&gt;null-coalescing assignment operator&lt;/em&gt; &lt;code&gt;??=&lt;/code&gt; and the &lt;em&gt;target-typed new expression&lt;/em&gt; makes the lazy initialization cleaner and more succinct.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="example"&gt;Example&lt;/h2&gt;
+&lt;p&gt;In the examples, we have a &lt;code&gt;Album&lt;/code&gt; class which contains an &lt;em&gt;optional&lt;/em&gt; list of &lt;code&gt;Song&lt;/code&gt; instances:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Album
+{
+    private readonly string _name;
+
+    private readonly List&amp;lt;Song&amp;gt; _songs;
+
+    public Album(string name, List&amp;lt;Song&amp;gt; songs = null)
+    {
+        _name = name;
+        _songs = songs;
+
+        // See examples below on how to 
+        // do the _songs initialization
+    }
+}
+
+public class Song
+{
+    private readonly string _name;
+
+    public Song(string name)
+    {
+        _name = name;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If no &lt;code&gt;Song&lt;/code&gt; list is passed into the constructor, then the &lt;code&gt;_song&lt;/code&gt; variable needs to be initialized to an &lt;em&gt;empty list&lt;/em&gt;. Doing this will prevent having to have checks throughout the code to determine if the Song list is null or not. There are multiple ways to do this, but this post focuses on the &amp;quot;more traditional&amp;quot; method, and the new &amp;quot;succinct&amp;quot; method.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="traditional-lazy-init"&gt;Traditional lazy init&lt;/h3&gt;
+&lt;p&gt;Traditionally (before any of the newer C# features were introduced), the constructor might look something like this:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public Album(string name, List&amp;lt;Song&amp;gt; songs = null)
+{
+    _name = name;
+    _songs = songs;
+
+    // check if _songs is null
+    if(_songs == null)
+    {
+        // initialize to an empty list
+        _songs = new List&amp;lt;Song&amp;gt;();
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The variable is checked to determine if its &lt;em&gt;null&lt;/em&gt; or not, and if it is, then explicitly initialized to an empty list. Nothing inherently wrong with this approach - it just takes four lines of code to &lt;em&gt;lazily initialize a variable&lt;/em&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="succinct-lazy-init"&gt;Succinct lazy init&lt;/h3&gt;
+&lt;p&gt;As mentioned, the two newer C# features allow for this code to be more succinct:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public Album(string name, List&amp;lt;Song&amp;gt; songs = null)
+{
+    _name = name;
+    _songs = songs;
+
+    _songs ??= new();
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;ul&gt;
+&lt;li&gt;The &lt;em&gt;null-coalescing assignment operator&lt;/em&gt; &lt;code&gt;??=&lt;/code&gt; assigns the value of the right-hand side to the left-hand side, only if the left-hand side is null&lt;/li&gt;
+&lt;li&gt;The &lt;code&gt;target-typed new&lt;/code&gt; expression, &lt;code&gt;new&lt;/code&gt; allows for the inferring of the type from the declaration, instead of having to explicitly specify the type in full&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Four lines of code have been reduced to one!&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;A very minor change, which is not a necessity or requirement when coding - however is does result in cleaner, more succinct code. Over time, it also does reduce coding time by reducing the number of key strokes required by the developer.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/davidfowl/status/1586592671296290816"&gt;David Fowler Tweet&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;205: 18-11-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/11/17-local-attributes</id>
 		<title>Local functions and attributes</title>
@@ -1489,72 +1569,6 @@ However setting the capacity to a value too small can be detrimental to performa
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://tomaszs2.medium.com/c-11-wants-to-be-your-friend-db4a31ed9710"&gt;What’s new in C# 11? Dev friendly features&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;196: 07-11-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/11/04-interpolation-switch</id>
-		<title>Switch expression and string interpolation</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/11/04-interpolation-switch" />
-		<updated>2022-11-04T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;C# 11 is introducing the ability to &lt;code&gt;use switch expressions inside a string interpolation expression&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;This allows for more simplified code, as instead of creating a separate method to be used once-off when generating the string, all the &lt;em&gt;string building&lt;/em&gt; logic can be contained in a single place.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="use-case"&gt;Use case&lt;/h2&gt;
-&lt;p&gt;In our use case, we want to convert a numerical grade (e.g. 89%), to a string representation (&amp;quot;A&amp;quot; in this case). We also want to be able to output both of these values in a string.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="separate-expression-pre-c-11"&gt;Separate expression - pre C# 11&lt;/h3&gt;
-&lt;p&gt;Prior to C# 11 it was not possible for &lt;em&gt;interpolation expressions&lt;/em&gt; to be &lt;em&gt;switch expressions&lt;/em&gt; directly - the expression had to be a separate method:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// method which converts a numeric grade value
-// to a string representation
-public string GetGradeAsString(int grade) =&amp;gt; grade switch
-{
-    &amp;gt; 90 =&amp;gt; &amp;quot;A+&amp;quot;,
-    &amp;gt; 80 =&amp;gt; &amp;quot;A&amp;quot;,
-    &amp;gt; 70 =&amp;gt; &amp;quot;B&amp;quot;,
-    &amp;gt; 60 =&amp;gt; &amp;quot;C&amp;quot;,
-    &amp;gt; 50 =&amp;gt; &amp;quot;D&amp;quot;,
-    &amp;gt; 40 =&amp;gt; &amp;quot;E&amp;quot;,
-    _ =&amp;gt; &amp;quot;F&amp;quot;
-};
-
-var studentGrade = 89;
-
-// using string interpolation, and calling the method defined
-Console.WriteLine($&amp;quot;{studentGrade} converted to &amp;quot; +
-    $&amp;quot;a string is {GetGradeAsString(studentGrade)}&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;There is nothing wrong with this approach, and it will continue to work with C# 11 - however the &lt;em&gt;issue&lt;/em&gt; here, is that if the conversion is only ever required once (when outputting the data), a method was required to be defined.&lt;/p&gt;
-&lt;p&gt;Is defining a method a big deal? No
-Will it create massive overhead? No
-Is there a slightly easier way in C# 11? Yes.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="embedded-expression-c-11"&gt;Embedded expression - C# 11&lt;/h3&gt;
-&lt;p&gt;C# 11 allows for &lt;code&gt;switch expressions to be used directly in interpolated strings&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var studentGrade = 89;
-
-// a separate method is not required
-Console.WriteLine($&amp;quot;{studentGrade} converted to a string is {
-    studentGrade switch
-    {
-        &amp;gt; 90 =&amp;gt; &amp;quot;A+&amp;quot;,
-        &amp;gt; 80 =&amp;gt; &amp;quot;A&amp;quot;,
-        &amp;gt; 70 =&amp;gt; &amp;quot;B&amp;quot;,
-        &amp;gt; 60 =&amp;gt; &amp;quot;C&amp;quot;,
-        &amp;gt; 50 =&amp;gt; &amp;quot;D&amp;quot;,
-        &amp;gt; 40 =&amp;gt; &amp;quot;E&amp;quot;,
-        _ =&amp;gt; &amp;quot;F&amp;quot;
-    }}&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The same outcome as below, just slightly more concise and contained code.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;This is not a massive enhancement, but it does help reduce unnecessary ceremony (creating a method) when not required - ultimately resulting in cleaner, more concise and quicker to write code when the use case applies.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://tomaszs2.medium.com/c-11-wants-to-be-your-friend-db4a31ed9710"&gt;What’s new in C# 11? Dev friendly features&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;195: 04-11-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
