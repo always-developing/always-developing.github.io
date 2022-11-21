@@ -1,0 +1,489 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="always learning | always growing">
+
+    <title>Always Developing - List ConvertAll</title>
+
+    <link rel="canonical" href="https://alwaysdeveloping.net/dailydrop/2022/11/21-list-convertall">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
+
+    <meta name="application-name" content="Always Developing" />
+    <meta name="msapplication-tooltip" content="Always Developing" />
+    <meta name="msapplication-starturl" content="/" />
+
+    <meta property="og:title" content="Always Developing - List ConvertAll" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/dailydrop/2022/11/21-list-convertall" />
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Bootstrap core CSS -->
+    <link href="/vendor/bootstrap/scss/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom fonts for this template -->
+    <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="/vendor/fontawesome-free/css/brands.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css' data-no-mirror>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css' data-no-mirror>
+
+    <!-- Custom styles for this template -->
+    <link href="/scss/always-developing-blog.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/plugins/autoloader/prism-autoloader.min.js" data-no-mirror></script>
+    <script src="https://cdn.jsdelivr.net/npm/quicklink@2.0.0/dist/quicklink.umd.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/themes/prism.css">
+
+    <!-- Lunr search -->
+        <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/pako@2.0.3/dist/pako_inflate.min.js"></script>
+        <script src="/search.js"></script>
+
+    
+
+
+    
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand"  href="/">
+            <img src="/images/ad_logo.png" alt="" width="25" height="25" class="d-inline-block align-text-top">
+            Always Developing
+        </a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            Menu
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/software">Software</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/tags">Tags</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/posts">Posts</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/about">About</a>
+            </li>
+</ul>
+                <form class="form-inline my-2 my-lg-0" action="/search" method="GET">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="query">
+                    <input type="submit" hidden />
+                </form>
+        </div>
+    </div>
+</nav>
+
+    <!-- Page Header -->
+    <header class="masthead">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 align-middle">
+                <div class="post-header-image">
+                    <a href="/">
+                        <img src="/images/ad_logo.png" class="header-image">
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="post-heading">
+                    <h1>
+                        List ConvertAll
+                    </h1>
+                            <h2 class="subheading">Converting list data types with ConvertAll</h2>
+                        <p class="post-meta">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
+                                <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
+                            </svg> Published on Monday, 21 November 2022
+                        </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <!-- Main Content -->
+    <div class="container">
+            <div class="row ">
+                    <div id="content" class="col-md-9 post-with-toc post-block">
+                        
+<div class="post-header-category">
+    <a class="btn btn-primary btn-sm btn-default btn-home" href="\" role="button"><i class="fas fa-angle-double-left"></i> Home</a>
+            <a class="btn btn-primary btn-sm category-btn" href="/categories/dailydrop" role="button">DailyDrop</a>
+</div>
+
+                        <h2 id="daily-knowledge-drop">Daily Knowledge Drop</h2>
+<p>The <code>List</code> class has a <code>ConvertAll</code> method which allows for the conversion of items in a list from one type to another. It operates similar to the LINQ <code>Select</code> method, but in some use cases will out-perform the LINQ counterpart.</p>
+<hr />
+<h2 id="example">Example</h2>
+<p>In the below example, we have a List of <code>TypeA</code>, and would like to convert this list to a a list of <code>TypeB</code>:</p>
+<p>The types:</p>
+<pre><code class="language-csharp">public class TypeA
+{
+    public string TypeAValue { get; set; }
+}
+
+public class TypeB
+{
+    public string TypeBValue { get; set; }
+}
+</code></pre>
+<p>Building up a list:</p>
+<pre><code class="language-csharp">List&lt;TypeA&gt; types = new()
+{
+  new TypeA(),
+  new TypeA(),
+  new TypeA(),
+  new TypeA(),
+};
+
+</code></pre>
+<p>Now that we have a list ot <em>TypeA</em>, we'll look at a couple of ways to convert to a list of <em>TypeB</em>.</p>
+<hr />
+<h3 id="linq-select">LINQ Select</h3>
+<p>This is the more &quot;traditional&quot; way of converting a list (or IEnumerable) from one type to another:</p>
+<pre><code class="language-csharp">var typeBList = types
+    .Select(a =&gt; new TypeB { TypeBValue = a.TypeAValue })
+    .ToList();
+</code></pre>
+<p>Here, the <em>Select</em> will operate on <em>TypeA</em> and instantiate a <em>TypeB</em> for each <em>TypeA</em>, setting the instance properties. The output of this is a list of <em>TypeB</em>.</p>
+<hr />
+<h3 id="list-convertall">List ConvertAll</h3>
+<p>The <code>ConvertAll</code> usage is similar to that of the <em>Select</em> method:</p>
+<pre><code class="language-csharp">var typeBList = types
+    .ConvertAll(type =&gt; new TypeB { TypeBValue = type.TypeAValue });
+</code></pre>
+<p>For each item in the list, a <em>TypeB</em> instance is instantiated and the properties set with the values from the <em>TypeA</em> instance.</p>
+<p>A note: <code>ConvertAll</code> is only available on <em>List</em>, so if working with an IEnumerable implementation, the <em>ToList</em> method would need to be called to convert the collection to a list.</p>
+<hr />
+<h2 id="benchmarks">Benchmarks</h2>
+<h3 id="items">10 Items</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th style="text-align: right;">Mean</th>
+<th style="text-align: right;">Error</th>
+<th style="text-align: right;">StdDev</th>
+<th style="text-align: right;">Median</th>
+<th style="text-align: right;">Ratio</th>
+<th style="text-align: right;">RatioSD</th>
+<th style="text-align: right;">Gen0</th>
+<th style="text-align: right;">Allocated</th>
+<th style="text-align: right;">Alloc Ratio</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LinqSelect</td>
+<td style="text-align: right;">194.9 ns</td>
+<td style="text-align: right;">9.99 ns</td>
+<td style="text-align: right;">29.46 ns</td>
+<td style="text-align: right;">177.4 ns</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.0713</td>
+<td style="text-align: right;">448 B</td>
+<td style="text-align: right;">1.00</td>
+</tr>
+<tr>
+<td>GenericConvertAll</td>
+<td style="text-align: right;">156.5 ns</td>
+<td style="text-align: right;">7.43 ns</td>
+<td style="text-align: right;">21.92 ns</td>
+<td style="text-align: right;">143.9 ns</td>
+<td style="text-align: right;">0.82</td>
+<td style="text-align: right;">0.16</td>
+<td style="text-align: right;">0.0598</td>
+<td style="text-align: right;">376 B</td>
+<td style="text-align: right;">0.84</td>
+</tr>
+</tbody>
+</table>
+<p>With only 10 items in the list, the the <code>ConvertAll</code> method is faster, and more memory performant than the LINQ <code>Select</code> method.</p>
+<hr />
+<h3 id="items-1">10 000 Items</h3>
+<p>As the number of items in the list increases, the performance metrics of the two two methods converge:</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th style="text-align: right;">Mean</th>
+<th style="text-align: right;">Error</th>
+<th style="text-align: right;">StdDev</th>
+<th style="text-align: right;">Median</th>
+<th style="text-align: right;">Ratio</th>
+<th style="text-align: right;">RatioSD</th>
+<th style="text-align: right;">Gen0</th>
+<th style="text-align: right;">Gen1</th>
+<th style="text-align: right;">Allocated</th>
+<th style="text-align: right;">Alloc Ratio</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LinqSelect</td>
+<td style="text-align: right;">175.6 us</td>
+<td style="text-align: right;">10.90 us</td>
+<td style="text-align: right;">32.15 us</td>
+<td style="text-align: right;">189.5 us</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">50.7813</td>
+<td style="text-align: right;">25.3906</td>
+<td style="text-align: right;">312.63 KB</td>
+<td style="text-align: right;">1.00</td>
+</tr>
+<tr>
+<td>GenericConvertAll</td>
+<td style="text-align: right;">174.5 us</td>
+<td style="text-align: right;">3.42 us</td>
+<td style="text-align: right;">4.07 us</td>
+<td style="text-align: right;">173.5 us</td>
+<td style="text-align: right;">0.97</td>
+<td style="text-align: right;">0.15</td>
+<td style="text-align: right;">50.7813</td>
+<td style="text-align: right;">25.3906</td>
+<td style="text-align: right;">312.55 KB</td>
+<td style="text-align: right;">1.00</td>
+</tr>
+</tbody>
+</table>
+<p>With 10 000 items, the two methods effectively perform the same, and both use the same amount of memory.</p>
+<hr />
+<h3 id="items-2">100 000 Items</h3>
+<p>The same results can be seen with 100 000 records, as was seen with 10 000 record:</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th style="text-align: right;">Mean</th>
+<th style="text-align: right;">Error</th>
+<th style="text-align: right;">StdDev</th>
+<th style="text-align: right;">Ratio</th>
+<th style="text-align: right;">RatioSD</th>
+<th style="text-align: right;">Gen0</th>
+<th style="text-align: right;">Gen1</th>
+<th style="text-align: right;">Gen2</th>
+<th style="text-align: right;">Allocated</th>
+<th style="text-align: right;">Alloc Ratio</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LinqSelect</td>
+<td style="text-align: right;">6.586 ms</td>
+<td style="text-align: right;">0.1298 ms</td>
+<td style="text-align: right;">0.2561 ms</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">515.6250</td>
+<td style="text-align: right;">328.1250</td>
+<td style="text-align: right;">179.6875</td>
+<td style="text-align: right;">3.05 MB</td>
+<td style="text-align: right;">1.00</td>
+</tr>
+<tr>
+<td>GenericConvertAll</td>
+<td style="text-align: right;">6.236 ms</td>
+<td style="text-align: right;">0.1199 ms</td>
+<td style="text-align: right;">0.1970 ms</td>
+<td style="text-align: right;">0.96</td>
+<td style="text-align: right;">0.05</td>
+<td style="text-align: right;">515.6250</td>
+<td style="text-align: right;">320.3125</td>
+<td style="text-align: right;">179.6875</td>
+<td style="text-align: right;">3.05 MB</td>
+<td style="text-align: right;">1.00</td>
+</tr>
+</tbody>
+</table>
+<p>The two methods effectively perform the same, and both use the same amount of memory.</p>
+<hr />
+<h2 id="notes">Notes</h2>
+<p>If currently using <code>Select</code>, there is not much reason to update code to switch to <code>ConvertAll</code> - except if micro performance improvements are critical to your application. However if performance is so critical for the application, LINQ is probably not even being used in the first place.</p>
+<p>Having said all that, it is interesting the <code>ConvertAll</code> method is available and does have performance improvements over using LINQ <code>Select</code>.</p>
+<hr />
+<h2 id="references">References</h2>
+<p><a href="https://code-maze.com/advanced-linq/">Advanced LINQ</a></p>
+
+<blockquote class="daily-drop">
+    <div>
+        <div style="width: 5%; float: left; vertical-align: middle; padding-right: 60px; ">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bulb" width="50" height="50" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffec00" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+              <path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+              <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+              <line x1="9.7" y1="17" x2="14.3" y2="17" />
+            </svg>
+        </div>
+        <div class="drop-header">
+            Daily Drop 206: 21-11-2022
+        </div>
+        <div>
+            <br>At the start of 2022 I set myself the goal of learning one new coding related piece of knowledge a day.<br> It could be anything - some.NET / C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.<br><br>
+            The Daily Drop is a record of these pieces of knowledge - writing about and summarizing them helps re-enforce the information for myself, as well as potentially helps others learn something new as well.
+        <div>
+    </div>
+</blockquote>
+
+
+                        
+<div>
+            <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
+            <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
+            <a role="button" href="/tags/list" class="badge badge-light"> list</a>
+            <a role="button" href="/tags/convert" class="badge badge-light"> convert</a>
+            <a role="button" href="/tags/select" class="badge badge-light"> select</a>
+</div>
+                    </div>
+                    <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
+                        
+
+        <div class="box sticky-top toc-block">
+            <h3 class="no-anchor">On This Page</h3>
+            <ul>
+        <li><a href="#daily-knowledge-drop">Daily Knowledge Drop</a></li>
+        <li><a href="#example">Example</a></li>
+            <ul>
+        <li><a href="#linq-select">LINQ Select</a></li>
+        <li><a href="#list-convertall">List ConvertAll</a></li>
+            </ul>
+        <li><a href="#benchmarks">Benchmarks</a></li>
+            <ul>
+        <li><a href="#items">10 Items</a></li>
+        <li><a href="#items-1">10 000 Items</a></li>
+        <li><a href="#items-2">100 000 Items</a></li>
+            </ul>
+        <li><a href="#notes">Notes</a></li>
+        <li><a href="#references">References</a></li>
+            </ul>
+        </div>
+
+                    </div>
+            </div>
+            <div class="row ">
+                    <div id="content" class="col-md-9">
+                        <div>
+    <script src="https://giscus.app/client.js"
+            data-repo="always-developing/always-developing.github.io"
+            data-repo-id="R_kgDOGQJLBQ"
+            data-category="Comments"
+            data-category-id="DIC_kwDOGQJLBc4B_pUA"
+            data-mapping="pathname"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="bottom"
+            data-theme="transparent_dark"
+            data-lang="en"
+            crossorigin="anonymous"
+            async>
+    </script>
+</div>
+                    </div>
+            </div>
+    </div>
+
+    <hr class="horizontal-rule" />
+
+    <!-- Footer -->
+    <footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <ul class="list-inline text-center">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://www.linkedin.com/in/jean-pierre-seini">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-linkedin fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                <div>
+                    <p class="copyright text-footer">
+                        Copyright © 2022 Always Developing</a>.
+                    </p>
+                </div>
+                <ul class="list-inline text-center small text-feeds">
+                        <li class="list-inline-item">
+                            <a href="/feed.rss"><i class="fa fa-rss"></i> RSS Feed</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="/feed.atom"><i class="fa fa-rss"></i> Atom Feed</a>
+                        </li>
+                </ul>
+                <ul class="list-inline text-center small">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing/alwaysdeveloping-website-src"><i class="fab fa-github"></i> This site on GitHub</a>                    
+                    </li>
+                    <li class="list-inline-item">
+                        |
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing/alwaysdeveloping-website-src/tree/main/theme"><i class="fa fa-code"></i> Custom Always-Developing theme</a>
+                    </li>
+                    <li class="list-inline-item">
+                        |
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://github.com/statiqdev/CleanBlog"><i class="fa fa-blog"></i> Adapted from Clean Blog theme</a>
+                    </li>
+                </ul>
+                <div class="small text-footer">
+                    <a href="https://statiq.dev"><i class="fa fa-cogs"></i> Generated by Statiq</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="/vendor/jquery/jquery.min.js"></script>
+    <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CXPLFS7K38"></script>
+
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){window.dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-CXPLFS7K38');
+</script>
+
+    
+
+    <!-- Custom scripts for this template -->
+    <script src="/js/always-developing-blog.js"></script>
+
+</body>
+
+</html>
