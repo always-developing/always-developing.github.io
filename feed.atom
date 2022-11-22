@@ -4,8 +4,92 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-11-21T04:02:28Z</updated>
+	<updated>2022-11-22T03:55:20Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/11/22-ef-faster-delete</id>
+		<title>Efficient EF deletion</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/11/22-ef-faster-delete" />
+		<updated>2022-11-22T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;When using Entity Framework to perform a delete (prior to EF7), first the record in question is required to be &lt;em&gt;selected from the table&lt;/em&gt; (so that EF change tracking has visibility of it), then is &lt;em&gt;marked as deleted&lt;/em&gt;, and then the actual database delete is performed with  &lt;em&gt;SaveChanges&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;Khalid Abuhakmeh has a very interesting idea, which eliminates the need for the extra round trip to &lt;em&gt;select&lt;/em&gt; the data - manually add the item to EF change tracking (without first checking the database), &lt;em&gt;mark it as deleted&lt;/em&gt;, and &lt;em&gt;save the changes&lt;/em&gt;. If a specific exception occurs because the record is not available for deletion, handle that separately.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="use-case"&gt;Use case&lt;/h2&gt;
+&lt;p&gt;In our use case, we will define a &lt;em&gt;Delete&lt;/em&gt; endpoint, which when called will delete the &lt;em&gt;Blog&lt;/em&gt; record using the supplied &lt;em&gt;Id&lt;/em&gt;.&lt;/p&gt;
+&lt;h3 id="traditional-method"&gt;Traditional method&lt;/h3&gt;
+&lt;p&gt;Below is a sample of the "traditional" method of handling the use case:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// context is injected from the DI container
+// id is supplied as part of the url
+app.MapDelete("/blog/v1/{id:int}", async (DemoContext context, int id) =&amp;gt;
+{
+    // first lookup the blog by the id
+    var blog = await context.Blogs.FindAsync(id);
+
+    // if the blog was found
+    if(blog != null)
+    {
+        // mark it as deleted
+        context.Remove(blog);
+    }
+
+    await context.SaveChangesAsync();
+
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;ol&gt;
+&lt;li&gt;First, a query is performed against the database to ensure that a &lt;em&gt;Blog&lt;/em&gt; with the specified Id exists (with &lt;em&gt;FindAsync&lt;/em&gt;)&lt;/li&gt;
+&lt;li&gt;In the case when the record does exist, the row will start being tracked by Entity Framework's change tracker&lt;/li&gt;
+&lt;li&gt;The record is flagged as delete, with the &lt;em&gt;Remove&lt;/em&gt; command&lt;/li&gt;
+&lt;li&gt;The changes are finally applied to the database, with &lt;em&gt;SaveChangesAsync&lt;/em&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;With this method, there are two round trips to the database - in steps 1 and 4.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id="efficient-method"&gt;Efficient Method&lt;/h3&gt;
+&lt;p&gt;With the more efficient method, one database round trip can be eliminated:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// context is injected from the DI container
+// id is supplied as part of the url
+app.MapDelete("/blog/v1/{id:int}", async (DemoContext context, int id) =&amp;gt;
+{
+    try
+    {
+        // create an instance of the object with the
+        // supplied id. 
+        var blog = new Blog { Id = id };
+        // make the change tracker aware of this object
+        var contextBlog = context.Blogs.Attach(blog);
+        // mark it as deleted
+        contextBlog.State = EntityState.Deleted;
+
+        // delete
+        await context.SaveChangesAsync();
+    }
+    catch(DbUpdateConcurrencyException ex)
+    {
+        Console.WriteLine("Swallowing delete exception.");
+    }
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;With this method:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Instead of checking in the database that a record exists with the supplied &lt;em&gt;Id&lt;/em&gt;, it is &lt;em&gt;assumed a record does already exist&lt;/em&gt; with the id&lt;/li&gt;
+&lt;li&gt;A record, with just the Id (the primary key value) set, is created, attached to the change tracker, and marked as deleted&lt;/li&gt;
+&lt;li&gt;&lt;em&gt;SaveChangesAsync&lt;/em&gt; is then called to perform the actual delete on the database&lt;/li&gt;
+&lt;li&gt;If a record with that specific Id does in fact not exist, an exception will be thrown - which is caught and swallowed (with logging)&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;The outcome in both cases is the same, but an expensive database round trip has been eliminated.&lt;/p&gt;
+&lt;p&gt;In the references link below, Khalid Abuhakmeh has additional ideas and code samples on how this functionality can be cleaned and wrapped into an extension method to make usage even easier.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;Having run into this exact issue before, this method is very interesting. Exceptions do have an overhead, but the overhead of a database round trip will almost always out-weigh the exception overhead. Definitely consider the "efficient" method if the "traditional pattern is used throughout code.
+Having said that, EF7 introduces &lt;a href="https://alwaysdeveloping.net/09/23-ef-bulk-update"&gt;Bulk Update/Delete functionality&lt;/a&gt; which will allow for this nativity in the EF framework - so this method will become obsolete with time.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://khalidabuhakmeh.com/more-efficient-deletes-with-entity-framework-core"&gt;More Efficient Deletes With Entity Framework Core&lt;/a&gt;&lt;/p&gt;
+&lt;!--?# DailyDrop ?--&gt;207: 22-11-2022&lt;!--?#/ DailyDrop ?--&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/11/21-list-convertall</id>
 		<title>List ConvertAll</title>
@@ -1328,77 +1412,6 @@ app.MapGet(&amp;quot;/get&amp;quot;, ([FromServices]IStringLocalizer&amp;lt;Prog
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://code-maze.com/aspnetcore-localization/"&gt;Localization in ASP.NET Core&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;198: 09-11-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/11/08-target-type-new</id>
-		<title>Target-type new expressions</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/11/08-target-type-new" />
-		<updated>2022-11-08T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;The target-type &lt;code&gt;new&lt;/code&gt; keyword can be used when declaring a new variable instance without having to specify the type, if .NET can infer the instance type (i.e. the &lt;code&gt;var&lt;/code&gt; keyword is not used).&lt;/p&gt;
-&lt;p&gt;In addition, the &lt;code&gt;new keyword can also be used in other instances where .NET is able to infer the type - such as passing object instances to methods&lt;/code&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="instance-declaration"&gt;Instance declaration&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;new&lt;/code&gt; keyword can be used when declaring an instance of an object, as long as .NET can infer the type:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// var is used here,so the CreateRequest type
-// needs to explicitly be stated so .NET knows the var type
-var request = new CreateRequest(1);
-
-// OR
-
-// Explicitly define the type, but then just
-// use the new keyword as the type can be inferred 
-CreateRequest request1 = new(2);
-
-// This is not valid. What is the type?
-// var request2 = new(2);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The above usage is however not what this post is above - there is another more interesting technique using &lt;code&gt;new&lt;/code&gt; and that is using it when passing variables to a method.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="method-invocation"&gt;Method invocation&lt;/h2&gt;
-&lt;p&gt;As mentioned, this technique about to be shown is the the &lt;em&gt;new and interesting&lt;/em&gt; part of this post. The explicit usage of the type can be ignored when .NET can infer the type (as above) - so it makes sense this extends to method parameters, where the parameter type is know.&lt;/p&gt;
-&lt;p&gt;Consider this &lt;em&gt;CreateEntity&lt;/em&gt; method which takes a &lt;em&gt;CreateRequest&lt;/em&gt; as a parameter:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;void CreateEntity(CreateRequest request)
-{
-    // do stuff
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The parameter type is fixed, and known by .NET, so instead of doing this:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;CreateEntity(new CreateRequest(3));
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;One can do this:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;CreateEntity(new (4));
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;More concise, but not necessarily more readable.&lt;/p&gt;
-&lt;p&gt;This technique can also be extended for nested parameters.&lt;/p&gt;
-&lt;p&gt;Consider this absurd setup of nested parameters:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// takes an instance of DeleteRequestOne
-record DeleteRequest(DeleteRequestOne Request);
-// takes an instance of DeleteRequestTwo
-record DeleteRequestOne(DeleteRequestTwo Request);
-// takes an instance of DeleteRequestTwo
-record DeleteRequestTwo(DeleteRequestThree request);
-// takes an instance of DeleteRequestFour
-record DeleteRequestThree(DeleteRequestFour request);
-// takes an instance of DeleteRequestTwo
-record DeleteRequestFour(DeleteRequestFive request);
-// takes an int value
-record DeleteRequestFive(int Id);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The following is possible, as all the types are known and inferred:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;DeleteEntity(new(new(new(new(new(new(6)))))));
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;A very interesting concept, but again, not very readable at all.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;As mentioned, this is an interesting technique which does require less typing and results in more concise code - at the cost of readability. Use this technique sparingly where it makes sense.
-Having said that, there are options in IDEs (in Visual Studio a the very least) to &lt;em&gt;display inline parameter hints&lt;/em&gt; which indicate the inferred types, so in the end the code is still readable, but with less typing. However this might not be available in all applications where the code is read (such as in Github or Azure DevOps code viewer).&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://twitter.com/buhakmeh/status/1580969384696217605"&gt;Khalid Abuhakmeh Tweet&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;197: 08-11-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
