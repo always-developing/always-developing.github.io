@@ -5,8 +5,59 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Tue, 22 Nov 2022 03:55:20 GMT</pubDate>
-		<lastBuildDate>Tue, 22 Nov 2022 03:55:20 GMT</lastBuildDate>
+		<pubDate>Wed, 23 Nov 2022 03:49:29 GMT</pubDate>
+		<lastBuildDate>Wed, 23 Nov 2022 03:49:29 GMT</lastBuildDate>
+		<item>
+			<title>Supporting 13 months</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/11/23-thirteen-months</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/11/23-thirteen-months</guid>
+			<pubDate>Wed, 23 Nov 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;.NET has support for &lt;code&gt;13 months&lt;/code&gt; - the &lt;em&gt;Hebrew&lt;/em&gt; and &lt;em&gt;EastAsianLunisolarCalendar&lt;/em&gt; for example, has the concept of leap months, and as such it is possible for a year to consist of 13 months.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="getmonthname"&gt;GetMonthName&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;GetMonthName&lt;/code&gt; method on &lt;code&gt;DateTimeFormatInfo&lt;/code&gt; supports a month parameter value of between 1 and 13.&lt;/p&gt;
+&lt;p&gt;For calendars which only support 12 months, sending a value of 13 to the &lt;code&gt;GetMonthName&lt;/code&gt; method will return a blank string:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// this will use the current 
+// culture calendar
+var df = new DateTimeFormatInfo();
+
+Console.WriteLine(df.GetMonthName(1));
+Console.WriteLine(df.GetMonthName(13));
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output of this is:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;January
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;However, if we switch using a &lt;em&gt;Calendar&lt;/em&gt; which supports 13 months:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// switch the culture and the calendar
+HebrewCalendar hc = new HebrewCalendar();
+CultureInfo culture = CultureInfo.CreateSpecificCulture(&amp;quot;he-IL&amp;quot;);
+culture.DateTimeFormat.Calendar = hc;
+Thread.CurrentThread.CurrentCulture = culture;
+
+// output to the debug window as my Console did not
+// support the characters
+Debug.WriteLine(culture.DateTimeFormat.GetMonthName(1));
+Debug.WriteLine(culture.DateTimeFormat.GetMonthName(13));
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now the output is as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;תשרי
+אלול
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The Debug output is used here instead of the Console, as my default Console Window encoding did not support Hebrew characters (while the Visual Studio output window does by default)&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;This piece of knowledge is not especially useful or relevent unless one is working with one of the specific calendars/cultures, or one has to support multiple cultures in the application.
+It also serves as a reminder that the culture an application executes under is important, and not to always make assumptions about how the application will always operate.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://www.meziantou.net/misconceptions-about-date-and-time.htm"&gt;Misconceptions: 1 year = 12 months&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;208: 23-11-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Efficient EF deletion</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/11/22-ef-faster-delete</link>
@@ -1245,184 +1296,6 @@ public static TaskAwaiter GetAwaiter(this TimeSpan timeSpan)
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://steven-giesel.com/blogPost/5360d1c3-89f6-4a08-9ee3-6ddbe1b44236"&gt;Cursed C# - Doing shenanigans in C#&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;199: 10-11-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Adding localization with dependency injection</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/11/09-localization-di</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/11/09-localization-di</guid>
-			<pubDate>Wed, 09 Nov 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;&lt;code&gt;Localization&lt;/code&gt; is the &lt;em&gt;process of translating an application's resources into localized versions for each culture that the application will support&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;Enabling this multi-culture, localization support is as easy as adding a few lines of code on application startup, and leveraging the &lt;code&gt;IStringLocalizer&lt;/code&gt; implementation when working with the variable, localized values.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="non-localized"&gt;Non-localized&lt;/h2&gt;
-&lt;p&gt;Suppose we have an endpoint, which when called will return a string containing a random color:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/get&amp;quot;, () =&amp;gt;
-{
-    var random = new Random();
-    var randomValue = random.Next(3);
-
-    var response = randomValue switch
-    {
-        0 =&amp;gt; &amp;quot;Blue&amp;quot;,
-        1 =&amp;gt; &amp;quot;Green&amp;quot;,
-        2 =&amp;gt; &amp;quot;Yellow&amp;quot;
-    };
-
-    return $&amp;quot;The color generated is: {response}&amp;quot;;
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This code will generate a random number between 1 and 3, and return a string indicating the color generated.&lt;/p&gt;
-&lt;p&gt;Calling the endpoint returns the following (the colour value may change with each call):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;The color generated is: Blue
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;In the above return message the American spelling of &amp;quot;color&amp;quot; is returned, and not the British/South African spelling, &lt;em&gt;colour&lt;/em&gt;. We are going to add support for either variation, depending on the caller's culture - this is a fairly simple innocuous change, but the steps used here can be expended to add complete support for a different language.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="localized"&gt;Localized&lt;/h2&gt;
-&lt;h3 id="defining-the-variations"&gt;Defining the variations&lt;/h3&gt;
-&lt;p&gt;The first step is to define the various strings which will have different versions based on the culture. In our example this would be:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;The return message&lt;/li&gt;
-&lt;li&gt;The three different colours&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;In this specific use case these three different colour values will not change between cultures, but if the application is to support multi-culture, its a good idea to &amp;quot;localize&amp;quot; all string values.&lt;/p&gt;
-&lt;p&gt;The various culture specific strings are stored in &lt;code&gt;resx files&lt;/code&gt;, which usually reside in a &lt;code&gt;Resources&lt;/code&gt; folder. These files follow the naming standard of &lt;code&gt;{Class}.{culture}.resx&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;In this case, two files where added to the &lt;code&gt;Resources&lt;/code&gt; folder:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Program.en-us.resx&lt;/li&gt;
-&lt;li&gt;Program.en-za.resx&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;As we are using minimal apis, the usage of the values will be in the &lt;code&gt;Program&lt;/code&gt; class, hence the name of the resx files is &lt;em&gt;Program&lt;/em&gt;. The cultures supported in our application will be &lt;code&gt;English-Unites States&lt;/code&gt; and &lt;code&gt;English-South African&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;The resx files will both contain the &lt;code&gt;same names&lt;/code&gt; (keys), but each will have the specific localized values:&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;Program.en-us.resx&lt;/code&gt;:&lt;/p&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;Name&lt;/th&gt;
-&lt;th&gt;Value&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;Blue&lt;/td&gt;
-&lt;td&gt;Blue&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;ColourResponseMessage&lt;/td&gt;
-&lt;td&gt;The color generated is: {0}&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;Green&lt;/td&gt;
-&lt;td&gt;Green&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;Yellow&lt;/td&gt;
-&lt;td&gt;Yellow&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;&lt;code&gt;Program.en-za.resx&lt;/code&gt;:&lt;/p&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;Name&lt;/th&gt;
-&lt;th&gt;Value&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;Blue&lt;/td&gt;
-&lt;td&gt;Blue&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;ColourResponseMessage&lt;/td&gt;
-&lt;td&gt;The colour generated is: {0}&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;Green&lt;/td&gt;
-&lt;td&gt;Green&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;Yellow&lt;/td&gt;
-&lt;td&gt;Yellow&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;As mentioned, in this example only the &lt;em&gt;ColourResponseMessage&lt;/em&gt; will differentiate between the two, with the slightly different spelling&lt;/p&gt;
-&lt;p&gt;Now that we have the variable values defined, we begin by &lt;em&gt;adding localization support to the dependency injection container&lt;/em&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="dependency-injection-configuration"&gt;Dependency injection configuration&lt;/h3&gt;
-&lt;p&gt;During application startup, the following is added:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// add the localization support to the dependency injection container
-// which includes the path to the resx files
-builder.Services.AddLocalization(options =&amp;gt; options.ResourcesPath = &amp;quot;Resources&amp;quot;);
-
-// add the cultures which will be supported
-var supportedCultures = new[]
-{
-    new CultureInfo(&amp;quot;en-za&amp;quot;),
-    new CultureInfo(&amp;quot;en-us&amp;quot;)
-};
-builder.Services.Configure&amp;lt;RequestLocalizationOptions&amp;gt;(options =&amp;gt; {
-    options.DefaultRequestCulture = new RequestCulture(&amp;quot;en-us&amp;quot;);
-    options.SupportedCultures = supportedCultures;
-    options.SupportedUICultures = supportedCultures;
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Here we configured the DI container with the generic localization interfaces and implementations, as well as explicitly specified which cultures will be supported.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="middleware-configuration"&gt;Middleware configuration&lt;/h3&gt;
-&lt;p&gt;The next step is to configure the middleware pipeline (this is defined before any of the endpoints are defined):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.UseRequestLocalization(app.Services
-    .GetRequiredService&amp;lt;IOptions&amp;lt;RequestLocalizationOptions&amp;gt;&amp;gt;().Value);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This middleware components will &lt;em&gt;automatically set culture information for requests based on information provided by the client&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;Finally we are now able to take advantage of the localization capabilities and update the initial &lt;code&gt;/get&lt;/code&gt; endpoint defined above.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="localized-endpoint"&gt;Localized endpoint&lt;/h3&gt;
-&lt;p&gt;To leverage the localization functionality, the &lt;code&gt;IStringLocalizer&lt;/code&gt; interface and implementation is used - this is injected from the dependency injection container. Instead of the string value being hardcoded, &lt;code&gt;IStringLocalizer&lt;/code&gt; is used to lookup the culture specific string by name:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// inject IStringLocalizer with the specific class
-app.MapGet(&amp;quot;/get&amp;quot;, ([FromServices]IStringLocalizer&amp;lt;Program&amp;gt; localizer) =&amp;gt;
-{
-    var random = new Random();
-    var randomValue = random.Next(3);
-
-    // same logic as before
-    var localizedResponse = randomValue switch 
-    {
-        // use IStringLocalizer to get the culture specific string
-        // GetString also allows for arguments to be passed in and 
-        // another localized string (the colour) is being passed in
-        // as a parameter to format the ColourResponseMessage
-        0 =&amp;gt; localizer.GetString(&amp;quot;ColourResponseMessage&amp;quot;, localizer.GetString(&amp;quot;Blue&amp;quot;)),
-        1 =&amp;gt; localizer.GetString(&amp;quot;ColourResponseMessage&amp;quot;, localizer.GetString(&amp;quot;Green&amp;quot;)),
-        2 =&amp;gt; localizer.GetString(&amp;quot;ColourResponseMessage&amp;quot;, localizer.GetString(&amp;quot;Yellow&amp;quot;)),
-    };
-
-    return localizedResponse.Value;
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;When &lt;em&gt;GetString&lt;/em&gt; is called on the &lt;em&gt;IStringLocalizer&lt;/em&gt; implementation, the current culture of the context is used - if no culture is explicitly supplied, then the default culture is used.&lt;/p&gt;
-&lt;p&gt;Calling the endpoint as it stands returns the same result as before - the default culture is used:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;The color generated is: Yellow
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h3 id="changing-culture"&gt;Changing culture&lt;/h3&gt;
-&lt;p&gt;When the middleware pipeline was updated in a previous step using &lt;em&gt;UseRequestLocalization&lt;/em&gt;, it added the functionality to &lt;code&gt;change the culture based on a query string&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;Calling the endpoint with the culture specified &lt;code&gt;/get?culture=en-za&lt;/code&gt; now results in the following:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;The colour generated is: Blue
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The strings are now culture specific! Localization support has been added to the application.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;Adding localization support to an api is a relatively easy process, and only requires the steps mentioned above. For large api's, if the task seems daunting and over whelming, due to the nature of the updates, it can be done in a phased approach, one endpoint at a time, making it a bit more manageable.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://code-maze.com/aspnetcore-localization/"&gt;Localization in ASP.NET Core&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;198: 09-11-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
