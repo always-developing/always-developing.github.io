@@ -4,8 +4,66 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-11-24T03:46:19Z</updated>
+	<updated>2022-11-25T03:51:15Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/11/25-preview-attribute</id>
+		<title>Opting into experimental functionality</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/11/25-preview-attribute" />
+		<updated>2022-11-25T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;RequiresPreviewFeatures&lt;/code&gt; attribute can be used to flag a specific piece of code as &lt;em&gt;experimental&lt;/em&gt; or &lt;em&gt;in preview&lt;/em&gt; - this code cannot be used unless the consumer specifically opts into &lt;em&gt;enabling preview features&lt;/em&gt;, preventing the preview, potentially unstable code, from being used unwittingly.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="preview-feature"&gt;Preview feature&lt;/h2&gt;
+&lt;h3 id="code"&gt;Code&lt;/h3&gt;
+&lt;p&gt;To mark a &lt;em&gt;method&lt;/em&gt; (or class, property etc) as &lt;em&gt;in preview&lt;/em&gt;, it is decorated with the &lt;code&gt;RequiresPreviewFeatures&lt;/code&gt; attribute. Here the &lt;em&gt;DoWorkNew&lt;/em&gt; method is flagged as &lt;em&gt;in preview&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Worker
+{
+    public void DoWork()
+    {
+        // do some work the old way
+    }
+
+    [RequiresPreviewFeatures()]
+    public void DoWorkNew() 
+    { 
+        // do some work the new one
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As it stands, trying to use this method:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var worker = new Worker();
+
+worker.DoWorkNew();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;will result in the following compiler error:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Using 'DoWorkNew' requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.	
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;To to able to use code marked with the attribute, one specifically needs to opt into &lt;em&gt;preview features&lt;/em&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="project"&gt;Project&lt;/h3&gt;
+&lt;p&gt;To opt into &lt;em&gt;preview features&lt;/em&gt;, in the &lt;em&gt;csproj&lt;/em&gt; file ensure the &lt;code&gt;EnablePreviewFeatures&lt;/code&gt; setting is set to true:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-xml"&gt;&amp;lt;Project Sdk=&amp;quot;Microsoft.NET.Sdk&amp;quot;&amp;gt;
+  &amp;lt;PropertyGroup&amp;gt;
+    &amp;lt;OutputType&amp;gt;Exe&amp;lt;/OutputType&amp;gt;
+    &amp;lt;TargetFramework&amp;gt;net7.0&amp;lt;/TargetFramework&amp;gt;
+    &amp;lt;ImplicitUsings&amp;gt;enable&amp;lt;/ImplicitUsings&amp;gt;
+    &amp;lt;Nullable&amp;gt;enable&amp;lt;/Nullable&amp;gt;
+    &amp;lt;EnablePreviewFeatures&amp;gt;true&amp;lt;/EnablePreviewFeatures&amp;gt;
+  &amp;lt;/PropertyGroup&amp;gt;
+&amp;lt;/Project&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;With this the code will now compile successfully and be able to leverage preview/experimental features.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;As a library author this is a very useful tool - allowing new experimental functionality to be introduced &amp;quot;safely&amp;quot;. Usage of the functionality is semi-controlled, and the consumers are required to make an informed choice to manually opt into using potentially unstable code.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://steven-giesel.com/blogPost/1d97ea56-9a32-4067-9919-10b9af5623a6"&gt;Marking API's as obsolete or as experimental&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;210: 25-11-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/11/24-distributed-cache</id>
 		<title>Distributed caching int ASP.NET Core</title>
@@ -1017,280 +1075,6 @@ value1 and value3: False
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://twitter.com/Tullo/status/1583491663577481219"&gt;&amp;#64;Tullo Tweet&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;201: 14-11-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/11/11-list-add-performance</id>
-		<title>List AddRange performance</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/11/11-list-add-performance" />
-		<updated>2022-11-11T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;When multiple items need to be added to a &lt;code&gt;List&lt;/code&gt;, using the &lt;code&gt;AddRange&lt;/code&gt; method is generally significantly more performant than using the &lt;code&gt;Add&lt;/code&gt; method - however, in some scenarios it might actually be slower!&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="benchmarks"&gt;Benchmarks&lt;/h2&gt;
-&lt;p&gt;In all of the below examples, an initial List of 10, 1000 and 10000 items is used as a source and transferred transferer into another destination List.&lt;/p&gt;
-&lt;h3 id="one-at-a-time"&gt;One at a time&lt;/h3&gt;
-&lt;p&gt;In this benchmark, the &lt;code&gt;Add&lt;/code&gt; method is used to add items to a destination list, one at a time:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public void AllOneAtTime()
-{
-    var newList = new List&amp;lt;int&amp;gt;();
-
-    foreach(var item in items)
-    {
-        newList.Add(item);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h3 id="filtered-one-at-a-time"&gt;Filtered one at a time&lt;/h3&gt;
-&lt;p&gt;Here, only certain items are added to the destination list (this divisible by 2). A check is performed, and only if it passes is the specific item added to the list:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public void FilteredOneAtTime()
-{
-    var newList = new List&amp;lt;int&amp;gt;();
-
-    foreach (var item in items)
-    {
-        // only if divisible by 2
-        if (item % 2 == 0)
-        {
-            newList.Add(item);
-        }
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h3 id="add-range"&gt;Add range&lt;/h3&gt;
-&lt;p&gt;In this benchmark, the entire source list is copied to the destination list using the &lt;code&gt;AddRange&lt;/code&gt; method:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public void AllOnce()
-{
-    var newList = new List&amp;lt;int&amp;gt;();
-
-    newList.AddRange(items);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h3 id="filtered-add-range"&gt;Filtered add range&lt;/h3&gt;
-&lt;p&gt;In the final benchmark, the entire source list is filtered using LINQ, and then &lt;code&gt;AddRange&lt;/code&gt; is used:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public void FilteredOnce()
-{
-    var newList = new List&amp;lt;int&amp;gt;();
-
-    newList.AddRange(items.Where(i =&amp;gt; i % 2 == 0).ToList());
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="performance"&gt;Performance&lt;/h2&gt;
-&lt;p&gt;The full results are below, but in summary:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;AddRange&lt;/code&gt; is 2-3 times faster than using &lt;code&gt;Add&lt;/code&gt; multiple times (depending on the list size)&lt;/li&gt;
-&lt;li&gt;When required to filter the list, its quicker to iterate through each item, perform the check and use &lt;code&gt;Add&lt;/code&gt;. This is in comparison to using LINQ to filter and then &lt;code&gt;AddRange&lt;/code&gt; (the bottleneck here is LINQ, not the &lt;em&gt;AddRange&lt;/em&gt; call)&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id="items"&gt;10 items&lt;/h3&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;Method&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Ratio&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;RatioSD&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Gen0&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Allocated&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Alloc Ratio&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;AllOneAtTime&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;59.21 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.873 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.817 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.00&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0343&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;216 B&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;FilteredOneAtTime&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;40.12 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.738 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.690 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.68&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.01&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0204&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;128 B&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.59&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;AllOnce&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;23.10 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.458 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.450 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.39&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.01&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0153&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;96 B&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.44&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;FilteredOnce&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;97.60 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.395 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.305 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.65&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.04&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0446&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;280 B&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.30&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;hr /&gt;
-&lt;h3 id="items-1"&gt;1000 items&lt;/h3&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;Method&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Ratio&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;RatioSD&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Gen0&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Gen1&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Allocated&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Alloc Ratio&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;AllOneAtTime&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2,155.3 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;40.86 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;43.72 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.00&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.3390&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0229&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;8.23 KB&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;FilteredOneAtTime&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1,554.8 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;30.15 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;38.13 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.72&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.02&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.6847&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0057&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;4.2 KB&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.51&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;AllOnce&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;216.5 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;3.27 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;3.06 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.10&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.00&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.6464&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0098&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;3.96 KB&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.48&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;FilteredOnce&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2,870.1 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;36.82 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;34.44 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.33&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.03&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.0223&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0153&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;6.28 KB&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.76&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;h3 id="items-2"&gt;10000 items&lt;/h3&gt;
-&lt;hr /&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;Method&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Ratio&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;RatioSD&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Gen0&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Gen1&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Allocated&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Alloc Ratio&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;AllOneAtTime&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;21.498 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.4191 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.4659 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.00&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;20.8130&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;4.1504&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;128.32 KB&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;FilteredOneAtTime&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;15.165 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.1404 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.1172 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.71&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.02&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;10.4675&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.2817&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;64.3 KB&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.50&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;AllOnce&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.127 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0408 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0382 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.10&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.00&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;6.3667&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.7935&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;39.12 KB&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.30&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;FilteredOnce&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;28.335 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.3079 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.2729 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.32&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.03&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;13.6414&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.2583&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;83.95 KB&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.65&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;Generally, &lt;code&gt;AddRange&lt;/code&gt; is much quicker than multiple iterations of &lt;code&gt;Add&lt;/code&gt; - however, if using &lt;code&gt;AddRange&lt;/code&gt; in conjunction with a slower operation (such as LINQ's &lt;em&gt;where&lt;/em&gt;), then it doesn't really matter which is used, and to improve performance the bottleneck (LINQ) should be optimized.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://twitter.com/SY7K9/status/1580163986347405312"&gt;Sabig Gasim Tweet&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;200: 11-11-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
