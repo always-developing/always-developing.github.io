@@ -4,8 +4,46 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-11-25T03:51:15Z</updated>
+	<updated>2022-11-28T03:48:51Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/11/28-null-coalescing-assoc</id>
+		<title>Null-coalescing operator and associativity</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/11/28-null-coalescing-assoc" />
+		<updated>2022-11-28T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;null-coalescing operator&lt;/code&gt; (&lt;code&gt;??&lt;/code&gt;) is right-associative, and can be chained together to check multiple values, in order, to eventually arrive at a non-null value.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="example"&gt;Example&lt;/h2&gt;
+&lt;p&gt;The example for this situation is fairly simple - the operator &lt;code&gt;??&lt;/code&gt; can be used in a chain to check (and return) the &lt;em&gt;first non-null value&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;int? GetValue(int? value1, int? value2, int? value3, int defaultValue)
+{
+  // chain the operator and return the first non-null value
+    return value1 ?? value2 ?? value3 ?? defaultValue;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The values are evaluated left to right to check if they are &lt;code&gt;null&lt;/code&gt;, and the first non-null value is returned. In this example &lt;em&gt;defaultValue&lt;/em&gt; is an &lt;code&gt;int&lt;/code&gt; and as such cannot be null, so the method will always return a value.&lt;/p&gt;
+&lt;p&gt;Invoking this with a variety of permutations:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;Console.WriteLine(GetValue(null, null, 0, 0));
+Console.WriteLine(GetValue(null, 1, 2, 0));
+Console.WriteLine(GetValue(2, 5, null, 0));
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Results in the following, expected output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;0
+1
+2
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Each each case the first non-null value is returned. If all &lt;em&gt;nullable&lt;/em&gt; values are null, then the default is returned.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;This small, but useful piece of information for today might seem obvious, and it is once you think about it - personally I've just never encountered the technique or the need to chain together multiple null checks using the &lt;code&gt;null-coalescing&lt;/code&gt; operator. However, if I ever do, I now know that chaining is possible.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://code-maze.com/null-coalescing-operator-null-coalescing-assignment-operator-csharp/"&gt;Null-Coalescing Operators’ Associativity&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;211: 28-11-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/11/25-preview-attribute</id>
 		<title>Opting into experimental functionality</title>
@@ -841,240 +879,6 @@ index: 4
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://twitter.com/davidpine7/status/1584553974236971008"&gt;David Pine Tweet&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;202: 15-11-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/11/14-string-comparison</id>
-		<title>String comparison with StringComparer</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/11/14-string-comparison" />
-		<updated>2022-11-14T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;When comparing strings, instead of using &lt;code&gt;ToLower()&lt;/code&gt; (or &lt;code&gt;ToUpper&lt;/code&gt;) with the comparison operator &lt;code&gt;==&lt;/code&gt;, &lt;code&gt;StringComparer.OrdinalIgnoreCase.Equals&lt;/code&gt; can be used, which is faster and uses less memory.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="examples"&gt;Examples&lt;/h2&gt;
-&lt;p&gt;There are a number of different ways to compare strings in C# - this post will explore a number of these methods, as well as compare their performance.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="section"&gt;==&lt;/h3&gt;
-&lt;p&gt;The most basic method is to use the comparison operator &lt;code&gt;==&lt;/code&gt;.&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var value1 = &amp;quot;String1&amp;quot;;
-var value2 = &amp;quot;STRING1&amp;quot;;
-var value3 = &amp;quot;String2&amp;quot;;
-
-Console.WriteLine(&amp;quot;Using ==&amp;quot;);
-Console.WriteLine($&amp;quot;value1 and value2: {value1 == value2}&amp;quot;);
-Console.WriteLine($&amp;quot;value1 and value3: {value1 == value3}&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Using ==
-value1 and value2: False
-value1 and value3: False
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The issue with this approach is that the &lt;em&gt;case of the string is not taken into account&lt;/em&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="tolowertoupper"&gt;ToLower/ToUpper&lt;/h3&gt;
-&lt;p&gt;An often use method, is to use the comparison operator, but to &lt;code&gt;ToUpper&lt;/code&gt; or &lt;code&gt;ToLower&lt;/code&gt; the string for comparison:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var value1 = &amp;quot;String1&amp;quot;;
-var value2 = &amp;quot;STRING1&amp;quot;;
-var value3 = &amp;quot;String2&amp;quot;;
-
-Console.WriteLine(&amp;quot;Using == and ToLower&amp;quot;);
-Console.WriteLine($&amp;quot;value1 and value2: {value1.ToLower() == value2.ToLower()}&amp;quot;);
-Console.WriteLine($&amp;quot;value1 and value3: {value1.ToLower() == value3.ToLower()}&amp;quot;);
-Console.WriteLine(&amp;quot;-----&amp;quot;);
-
-Console.WriteLine(&amp;quot;Using == and ToUpper&amp;quot;);
-Console.WriteLine($&amp;quot;value1 and value2: {value1.ToUpper() == value2.ToUpper()}&amp;quot;);
-Console.WriteLine($&amp;quot;value1 and value3: {value1.ToUpper() == value3.ToUpper()}&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Using == and ToLower
-value1 and value2: True
-value1 and value3: False
------
-Using == and ToUpper
-value1 and value2: True
-value1 and value3: False
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Both methods yield the same, accurate result.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="string.equals"&gt;string.Equals&lt;/h3&gt;
-&lt;p&gt;The &lt;code&gt;string&lt;/code&gt; class has an &lt;code&gt;Equals&lt;/code&gt; method, which can also be used for comparison. One version is a &lt;em&gt;static method&lt;/em&gt;, and the other is an &lt;em&gt;instance method&lt;/em&gt;.&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var value1 = &amp;quot;String1&amp;quot;;
-var value2 = &amp;quot;STRING1&amp;quot;;
-var value3 = &amp;quot;String2&amp;quot;;
-
-// instance Equals method
-Console.WriteLine(&amp;quot;Using instance Equals&amp;quot;);
-Console.WriteLine($&amp;quot;value1 and value2: {value1.Equals(value2)}&amp;quot;);
-Console.WriteLine($&amp;quot;value1 and value3: {value1.Equals(value3)}&amp;quot;);
-Console.WriteLine(&amp;quot;-----&amp;quot;);
-
-// Static Equals method
-Console.WriteLine(&amp;quot;Using static Equals&amp;quot;);
-Console.WriteLine($&amp;quot;value1 and value2: {string.Equals(value1, value2)}&amp;quot;);
-Console.WriteLine($&amp;quot;value1 and value3: {string.Equals(value1, value3)}&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Using instance Equals
-value1 and value2: False
-value1 and value3: False
------
-Using static Equals
-value1 and value2: False
-value1 and value3: False
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This basic version of &lt;code&gt;Equals&lt;/code&gt; does not take the string case into account - however there is an additional parameter which can be passed to the &lt;code&gt;Equals&lt;/code&gt; method to define how the comparison is done:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var value1 = &amp;quot;String1&amp;quot;;
-var value2 = &amp;quot;STRING1&amp;quot;;
-var value3 = &amp;quot;String2&amp;quot;;
-
-Console.WriteLine(&amp;quot;Using static Equals OrdinalIgnoreCase&amp;quot;);
-Console.WriteLine($&amp;quot;value1 and value2: {string.Equals(value1, value2, 
-    StringComparison.OrdinalIgnoreCase)}&amp;quot;);
-Console.WriteLine($&amp;quot;value1 and value3: {string.Equals(value1, value3, 
-    StringComparison.OrdinalIgnoreCase)}&amp;quot;);
-Console.WriteLine(&amp;quot;-----&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output of this:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Using string.Equals OrdinalIgnoreCase
-value1 and value2: True
-value1 and value3: False
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h3 id="stringcomparer"&gt;StringComparer&lt;/h3&gt;
-&lt;p&gt;The final method is using &lt;code&gt;StringComparer&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var value1 = &amp;quot;String1&amp;quot;;
-var value2 = &amp;quot;STRING1&amp;quot;;
-var value3 = &amp;quot;String2&amp;quot;;
-
-Console.WriteLine(&amp;quot;Using StringComparer&amp;quot;);
-Console.WriteLine($&amp;quot;value1 and value2: {StringComparer.OrdinalIgnoreCase.Equals(value1, value2)}&amp;quot;);
-Console.WriteLine($&amp;quot;value1 and value3: {StringComparer.OrdinalIgnoreCase.Equals(value1, value3)}&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Using StringComparer
-value1 and value2: True
-value1 and value3: False
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="benchmarks"&gt;Benchmarks&lt;/h2&gt;
-&lt;p&gt;Finally, we can benchmark all the different methods:&lt;/p&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;Method&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Median&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Ratio&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;RatioSD&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Gen0&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Allocated&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Alloc Ratio&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;BasicComparison&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.972 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0392 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0348 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.974 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.00&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;NA&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;BasicToLower&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;42.073 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.8145 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.7619 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;42.187 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;21.34&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.61&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0127&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;80 B&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;NA&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;BasicToUpper&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;51.095 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;4.6650 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;13.7548 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;42.910 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;21.74&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.32&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0127&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;80 B&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;NA&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;StringInstanceEquals&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.903 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0465 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0388 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.912 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.96&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.02&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;NA&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;StringStaticEquals&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.896 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0272 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0227 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.899 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.96&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.02&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;NA&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;StringEqualOrdinalIgnoreCases&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;6.083 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.1480 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.1584 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;6.078 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;3.09&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.10&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;NA&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;StringComparerOrdinalIgnoreCases&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;4.770 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0669 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0559 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;4.762 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;2.42&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.04&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;-&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;NA&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;From the results, once can see that:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;In all instances where the case of the string is taken into account, performance is slower&lt;/li&gt;
-&lt;li&gt;The often used &lt;code&gt;ToUpper/ToLower&lt;/code&gt; method is the slowest a large margin, and the only method to use memory&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;StringComparer&lt;/code&gt; is the most performant technique to use when a comparison needs to be done while ignoring the case&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;Realistically, in most applications the performance of a string comparison is not going to have any material effect on performance. However if the application does a large number of string comparisons, the accumulative effect could be slightly noticeable and it might be worth investigating the use of &lt;code&gt;StringComparer&lt;/code&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://twitter.com/Tullo/status/1583491663577481219"&gt;&amp;#64;Tullo Tweet&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;201: 14-11-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
