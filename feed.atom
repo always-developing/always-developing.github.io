@@ -4,8 +4,119 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-11-28T03:48:51Z</updated>
+	<updated>2022-11-29T03:46:24Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/11/29-dyanmic-linq</id>
+		<title>Dynamic LINQ with System.Linq.Dynamic.Core</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/11/29-dyanmic-linq" />
+		<updated>2022-11-29T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;The third-party, &lt;em&gt;open source&lt;/em&gt; library &lt;code&gt;System.Linq.Dynamic.Core&lt;/code&gt; extends LINQ functionality allowing &lt;em&gt;dynamic, string based LINQ queries&lt;/em&gt; to be parsed, resulting in operations identical to regular LINQ.&lt;/p&gt;
+&lt;h2 id="examples"&gt;Examples&lt;/h2&gt;
+&lt;p&gt;In all of the below examples, the following snippet of code is used to get a sample collection of &lt;em&gt;Song&lt;/em&gt; entities:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;IEnumerable&amp;lt;Song&amp;gt; GetSongs()
+{
+    return new[]
+    {
+        new Song(&amp;quot;Learn to Fly&amp;quot;, &amp;quot;Foo Fighters&amp;quot;, 245),
+        new Song(&amp;quot;Everlong&amp;quot;, &amp;quot;Foo Fighters&amp;quot;, 312),
+        new Song(&amp;quot;Bigger than my Body&amp;quot;, &amp;quot;John Mayer&amp;quot;, 281),
+    };
+};
+
+public record Song(string Name, string Artist, int LengthInSeconds);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The extension methods &lt;code&gt;System.Linq.Dynamic.Core&lt;/code&gt; offer are available on the &lt;em&gt;IQueryable&lt;/em&gt; interface. As such in the examples the &lt;em&gt;IEnumerable&amp;lt;Song&amp;gt;&lt;/em&gt; returned from the &lt;code&gt;GetSongs&lt;/code&gt; method is required to be converted to &lt;em&gt;IQueryable&amp;lt;Song&amp;gt;&lt;/em&gt; using the &lt;code&gt;AsQueryable&lt;/code&gt; method before the extension methods are available.&lt;/p&gt;
+&lt;p&gt;Below come common use cases are shown, but the library does offer a lot more functionality - see the references links below for more information on the library.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="select"&gt;Select&lt;/h3&gt;
+&lt;p&gt;&lt;code&gt;System.Linq.Dynamic.Core&lt;/code&gt; can be used to dynamically &lt;em&gt;Select&lt;/em&gt; a property value from a collection of entities:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// using traditional LINQ
+List&amp;lt;string&amp;gt; namesLinq = songs
+  .Select(s =&amp;gt; s.Name)
+  .ToList();
+
+// dynamically specifying the property to be returned
+List&amp;lt;string&amp;gt; nameDynamic = songs
+  .AsQueryable()
+  .Select(&amp;quot;Name&amp;quot;)
+  .ToDynamicList&amp;lt;string&amp;gt;();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;A &lt;em&gt;anonymous or dynamic&lt;/em&gt; entity can also be &lt;em&gt;Selected&lt;/em&gt; out of the collection dynamically:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// traditional
+var nameArtistLinq = songs
+  .Select(s =&amp;gt; new { s.Name, s.Artist })
+  .ToList();
+
+// dynamic
+List&amp;lt;dynamic&amp;gt; nameArtistDynamic = songs
+  .AsQueryable()
+  .Select(&amp;quot;new { Name, Artist}&amp;quot;)
+  .ToDynamicList();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This is very powerful, allowing the columns to be selected to be determined &lt;em&gt;at runtime&lt;/em&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="filtering"&gt;Filtering&lt;/h3&gt;
+&lt;p&gt;The library also provides the ability to dynamically filter a collection of records:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// traditional
+List&amp;lt;Song&amp;gt; filterLinq = songs
+  .Where(x =&amp;gt; x.Artist == &amp;quot;Foo Fighters&amp;quot;)
+  .ToList();
+
+// dynamic
+string column = &amp;quot;Artist&amp;quot;;
+string value = &amp;quot;Foo Fighters&amp;quot;;
+List&amp;lt;Song&amp;gt; filterDynamic = songs
+  .AsQueryable()
+  .Where($&amp;quot;{column} == \&amp;quot;{value}\&amp;quot;&amp;quot;)
+  .ToList();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Again, very powerful as it allows the filter criteria to be be generated &lt;em&gt;at runtime&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;Outputting the result of the filtering for each technique yields the same result:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;Console.WriteLine(filterLinq.Count());
+Console.WriteLine(filterDynamic.Count());
+
+// ouput:
+// 2
+// 2
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="ordering"&gt;Ordering&lt;/h3&gt;
+&lt;p&gt;The library also offers the ability to dynamically order a collection:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// traditional LINQ ordering
+List&amp;lt;Song&amp;gt; orderLinq = songs
+  .OrderBy(s =&amp;gt; s.LengthInSeconds)
+  .ToList();
+  
+List&amp;lt;Song&amp;gt; orderDescLinq = songs
+  .OrderByDescending(s =&amp;gt; s.LengthInSeconds)
+  .ToList();
+
+// dynamic ordering
+List&amp;lt;Song&amp;gt; orderDynamic = songs
+  .AsQueryable()
+  .OrderBy(&amp;quot;LengthInSeconds&amp;quot;)
+  .ToList();
+
+List&amp;lt;Song&amp;gt; orderDescDynamic = songs
+  .AsQueryable()
+  .OrderBy(&amp;quot;LengthInSeconds desc&amp;quot;)
+  .ToList();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The functionality the library offers is very easy and intuitive to use, as one can see from the above examples.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;This is a very powerful library, and more functionality than described here. If dynamic LINQ is not required, I do not recommend replacing traditional strongly-typed LINQ with this as a based, however in cases where flexibility to change the LINQ at runtime is required, this library is incredibly powerful.&lt;/p&gt;
+&lt;p&gt;If this is of interest it is definitely recommended to check out the &lt;em&gt;Dynamic LInq&lt;/em&gt; reference link below for more information.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://code-maze.com/using-dynamic-linq/"&gt;Using Dynamic LINQ With System.Linq.Dynamic.Core Library&lt;/a&gt;&lt;br /&gt;
+&lt;a href="https://dynamic-linq.net/"&gt;Dynamic LINQ&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;212: 29-11-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/11/28-null-coalescing-assoc</id>
 		<title>Null-coalescing operator and associativity</title>
@@ -799,86 +910,6 @@ Console.WriteLine(order);
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://josef.codes/bonus-builder-pattern-with-the-implicit-operator-using-c-sharp/"&gt;Bonus: Builder Pattern with the implicit operator using c#&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;203: 16-11-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/11/15-foreach-index</id>
-		<title>Foreach loops and indexes</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/11/15-foreach-index" />
-		<updated>2022-11-15T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;Often when iterating through a list using a &lt;code&gt;foreach&lt;/code&gt; loop, an index to the item's position in the list is also required - instead of using a separate &lt;em&gt;index variable&lt;/em&gt;, a &lt;code&gt;tuple can be used to keep track of the item and it's index&lt;/code&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="manually-tracking-index"&gt;Manually tracking index&lt;/h2&gt;
-&lt;p&gt;Sometimes while iterating, the index of the item in the list is required - usually this is done by creating a separate variable and manually increasing it in each iteration:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// list with 5 items
-var list = new List&amp;lt;int&amp;gt;();
-list.AddRange(Enumerable.Range(1, 5));
-
-// variable used to keep track of the index
-int loopIndex = 0;
-foreach(var item in list)
-{
-    // access the item and the index
-    Console.WriteLine($&amp;quot;ItemValue: {item}&amp;quot;);
-    Console.WriteLine($&amp;quot;index: {loopIndex}&amp;quot;);
-
-    // don't forget to increase the index
-    loopIndex++;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;With this approach, the item from the list can be accessed, as well as the index (position) of the item in the list. The output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;ItemValue: 1
-index: 0
-ItemValue: 2
-index: 1
-ItemValue: 3
-index: 2
-ItemValue: 4
-index: 3
-ItemValue: 5
-index: 4
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This approach is entirely valid, however it does require additional effort, and the developer needs to remember to increase the index variable. There is a cleaner, simpler approach (however, it &lt;em&gt;might&lt;/em&gt; come with a performance cost)&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="tuple-index"&gt;Tuple index&lt;/h2&gt;
-&lt;p&gt;Instead of manually creating and incrementing an index variable, this can be done automatically &lt;em&gt;with the foreach loop&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// list with 5 items
-var list = new List&amp;lt;int&amp;gt;();
-list.AddRange(Enumerable.Range(1, 5));
-
-// instead of iterating through the list directly
-// select the items of the list into a tuple, along
-// with the index
-foreach(var (item, index) in 
-    list.Select((item, index) =&amp;gt; (item, index)))
-{
-    Console.WriteLine($&amp;quot;ItemValue: {item}&amp;quot;);
-    Console.WriteLine($&amp;quot;index: {index}&amp;quot;);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Here, the items in the list are select into a list of &lt;em&gt;tuples&lt;/em&gt;, each tuple containing the item itself, as well as the index. Iterating over this new list gives us access to both these values.&lt;/p&gt;
-&lt;p&gt;The output is the same as before:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;ItemValue: 1
-index: 0
-ItemValue: 2
-index: 1
-ItemValue: 3
-index: 2
-ItemValue: 4
-index: 3
-ItemValue: 5
-index: 4
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Cleaner, simpler and less prone to errors (forgetting to increment the index manually)&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;A relatively simple tip, but one which does make things easier as a developer -  however depending on the list size and the list type, could result in a performance hit. If the list is generally relatively small, the performance hit shouldn't be noticeable and the code is cleaner. But still perform benchmark and use the best solution for your use case&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://twitter.com/davidpine7/status/1584553974236971008"&gt;David Pine Tweet&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;202: 15-11-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
