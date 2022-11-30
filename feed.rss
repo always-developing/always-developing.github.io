@@ -5,8 +5,56 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Tue, 29 Nov 2022 05:23:17 GMT</pubDate>
-		<lastBuildDate>Tue, 29 Nov 2022 05:23:17 GMT</lastBuildDate>
+		<pubDate>Wed, 30 Nov 2022 03:45:55 GMT</pubDate>
+		<lastBuildDate>Wed, 30 Nov 2022 03:45:55 GMT</lastBuildDate>
+		<item>
+			<title>Short and arithmetic operations</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/11/30-short-support</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/11/30-short-support</guid>
+			<pubDate>Wed, 30 Nov 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;When performing arithmetic operations on &lt;code&gt;short&lt;/code&gt; data types, their values are converted to the &lt;code&gt;int&lt;/code&gt; types, which is also the type of the result of the operation.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="examples"&gt;Examples&lt;/h2&gt;
+&lt;p&gt;When working with integral types which could be an &lt;code&gt;int&lt;/code&gt; or &lt;code&gt;short&lt;/code&gt;, the compiler will infer &lt;code&gt;int&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// the compiler will infer than intValue is 
+// an int (even though it could be a short)
+// in this specific example
+var intValue = 32 / 2;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;However, when specifying the variable type explicitly, the compiler will infer the value as a &lt;code&gt;short&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;short shortValue = 32 / 2;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Here the value &lt;em&gt;32&lt;/em&gt; is inferred as a &lt;code&gt;short&lt;/code&gt;, and the output of the operator is explicitly declared as a &lt;code&gt;short&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;All good so far - but now is where the are a bit unexpected.&lt;/p&gt;
+&lt;p&gt;Operations on an &lt;em&gt;explicitly defined&lt;/em&gt; short value, will result in a &lt;code&gt;int result&lt;/code&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// short value is definitely a short
+short shortValue = 32 / 2;
+
+// int response, all good
+int intOutput = shortValue / 2;
+
+// ERROR: this gives a compiler error
+//short shortOutput = (shortValue / 2);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In the last operation, even though it is being performed on a short value, the result is an &lt;code&gt;int&lt;/code&gt; and the above results in the error:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Cannot implicitly convert type 'int' to 'short'. An explicit conversion exists (are you missing a cast?)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Thankfully, the error is very easy to resolve - as the error states, an explicit conversion needs to be done:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// All good!
+short shortOutput = (short)(shortValue / 2);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;A small quirk of the language, which if encountered just needs to be managed and handled. Before being aware of this knowledge, I would have assumed that a &lt;code&gt;short&lt;/code&gt; would be returned from an operation where the operands were defined as &lt;code&gt;short&lt;/code&gt; - this assumption would be incorrect though!&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://www.reddit.com/r/csharp/comments/ysm6lx/why_am_i_being_forced_to_cast_to_shorts_when_i_am/"&gt;Reddit Post&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;213: 30-11-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Dynamic LINQ with System.Linq.Dynamic.Core</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/11/29-dyanmic-linq</link>
@@ -834,93 +882,6 @@ public class Song
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://blog.okyrylchuk.dev/a-comprehensive-overview-of-c-9-features#heading-8-attributes-on-local-functions"&gt;8. Attributes on Local Functions&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;204: 17-11-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Builder pattern implicit conversions</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/11/16-implicit-builder</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/11/16-implicit-builder</guid>
-			<pubDate>Wed, 16 Nov 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;Usually when using the &lt;code&gt;builder pattern&lt;/code&gt;, a final &lt;code&gt;Build&lt;/code&gt; method (or similarly named method) is invoked to generate the &lt;em&gt;final entity&lt;/em&gt; from the &lt;em&gt;builder entity&lt;/em&gt;. Using an &lt;code&gt;implicit operator&lt;/code&gt;, this final step can be removed, and the &lt;em&gt;final entity&lt;/em&gt; can &lt;code&gt;automatically be generated&lt;/code&gt; from the &lt;em&gt;builder entity&lt;/em&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="examples"&gt;Examples&lt;/h2&gt;
-&lt;p&gt;In these examples, there is a simple &lt;code&gt;Order&lt;/code&gt; entity:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public record Order(int Id, int lineItemCount, double Total);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;There is also an &lt;code&gt;OrderBuilder&lt;/code&gt; class, which is used to build an &lt;code&gt;Order&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class OrderBuilder
-{
-    // store some order information
-    private int _id;
-    private int _lineItemCount;
-    private double _total;
-
-    // method to give an order an id
-    public OrderBuilder WithId(int Id)
-    {
-        _id = Id;
-        return this;
-    }
-
-    // add a simple line item to the order
-    public OrderBuilder WithLineItem(double lineItemAmount)
-    {
-        _lineItemCount++;
-        _total += lineItemAmount;
-
-        return this;
-    }
-
-    // create an Order from the OrderBuilder information
-    public Order Build()
-    {
-        return new Order(_id, _lineItemCount, _total);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h3 id="build-method"&gt;Build method&lt;/h3&gt;
-&lt;p&gt;Usage of the above &lt;em&gt;builder&lt;/em&gt; is easy:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var order = new OrderBuilder()
-    .WithId(100) // give the order an id
-    .WithLineItem(99) // add line items
-    .WithLineItem(149)
-    .Build(); // remember to build!
-
-Console.WriteLine(order);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The above is the typical usage of the &lt;em&gt;builder pattern&lt;/em&gt; - building up the entity using various methods, and then at the end calling a &lt;code&gt;Build&lt;/code&gt; method to create the final entity (&lt;code&gt;Order&lt;/code&gt; in this example) using the information supplied to the &lt;em&gt;builder&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;The output of the order:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Order { Id = 100, lineItemCount = 2, Total = 248 }
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Nothing inherently wrong or incorrect with this code or approach - however an implicit operator can be added to the &lt;code&gt;OrderBuilder&lt;/code&gt; class to make the pattern and classes even easier to use.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="implicit"&gt;Implicit&lt;/h3&gt;
-&lt;p&gt;Adding the following &lt;code&gt;implicit operator&lt;/code&gt; to the &lt;em&gt;OrderBuilder&lt;/em&gt; class, allows for the &lt;code&gt;Build&lt;/code&gt; method to &lt;em&gt;automatically be invoked&lt;/em&gt; when converting the &lt;em&gt;OrderBuilder&lt;/em&gt; instance to an &lt;em&gt;Order&lt;/em&gt; instance:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public static implicit operator Order(OrderBuilder b) =&amp;gt; b.Build();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;With the above added to the &lt;em&gt;OrderBuilder&lt;/em&gt; class, the following is now possible:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// instead of &amp;quot;var&amp;quot;, the actual type
-// Order is used
-Order order = new OrderBuilder()
-    .WithId(101)
-    .WithLineItem(100)
-    .WithLineItem(29);
-// No Build required!
-
-Console.WriteLine(order);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;With this code snippet, as the &lt;em&gt;OrderBuilder&lt;/em&gt; is being converted to &lt;em&gt;Order&lt;/em&gt; implicitly, the &lt;code&gt;implicit operator&lt;/code&gt; is called which calls the &lt;em&gt;Build&lt;/em&gt; method to convert the &lt;em&gt;OrderBuilder&lt;/em&gt; to an &lt;em&gt;Order&lt;/em&gt; automatically. No need for the &lt;code&gt;Build&lt;/code&gt; method to be used!&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;This is a small update to the code, but for the developers consuming the classes, the overall &lt;em&gt;developer experience&lt;/em&gt; is improved. This gives the developer the flexibility to use the class how they would like - either using the &lt;em&gt;Build&lt;/em&gt; method, or doing the &lt;em&gt;implicit conversion&lt;/em&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://josef.codes/bonus-builder-pattern-with-the-implicit-operator-using-c-sharp/"&gt;Bonus: Builder Pattern with the implicit operator using c#&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;203: 16-11-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
