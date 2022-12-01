@@ -4,8 +4,139 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-11-30T03:45:55Z</updated>
+	<updated>2022-12-01T03:52:58Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/12/01-context-feature</id>
+		<title>Custom feature filters</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/12/01-context-feature" />
+		<updated>2022-12-01T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;Microsoft.FeatureManagement&lt;/code&gt; library, allows for a custom &lt;code&gt;context&lt;/code&gt; to be defined, and evaluated to &lt;code&gt;determine if specific functionality should be enabled or not&lt;/code&gt;, &lt;em&gt;for the specific context&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;This functionality has no dependency on ASP.NET or &lt;em&gt;HttpContext&lt;/em&gt;, and as such can be used in any application type (such as console app).&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="setup"&gt;Setup&lt;/h2&gt;
+&lt;p&gt;There are a number of moving pieces to the setup, which requires some classes be defined and some configuration specified to leverage the &lt;em&gt;custom feature filter management&lt;/em&gt;.&lt;/p&gt;
+&lt;h3 id="define-the-context"&gt;Define the context&lt;/h3&gt;
+&lt;p&gt;The first step is to define the &lt;code&gt;context&lt;/code&gt; - this is a simple class which will contain all the information which will be evaluated to determine if the feature or functionality should be enabled or not.&lt;/p&gt;
+&lt;p&gt;In this example, the context will just contain the user's email address:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class User
+{
+    public string Email { get; set; }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In short - a &lt;code&gt;context&lt;/code&gt; will be created containing the supplied email address, which will be evaluated against &lt;em&gt;settings&lt;/em&gt; to determine if &lt;em&gt;normal&lt;/em&gt; or &lt;em&gt;enhanced&lt;/em&gt; processing is to occur.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="define-the-settings"&gt;Define the settings&lt;/h3&gt;
+&lt;p&gt;The next step is to define a &lt;em&gt;settings&lt;/em&gt; class, which will contain properties against which the &lt;code&gt;context&lt;/code&gt; values will be evaluated.&lt;/p&gt;
+&lt;p&gt;In this example, we want the &lt;em&gt;user email address domain&lt;/em&gt;, defined in the &lt;code&gt;User&lt;/code&gt; context, to be compared with a &lt;em&gt;company domain&lt;/em&gt;, defined in the settings class, &lt;code&gt;EnhancedUserSettings&lt;/code&gt;, to determine if the user should be processed using the &lt;em&gt;enhanced/preview feature&lt;/em&gt;, or the &lt;em&gt;standard existing feature&lt;/em&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class EnhancedUserSettings
+{
+    public string EmailDomain { get; set; }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Essentially what it comes down to, is evaluating if the &lt;code&gt;email address defined in the User context has the same domain defined in the settings EnhancedUserSettings&lt;/code&gt;. If so, then the &lt;em&gt;feature&lt;/em&gt; is enabled, otherwise the feature is not enabled.&lt;/p&gt;
+&lt;p&gt;The usage of this and how each class fits together will become apparent in the steps below.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="define-the-filter"&gt;Define the filter&lt;/h3&gt;
+&lt;p&gt;Next, we have to define the &lt;code&gt;filter&lt;/code&gt; - this piece of code will do the actual logic to evaluate and determine if the feature should be enabled or not, based on the &lt;code&gt;context&lt;/code&gt; and &lt;code&gt;settings&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class EmailDomainFilter : IContextualFeatureFilter&amp;lt;User&amp;gt;
+{
+    public Task&amp;lt;bool&amp;gt; EvaluateAsync(FeatureFilterEvaluationContext featureFilterContext, 
+        User appContext)
+    {
+        // get the value from the parameters configured
+        var settings = featureFilterContext.Parameters.Get&amp;lt;EnhancedUserSettings&amp;gt;();
+
+        // perform the check
+        return Task.FromResult(appContext.Email?.Split(&amp;quot;&amp;#64;&amp;quot;).Last() == 
+            settings.EmailDomain);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The filter implements &lt;code&gt;IContextualFeatureFilter&amp;lt;Context&amp;gt;&lt;/code&gt;, which contains one method &lt;em&gt;EvaluateAsync&lt;/em&gt;. &lt;em&gt;EvaluateAsync&lt;/em&gt; takes a generic &lt;em&gt;FeatureFilterEvaluationContext&lt;/em&gt; context, as well as the specific &lt;em&gt;User&lt;/em&gt; context defined for this filter.&lt;/p&gt;
+&lt;p&gt;In the above, the &lt;code&gt;EnhancedUserSettings&lt;/code&gt; instance is obtained from the generic &lt;em&gt;FeatureFilterEvaluationContext&lt;/em&gt; context - this retrieves the values based on the configuration defined in the next section.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="define-the-configuration"&gt;Define the configuration&lt;/h3&gt;
+&lt;p&gt;In the &lt;code&gt;appsettings.json&lt;/code&gt; the filter feature functionality needs to be configured:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-json"&gt;&amp;quot;FeatureManagement&amp;quot;: {
+    &amp;quot;EnhancedUserProcessing&amp;quot;: {
+      &amp;quot;EnabledFor&amp;quot;: [
+        {
+          &amp;quot;Name&amp;quot;: &amp;quot;EmailDomain&amp;quot;,
+          &amp;quot;Parameters&amp;quot;: {
+            &amp;quot;EmailDomain&amp;quot;: &amp;quot;mycompany.co.za&amp;quot;
+          }
+        }
+      ]
+    }
+  }
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The configuration defines the filter and how it should be used:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;There is a feature called &lt;code&gt;EnhancedUserProcessing&lt;/code&gt; (the name of this is important, which we will see when it comes time to use the functionality)&lt;/li&gt;
+&lt;li&gt;This feature uses a filter called &lt;code&gt;EmailDomain&lt;/code&gt; - the name of the class which implements &lt;code&gt;IContextualFeatureFilter&lt;/code&gt;, &lt;em&gt;EmailDomainFilter&lt;/em&gt; in this example (the name of the class plus &lt;em&gt;Filter&lt;/em&gt; as a suffix to the class name),&lt;/li&gt;
+&lt;li&gt;The parameters for this filter, &lt;code&gt;EnhancedUserSettings&lt;/code&gt;, will have a property called &lt;em&gt;EmailDomain&lt;/em&gt; which will have a value set to &lt;code&gt;mycompany.co.za&lt;/code&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;hr /&gt;
+&lt;h3 id="setup-recap"&gt;Setup Recap&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;Define the &lt;code&gt;context&lt;/code&gt; - this will be the information which is dynamic (each user/request/etc will have different context values) and which is compared to the &lt;code&gt;settings&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Define the &lt;code&gt;settings&lt;/code&gt; - this is the class which will contain the information the &lt;code&gt;context&lt;/code&gt; is compared against, to determine if the feature is enabled or not. This is static information, and is the same for all evaluations&lt;/li&gt;
+&lt;li&gt;Define the &lt;code&gt;filter&lt;/code&gt; - this specified exactly &lt;em&gt;how&lt;/em&gt;, the &lt;code&gt;context&lt;/code&gt; values are compared with the &lt;code&gt;settings&lt;/code&gt; values&lt;/li&gt;
+&lt;li&gt;Define the &lt;code&gt;configuration&lt;/code&gt; - gives the filter a name, and specifies the &lt;code&gt;settings&lt;/code&gt; values&lt;/li&gt;
+&lt;/ol&gt;
+&lt;hr /&gt;
+&lt;h2 id="usage"&gt;Usage&lt;/h2&gt;
+&lt;p&gt;Finally, let's look at the usage of the &lt;code&gt;filter feature&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Below a minimal API endpoint is defined to demonstrate the usage:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
+
+// add feature management to DI container
+// and add the specific filter
+builder.Services.AddFeatureManagement()
+       .AddFeatureFilter&amp;lt;EmailDomainFilter&amp;gt;();
+
+var app = builder.Build();
+
+// inject IFeatureManager implementation from the DI container
+// get the email from the URL route 
+app.MapGet(&amp;quot;/process/{email}&amp;quot;, async ([FromServices]IFeatureManager featureManager,
+    [FromRoute]string email) =&amp;gt;
+{
+    // check if the feature with the name `EnhancedUserProcessing` is enabled
+    // or not for the specific context (the user email)
+    if(await featureManager.IsEnabledAsync(&amp;quot;EnhancedUserProcessing&amp;quot;, 
+        new User { Email = email }))
+    {
+        return &amp;quot;Processed using ENHANCED features&amp;quot;;
+    }
+
+    return &amp;quot;Processed using NORMAL features&amp;quot;;
+});
+
+app.Run();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;code&gt;IFeatureManager&lt;/code&gt; is injected into the relevent class/method, and the &lt;em&gt;IsEnabledAsync&lt;/em&gt; method is called. The specific feature to use (specified by name) is supplied along  with the relevent &lt;code&gt;context&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Browsing to the endpoint &lt;code&gt;/process/alwaysdevelpoping&amp;#64;mycompany.co.za&lt;/code&gt; will return:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Processed using ENHANCED features
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;While using an email with any other domain will result in:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Processed using NORMAL features
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This is a simple example, but the library does offer more sophisticated functionality around the configuration and options available to evaluate the filter (see the links available under references)&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;The ability to turn off/on specific features for a specific subset of users/records is a valuable tool when trying to roll out useful, experimental or preview functionality quickly to get &amp;quot;real world&amp;quot; feedback before it gets rolled out completely.
+There are other more sophisticated 3rd party feature management tool available (LaunchDarkly for example), but the &lt;code&gt;Microsoft.FeatureManagement&lt;/code&gt; library is entirely adequate, especially as a starting point.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://coderethinked.com/contextual-feature-filters-in-asp-net-core/"&gt;Contextual Feature Filters in ASP.NET Core&lt;/a&gt;&lt;br /&gt;
+&lt;a href="https://learn.microsoft.com/en-us/azure/azure-app-configuration/use-feature-flags-dotnet-core?tabs=core5x"&gt;Tutorial: Use feature flags in an ASP.NET Core app&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;214: 01-12-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/11/30-short-support</id>
 		<title>Short and arithmetic operations</title>
@@ -784,93 +915,6 @@ public class Song
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://twitter.com/davidfowl/status/1586592671296290816"&gt;David Fowler Tweet&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;205: 18-11-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/11/17-local-attributes</id>
-		<title>Local functions and attributes</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/11/17-local-attributes" />
-		<updated>2022-11-17T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;When using &lt;code&gt;local functions&lt;/code&gt;, it is possible to decorate them, as well as their parameters, with &lt;code&gt;attributes&lt;/code&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="local-function"&gt;Local function&lt;/h2&gt;
-&lt;p&gt;&lt;code&gt;Local functions&lt;/code&gt; are methods of a type that are nested in another member. They can only be called from their containing member:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Processor
-{
-
-    // Containing method
-    public void DoProcessing()
-    {
-        // local function/method
-        void PerformInternalLogic()
-        {
-            Console.WriteLine(&amp;quot;Logic being performed...&amp;quot;);
-        }
-
-        PerformInternalLogic();
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;In the above sample, the &lt;em&gt;PerformInternalLogic&lt;/em&gt; method is a &lt;code&gt;local method&lt;/code&gt; nested in the &lt;em&gt;DoProcessing&lt;/em&gt; method, and can only be called from within the method.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="attributes"&gt;Attributes&lt;/h2&gt;
-&lt;h3 id="method-attribute"&gt;Method attribute&lt;/h3&gt;
-&lt;p&gt;&lt;em&gt;Method targeting&lt;/em&gt; attributes can be used on local functions:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Processor
-{
-    // Containing method
-    public void DoProcessing()
-    {
-        // local function/method
-        [Obsolete(&amp;quot;This will be deprecated. Not useful for consumers of your method&amp;quot;)]
-        void PerformInternalLogic()
-        {
-            Console.WriteLine(&amp;quot;Logic being performed...&amp;quot;);
-        }
-
-        PerformInternalLogic();
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;In the above, the &lt;code&gt;Obsolete&lt;/code&gt; attribute was used to decorate the &lt;em&gt;PerformInternalLogic&lt;/em&gt; method (as an indicator that the local method is obsolete and will be removed in future)&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="parameter-attribute"&gt;Parameter attribute&lt;/h3&gt;
-&lt;p&gt;&lt;em&gt;Parameter targeting&lt;/em&gt; attributes can also be used on &lt;em&gt;local function parameters&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Processor
-{
-    // Containing method
-    public void DoProcessing()
-    {
-        // local function/method
-        [Obsolete(&amp;quot;This will be deprecated. Not useful for consumers of your method&amp;quot;)]
-        void PerformInternalLogic()
-        {
-            Console.WriteLine(&amp;quot;Logic being performed...&amp;quot;);
-        }
-
-        // local function/method
-        void PerformOtherInternalLogic([CallerMemberName] string memberName = &amp;quot;&amp;quot;)
-        {
-            Console.WriteLine($&amp;quot;Logic being performed called from {memberName}&amp;quot;);
-        }
-
-        PerformInternalLogic();
-
-        PerformOtherInternalLogic();
-    }
-
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Here, the &lt;code&gt;CallerMemberName&lt;/code&gt; attribute us applied to the parameter of the &lt;em&gt;PerformOtherInternalLogic&lt;/em&gt; method.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;A fairly niche use case, but if required, it is useful to know it is possible to add attributes to local functions.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://blog.okyrylchuk.dev/a-comprehensive-overview-of-c-9-features#heading-8-attributes-on-local-functions"&gt;8. Attributes on Local Functions&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;204: 17-11-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
