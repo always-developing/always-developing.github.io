@@ -5,8 +5,44 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Thu, 01 Dec 2022 03:52:58 GMT</pubDate>
-		<lastBuildDate>Thu, 01 Dec 2022 03:52:58 GMT</lastBuildDate>
+		<pubDate>Fri, 02 Dec 2022 03:40:14 GMT</pubDate>
+		<lastBuildDate>Fri, 02 Dec 2022 03:40:14 GMT</lastBuildDate>
+		<item>
+			<title>Compiler Warning CS8981</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/12/02-compiler-warning</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/12/02-compiler-warning</guid>
+			<pubDate>Fri, 02 Dec 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;C# 11 introduced a new compiler warning CS8981, which is raised when a type is declared &lt;code&gt;consisting of only lowercase letters&lt;/code&gt;.&lt;/p&gt;
+&lt;h2 id="the-warning"&gt;The warning&lt;/h2&gt;
+&lt;p&gt;Considering the following class declaration:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class myclass
+{
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;When using C# 11, this will raise the following warning:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;The type name 'myclass' only contains lower-cased ascii characters. 
+    Such names may become reserved for the language.
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The code will still compiled and execute, but the compiler is &lt;em&gt;warning&lt;/em&gt; the developer about potential future issues.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="the-reason"&gt;The reason&lt;/h2&gt;
+&lt;p&gt;There are a couple of reasons for the warning (and I am sure other's I have not mentioned here):&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Encourages best practices for class declarations, which should be declared using &lt;em&gt;PascalCase&lt;/em&gt; as a default&lt;/li&gt;
+&lt;li&gt;As explicitly mentioned in the warning, it prevents potential future conflicts with potential reserved language names - this allows future versions of the language to include new keywords, limiting the impact on existing applications&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;A small, almost inconsequential language feature - but personally I am big fan of these kinds of initiatives, and hope to see more in future versions. They help guide developers down the &amp;quot;pit of success&amp;quot; path (which not forcing it outright), and they also allow the developers of the language to enhance and grow it, with limited naming conflicts.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://newdevsguide.com/2022/11/13/the-best-csharp-11-feature/"&gt;The Best C# 11 Feature You Don’t Need&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;215: 02-12-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Custom feature filters</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/12/01-context-feature</link>
@@ -845,87 +881,6 @@ public class TypeB
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://code-maze.com/advanced-linq/"&gt;Advanced LINQ&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;206: 21-11-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Succinct initialization pattern</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/11/18-succinct-init</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/11/18-succinct-init</guid>
-			<pubDate>Fri, 18 Nov 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;Sometimes objects need to be initialized &lt;em&gt;lazily&lt;/em&gt; - two newer C# features, the &lt;em&gt;null-coalescing assignment operator&lt;/em&gt; &lt;code&gt;??=&lt;/code&gt; and the &lt;em&gt;target-typed new expression&lt;/em&gt; makes the lazy initialization cleaner and more succinct.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="example"&gt;Example&lt;/h2&gt;
-&lt;p&gt;In the examples, we have a &lt;code&gt;Album&lt;/code&gt; class which contains an &lt;em&gt;optional&lt;/em&gt; list of &lt;code&gt;Song&lt;/code&gt; instances:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Album
-{
-    private readonly string _name;
-
-    private readonly List&amp;lt;Song&amp;gt; _songs;
-
-    public Album(string name, List&amp;lt;Song&amp;gt; songs = null)
-    {
-        _name = name;
-        _songs = songs;
-
-        // See examples below on how to 
-        // do the _songs initialization
-    }
-}
-
-public class Song
-{
-    private readonly string _name;
-
-    public Song(string name)
-    {
-        _name = name;
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;If no &lt;code&gt;Song&lt;/code&gt; list is passed into the constructor, then the &lt;code&gt;_song&lt;/code&gt; variable needs to be initialized to an &lt;em&gt;empty list&lt;/em&gt;. Doing this will prevent having to have checks throughout the code to determine if the Song list is null or not. There are multiple ways to do this, but this post focuses on the &amp;quot;more traditional&amp;quot; method, and the new &amp;quot;succinct&amp;quot; method.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="traditional-lazy-init"&gt;Traditional lazy init&lt;/h3&gt;
-&lt;p&gt;Traditionally (before any of the newer C# features were introduced), the constructor might look something like this:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public Album(string name, List&amp;lt;Song&amp;gt; songs = null)
-{
-    _name = name;
-    _songs = songs;
-
-    // check if _songs is null
-    if(_songs == null)
-    {
-        // initialize to an empty list
-        _songs = new List&amp;lt;Song&amp;gt;();
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The variable is checked to determine if its &lt;em&gt;null&lt;/em&gt; or not, and if it is, then explicitly initialized to an empty list. Nothing inherently wrong with this approach - it just takes four lines of code to &lt;em&gt;lazily initialize a variable&lt;/em&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="succinct-lazy-init"&gt;Succinct lazy init&lt;/h3&gt;
-&lt;p&gt;As mentioned, the two newer C# features allow for this code to be more succinct:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public Album(string name, List&amp;lt;Song&amp;gt; songs = null)
-{
-    _name = name;
-    _songs = songs;
-
-    _songs ??= new();
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;ul&gt;
-&lt;li&gt;The &lt;em&gt;null-coalescing assignment operator&lt;/em&gt; &lt;code&gt;??=&lt;/code&gt; assigns the value of the right-hand side to the left-hand side, only if the left-hand side is null&lt;/li&gt;
-&lt;li&gt;The &lt;code&gt;target-typed new&lt;/code&gt; expression, &lt;code&gt;new&lt;/code&gt; allows for the inferring of the type from the declaration, instead of having to explicitly specify the type in full&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Four lines of code have been reduced to one!&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;A very minor change, which is not a necessity or requirement when coding - however is does result in cleaner, more succinct code. Over time, it also does reduce coding time by reducing the number of key strokes required by the developer.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://twitter.com/davidfowl/status/1586592671296290816"&gt;David Fowler Tweet&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;205: 18-11-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
