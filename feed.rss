@@ -5,8 +5,124 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Mon, 05 Dec 2022 03:39:11 GMT</pubDate>
-		<lastBuildDate>Mon, 05 Dec 2022 03:39:11 GMT</lastBuildDate>
+		<pubDate>Tue, 06 Dec 2022 03:39:32 GMT</pubDate>
+		<lastBuildDate>Tue, 06 Dec 2022 03:39:32 GMT</lastBuildDate>
+		<item>
+			<title>Determining bytes of memory allocated</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/12/06-getallocatedbytes</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/12/06-getallocatedbytes</guid>
+			<pubDate>Tue, 06 Dec 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;The static &lt;em&gt;Garbage Collector&lt;/em&gt; class &lt;code&gt;GC&lt;/code&gt; contains a &lt;code&gt;GetAllocatedBytesForCurrentThread&lt;/code&gt; method which can be used to &lt;em&gt;get the number of bytes allocated&lt;/em&gt; in the current thread (as the name implies).&lt;/p&gt;
+&lt;p&gt;This can be leveraged to discover some interesting facts about how the application is allocated &lt;em&gt;unessacary memory&lt;/em&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="getallocatedbytes-usage"&gt;GetAllocatedBytes usage&lt;/h2&gt;
+&lt;p&gt;The usage of &lt;code&gt;GetAllocatedBytesForCurrentThread&lt;/code&gt; is very simple and straightforward:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// get the bytes allocated at the start of the process
+long beforeAllocation = GC.GetAllocatedBytesForCurrentThread();
+
+// declare a string and use it
+string strValue = &amp;quot;This is a string&amp;quot;;
+Console.WriteLine(strValue);
+
+// get the bytes allocated after
+long afterAllocation = GC.GetAllocatedBytesForCurrentThread();
+
+// output the results
+Console.WriteLine($&amp;quot;Before allocation: {beforeAllocation} | &amp;quot; +
+    $&amp;quot;After allocation: {afterAllocation}&amp;quot;);
+Console.WriteLine($&amp;quot;Bytes used: {afterAllocation - beforeAllocation}&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;A snapshot of the bytes used is taken before the work, and then again after.&lt;/p&gt;
+&lt;p&gt;The result of the above:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;This is a string
+Before allocation: 1761952 | After allocation: 1764552
+Bytes used: 2600
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="interesting-findings"&gt;Interesting findings&lt;/h2&gt;
+&lt;h3 id="unused-variable"&gt;Unused variable&lt;/h3&gt;
+&lt;p&gt;In some instances, if a variable is defined, but never used, the compiler will remove it and no memory will be allocated.&lt;/p&gt;
+&lt;p&gt;Below is the same example as above, but &lt;em&gt;without the variable &amp;quot;strValue&amp;quot; ever being used&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;long beforeAllocation = GC.GetAllocatedBytesForCurrentThread();
+
+// declared, but never used
+string strValue = &amp;quot;This is a string&amp;quot;;
+
+long afterAllocation = GC.GetAllocatedBytesForCurrentThread();
+
+Console.WriteLine($&amp;quot;Before allocation: {beforeAllocation} | &amp;quot; +
+    $&amp;quot;After allocation: {afterAllocation}&amp;quot;);
+Console.WriteLine($&amp;quot;Bytes used: {afterAllocation - beforeAllocation}&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output here:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Before allocation: 1768144 | After allocation: 1768144
+Bytes used: 0
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The compiler is performing optimizations to remove unused code.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="empty-array"&gt;Empty array&lt;/h3&gt;
+&lt;p&gt;Declaring an empty array, will still allocated memory - this is because the array itself is of type &lt;code&gt;Array&lt;/code&gt; and contains information about what the array itself:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;long beforeAllocation = GC.GetAllocatedBytesForCurrentThread();
+
+int[] list = new int[0];
+
+long afterAllocation = GC.GetAllocatedBytesForCurrentThread();
+
+Console.WriteLine($&amp;quot;Before allocation: {beforeAllocation} | &amp;quot; +
+    $&amp;quot;After allocation: {afterAllocation}&amp;quot;);
+Console.WriteLine($&amp;quot;Bytes used: {afterAllocation - beforeAllocation}&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Before allocation: 1768088 | After allocation: 1768112
+Bytes used: 24
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Declaring multiple empty arrays, will use memory in multiples of 24 bytes:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;long beforeAllocation = GC.GetAllocatedBytesForCurrentThread();
+
+int[] list = new int[0];
+int[] list1 = new int[0];
+int[] list2 = new int[0];
+
+long afterAllocation = GC.GetAllocatedBytesForCurrentThread();
+
+Console.WriteLine($&amp;quot;Before allocation: {beforeAllocation} | &amp;quot; +
+    $&amp;quot;After allocation: {afterAllocation}&amp;quot;);
+Console.WriteLine($&amp;quot;Bytes used: {afterAllocation - beforeAllocation}&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output for this, 24 bytes x 3:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Before allocation: 1768088 | After allocation: 1768160
+Bytes used: 72
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;To use less memory, the static &lt;code&gt;Array.Empty&lt;/code&gt; method is used. This will assign the same empty static array to each instance, thus not allocated additional memory each time:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;long beforeAllocation = GC.GetAllocatedBytesForCurrentThread();
+
+// use Array.Empty instead of new []
+int[] list = Array.Empty&amp;lt;int&amp;gt;();
+int[] list1 = Array.Empty&amp;lt;int&amp;gt;();
+int[] list2 = Array.Empty&amp;lt;int&amp;gt;();
+
+long afterAllocation = GC.GetAllocatedBytesForCurrentThread();
+
+Console.WriteLine($&amp;quot;Before allocation: {beforeAllocation} | &amp;quot; +
+    $&amp;quot;After allocation: {afterAllocation}&amp;quot;);
+Console.WriteLine($&amp;quot;Bytes used: {afterAllocation - beforeAllocation}&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output, only 24 bytes used in total:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Before allocation: 1761896 | After allocation: 1761920
+Bytes used: 24
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;A very useful method which can help benchmark memory usage in an application, as well as just provide an insight into interesting aspects of how the compiler allocates (or doesn't allocated) memory.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://steven-giesel.com/blogPost/db43d6f4-4b93-415f-be03-600ee358cdfd"&gt;How to get allocations in .NET? And how big is an empty array?&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;217: 06-12-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Compiler Warning CS8981</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/12/02-compiler-warning</link>
@@ -677,210 +793,6 @@ Having said that, EF7 introduces &lt;a href="https://alwaysdeveloping.net/09/23-
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://khalidabuhakmeh.com/more-efficient-deletes-with-entity-framework-core"&gt;More Efficient Deletes With Entity Framework Core&lt;/a&gt;&lt;/p&gt;
 &lt;!--?# DailyDrop ?--&gt;207: 22-11-2022&lt;!--?#/ DailyDrop ?--&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>List ConvertAll</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/11/21-list-convertall</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/11/21-list-convertall</guid>
-			<pubDate>Mon, 21 Nov 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;List&lt;/code&gt; class has a &lt;code&gt;ConvertAll&lt;/code&gt; method which allows for the conversion of items in a list from one type to another. It operates similar to the LINQ &lt;code&gt;Select&lt;/code&gt; method, but in some use cases will out-perform the LINQ counterpart.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="example"&gt;Example&lt;/h2&gt;
-&lt;p&gt;In the below example, we have a List of &lt;code&gt;TypeA&lt;/code&gt;, and would like to convert this list to a a list of &lt;code&gt;TypeB&lt;/code&gt;:&lt;/p&gt;
-&lt;p&gt;The types:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class TypeA
-{
-    public string TypeAValue { get; set; }
-}
-
-public class TypeB
-{
-    public string TypeBValue { get; set; }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Building up a list:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;List&amp;lt;TypeA&amp;gt; types = new()
-{
-  new TypeA(),
-  new TypeA(),
-  new TypeA(),
-  new TypeA(),
-};
-
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Now that we have a list ot &lt;em&gt;TypeA&lt;/em&gt;, we'll look at a couple of ways to convert to a list of &lt;em&gt;TypeB&lt;/em&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="linq-select"&gt;LINQ Select&lt;/h3&gt;
-&lt;p&gt;This is the more &amp;quot;traditional&amp;quot; way of converting a list (or IEnumerable) from one type to another:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var typeBList = types
-    .Select(a =&amp;gt; new TypeB { TypeBValue = a.TypeAValue })
-    .ToList();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Here, the &lt;em&gt;Select&lt;/em&gt; will operate on &lt;em&gt;TypeA&lt;/em&gt; and instantiate a &lt;em&gt;TypeB&lt;/em&gt; for each &lt;em&gt;TypeA&lt;/em&gt;, setting the instance properties. The output of this is a list of &lt;em&gt;TypeB&lt;/em&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="list-convertall"&gt;List ConvertAll&lt;/h3&gt;
-&lt;p&gt;The &lt;code&gt;ConvertAll&lt;/code&gt; usage is similar to that of the &lt;em&gt;Select&lt;/em&gt; method:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var typeBList = types
-    .ConvertAll(type =&amp;gt; new TypeB { TypeBValue = type.TypeAValue });
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;For each item in the list, a &lt;em&gt;TypeB&lt;/em&gt; instance is instantiated and the properties set with the values from the &lt;em&gt;TypeA&lt;/em&gt; instance.&lt;/p&gt;
-&lt;p&gt;A note: &lt;code&gt;ConvertAll&lt;/code&gt; is only available on &lt;em&gt;List&lt;/em&gt;, so if working with an IEnumerable implementation, the &lt;em&gt;ToList&lt;/em&gt; method would need to be called to convert the collection to a list.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="benchmarks"&gt;Benchmarks&lt;/h2&gt;
-&lt;h3 id="items"&gt;10 Items&lt;/h3&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;Method&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Median&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Ratio&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;RatioSD&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Gen0&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Allocated&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Alloc Ratio&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;LinqSelect&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;194.9 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;9.99 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;29.46 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;177.4 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.00&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0713&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;448 B&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;GenericConvertAll&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;156.5 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;7.43 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;21.92 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;143.9 ns&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.82&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.16&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.0598&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;376 B&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.84&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;With only 10 items in the list, the the &lt;code&gt;ConvertAll&lt;/code&gt; method is faster, and more memory performant than the LINQ &lt;code&gt;Select&lt;/code&gt; method.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="items-1"&gt;10 000 Items&lt;/h3&gt;
-&lt;p&gt;As the number of items in the list increases, the performance metrics of the two two methods converge:&lt;/p&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;Method&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Median&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Ratio&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;RatioSD&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Gen0&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Gen1&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Allocated&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Alloc Ratio&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;LinqSelect&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;175.6 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;10.90 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;32.15 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;189.5 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.00&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;50.7813&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;25.3906&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;312.63 KB&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;GenericConvertAll&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;174.5 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;3.42 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;4.07 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;173.5 us&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.97&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.15&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;50.7813&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;25.3906&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;312.55 KB&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;With 10 000 items, the two methods effectively perform the same, and both use the same amount of memory.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="items-2"&gt;100 000 Items&lt;/h3&gt;
-&lt;p&gt;The same results can be seen with 100 000 records, as was seen with 10 000 record:&lt;/p&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;Method&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Ratio&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;RatioSD&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Gen0&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Gen1&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Gen2&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Allocated&lt;/th&gt;
-&lt;th style="text-align: right;"&gt;Alloc Ratio&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;LinqSelect&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;6.586 ms&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.1298 ms&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.2561 ms&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.00&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;515.6250&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;328.1250&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;179.6875&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;3.05 MB&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;GenericConvertAll&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;6.236 ms&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.1199 ms&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.1970 ms&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.96&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;0.05&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;515.6250&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;320.3125&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;179.6875&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;3.05 MB&lt;/td&gt;
-&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;The two methods effectively perform the same, and both use the same amount of memory.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;If currently using &lt;code&gt;Select&lt;/code&gt;, there is not much reason to update code to switch to &lt;code&gt;ConvertAll&lt;/code&gt; - except if micro performance improvements are critical to your application. However if performance is so critical for the application, LINQ is probably not even being used in the first place.&lt;/p&gt;
-&lt;p&gt;Having said all that, it is interesting the &lt;code&gt;ConvertAll&lt;/code&gt; method is available and does have performance improvements over using LINQ &lt;code&gt;Select&lt;/code&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://code-maze.com/advanced-linq/"&gt;Advanced LINQ&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;206: 21-11-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
