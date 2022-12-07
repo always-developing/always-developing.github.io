@@ -4,8 +4,98 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-12-06T03:39:32Z</updated>
+	<updated>2022-12-07T03:42:02Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/12/07-unreachable-exception</id>
+		<title>Unreachable code and UnreachableException</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/12/07-unreachable-exception" />
+		<updated>2022-12-07T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;UnreachableException&lt;/code&gt; was introduced in .NET 7, which is used in situations &lt;em&gt;when the application executes code thought to be unreachable&lt;/em&gt;. If this exception does occur, then there is an error in the flow or data of the application causing the, previous thought, unreachable code to be executed.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="unreachable-code-setup"&gt;Unreachable code setup&lt;/h2&gt;
+&lt;p&gt;Consider the follow example of example - we have an &lt;code&gt;enum&lt;/code&gt; of &lt;em&gt;OrderStatus&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public enum OrderStatus
+{
+    New = 0,
+    Processing = 1,
+    Fulfilled = 2,
+    OutOnDelivery = 3,
+    Delivered = 4
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As well as a switch expression to convert the &lt;code&gt;enum&lt;/code&gt; value to a &lt;code&gt;string description&lt;/code&gt; :&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;string currentStatusText = currentStatus switch
+{
+    OrderStatus.New =&amp;gt; &amp;quot;Order Placed&amp;quot;,
+    OrderStatus.Processing =&amp;gt; &amp;quot;Processing Order&amp;quot;,
+    OrderStatus.Fulfilled =&amp;gt; &amp;quot;Processing Order&amp;quot;,
+    OrderStatus.OutOnDelivery =&amp;gt; &amp;quot;Order is out on delivery&amp;quot;,
+    OrderStatus.Delivered =&amp;gt; &amp;quot;Order is delivered&amp;quot;,
+    _ =&amp;gt; throw new UnreachableException($&amp;quot;OrderStatus enum &amp;quot; +
+        $&amp;quot;value {currentStatus} invalid&amp;quot;)
+};
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The &lt;code&gt;UnreachableException&lt;/code&gt; is used if the code tries to convert an &lt;code&gt;OrderStatus which does not exist&lt;/code&gt; to a string - in theory a situation which should never occur.&lt;/p&gt;
+&lt;p&gt;We also have a method to retrieve the order status, &lt;code&gt;stored as an int&lt;/code&gt;, from the database:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public OrderStatus GetOrderStatusFromDatabase()
+{
+    // simulate getting the value from the database
+    return (OrderStatus)2;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="executing-unreachable-code"&gt;Executing unreachable code&lt;/h2&gt;
+&lt;p&gt;If the database stores a valid &lt;em&gt;OrderStatus&lt;/em&gt; int value, everything will execute as expected.&lt;/p&gt;
+&lt;p&gt;In this example, the database &lt;code&gt;stores an OrderStatus value of 2&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// currentStatus is 2
+OrderStatus currentStatus = GetOrderStatusFromDatabase();
+
+var currentStatusText = currentStatus switch
+{
+    OrderStatus.New =&amp;gt; &amp;quot;Order Placed&amp;quot;,
+    OrderStatus.Processing =&amp;gt; &amp;quot;Processing Order&amp;quot;,
+    OrderStatus.Fulfilled =&amp;gt; &amp;quot;Processing Order&amp;quot;,
+    OrderStatus.OutOnDelivery =&amp;gt; &amp;quot;Order is out on delivery&amp;quot;,
+    OrderStatus.Delivered =&amp;gt; &amp;quot;Order is delivered&amp;quot;,
+    _ =&amp;gt; throw new UnreachableException()
+};
+
+Console.WriteLine($&amp;quot;Order status: {currentStatusText}&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output is:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Order: Processing Order
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;However, if the &lt;em&gt;OrderStatus&lt;/em&gt; was manually, incorrectly &lt;code&gt;updated to be 5&lt;/code&gt; in the database - this is a situation which &lt;em&gt;should never happen, but in reality it could&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// currentStatus is 5
+OrderStatus currentStatus = GetOrderStatusFromDatabase();
+
+string currentStatusText = currentStatus switch
+{
+    OrderStatus.New =&amp;gt; &amp;quot;Order Placed&amp;quot;,
+    OrderStatus.Processing =&amp;gt; &amp;quot;Processing Order&amp;quot;,
+    OrderStatus.Fulfilled =&amp;gt; &amp;quot;Processing Order&amp;quot;,
+    OrderStatus.OutOnDelivery =&amp;gt; &amp;quot;Order is out on delivery&amp;quot;,
+    OrderStatus.Delivered =&amp;gt; &amp;quot;Order is delivered&amp;quot;,
+    _ =&amp;gt; throw new UnreachableException($&amp;quot;OrderStatus enum &amp;quot; +
+        $&amp;quot;value {currentStatus} invalid&amp;quot;)
+};
+
+Console.WriteLine($&amp;quot;Order status: {currentStatusText}&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The C# code &lt;code&gt;allows the currentStatus variable to be set to a value of 5, an enum value which doesn't exist&lt;/code&gt; - and only when it comes time to convert to a string (in the  switch expression), will there be no match to any of the options and the &lt;code&gt;UnreachableException&lt;/code&gt; be thrown.&lt;/p&gt;
+&lt;p&gt;Monitoring tools or logs can now be checked for the presence of &lt;code&gt;UnreachableException&lt;/code&gt; and if such an exception occurs, something has gone wrong.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;A useful tool at a developers disposal to assist in tracking down completely unexpected issues which may arise - but a tool which should hopefully never actually be reached to be used!&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://www.youtube.com/watch?v=s_NrqRI7Gnc&amp;amp;t=308s"&gt;The new .NET Exception that should NEVER be thrown&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;218: 07-12-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/12/06-getallocatedbytes</id>
 		<title>Determining bytes of memory allocated</title>
@@ -118,6 +208,106 @@ Bytes used: 24
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://steven-giesel.com/blogPost/db43d6f4-4b93-415f-be03-600ee358cdfd"&gt;How to get allocations in .NET? And how big is an empty array?&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;217: 06-12-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/12/05-iparseable</id>
+		<title>Parse a string to anything</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/12/05-iparseable" />
+		<updated>2022-12-05T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;C# 11 introduced the ability to define &lt;code&gt;static abstract member&lt;/code&gt; (read more about those &lt;a href="https://blog.ndepend.com/c-11-static-abstract-members/"&gt;here&lt;/a&gt;) - this allowed for the introduction of the &lt;code&gt;IParseable&amp;lt;TSelf&amp;gt;&lt;/code&gt;, which allows for a &lt;code&gt;string to be parsed into any type&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="iparseable-interface"&gt;IParseable interface&lt;/h2&gt;
+&lt;p&gt;A quick look at the interface:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public interface IParsable&amp;lt;TSelf&amp;gt; where TSelf : IParsable&amp;lt;TSelf&amp;gt;?
+{
+    static abstract TSelf Parse(string s, IFormatProvider? provider);
+    static abstract bool TryParse([NotNullWhen(true)] string? s, 
+        IFormatProvider? provider, [MaybeNullWhen(false)] out TSelf result);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As one can see, the interface defines two &lt;code&gt;Parse&lt;/code&gt; methods - both for &lt;em&gt;parsing a string&lt;/em&gt; into the &lt;code&gt;TSelf&lt;/code&gt; type. To leverage this functionality, as with other interfaces, the class which is to be &lt;em&gt;converted from a string needs to implement IParsable&lt;/em&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="iparseable-implementation"&gt;IParseable implementation&lt;/h2&gt;
+&lt;p&gt;In this example we have a simple &lt;code&gt;Song&lt;/code&gt; class which implements &lt;code&gt;IParsable&amp;lt;Song&amp;gt;&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Song : IParsable&amp;lt;Song&amp;gt;
+{
+    public string Name { get; set; }
+    public string Artist { get; set; }
+    public int LengthInSeconds { get; set; }
+
+    private Song(string name, string artist, int lengthInSeconds)
+    {
+        Name = name;
+        Artist = artist;
+        LengthInSeconds = lengthInSeconds;
+    }
+
+    public static Song Parse(string s, IFormatProvider? provider)
+    {
+        // implementation detailed below
+    }
+
+    public static bool TryParse([NotNullWhen(true)] string? s, 
+        IFormatProvider? provider, [MaybeNullWhen(false)] out Song result)
+    {
+        // implementation detailed below
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Next, we'll write the methods to do the parsing.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="parse-implementation"&gt;Parse implementation&lt;/h3&gt;
+&lt;p&gt;The simple &lt;code&gt;Parse&lt;/code&gt; method implementation will perform the conversion from &lt;em&gt;string to song&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public static Song Parse(string s, IFormatProvider? provider)
+{
+    string[] songPortions = s.Split(new[] { '|' });
+
+    // make sure the string is in the correct format
+    if (songPortions.Length != 3) 
+    { 
+        throw new OverflowException(&amp;quot;Expect format: Name|Artist|LengthInSeconds&amp;quot;); 
+    }
+
+    return new Song(songPortions[0], songPortions[1], Int32.Parse(songPortions[2]));
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The method is straight-forward - the string representation is expected in a specific format, and once it is confirmed all information is present, a new &lt;code&gt;Song&lt;/code&gt; instance is declared and returned based on this information.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="tryparse-implementation"&gt;TryParse implementation&lt;/h3&gt;
+&lt;p&gt;The &lt;code&gt;TryParse&lt;/code&gt; implementation leveraged the &lt;code&gt;Parse&lt;/code&gt; method to &lt;em&gt;try&lt;/em&gt; parse the string, and returns &lt;em&gt;true&lt;/em&gt; or &lt;em&gt;false&lt;/em&gt; indicating if the parsing was successful or not, as well as a &lt;code&gt;Song&lt;/code&gt; instance if the string was able to be parsed:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public static bool TryParse([NotNullWhen(true)] string? s, 
+    IFormatProvider? provider, [MaybeNullWhen(false)] out Song result)
+{
+    // do some checks
+    result = null;
+    if (s == null) 
+    { 
+        return false; 
+    }
+
+    // parse the string 
+    try
+    {
+        result = Parse(s, provider);
+        return true;
+    }
+    catch { return false; }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="summary"&gt;Summary&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;IParsable&amp;lt;TSelf&amp;gt;&lt;/code&gt; interface allows for any class to use a generic interface to define how it can be instantiated from a string. Leveraging the interface and functionality is simple and easy to implement (the parsing logic might not always be though).&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;This may seem like a relatively small enhancement (and it is) - but it provides a very convenient way to parse string information. The new C# 11 &lt;code&gt;static abstract member&lt;/code&gt; functionality also opens the door for new techniques and coding possibilities.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://blog.ndepend.com/the-new-net-7-0-iparsable-interface/"&gt;The new .NET 7.0 IParsable&lt;TSelf&gt; interface&lt;/a&gt;&lt;br /&gt;
+&lt;a href="https://blog.ndepend.com/c-11-static-abstract-members/"&gt;C# 11 static abstract members&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;216: 05-12-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
@@ -648,140 +838,6 @@ The &lt;code&gt;IDistributedCache&lt;/code&gt; also doesn't have a &lt;em&gt;Try
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://www.mitchelsellers.com/blog/article/understanding-implementing-caching-in-asp-net-core"&gt;Understanding &amp;amp; Implementing Caching in ASP.NET Core&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;209: 24-11-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/11/23-thirteen-months</id>
-		<title>Supporting 13 months</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/11/23-thirteen-months" />
-		<updated>2022-11-23T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;.NET has support for &lt;code&gt;13 months&lt;/code&gt; - the &lt;em&gt;Hebrew&lt;/em&gt; and &lt;em&gt;EastAsianLunisolarCalendar&lt;/em&gt; for example, has the concept of leap months, and as such it is possible for a year to consist of 13 months.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="getmonthname"&gt;GetMonthName&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;GetMonthName&lt;/code&gt; method on &lt;code&gt;DateTimeFormatInfo&lt;/code&gt; supports a month parameter value of between 1 and 13.&lt;/p&gt;
-&lt;p&gt;For calendars which only support 12 months, sending a value of 13 to the &lt;code&gt;GetMonthName&lt;/code&gt; method will return a blank string:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// this will use the current 
-// culture calendar
-var df = new DateTimeFormatInfo();
-
-Console.WriteLine(df.GetMonthName(1));
-Console.WriteLine(df.GetMonthName(13));
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output of this is:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;January
-
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;However, if we switch using a &lt;em&gt;Calendar&lt;/em&gt; which supports 13 months:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// switch the culture and the calendar
-HebrewCalendar hc = new HebrewCalendar();
-CultureInfo culture = CultureInfo.CreateSpecificCulture(&amp;quot;he-IL&amp;quot;);
-culture.DateTimeFormat.Calendar = hc;
-Thread.CurrentThread.CurrentCulture = culture;
-
-// output to the debug window as my Console did not
-// support the characters
-Debug.WriteLine(culture.DateTimeFormat.GetMonthName(1));
-Debug.WriteLine(culture.DateTimeFormat.GetMonthName(13));
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Now the output is as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;תשרי
-אלול
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The Debug output is used here instead of the Console, as my default Console Window encoding did not support Hebrew characters (while the Visual Studio output window does by default)&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;This piece of knowledge is not especially useful or relevent unless one is working with one of the specific calendars/cultures, or one has to support multiple cultures in the application.
-It also serves as a reminder that the culture an application executes under is important, and not to always make assumptions about how the application will always operate.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.meziantou.net/misconceptions-about-date-and-time.htm"&gt;Misconceptions: 1 year = 12 months&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;208: 23-11-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/11/22-ef-faster-delete</id>
-		<title>Efficient EF deletion</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/11/22-ef-faster-delete" />
-		<updated>2022-11-22T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;When using Entity Framework to perform a delete (prior to EF7), first the record in question is required to be &lt;em&gt;selected from the table&lt;/em&gt; (so that EF change tracking has visibility of it), then is &lt;em&gt;marked as deleted&lt;/em&gt;, and then the actual database delete is performed with  &lt;em&gt;SaveChanges&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;Khalid Abuhakmeh has a very interesting idea, which eliminates the need for the extra round trip to &lt;em&gt;select&lt;/em&gt; the data - manually add the item to EF change tracking (without first checking the database), &lt;em&gt;mark it as deleted&lt;/em&gt;, and &lt;em&gt;save the changes&lt;/em&gt;. If a specific exception occurs because the record is not available for deletion, handle that separately.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="use-case"&gt;Use case&lt;/h2&gt;
-&lt;p&gt;In our use case, we will define a &lt;em&gt;Delete&lt;/em&gt; endpoint, which when called will delete the &lt;em&gt;Blog&lt;/em&gt; record using the supplied &lt;em&gt;Id&lt;/em&gt;.&lt;/p&gt;
-&lt;h3 id="traditional-method"&gt;Traditional method&lt;/h3&gt;
-&lt;p&gt;Below is a sample of the "traditional" method of handling the use case:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// context is injected from the DI container
-// id is supplied as part of the url
-app.MapDelete("/blog/v1/{id:int}", async (DemoContext context, int id) =&amp;gt;
-{
-    // first lookup the blog by the id
-    var blog = await context.Blogs.FindAsync(id);
-
-    // if the blog was found
-    if(blog != null)
-    {
-        // mark it as deleted
-        context.Remove(blog);
-    }
-
-    await context.SaveChangesAsync();
-
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;ol&gt;
-&lt;li&gt;First, a query is performed against the database to ensure that a &lt;em&gt;Blog&lt;/em&gt; with the specified Id exists (with &lt;em&gt;FindAsync&lt;/em&gt;)&lt;/li&gt;
-&lt;li&gt;In the case when the record does exist, the row will start being tracked by Entity Framework's change tracker&lt;/li&gt;
-&lt;li&gt;The record is flagged as delete, with the &lt;em&gt;Remove&lt;/em&gt; command&lt;/li&gt;
-&lt;li&gt;The changes are finally applied to the database, with &lt;em&gt;SaveChangesAsync&lt;/em&gt;&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;With this method, there are two round trips to the database - in steps 1 and 4.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h3 id="efficient-method"&gt;Efficient Method&lt;/h3&gt;
-&lt;p&gt;With the more efficient method, one database round trip can be eliminated:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// context is injected from the DI container
-// id is supplied as part of the url
-app.MapDelete("/blog/v1/{id:int}", async (DemoContext context, int id) =&amp;gt;
-{
-    try
-    {
-        // create an instance of the object with the
-        // supplied id. 
-        var blog = new Blog { Id = id };
-        // make the change tracker aware of this object
-        var contextBlog = context.Blogs.Attach(blog);
-        // mark it as deleted
-        contextBlog.State = EntityState.Deleted;
-
-        // delete
-        await context.SaveChangesAsync();
-    }
-    catch(DbUpdateConcurrencyException ex)
-    {
-        Console.WriteLine("Swallowing delete exception.");
-    }
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;With this method:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;Instead of checking in the database that a record exists with the supplied &lt;em&gt;Id&lt;/em&gt;, it is &lt;em&gt;assumed a record does already exist&lt;/em&gt; with the id&lt;/li&gt;
-&lt;li&gt;A record, with just the Id (the primary key value) set, is created, attached to the change tracker, and marked as deleted&lt;/li&gt;
-&lt;li&gt;&lt;em&gt;SaveChangesAsync&lt;/em&gt; is then called to perform the actual delete on the database&lt;/li&gt;
-&lt;li&gt;If a record with that specific Id does in fact not exist, an exception will be thrown - which is caught and swallowed (with logging)&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;The outcome in both cases is the same, but an expensive database round trip has been eliminated.&lt;/p&gt;
-&lt;p&gt;In the references link below, Khalid Abuhakmeh has additional ideas and code samples on how this functionality can be cleaned and wrapped into an extension method to make usage even easier.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;Having run into this exact issue before, this method is very interesting. Exceptions do have an overhead, but the overhead of a database round trip will almost always out-weigh the exception overhead. Definitely consider the "efficient" method if the "traditional pattern is used throughout code.
-Having said that, EF7 introduces &lt;a href="https://alwaysdeveloping.net/09/23-ef-bulk-update"&gt;Bulk Update/Delete functionality&lt;/a&gt; which will allow for this nativity in the EF framework - so this method will become obsolete with time.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://khalidabuhakmeh.com/more-efficient-deletes-with-entity-framework-core"&gt;More Efficient Deletes With Entity Framework Core&lt;/a&gt;&lt;/p&gt;
-&lt;!--?# DailyDrop ?--&gt;207: 22-11-2022&lt;!--?#/ DailyDrop ?--&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
