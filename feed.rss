@@ -5,8 +5,104 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Wed, 07 Dec 2022 03:42:02 GMT</pubDate>
-		<lastBuildDate>Wed, 07 Dec 2022 03:42:02 GMT</lastBuildDate>
+		<pubDate>Thu, 08 Dec 2022 03:40:07 GMT</pubDate>
+		<lastBuildDate>Thu, 08 Dec 2022 03:40:07 GMT</lastBuildDate>
+		<item>
+			<title>EF7 GroupBy support</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2022/12/08-ef-group-by</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2022/12/08-ef-group-by</guid>
+			<pubDate>Thu, 08 Dec 2022 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;Prior to Entity Framework 7, having a LINQ &lt;code&gt;GroupBy&lt;/code&gt; as the final operator in a query would result in an exception being thrown - EF7 adds support for this scenario, allowing &lt;code&gt;GroupBy&lt;/code&gt; to be the final operator.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="scenario"&gt;Scenario&lt;/h2&gt;
+&lt;p&gt;In this scenario, we have a simple &lt;em&gt;Blog&lt;/em&gt; class, setup as a &lt;em&gt;DbSet&lt;/em&gt; in a &lt;em&gt;DbContext&lt;/em&gt;, configured to connect to SQL Server:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;[Table(&amp;quot;Blog&amp;quot;)]
+public  class Blog
+{
+    public int Id { get; set; }
+
+    public string Title { get; set; }
+
+    public string Description { get; set; }
+
+    public DateTime DateCreated { get; set; }
+
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Suppose we want to &lt;em&gt;select all Blogs&lt;/em&gt;, but &lt;code&gt;group them by the DateCreated&lt;/code&gt; - lets see how this can be done.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="before-ef7"&gt;Before EF7&lt;/h3&gt;
+&lt;p&gt;If we try perform the &lt;em&gt;GroupBy&lt;/em&gt; as the final operation &lt;code&gt;prior to EF7&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// get an instance of the DBContext
+DemoContext context = new DemoContext();
+
+// we're not querying the actual database
+// just getting the query which would be 
+// generated
+var query = context
+    .Blogs
+    .GroupBy(b =&amp;gt; b.DateCreated)
+    .ToQueryString();
+
+Console.WriteLine(query);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;An exception is thrown!&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;The LINQ expression 'DbSet&amp;lt;Blog&amp;gt;().GroupBy(b =&amp;gt; b.DateCreated)' could not be translated. 
+Either rewrite the query in a form that can be translated, or switch to client evaluation explicitly by inserting a call to 'AsEnumerable
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;To perform this, the &lt;em&gt;group by&lt;/em&gt; logic would need to be done in code:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var context = new DemoContext();
+
+// get all relevent blogs, ungrouped
+var List&amp;lt;Blog&amp;gt; = context.Blogs.ToList();
+
+// group the blogs by date in code
+List&amp;lt;IGrouping&amp;lt;DateTime, Blog&amp;gt;&amp;gt;? blogByDate = 
+    blogs
+    .GroupBy(b =&amp;gt; b.DateCreated)
+    .ToList();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;So the requirement to group by &lt;em&gt;DateCreated&lt;/em&gt; is definitely do-able, just maybe not as simple and intuitive to do as it should be.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="ef7"&gt;EF7&lt;/h3&gt;
+&lt;p&gt;EF7 makes implementing the same requirement a little bit easier. Upgrading to EF7, and executing the exact same code as before:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// get an instance of the DBContext
+DemoContext context = new DemoContext();
+
+// we not querying the actual database
+// just getting the query the following would
+// generate
+var query = context
+    .Blogs
+    .GroupBy(b =&amp;gt; b.DateCreated)
+    .ToQueryString();
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now yields the following output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;SELECT [b].[DateCreated], [b].[Id], [b].[Description], [b].[Title]
+FROM [Blog] AS [b]
+ORDER BY [b].[DateCreated]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The &lt;em&gt;GroupBy&lt;/em&gt; is not perform on the database itself, but is again, performed in code - just this time it is done automatically by EF.&lt;/p&gt;
+&lt;p&gt;The output type is the same as when the operation is performed manually:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var context = new DemoContext();
+List&amp;lt;IGrouping&amp;lt;DateTime, Blog&amp;gt;&amp;gt;? query = context
+    .Blogs
+    .GroupBy(b =&amp;gt; b.DateCreated)
+    .ToList();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;A relatively small enhancement to EF, but one which makes building up queries in EF using LINQ more intuitive, and results in the developer having to do slightly less work overall.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/okyrylchuk/status/1595887786535575554"&gt;Oleg Kyrylchuk Tweet&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;218: 08-12-2022&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Unreachable code and UnreachableException</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/12/07-unreachable-exception</link>
@@ -738,117 +834,6 @@ worker.DoWorkNew();
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://steven-giesel.com/blogPost/1d97ea56-9a32-4067-9919-10b9af5623a6"&gt;Marking API's as obsolete or as experimental&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;210: 25-11-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Distributed caching int ASP.NET Core</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/11/24-distributed-cache</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/11/24-distributed-cache</guid>
-			<pubDate>Thu, 24 Nov 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;ASP.NET Core comes with the &lt;code&gt;IDistributedCache&lt;/code&gt; interface, and a number of implementations to support &lt;code&gt;distributed caching&lt;/code&gt;. The out of the box implementaions include &lt;em&gt;In Memory&lt;/em&gt;, &lt;em&gt;SQL Server&lt;/em&gt;, &lt;em&gt;Redis&lt;/em&gt; and &lt;em&gt;NCache&lt;/em&gt; - however if another implementation is required, a custom provider can also be fairly easily be written.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="the-need-for-distributed-cache"&gt;The need for distributed cache&lt;/h2&gt;
-&lt;p&gt;Before getting to &lt;em&gt;distributed cache&lt;/em&gt; we'll have a quick look at the &lt;em&gt;non-distributed in memory cache&lt;/em&gt; implementation which also comes out of the box with ASP.NET Core. Configuring and leveraging this functionality is incredibly easy:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
-
-// configure dependency injection with the in-memory cache
-builder.Services.AddMemoryCache();
-
-var app = builder.Build();
-
-app.MapGet(&amp;quot;/cache&amp;quot;, (IMemoryCache cache) =&amp;gt;
-{
-    // try get a value with the key &amp;quot;hello&amp;quot; out the cache
-    if(cache.TryGetValue(&amp;quot;hello&amp;quot;, out string result))
-    {
-        Console.WriteLine(&amp;quot;Retrieved from cache&amp;quot;);
-
-        return result;
-    }
-
-    // if the value was not found in the cache
-    // add it to the cache
-    cache.Set(&amp;quot;hello&amp;quot;, &amp;quot;world&amp;quot;);
-
-    return &amp;quot;world&amp;quot;;
-});
-
-app.Run();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Here, the &lt;em&gt;IMemoryCache TryGetValue&lt;/em&gt; method is called to get get a value out of the cache by key. If no value is found, then the item is put into the cache and returned. This is a very simple example, with no cache expiry specified.&lt;/p&gt;
-&lt;p&gt;The in-memory cache will be entirely suitable if &lt;code&gt;only one instance of an application is running&lt;/code&gt; - the cache is stored in the memory of that one instance of the application. However, if multiple instance of the application are running (in the cloud, or in containers) the &lt;em&gt;in-memory cache is not shared across instances&lt;/em&gt; - each instance will have its own cached. This is where a &lt;code&gt;distributed cache&lt;/code&gt; can be leveraged, with each application instance sharing the cache, and benefiting from the caching done by other instances.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="distributed-cache"&gt;Distributed cache&lt;/h2&gt;
-&lt;p&gt;Configuring and using a &lt;code&gt;distributed cache&lt;/code&gt; in ASP.NET Core is &lt;em&gt;almost&lt;/em&gt; as easy as configuring a normal in-memory cache.&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
-
-// configure in-memory distributed cache
-// which is good for testing, but is not truly 
-// distributed
-builder.Services.AddDistributedMemoryCache();
-
-var app = builder.Build();
-
-// inject IDistributedCache and not IMemoryCache
-app.MapGet(&amp;quot;/distributedcache&amp;quot;, async (IDistributedCache cache) =&amp;gt;
-{
-    string result;
-
-    // (Try) get the byte array value from the cache
-    byte[] encodedResult = await cache.GetAsync(&amp;quot;hello&amp;quot;);
-    // if a value was returned
-    if(encodedResult != null)
-    {
-        Console.WriteLine(&amp;quot;Retrieved from cache&amp;quot;);
-
-        // convert byte array to string and return
-        result = Encoding.UTF8.GetString(encodedResult);
-        return result;
-    }
-
-    // convert string to byte array 
-    encodedResult = Encoding.UTF8.GetBytes(&amp;quot;world&amp;quot;);
-    // and configure the cache options
-    DistributedCacheEntryOptions options = new DistributedCacheEntryOptions()
-        .SetSlidingExpiration(TimeSpan.FromSeconds(10));
-
-    // add the value to the cache
-    await cache.SetAsync(&amp;quot;hello&amp;quot;, encodedResult, options);
-
-    return &amp;quot;world&amp;quot;;
-
-});
-
-app.Run();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h3 id="usage"&gt;Usage&lt;/h3&gt;
-&lt;p&gt;While &lt;code&gt;IMemoryCache&lt;/code&gt; can store a &lt;em&gt;string&lt;/em&gt; or &lt;em&gt;object&lt;/em&gt;, &lt;code&gt;IDistributedCache&lt;/code&gt; will only store a &lt;em&gt;byte array&lt;/em&gt;. Additional processing has to be done to convert to and from a byte array when inserting and retrieving values from the cache.
-The &lt;code&gt;IDistributedCache&lt;/code&gt; also doesn't have a &lt;em&gt;TryGet&lt;/em&gt; method, only a &lt;em&gt;Get&lt;/em&gt; method, which will return &lt;code&gt;null&lt;/code&gt; if no value for the supplied key is found.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="configuration"&gt;Configuration&lt;/h3&gt;
-&lt;p&gt;The configuration of the &lt;code&gt;in-memory distributed cache&lt;/code&gt; cache was simple (as seen above):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;builder.Services.AddDistributedMemoryCache();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;However, the configuration of the other implementations is not much more complicated. The SQL Server provider for example:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;builder.Services.AddDistributedSqlServerCache(act =&amp;gt;
-{
-   act.SchemaName = &amp;quot;dbo&amp;quot;;
-   act.TableName = &amp;quot;AppCache&amp;quot;;
-   act.ConnectionString = builder.Configuration.GetConnectionString(&amp;quot;DefaultDatabase&amp;quot;);
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The actual logic (the endpoint delegate method in the above example) can remain exactly as is.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;Having a distributed cache is a key feature in many scalable applications, and the easy to configure and use, out of the box functionality provided by ASP.NET Core will be suitable for most application's needs.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.mitchelsellers.com/blog/article/understanding-implementing-caching-in-asp-net-core"&gt;Understanding &amp;amp; Implementing Caching in ASP.NET Core&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;209: 24-11-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
