@@ -4,8 +4,66 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-12-09T03:40:54Z</updated>
+	<updated>2022-12-12T03:42:41Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/12/12-enum-iteration</id>
+		<title>Enum iteration</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/12/12-enum-iteration" />
+		<updated>2022-12-12T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;The static &lt;code&gt;Enum.GetValues&lt;/code&gt; method value be used to get an array of the enum values, which can be output as a &lt;em&gt;string&lt;/em&gt; or corresponding compatible &lt;em&gt;underlying value&lt;/em&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="enum.getvalues"&gt;Enum.GetValues&lt;/h2&gt;
+&lt;p&gt;The function and usage of &lt;code&gt;Enum.GetValues&lt;/code&gt; is very simple - it &lt;em&gt;converts an enum into an array of the enum values&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;Consider the following enum:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public enum OrderStatus
+{
+    New = 0,
+    Processing = 1,
+    Fulfilled = 2,
+    OutOnDelivery = 3,
+    Delivered = 4
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This can be converted to an array as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;OrderStatus[] enumItems = Enum.GetValues&amp;lt;OrderStatus&amp;gt;();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This array can now be iterated over, and output either as a &lt;em&gt;string&lt;/em&gt; or &lt;em&gt;compatible underlying type&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;foreach (var item in Enum.GetValues&amp;lt;OrderStatus&amp;gt;())
+{
+    // output the string value
+    Console.WriteLine(item);
+
+    // output the underlying value
+    Console.WriteLine((int)item);
+    // this would also work
+    //Console.WriteLine((double)item);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output of the above is:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;New
+0
+Processing
+1
+Fulfilled
+2
+OutOnDelivery
+3
+Delivered
+4
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Simple, easy and very useful.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;A small but useful piece of knowledge for today.  This can be leveraged to automatically populate a UI dropdown with available options, for example, instead of having multiple places with a list of possible values.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://code-maze.com/enumerate-enum-csharp/"&gt;How to Enumerate an Enum in C#&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;220: 12-12-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/12/09-unsafe-add</id>
 		<title>Fast, potentially unsafe iteration</title>
@@ -796,44 +854,6 @@ List&amp;lt;Song&amp;gt; orderDescDynamic = songs
 &lt;p&gt;&lt;a href="https://code-maze.com/using-dynamic-linq/"&gt;Using Dynamic LINQ With System.Linq.Dynamic.Core Library&lt;/a&gt;&lt;br /&gt;
 &lt;a href="https://dynamic-linq.net/"&gt;Dynamic LINQ&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;212: 29-11-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/11/28-null-coalescing-assoc</id>
-		<title>Null-coalescing operator and associativity</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/11/28-null-coalescing-assoc" />
-		<updated>2022-11-28T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;null-coalescing operator&lt;/code&gt; (&lt;code&gt;??&lt;/code&gt;) is right-associative, and can be chained together to check multiple values, in order, to eventually arrive at a non-null value.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="example"&gt;Example&lt;/h2&gt;
-&lt;p&gt;The example for this situation is fairly simple - the operator &lt;code&gt;??&lt;/code&gt; can be used in a chain to check (and return) the &lt;em&gt;first non-null value&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;int? GetValue(int? value1, int? value2, int? value3, int defaultValue)
-{
-  // chain the operator and return the first non-null value
-    return value1 ?? value2 ?? value3 ?? defaultValue;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The values are evaluated left to right to check if they are &lt;code&gt;null&lt;/code&gt;, and the first non-null value is returned. In this example &lt;em&gt;defaultValue&lt;/em&gt; is an &lt;code&gt;int&lt;/code&gt; and as such cannot be null, so the method will always return a value.&lt;/p&gt;
-&lt;p&gt;Invoking this with a variety of permutations:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;Console.WriteLine(GetValue(null, null, 0, 0));
-Console.WriteLine(GetValue(null, 1, 2, 0));
-Console.WriteLine(GetValue(2, 5, null, 0));
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Results in the following, expected output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;0
-1
-2
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Each each case the first non-null value is returned. If all &lt;em&gt;nullable&lt;/em&gt; values are null, then the default is returned.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;This small, but useful piece of information for today might seem obvious, and it is once you think about it - personally I've just never encountered the technique or the need to chain together multiple null checks using the &lt;code&gt;null-coalescing&lt;/code&gt; operator. However, if I ever do, I now know that chaining is possible.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://code-maze.com/null-coalescing-operator-null-coalescing-assignment-operator-csharp/"&gt;Null-Coalescing Operators’ Associativity&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;211: 28-11-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
