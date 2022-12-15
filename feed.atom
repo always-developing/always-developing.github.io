@@ -4,8 +4,429 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-12-15T03:41:37Z</updated>
+	<updated>2022-12-15T04:41:05Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/12/15-frozen-collection</id>
+		<title>.NET8 Frozen collection</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/12/15-frozen-collection" />
+		<updated>2022-12-15T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;.NET8 &lt;em&gt;potentially&lt;/em&gt; introduces a new collection type called a &lt;code&gt;Frozen collection&lt;/code&gt; - this post will explore the new collection, and see how to compares to existing collection implementations.&lt;/p&gt;
+&lt;p&gt;As .NET8 is still currently in alpha, the &lt;code&gt;Frozen collection&lt;/code&gt; as well as any specific functionality it may offer could change before the final release.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="usage"&gt;Usage&lt;/h2&gt;
+&lt;p&gt;To see how the &lt;code&gt;Frozen collection&lt;/code&gt; operates, below it is used along with other common collection implementations:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// create a base list of 10 items
+List&amp;lt;int&amp;gt; baseList = Enumerable
+    .Range(1, 10).ToList();
+
+ReadOnlyCollection&amp;lt;int&amp;gt; readonlyList = 
+    baseList.AsReadOnly();
+FrozenSet&amp;lt;int&amp;gt; frozenSet = baseList.ToFrozenSet();
+ImmutableList&amp;lt;int&amp;gt; immutableList = 
+    baseList.ToImmutableList();
+
+// now add another item to the list
+baseList.Add(11);
+
+Console.WriteLine($&amp;quot;List count: {baseList.Count}&amp;quot;);
+Console.WriteLine($&amp;quot;ReadOnlyList count: {readonlyList.Count}&amp;quot;);
+Console.WriteLine($&amp;quot;FrozenSet count: {frozenSet.Count}&amp;quot;);
+Console.WriteLine($&amp;quot;ImmutableList count: {immutableList.Count}&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output from the above:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;List count: 11
+ReadOnlyList count: 11
+FrozenSet count: 10
+ImmutableList count: 10
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;From this we can see, that when &lt;em&gt;adding an item to the underlying list&lt;/em&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The &lt;code&gt;ReadOnlyList&lt;/code&gt; count also increases, as it is a readonly view into the underlying list&lt;/li&gt;
+&lt;li&gt;The &lt;code&gt;FrozenSet&lt;/code&gt; and &lt;code&gt;ImmutableList&lt;/code&gt; count is &lt;em&gt;not increased&lt;/em&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;So what's the difference between the &lt;code&gt;FrozenSet&lt;/code&gt; and &lt;code&gt;ImmutableList&lt;/code&gt;?&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="set-vs-list"&gt;Set vs List&lt;/h2&gt;
+&lt;p&gt;As per their name, the &lt;code&gt;FrozenSet&lt;/code&gt; is a &lt;em&gt;set&lt;/em&gt;, while the &lt;code&gt;ImmutableList&lt;/code&gt; is a &lt;em&gt;list&lt;/em&gt; - &lt;code&gt;a set cannot contain duplicates and is unordered&lt;/code&gt;, unlike a list. Consider the following code, similar to the previous example, but now with duplicate items:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;
+List&amp;lt;int&amp;gt; baseList = Enumerable.Range(1, 10)
+    .ToList();
+// add duplicate items to the base list
+baseList.Add(1);
+baseList.Add(2);
+baseList.Add(3);
+
+ReadOnlyCollection&amp;lt;int&amp;gt; readonlyList = 
+    baseList.AsReadOnly();
+FrozenSet&amp;lt;int&amp;gt; frozenSet = baseList.ToFrozenSet();
+ImmutableList&amp;lt;int&amp;gt; immutableList = 
+    baseList.ToImmutableList();
+
+Console.WriteLine($&amp;quot;List count: {baseList.Count}&amp;quot;);
+Console.WriteLine($&amp;quot;ReadOnlyList count: {readonlyList.Count}&amp;quot;);
+Console.WriteLine($&amp;quot;FrozenSet count: {frozenSet.Count}&amp;quot;);
+Console.WriteLine($&amp;quot;ImmutableList count: {immutableList.Count}&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;List count: 13
+ReadOnlyList count: 13
+FrozenSet count: 10
+ImmutableList count: 13
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The 3 duplicate items are automatically removed when converting the base list to a set.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="another-collection-type"&gt;Another collection type&lt;/h2&gt;
+&lt;p&gt;So why the need for another specialized collection type - &lt;a href="https://steven-giesel.com/blogPost/34e0fd95-0b3f-40f2-ba2a-36d1d4eb5601"&gt;Steven Giesel&lt;/a&gt; benchmark's the performance of the &lt;code&gt;FrozenSet&lt;/code&gt; against other collection types:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;it is substantially &lt;em&gt;quicker&lt;/em&gt; vs the other types when &lt;em&gt;performing a lookup&lt;/em&gt;&lt;/li&gt;
+&lt;li&gt;it is however &lt;em&gt;slower&lt;/em&gt; when creating the set vs creating the other types&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;A new specialized collection type, which might not see every day use by the majority, but which, with the right use case, can improve the performance of the code.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://steven-giesel.com/blogPost/34e0fd95-0b3f-40f2-ba2a-36d1d4eb5601"&gt;Frozen collections in .NET 8&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;223: 15-12-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/12/16-ef-conventions</id>
+		<title>Entity Framework conventions</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/12/16-ef-conventions" />
+		<updated>2022-12-15T00:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;Entity Framework comes out of the box with a number of default &lt;em&gt;conventions&lt;/em&gt; - however &lt;code&gt;new conventions can easily be added&lt;/code&gt; to an application specific EF configuration to customize how Entity Framework operates.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="scenario"&gt;Scenario&lt;/h2&gt;
+&lt;p&gt;By default, when a &lt;code&gt;string&lt;/code&gt; property on an entity is mapped to a SQL database column, it will be generated as &lt;code&gt;nvarchar(max)&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Consider the following class:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;[Table(&amp;quot;Blog&amp;quot;)]
+public  class Blog
+{
+    public int Id { get; set; }
+
+    public string Title { get; set; }
+
+    public string Description { get; set; }
+
+    public DateTime DateCreated { get; set; }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And the DbContext configuration, some additional logging for demo purposes:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class DemoContext : DbContext
+{
+    public DbSet&amp;lt;Blog&amp;gt; Blogs { get; set; }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseSqlServer(
+            &amp;#64;&amp;quot;Server=.\SQLEXPRESS;Database=ConfigConventions;Integrated Security=True;TrustServerCertificate=True&amp;quot;);
+
+        // enable additional logging for demo purposes
+        optionsBuilder.EnableSensitiveDataLogging(true);
+        optionsBuilder.LogTo((string query) =&amp;gt;
+        {
+            Console.WriteLine(query);
+        }, LogLevel.Information);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The &lt;em&gt;CREATE TABLE SQL&lt;/em&gt; generated is as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;CREATE TABLE [Blog] (
+    [Id] int NOT NULL IDENTITY,
+    [Title] nvarchar(max) NOT NULL,
+    [Description] nvarchar(max) NOT NULL,
+    [DateCreated] datetime2 NOT NULL,
+    CONSTRAINT [PK_Blog] PRIMARY KEY ([Id])
+);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As one can see, the default for C# properties of type &lt;code&gt;string&lt;/code&gt; is &lt;code&gt;nvarchar(max)&lt;/code&gt; - next we'll go through the various steps to change the convention for &lt;em&gt;non-explicitly set string&lt;/em&gt; properties from &lt;code&gt;nvarchar(max)&lt;/code&gt; to &lt;code&gt;nvarchar(256)&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="convention-definition"&gt;Convention definition&lt;/h3&gt;
+&lt;p&gt;The first step is to define the &lt;em&gt;convention&lt;/em&gt; to change the default string length. This is achieved by implementing the &lt;code&gt;IModelFinalizingConvention&lt;/code&gt; interface (which inherits the &lt;code&gt;IConvention&lt;/code&gt; interface). The &lt;code&gt;IModelFinalizingConvention&lt;/code&gt; implementations, as the name suggests, are executed once the model has mostly been built (using the built-in and other custom conventions), and is being &lt;em&gt;finalized&lt;/em&gt;. This is the &amp;quot;safest&amp;quot; time to execute custom conventions.&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class MaxStringLengthConvention : IModelFinalizingConvention
+{
+    private readonly int _maxLength;
+
+    public MaxStringLengthConvention(int maxLength)
+	{
+        this._maxLength = maxLength;
+    }
+
+    // implement the only method on the interface
+    public void ProcessModelFinalizing(IConventionModelBuilder modelBuilder, 
+        IConventionContext&amp;lt;IConventionModelBuilder&amp;gt; context)
+    {
+        // iterate through each type defined in the EF model
+        // and through each property and check if a string
+        foreach (var property in modelBuilder.Metadata.GetEntityTypes()
+                     .SelectMany(entityType =&amp;gt; entityType.GetDeclaredProperties()
+                                    .Where( property =&amp;gt; property.ClrType == typeof(string))))
+        {
+            // set the max length based on the value passed in
+            property.Builder.HasMaxLength(_maxLength);
+        }
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The implementation for this convention effectively checks &lt;em&gt;each type&lt;/em&gt; and &lt;em&gt;each property&lt;/em&gt; on the type to see if it is of type &lt;em&gt;string&lt;/em&gt; - if so, the max length is set based on the max length specified on initialization.&lt;/p&gt;
+&lt;p&gt;Now to register the newly created convention!&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="convention-configuration"&gt;Convention configuration&lt;/h3&gt;
+&lt;p&gt;The convention is required to be registered with Entity Framework - so EF knows to apply the convention to the model (adn when to apply it)&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;ConfigureConventions&lt;/code&gt; method is &lt;em&gt;overridden&lt;/em&gt; on the &lt;em&gt;DbContext&lt;/em&gt;, and the convention(s) registered:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+{
+    configurationBuilder.Conventions.Add(_ =&amp;gt; new MaxStringLengthConvention(256));
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="generated-sql"&gt;Generated SQL&lt;/h3&gt;
+&lt;p&gt;With the convention configured, the SQL generated now looks as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;CREATE TABLE [Blog] (
+    [Id] int NOT NULL IDENTITY,
+    [Title] nvarchar(256) NOT NULL,
+    [Description] nvarchar(256) NOT NULL,
+    [DateCreated] datetime2 NOT NULL,
+    CONSTRAINT [PK_Blog] PRIMARY KEY ([Id])
+);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;All string properties/columns are set to have a length of 256 by default.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="explicitly-set-properties"&gt;Explicitly set properties&lt;/h3&gt;
+&lt;p&gt;Entity Framework is smart enough to know that if the &lt;em&gt;max length&lt;/em&gt; has explicitly been set on a property/column, then the default length set by the convention will &lt;code&gt;not be applied&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;If the &lt;em&gt;Title&lt;/em&gt; property on the &lt;em&gt;Blog&lt;/em&gt; was set to have a max length of 500:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;[Table(&amp;quot;Blog&amp;quot;)]
+public  class Blog
+{
+    public int Id { get; set; }
+
+    [MaxLength(500)]
+    public string Title { get; set; }
+
+    public string Description { get; set; }
+
+    public DateTime DateCreated { get; set; }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The SQL generated is now as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;CREATE TABLE [Blog] (
+    [Id] int NOT NULL IDENTITY,
+    [Title] nvarchar(500) NOT NULL,
+    [Description] nvarchar(256) NOT NULL,
+    [DateCreated] datetime2 NOT NULL,
+    CONSTRAINT [PK_Blog] PRIMARY KEY ([Id])
+);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;An explicitly defined max length on a property, takes precedence over the max length specified by the convention.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;While all of the above could have been achieved by overwriting the &lt;code&gt;OnModelCreating&lt;/code&gt; method on the &lt;em&gt;DbContext&lt;/em&gt;, the conventions approach is more flexible and reusable. The conventions can be packaged and shared across teams in an enterprise to ensure consistent database standards.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://www.youtube.com/watch?v=6apfe1L1FhY&amp;amp;t=2041s"&gt;.NET Data Community Standup - EF7 Custom Model Conventions&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;224: 16-12-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/12/14-http-query</id>
+		<title>New HTTP methods</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/12/14-http-query" />
+		<updated>2022-12-14T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;Standards have been published for a new HTTP method, &lt;code&gt;QUERY&lt;/code&gt;, which aims to effectively be a merge between the GET and POST methods.&lt;/p&gt;
+&lt;p&gt;While this post will focus on handling the &lt;code&gt;QUERY&lt;/code&gt; HTTP method, the same configuration and logic could be applied to any custom HTTP method (although not advised)&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="the-need-for-query"&gt;The need for QUERY&lt;/h2&gt;
+&lt;p&gt;First, a quick word on the need for the QUERY method. When using the GET method, all information to be passed to the server is contained in the URL as a &lt;em&gt;GET method does not have a body&lt;/em&gt;. The problem is that URL's have a finite length and when this limit is reached, often developers will switch to using a POST method which allows for more complex and lengthy information to be &lt;em&gt;passed in the body&lt;/em&gt;.
+While this technique will work, the two different methods will generally have different caching mechanisms and a POST method may not offer the same performance as a GET method.&lt;/p&gt;
+&lt;p&gt;The QUERY method aims to address this, by effectively providing a method which operates like the &amp;quot;GET&amp;quot; method, but which allows for a body to be posted to the server.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="defining-the-endpoint"&gt;Defining the endpoint&lt;/h2&gt;
+&lt;p&gt;Defining an endpoint which uses a custom or new HTTP method is surprisingly easy - the &lt;code&gt;MapMethods&lt;/code&gt; method can be used, with a list of &lt;em&gt;httpMethods&lt;/em&gt; the endpoint supports:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// define an endpoint with QUERY http method
+app.MapMethods(&amp;quot;/query&amp;quot;, new[] { &amp;quot;QUERY&amp;quot; }, async (HttpContext context) =&amp;gt;
+{
+    string? text = null;
+    var request = context.Request;
+
+    // the body has to be read manually
+    if (!request.Body.CanSeek)
+    {
+        request.EnableBuffering();
+    }
+
+    if (request.Body.CanRead)
+    {
+        // read the body as a stream, and then set the
+        // reader position back to the start
+        request.Body.Position = 0;
+        var reader = new StreamReader(request.Body, Encoding.UTF8);
+        text = await reader.ReadToEndAsync();
+        request.Body.Position = 0;
+    }
+
+    // return the body
+    return Results.Ok($&amp;quot;Querying data using body: {text}&amp;quot;);
+
+})
+// give the endpoint a name, just making it easier to 
+// find later. Not required
+.WithName(&amp;quot;query&amp;quot;); 
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Here an endpoint &lt;code&gt;/query&lt;/code&gt; is defined, which uses the HTTP method &lt;code&gt;QUERY&lt;/code&gt;. The endpoint will read the contents of the body supplied with the HTTP request, and return it back to the caller.&lt;/p&gt;
+&lt;p&gt;The &lt;em&gt;WithName&lt;/em&gt; method is used to name the endpoint, which will be used in the next step to easily build up the URL to be invoked - this is not strictly required.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="calling-the-endpoint"&gt;Calling the endpoint&lt;/h2&gt;
+&lt;p&gt;Calling the endpoint is a &lt;em&gt;little&lt;/em&gt; tricker, as the typical tools one might use (e.g. Postman) will not support the new or custom HTTP method. In this example, the C# HttpClient will be used to call the &lt;code&gt;QUERY&lt;/code&gt; endpoint - we are going to &lt;em&gt;create a GET endpoint, which will call the QUERY endpoint&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/callquery&amp;quot;, async (HttpContext context, 
+    LinkGenerator generator) =&amp;gt;
+{
+    var client = new HttpClient();
+
+    // set the http method as QUERY
+    var request = new HttpRequestMessage(
+        new HttpMethod(&amp;quot;QUERY&amp;quot;),
+        // get the URL by the name specified
+        generator.GetUriByName(context, &amp;quot;query&amp;quot;, null)
+    );
+
+    // set the body of the QUERY call
+    request.Content = new StringContent(&amp;quot;This is a body of a QUERY call&amp;quot;, 
+        Encoding.UTF8, &amp;quot;text/plain&amp;quot;);
+
+    // call the QUERY endpoint
+    var response = client.Send(request);
+    var result = await response.Content.ReadAsStringAsync();
+
+    // the expected result should be the same 
+    // as the body specified
+    return result;
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Invoking the &lt;code&gt;/callquery&lt;/code&gt; endpoint yields the following result:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;&amp;quot;Querying data using body: This is a body of a QUERY call&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Success! We have successfully defined an endpoint which uses the &lt;code&gt;QUERY&lt;/code&gt; HTTP method, which was successfully invoked with a body supplied.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="simplifying-the-code"&gt;Simplifying the code&lt;/h2&gt;
+&lt;p&gt;The above is a very rough implementation of the &lt;code&gt;QUERY&lt;/code&gt; (or any custom HTTP method) implementation - in &lt;a href="https://khalidabuhakmeh.com/adding-experimental-http-methods-to-aspnet-core"&gt;Khalid Abuhakmeh's post&lt;/a&gt;, he has some good ways to simplify the code, and make it more generic. I suggest having a look at the techniques mentioned in his post on how to streamline the code for reuse.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;A useful &lt;em&gt;experiment&lt;/em&gt; to see how support for any HTTP method support can be added relatively easily. There are limitation of custom HTTP methods - including the above mention support from 3rd party applications (Postman) as well as libraries (Swashbuckle), as well as limited or no support from caching or load balancing mechanisms.&lt;/p&gt;
+&lt;p&gt;With reference to the &lt;code&gt;QUERY&lt;/code&gt; HTTP method - personally I like this, and will make sue of this, so I hope it does get adopted in the mainstream in future.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://khalidabuhakmeh.com/adding-experimental-http-methods-to-aspnet-core"&gt;Adding Experimental HTTP Methods To ASP.NET Core&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;222: 14-12-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2022/12/13-ef-tags</id>
+		<title>EF tags and interceptors</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2022/12/13-ef-tags" />
+		<updated>2022-12-13T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;Tags&lt;/code&gt;, in conjunction with an &lt;code&gt;IInterceptor&lt;/code&gt; implementation, can be used to intercept SQL commands before being executed on the database, and modify them to fix the tag requirements.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="setup"&gt;Setup&lt;/h2&gt;
+&lt;p&gt;In the examples below, we are using DbContext setup the standard way, with a &lt;code&gt;Blog&lt;/code&gt; DbSet.&lt;/p&gt;
+&lt;p&gt;As per normal, to get a list of all &lt;em&gt;Blogs&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var normalQuery = context.Blogs.ToList();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Next we'll look at how to &lt;em&gt;tag&lt;/em&gt; the queries with a &lt;code&gt;nolock&lt;/code&gt; tag, and then how to &lt;em&gt;intercept&lt;/em&gt; the query, look presence of the &lt;em&gt;tag&lt;/em&gt;, and modify the query to include &lt;code&gt;nolock&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="tagging-queries"&gt;Tagging queries&lt;/h3&gt;
+&lt;p&gt;The first step is to &lt;em&gt;tag&lt;/em&gt; the query with the &lt;code&gt;nolock&lt;/code&gt; tag - this is relatively straightforward:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var nolockQuery = context
+    .Blogs
+    .TagWith(&amp;quot;Nolock&amp;quot;)
+    .ToList();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If the generated SQL is inspected, one will see the query is now tagged as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;-- Nolock
+
+SELECT [b].[Id], [b].[DateCreated], [b].[Description], [b].[Title]
+FROM [Blog] AS [b]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Step 1 completed!&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="interceptor"&gt;Interceptor&lt;/h3&gt;
+&lt;p&gt;The next step is to &lt;em&gt;intercept&lt;/em&gt; the query before it's executed on the database and modify it - luckily this is also fairly straightforward, as Entity Framework has a built in mechanism for this.&lt;/p&gt;
+&lt;p&gt;To create an &lt;em&gt;interceptor&lt;/em&gt; (in this example) all that is required is to inherit from &lt;code&gt;DbCommandInterceptor&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// inherit DbCommandInterceptor
+public class NoLockInterceptor : DbCommandInterceptor
+{
+    // overwrite the ReaderExecuting method
+    public override InterceptionResult&amp;lt;DbDataReader&amp;gt; ReaderExecuting(DbCommand command, 
+        CommandEventData eventData, 
+        InterceptionResult&amp;lt;DbDataReader&amp;gt; result)
+    {
+        // if the query generated by EF starts with &amp;quot;nolock&amp;quot;
+        if(command.CommandText.StartsWith(&amp;quot;-- Nolock&amp;quot;, StringComparison.Ordinal))
+        {
+            // append &amp;quot;nolock&amp;quot; to the end
+            command.CommandText += &amp;quot; (NOLOCK)&amp;quot;;
+        }
+
+        return result;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The &lt;code&gt;ReaderExecuting&lt;/code&gt; method is executed before the query is about to be executed - in this method, the query is (crudely) checked to see if it has been &lt;em&gt;tagged&lt;/em&gt; for &lt;code&gt;nolock&lt;/code&gt;, and if so, the &lt;code&gt;NOLOCK&lt;/code&gt; keyword is added to the end of the query.&lt;/p&gt;
+&lt;p&gt;This is very crude and only for demo purposes - it is not production ready. Ror example, this does not take into account any &lt;em&gt;WHERE&lt;/em&gt; statements in the SQL.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="dbcontext"&gt;DbContext&lt;/h3&gt;
+&lt;p&gt;Now that we have the &lt;em&gt;interceptor&lt;/em&gt; defined, the next step is to register it with EF.&lt;/p&gt;
+&lt;p&gt;In this demo, this is done in the &lt;em&gt;OnConfiguring&lt;/em&gt; method of the &lt;code&gt;DbContext&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+{
+    optionsBuilder.UseSqlServer(
+        &amp;#64;&amp;quot;Server=.\SQLEXPRESS;Database=EFTagging;Integrated Security=True;TrustServerCertificate=True&amp;quot;);
+
+    // add the interceptor
+    optionsBuilder.AddInterceptors(new NoLockInterceptor());
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Configuration is now completed!&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="generated-sql"&gt;Generated SQL&lt;/h3&gt;
+&lt;p&gt;When querying (without an predicate in this sample) and tagging the query, the &lt;code&gt;nolock&lt;/code&gt; keyword is automatically added:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var context = new DemoContext();
+
+// query without tagging
+var normalQuery = context.Blogs.ToList();
+
+//query with the tag
+var nolockQuery = context.Blogs.TagWith(&amp;quot;Nolock&amp;quot;).ToList();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The SQL generated by the two queries.&lt;/p&gt;
+&lt;p&gt;Without the tag:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT [b].[Id], [b].[DateCreated], [b].[Description], [b].[Title]
+FROM [Blog] AS [b]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;With the tag:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;-- Nolock
+
+SELECT [b].[Id], [b].[DateCreated], [b].[Description], [b].[Title]
+FROM [Blog] AS [b] (NOLOCK)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;A useful and interesting way to combine two EF features - the &lt;em&gt;tagging&lt;/em&gt; and &lt;em&gt;interception&lt;/em&gt; features. Manually modifying SQL generated by EF can be dangerous as there are a lot of options and variations to the SQL generated - so do it with caution and test extensively.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/DaveCallanIE/status/1599379983817879552"&gt;Dave Callan Tweet&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;221: 13-12-2022&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/12/12-enum-iteration</id>
 		<title>Enum iteration</title>
@@ -530,330 +951,6 @@ Bytes used: 24
 &lt;p&gt;&lt;a href="https://blog.ndepend.com/the-new-net-7-0-iparsable-interface/"&gt;The new .NET 7.0 IParsable&lt;TSelf&gt; interface&lt;/a&gt;&lt;br /&gt;
 &lt;a href="https://blog.ndepend.com/c-11-static-abstract-members/"&gt;C# 11 static abstract members&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;216: 05-12-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/12/02-compiler-warning</id>
-		<title>Compiler Warning CS8981</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/12/02-compiler-warning" />
-		<updated>2022-12-02T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;C# 11 introduced a new compiler warning CS8981, which is raised when a type is declared &lt;code&gt;consisting of only lowercase letters&lt;/code&gt;.&lt;/p&gt;
-&lt;h2 id="the-warning"&gt;The warning&lt;/h2&gt;
-&lt;p&gt;Considering the following class declaration:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class myclass
-{
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;When using C# 11, this will raise the following warning:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;The type name 'myclass' only contains lower-cased ascii characters. 
-    Such names may become reserved for the language.
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The code will still compiled and execute, but the compiler is &lt;em&gt;warning&lt;/em&gt; the developer about potential future issues.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="the-reason"&gt;The reason&lt;/h2&gt;
-&lt;p&gt;There are a couple of reasons for the warning (and I am sure other's I have not mentioned here):&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Encourages best practices for class declarations, which should be declared using &lt;em&gt;PascalCase&lt;/em&gt; as a default&lt;/li&gt;
-&lt;li&gt;As explicitly mentioned in the warning, it prevents potential future conflicts with potential reserved language names - this allows future versions of the language to include new keywords, limiting the impact on existing applications&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;A small, almost inconsequential language feature - but personally I am big fan of these kinds of initiatives, and hope to see more in future versions. They help guide developers down the &amp;quot;pit of success&amp;quot; path (which not forcing it outright), and they also allow the developers of the language to enhance and grow it, with limited naming conflicts.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://newdevsguide.com/2022/11/13/the-best-csharp-11-feature/"&gt;The Best C# 11 Feature You Don’t Need&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;215: 02-12-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/12/01-context-feature</id>
-		<title>Custom feature filters</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/12/01-context-feature" />
-		<updated>2022-12-01T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;Microsoft.FeatureManagement&lt;/code&gt; library, allows for a custom &lt;code&gt;context&lt;/code&gt; to be defined, and evaluated to &lt;code&gt;determine if specific functionality should be enabled or not&lt;/code&gt;, &lt;em&gt;for the specific context&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;This functionality has no dependency on ASP.NET or &lt;em&gt;HttpContext&lt;/em&gt;, and as such can be used in any application type (such as console app).&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="setup"&gt;Setup&lt;/h2&gt;
-&lt;p&gt;There are a number of moving pieces to the setup, which requires some classes be defined and some configuration specified to leverage the &lt;em&gt;custom feature filter management&lt;/em&gt;.&lt;/p&gt;
-&lt;h3 id="define-the-context"&gt;Define the context&lt;/h3&gt;
-&lt;p&gt;The first step is to define the &lt;code&gt;context&lt;/code&gt; - this is a simple class which will contain all the information which will be evaluated to determine if the feature or functionality should be enabled or not.&lt;/p&gt;
-&lt;p&gt;In this example, the context will just contain the user's email address:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class User
-{
-    public string Email { get; set; }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;In short - a &lt;code&gt;context&lt;/code&gt; will be created containing the supplied email address, which will be evaluated against &lt;em&gt;settings&lt;/em&gt; to determine if &lt;em&gt;normal&lt;/em&gt; or &lt;em&gt;enhanced&lt;/em&gt; processing is to occur.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="define-the-settings"&gt;Define the settings&lt;/h3&gt;
-&lt;p&gt;The next step is to define a &lt;em&gt;settings&lt;/em&gt; class, which will contain properties against which the &lt;code&gt;context&lt;/code&gt; values will be evaluated.&lt;/p&gt;
-&lt;p&gt;In this example, we want the &lt;em&gt;user email address domain&lt;/em&gt;, defined in the &lt;code&gt;User&lt;/code&gt; context, to be compared with a &lt;em&gt;company domain&lt;/em&gt;, defined in the settings class, &lt;code&gt;EnhancedUserSettings&lt;/code&gt;, to determine if the user should be processed using the &lt;em&gt;enhanced/preview feature&lt;/em&gt;, or the &lt;em&gt;standard existing feature&lt;/em&gt;.&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class EnhancedUserSettings
-{
-    public string EmailDomain { get; set; }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Essentially what it comes down to, is evaluating if the &lt;code&gt;email address defined in the User context has the same domain defined in the settings EnhancedUserSettings&lt;/code&gt;. If so, then the &lt;em&gt;feature&lt;/em&gt; is enabled, otherwise the feature is not enabled.&lt;/p&gt;
-&lt;p&gt;The usage of this and how each class fits together will become apparent in the steps below.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="define-the-filter"&gt;Define the filter&lt;/h3&gt;
-&lt;p&gt;Next, we have to define the &lt;code&gt;filter&lt;/code&gt; - this piece of code will do the actual logic to evaluate and determine if the feature should be enabled or not, based on the &lt;code&gt;context&lt;/code&gt; and &lt;code&gt;settings&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class EmailDomainFilter : IContextualFeatureFilter&amp;lt;User&amp;gt;
-{
-    public Task&amp;lt;bool&amp;gt; EvaluateAsync(FeatureFilterEvaluationContext featureFilterContext, 
-        User appContext)
-    {
-        // get the value from the parameters configured
-        var settings = featureFilterContext.Parameters.Get&amp;lt;EnhancedUserSettings&amp;gt;();
-
-        // perform the check
-        return Task.FromResult(appContext.Email?.Split(&amp;quot;&amp;#64;&amp;quot;).Last() == 
-            settings.EmailDomain);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The filter implements &lt;code&gt;IContextualFeatureFilter&amp;lt;Context&amp;gt;&lt;/code&gt;, which contains one method &lt;em&gt;EvaluateAsync&lt;/em&gt;. &lt;em&gt;EvaluateAsync&lt;/em&gt; takes a generic &lt;em&gt;FeatureFilterEvaluationContext&lt;/em&gt; context, as well as the specific &lt;em&gt;User&lt;/em&gt; context defined for this filter.&lt;/p&gt;
-&lt;p&gt;In the above, the &lt;code&gt;EnhancedUserSettings&lt;/code&gt; instance is obtained from the generic &lt;em&gt;FeatureFilterEvaluationContext&lt;/em&gt; context - this retrieves the values based on the configuration defined in the next section.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="define-the-configuration"&gt;Define the configuration&lt;/h3&gt;
-&lt;p&gt;In the &lt;code&gt;appsettings.json&lt;/code&gt; the filter feature functionality needs to be configured:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-json"&gt;&amp;quot;FeatureManagement&amp;quot;: {
-    &amp;quot;EnhancedUserProcessing&amp;quot;: {
-      &amp;quot;EnabledFor&amp;quot;: [
-        {
-          &amp;quot;Name&amp;quot;: &amp;quot;EmailDomain&amp;quot;,
-          &amp;quot;Parameters&amp;quot;: {
-            &amp;quot;EmailDomain&amp;quot;: &amp;quot;mycompany.co.za&amp;quot;
-          }
-        }
-      ]
-    }
-  }
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The configuration defines the filter and how it should be used:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;There is a feature called &lt;code&gt;EnhancedUserProcessing&lt;/code&gt; (the name of this is important, which we will see when it comes time to use the functionality)&lt;/li&gt;
-&lt;li&gt;This feature uses a filter called &lt;code&gt;EmailDomain&lt;/code&gt; - the name of the class which implements &lt;code&gt;IContextualFeatureFilter&lt;/code&gt;, &lt;em&gt;EmailDomainFilter&lt;/em&gt; in this example (the name of the class plus &lt;em&gt;Filter&lt;/em&gt; as a suffix to the class name),&lt;/li&gt;
-&lt;li&gt;The parameters for this filter, &lt;code&gt;EnhancedUserSettings&lt;/code&gt;, will have a property called &lt;em&gt;EmailDomain&lt;/em&gt; which will have a value set to &lt;code&gt;mycompany.co.za&lt;/code&gt;&lt;/li&gt;
-&lt;/ol&gt;
-&lt;hr /&gt;
-&lt;h3 id="setup-recap"&gt;Setup Recap&lt;/h3&gt;
-&lt;ol&gt;
-&lt;li&gt;Define the &lt;code&gt;context&lt;/code&gt; - this will be the information which is dynamic (each user/request/etc will have different context values) and which is compared to the &lt;code&gt;settings&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;Define the &lt;code&gt;settings&lt;/code&gt; - this is the class which will contain the information the &lt;code&gt;context&lt;/code&gt; is compared against, to determine if the feature is enabled or not. This is static information, and is the same for all evaluations&lt;/li&gt;
-&lt;li&gt;Define the &lt;code&gt;filter&lt;/code&gt; - this specified exactly &lt;em&gt;how&lt;/em&gt;, the &lt;code&gt;context&lt;/code&gt; values are compared with the &lt;code&gt;settings&lt;/code&gt; values&lt;/li&gt;
-&lt;li&gt;Define the &lt;code&gt;configuration&lt;/code&gt; - gives the filter a name, and specifies the &lt;code&gt;settings&lt;/code&gt; values&lt;/li&gt;
-&lt;/ol&gt;
-&lt;hr /&gt;
-&lt;h2 id="usage"&gt;Usage&lt;/h2&gt;
-&lt;p&gt;Finally, let's look at the usage of the &lt;code&gt;filter feature&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;Below a minimal API endpoint is defined to demonstrate the usage:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
-
-// add feature management to DI container
-// and add the specific filter
-builder.Services.AddFeatureManagement()
-       .AddFeatureFilter&amp;lt;EmailDomainFilter&amp;gt;();
-
-var app = builder.Build();
-
-// inject IFeatureManager implementation from the DI container
-// get the email from the URL route 
-app.MapGet(&amp;quot;/process/{email}&amp;quot;, async ([FromServices]IFeatureManager featureManager,
-    [FromRoute]string email) =&amp;gt;
-{
-    // check if the feature with the name `EnhancedUserProcessing` is enabled
-    // or not for the specific context (the user email)
-    if(await featureManager.IsEnabledAsync(&amp;quot;EnhancedUserProcessing&amp;quot;, 
-        new User { Email = email }))
-    {
-        return &amp;quot;Processed using ENHANCED features&amp;quot;;
-    }
-
-    return &amp;quot;Processed using NORMAL features&amp;quot;;
-});
-
-app.Run();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;code&gt;IFeatureManager&lt;/code&gt; is injected into the relevent class/method, and the &lt;em&gt;IsEnabledAsync&lt;/em&gt; method is called. The specific feature to use (specified by name) is supplied along  with the relevent &lt;code&gt;context&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;Browsing to the endpoint &lt;code&gt;/process/alwaysdevelpoping&amp;#64;mycompany.co.za&lt;/code&gt; will return:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Processed using ENHANCED features
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;While using an email with any other domain will result in:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Processed using NORMAL features
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This is a simple example, but the library does offer more sophisticated functionality around the configuration and options available to evaluate the filter (see the links available under references)&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;The ability to turn off/on specific features for a specific subset of users/records is a valuable tool when trying to roll out useful, experimental or preview functionality quickly to get &amp;quot;real world&amp;quot; feedback before it gets rolled out completely.
-There are other more sophisticated 3rd party feature management tool available (LaunchDarkly for example), but the &lt;code&gt;Microsoft.FeatureManagement&lt;/code&gt; library is entirely adequate, especially as a starting point.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://coderethinked.com/contextual-feature-filters-in-asp-net-core/"&gt;Contextual Feature Filters in ASP.NET Core&lt;/a&gt;&lt;br /&gt;
-&lt;a href="https://learn.microsoft.com/en-us/azure/azure-app-configuration/use-feature-flags-dotnet-core?tabs=core5x"&gt;Tutorial: Use feature flags in an ASP.NET Core app&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;214: 01-12-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/11/30-short-support</id>
-		<title>Short and arithmetic operations</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/11/30-short-support" />
-		<updated>2022-11-30T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;When performing arithmetic operations on &lt;code&gt;short&lt;/code&gt; data types, their values are converted to the &lt;code&gt;int&lt;/code&gt; types, which is also the type of the result of the operation.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="examples"&gt;Examples&lt;/h2&gt;
-&lt;p&gt;When working with integral types which could be an &lt;code&gt;int&lt;/code&gt; or &lt;code&gt;short&lt;/code&gt;, the compiler will infer &lt;code&gt;int&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// the compiler will infer than intValue is 
-// an int (even though it could be a short)
-// in this specific example
-var intValue = 32 / 2;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;However, when specifying the variable type explicitly, the compiler will infer the value as a &lt;code&gt;short&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;short shortValue = 32 / 2;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Here the value &lt;em&gt;32&lt;/em&gt; is inferred as a &lt;code&gt;short&lt;/code&gt;, and the output of the operator is explicitly declared as a &lt;code&gt;short&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;All good so far - but now is where the are a bit unexpected.&lt;/p&gt;
-&lt;p&gt;Operations on an &lt;em&gt;explicitly defined&lt;/em&gt; short value, will result in a &lt;code&gt;int result&lt;/code&gt;&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// short value is definitely a short
-short shortValue = 32 / 2;
-
-// int response, all good
-int intOutput = shortValue / 2;
-
-// ERROR: this gives a compiler error
-//short shortOutput = (shortValue / 2);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;In the last operation, even though it is being performed on a short value, the result is an &lt;code&gt;int&lt;/code&gt; and the above results in the error:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Cannot implicitly convert type 'int' to 'short'. An explicit conversion exists (are you missing a cast?)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Thankfully, the error is very easy to resolve - as the error states, an explicit conversion needs to be done:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// All good!
-short shortOutput = (short)(shortValue / 2);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;A small quirk of the language, which if encountered just needs to be managed and handled. Before being aware of this knowledge, I would have assumed that a &lt;code&gt;short&lt;/code&gt; would be returned from an operation where the operands were defined as &lt;code&gt;short&lt;/code&gt; - this assumption would be incorrect though!&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.reddit.com/r/csharp/comments/ysm6lx/why_am_i_being_forced_to_cast_to_shorts_when_i_am/"&gt;Reddit Post&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;213: 30-11-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/11/29-dyanmic-linq</id>
-		<title>Dynamic LINQ with System.Linq.Dynamic.Core</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/11/29-dyanmic-linq" />
-		<updated>2022-11-29T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;The third-party, &lt;em&gt;open source&lt;/em&gt; library &lt;code&gt;System.Linq.Dynamic.Core&lt;/code&gt; extends LINQ functionality allowing &lt;em&gt;dynamic, string based LINQ queries&lt;/em&gt; to be parsed, resulting in operations identical to regular LINQ.&lt;/p&gt;
-&lt;h2 id="examples"&gt;Examples&lt;/h2&gt;
-&lt;p&gt;In all of the below examples, the following snippet of code is used to get a sample collection of &lt;em&gt;Song&lt;/em&gt; entities:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;IEnumerable&amp;lt;Song&amp;gt; GetSongs()
-{
-    return new[]
-    {
-        new Song(&amp;quot;Learn to Fly&amp;quot;, &amp;quot;Foo Fighters&amp;quot;, 245),
-        new Song(&amp;quot;Everlong&amp;quot;, &amp;quot;Foo Fighters&amp;quot;, 312),
-        new Song(&amp;quot;Bigger than my Body&amp;quot;, &amp;quot;John Mayer&amp;quot;, 281),
-    };
-};
-
-public record Song(string Name, string Artist, int LengthInSeconds);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The extension methods &lt;code&gt;System.Linq.Dynamic.Core&lt;/code&gt; offer are available on the &lt;em&gt;IQueryable&lt;/em&gt; interface. As such in the examples the &lt;em&gt;IEnumerable&amp;lt;Song&amp;gt;&lt;/em&gt; returned from the &lt;code&gt;GetSongs&lt;/code&gt; method is required to be converted to &lt;em&gt;IQueryable&amp;lt;Song&amp;gt;&lt;/em&gt; using the &lt;code&gt;AsQueryable&lt;/code&gt; method before the extension methods are available.&lt;/p&gt;
-&lt;p&gt;Below come common use cases are shown, but the library does offer a lot more functionality - see the references links below for more information on the library.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="select"&gt;Select&lt;/h3&gt;
-&lt;p&gt;&lt;code&gt;System.Linq.Dynamic.Core&lt;/code&gt; can be used to dynamically &lt;em&gt;Select&lt;/em&gt; a property value from a collection of entities:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// using traditional LINQ
-List&amp;lt;string&amp;gt; namesLinq = songs
-  .Select(s =&amp;gt; s.Name)
-  .ToList();
-
-// dynamically specifying the property to be returned
-List&amp;lt;string&amp;gt; nameDynamic = songs
-  .AsQueryable()
-  .Select(&amp;quot;Name&amp;quot;)
-  .ToDynamicList&amp;lt;string&amp;gt;();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;A &lt;em&gt;anonymous or dynamic&lt;/em&gt; entity can also be &lt;em&gt;Selected&lt;/em&gt; out of the collection dynamically:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// traditional
-var nameArtistLinq = songs
-  .Select(s =&amp;gt; new { s.Name, s.Artist })
-  .ToList();
-
-// dynamic
-List&amp;lt;dynamic&amp;gt; nameArtistDynamic = songs
-  .AsQueryable()
-  .Select(&amp;quot;new { Name, Artist}&amp;quot;)
-  .ToDynamicList();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This is very powerful, allowing the columns to be selected to be determined &lt;em&gt;at runtime&lt;/em&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="filtering"&gt;Filtering&lt;/h3&gt;
-&lt;p&gt;The library also provides the ability to dynamically filter a collection of records:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// traditional
-List&amp;lt;Song&amp;gt; filterLinq = songs
-  .Where(x =&amp;gt; x.Artist == &amp;quot;Foo Fighters&amp;quot;)
-  .ToList();
-
-// dynamic
-string column = &amp;quot;Artist&amp;quot;;
-string value = &amp;quot;Foo Fighters&amp;quot;;
-List&amp;lt;Song&amp;gt; filterDynamic = songs
-  .AsQueryable()
-  .Where($&amp;quot;{column} == \&amp;quot;{value}\&amp;quot;&amp;quot;)
-  .ToList();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Again, very powerful as it allows the filter criteria to be be generated &lt;em&gt;at runtime&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;Outputting the result of the filtering for each technique yields the same result:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;Console.WriteLine(filterLinq.Count());
-Console.WriteLine(filterDynamic.Count());
-
-// ouput:
-// 2
-// 2
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h3 id="ordering"&gt;Ordering&lt;/h3&gt;
-&lt;p&gt;The library also offers the ability to dynamically order a collection:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// traditional LINQ ordering
-List&amp;lt;Song&amp;gt; orderLinq = songs
-  .OrderBy(s =&amp;gt; s.LengthInSeconds)
-  .ToList();
-  
-List&amp;lt;Song&amp;gt; orderDescLinq = songs
-  .OrderByDescending(s =&amp;gt; s.LengthInSeconds)
-  .ToList();
-
-// dynamic ordering
-List&amp;lt;Song&amp;gt; orderDynamic = songs
-  .AsQueryable()
-  .OrderBy(&amp;quot;LengthInSeconds&amp;quot;)
-  .ToList();
-
-List&amp;lt;Song&amp;gt; orderDescDynamic = songs
-  .AsQueryable()
-  .OrderBy(&amp;quot;LengthInSeconds desc&amp;quot;)
-  .ToList();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The functionality the library offers is very easy and intuitive to use, as one can see from the above examples.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;This is a very powerful library, and more functionality than described here. If dynamic LINQ is not required, I do not recommend replacing traditional strongly-typed LINQ with this as a based, however in cases where flexibility to change the LINQ at runtime is required, this library is incredibly powerful.&lt;/p&gt;
-&lt;p&gt;If this is of interest it is definitely recommended to check out the &lt;em&gt;Dynamic LInq&lt;/em&gt; reference link below for more information.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://code-maze.com/using-dynamic-linq/"&gt;Using Dynamic LINQ With System.Linq.Dynamic.Core Library&lt;/a&gt;&lt;br /&gt;
-&lt;a href="https://dynamic-linq.net/"&gt;Dynamic LINQ&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;212: 29-11-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
