@@ -4,13 +4,13 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2022</rights>
-	<updated>2022-12-19T03:38:26Z</updated>
+	<updated>2022-12-20T03:37:37Z</updated>
 	<subtitle>always learning | always growing</subtitle>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/12/16-ef-conventions</id>
 		<title>Entity Framework conventions</title>
 		<link href="https://alwaysdeveloping.net/dailydrop/2022/12/16-ef-conventions" />
-		<updated>2022-12-19T00:00:00Z</updated>
+		<updated>2022-12-20T00:00:00Z</updated>
 		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
 &lt;p&gt;Entity Framework comes out of the box with a number of default &lt;em&gt;conventions&lt;/em&gt; - however &lt;code&gt;new conventions can easily be added&lt;/code&gt; to an application specific EF configuration to customize how Entity Framework operates.&lt;/p&gt;
 &lt;hr /&gt;
