@@ -5,14 +5,14 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2022</copyright>
-		<pubDate>Fri, 23 Dec 2022 03:38:06 GMT</pubDate>
-		<lastBuildDate>Fri, 23 Dec 2022 03:38:06 GMT</lastBuildDate>
+		<pubDate>Mon, 26 Dec 2022 03:38:10 GMT</pubDate>
+		<lastBuildDate>Mon, 26 Dec 2022 03:38:10 GMT</lastBuildDate>
 		<item>
 			<title>Entity Framework conventions</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2022/12/16-ef-conventions</link>
 			<description>always learning | always growing</description>
 			<guid>https://alwaysdeveloping.net/dailydrop/2022/12/16-ef-conventions</guid>
-			<pubDate>Fri, 23 Dec 2022 00:00:00 GMT</pubDate>
+			<pubDate>Mon, 26 Dec 2022 00:00:00 GMT</pubDate>
 			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
 &lt;p&gt;Entity Framework comes out of the box with a number of default &lt;em&gt;conventions&lt;/em&gt; - however &lt;code&gt;new conventions can easily be added&lt;/code&gt; to an application specific EF configuration to customize how Entity Framework operates.&lt;/p&gt;
 &lt;hr /&gt;
