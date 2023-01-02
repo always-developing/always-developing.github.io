@@ -3,14 +3,79 @@
 	<id>https://alwaysdeveloping.net/</id>
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
-	<rights>Copyright © 2022</rights>
-	<updated>2022-12-30T03:38:00Z</updated>
+	<rights>Copyright © 2023</rights>
+	<updated>2023-01-02T03:38:09Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2023/01/02-exception-helpers</id>
+		<title>.NET 8 Exception helpers</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2023/01/02-exception-helpers" />
+		<updated>2023-01-02T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;A number of &lt;em&gt;helper&lt;/em&gt; methods are being introduced with .NET 8, which make the process of &lt;code&gt;checking values and throwing exception&lt;/code&gt; a lot simpler.&lt;/p&gt;
+&lt;p&gt;Keep in mind .NET 8 is in pre-release, so the functionality could potentially change or be removed before the final .NET8 release.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="existing-helper"&gt;Existing helper&lt;/h2&gt;
+&lt;p&gt;An example of an existing (prior to .NET 8) exception helper method, is the &lt;code&gt;ArgumentException.ThrowIfNullOrEmpty&lt;/code&gt; method.&lt;/p&gt;
+&lt;p&gt;Instead of having to do this:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;void ManualThrowException(string strParam)
+{
+    if (string.IsNullOrEmpty(strParam))
+    {
+        throw new Exception($&amp;quot;{nameof(strParam)} is null or empty&amp;quot;);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The &lt;code&gt;ThrowIfNullOrEmpty&lt;/code&gt; method can be used, which checks the value of the parameter and throws the exception:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;void ThrowNullOrEmptyException(string strParam)
+{
+    ArgumentException.ThrowIfNullOrEmpty(strParam);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="new-helpers"&gt;New helpers&lt;/h2&gt;
+&lt;p&gt;There are a number of new static helper methods (on &lt;em&gt;ArgumentOutOfRangeException&lt;/em&gt;) being introduced, which include:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;ThrowIfZero&lt;/li&gt;
+&lt;li&gt;ThrowIfNegative&lt;/li&gt;
+&lt;li&gt;ThrowIfNegativeOrZero&lt;/li&gt;
+&lt;li&gt;ThrowIfGreaterThan&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The usage and functionality of these are the same as &lt;code&gt;ThrowIfNullOrEmpty&lt;/code&gt; - the parameter is checked, and an exception is throw if the check fails.&lt;/p&gt;
+&lt;p&gt;To check if a int value is &lt;em&gt;zero or negative&lt;/em&gt;, instead of this:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;void ManualThrowZeroNegativeException(int intParam)
+{
+    if (intParam &amp;lt;= 0)
+    {
+        throw new Exception($&amp;quot;{nameof(intParam)} is less than or equal to zero&amp;quot;);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This can be done:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;void EnhancedThrowZeroNegativeException(int intParam)
+{
+    ArgumentOutOfRangeException.ThrowIfNegative(intParam);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If thrown, the exception generated is also more informative than before, including the parameter name in the exception text:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;'intParam' must be a non-negative value.
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The result - more readable code, and quicker and easier for a developer to thrown an exception.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;A relatively small and simple helper method update - but one will facilitate cleaner, simpler and more readable code.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://steven-giesel.com/blogPost/f4bc6fcc-5691-4f72-b9bb-75aeeb59230a"&gt;New ArgumentException and ArgumentOutOfRangeException helpers in .NET 8&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;225: 02-01-2023&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2022/12/16-ef-conventions</id>
 		<title>Entity Framework conventions</title>
 		<link href="https://alwaysdeveloping.net/dailydrop/2022/12/16-ef-conventions" />
-		<updated>2022-12-30T00:00:00Z</updated>
+		<updated>2022-12-16T01:00:00Z</updated>
 		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
 &lt;p&gt;Entity Framework comes out of the box with a number of default &lt;em&gt;conventions&lt;/em&gt; - however &lt;code&gt;new conventions can easily be added&lt;/code&gt; to an application specific EF configuration to customize how Entity Framework operates.&lt;/p&gt;
 &lt;hr /&gt;
@@ -746,121 +811,6 @@ Console.WriteLine($&amp;quot;Order status: {currentStatusText}&amp;quot;);
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://www.youtube.com/watch?v=s_NrqRI7Gnc&amp;amp;t=308s"&gt;The new .NET Exception that should NEVER be thrown&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;218: 07-12-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/12/06-getallocatedbytes</id>
-		<title>Determining bytes of memory allocated</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/12/06-getallocatedbytes" />
-		<updated>2022-12-06T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;The static &lt;em&gt;Garbage Collector&lt;/em&gt; class &lt;code&gt;GC&lt;/code&gt; contains a &lt;code&gt;GetAllocatedBytesForCurrentThread&lt;/code&gt; method which can be used to &lt;em&gt;get the number of bytes allocated&lt;/em&gt; in the current thread (as the name implies).&lt;/p&gt;
-&lt;p&gt;This can be leveraged to discover some interesting facts about how the application is allocated &lt;em&gt;unessacary memory&lt;/em&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="getallocatedbytes-usage"&gt;GetAllocatedBytes usage&lt;/h2&gt;
-&lt;p&gt;The usage of &lt;code&gt;GetAllocatedBytesForCurrentThread&lt;/code&gt; is very simple and straightforward:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// get the bytes allocated at the start of the process
-long beforeAllocation = GC.GetAllocatedBytesForCurrentThread();
-
-// declare a string and use it
-string strValue = &amp;quot;This is a string&amp;quot;;
-Console.WriteLine(strValue);
-
-// get the bytes allocated after
-long afterAllocation = GC.GetAllocatedBytesForCurrentThread();
-
-// output the results
-Console.WriteLine($&amp;quot;Before allocation: {beforeAllocation} | &amp;quot; +
-    $&amp;quot;After allocation: {afterAllocation}&amp;quot;);
-Console.WriteLine($&amp;quot;Bytes used: {afterAllocation - beforeAllocation}&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;A snapshot of the bytes used is taken before the work, and then again after.&lt;/p&gt;
-&lt;p&gt;The result of the above:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;This is a string
-Before allocation: 1761952 | After allocation: 1764552
-Bytes used: 2600
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="interesting-findings"&gt;Interesting findings&lt;/h2&gt;
-&lt;h3 id="unused-variable"&gt;Unused variable&lt;/h3&gt;
-&lt;p&gt;In some instances, if a variable is defined, but never used, the compiler will remove it and no memory will be allocated.&lt;/p&gt;
-&lt;p&gt;Below is the same example as above, but &lt;em&gt;without the variable &amp;quot;strValue&amp;quot; ever being used&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;long beforeAllocation = GC.GetAllocatedBytesForCurrentThread();
-
-// declared, but never used
-string strValue = &amp;quot;This is a string&amp;quot;;
-
-long afterAllocation = GC.GetAllocatedBytesForCurrentThread();
-
-Console.WriteLine($&amp;quot;Before allocation: {beforeAllocation} | &amp;quot; +
-    $&amp;quot;After allocation: {afterAllocation}&amp;quot;);
-Console.WriteLine($&amp;quot;Bytes used: {afterAllocation - beforeAllocation}&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output here:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Before allocation: 1768144 | After allocation: 1768144
-Bytes used: 0
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The compiler is performing optimizations to remove unused code.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="empty-array"&gt;Empty array&lt;/h3&gt;
-&lt;p&gt;Declaring an empty array, will still allocated memory - this is because the array itself is of type &lt;code&gt;Array&lt;/code&gt; and contains information about what the array itself:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;long beforeAllocation = GC.GetAllocatedBytesForCurrentThread();
-
-int[] list = new int[0];
-
-long afterAllocation = GC.GetAllocatedBytesForCurrentThread();
-
-Console.WriteLine($&amp;quot;Before allocation: {beforeAllocation} | &amp;quot; +
-    $&amp;quot;After allocation: {afterAllocation}&amp;quot;);
-Console.WriteLine($&amp;quot;Bytes used: {afterAllocation - beforeAllocation}&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Before allocation: 1768088 | After allocation: 1768112
-Bytes used: 24
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Declaring multiple empty arrays, will use memory in multiples of 24 bytes:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;long beforeAllocation = GC.GetAllocatedBytesForCurrentThread();
-
-int[] list = new int[0];
-int[] list1 = new int[0];
-int[] list2 = new int[0];
-
-long afterAllocation = GC.GetAllocatedBytesForCurrentThread();
-
-Console.WriteLine($&amp;quot;Before allocation: {beforeAllocation} | &amp;quot; +
-    $&amp;quot;After allocation: {afterAllocation}&amp;quot;);
-Console.WriteLine($&amp;quot;Bytes used: {afterAllocation - beforeAllocation}&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output for this, 24 bytes x 3:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Before allocation: 1768088 | After allocation: 1768160
-Bytes used: 72
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;To use less memory, the static &lt;code&gt;Array.Empty&lt;/code&gt; method is used. This will assign the same empty static array to each instance, thus not allocated additional memory each time:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;long beforeAllocation = GC.GetAllocatedBytesForCurrentThread();
-
-// use Array.Empty instead of new []
-int[] list = Array.Empty&amp;lt;int&amp;gt;();
-int[] list1 = Array.Empty&amp;lt;int&amp;gt;();
-int[] list2 = Array.Empty&amp;lt;int&amp;gt;();
-
-long afterAllocation = GC.GetAllocatedBytesForCurrentThread();
-
-Console.WriteLine($&amp;quot;Before allocation: {beforeAllocation} | &amp;quot; +
-    $&amp;quot;After allocation: {afterAllocation}&amp;quot;);
-Console.WriteLine($&amp;quot;Bytes used: {afterAllocation - beforeAllocation}&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output, only 24 bytes used in total:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Before allocation: 1761896 | After allocation: 1761920
-Bytes used: 24
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;A very useful method which can help benchmark memory usage in an application, as well as just provide an insight into interesting aspects of how the compiler allocates (or doesn't allocated) memory.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://steven-giesel.com/blogPost/db43d6f4-4b93-415f-be03-600ee358cdfd"&gt;How to get allocations in .NET? And how big is an empty array?&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;217: 06-12-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
