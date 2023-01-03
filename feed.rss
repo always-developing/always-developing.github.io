@@ -5,8 +5,135 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2023</copyright>
-		<pubDate>Mon, 02 Jan 2023 03:38:09 GMT</pubDate>
-		<lastBuildDate>Mon, 02 Jan 2023 03:38:09 GMT</lastBuildDate>
+		<pubDate>Tue, 03 Jan 2023 03:38:04 GMT</pubDate>
+		<lastBuildDate>Tue, 03 Jan 2023 03:38:04 GMT</lastBuildDate>
+		<item>
+			<title>Converting values with EF</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2023/01/03-ef-value-converter</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2023/01/03-ef-value-converter</guid>
+			<pubDate>Tue, 03 Jan 2023 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;An EntityFramework &lt;code&gt;ValueConverter&lt;/code&gt; can be used to convert a property from one value or type to another when reading to and writing from the database.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="example"&gt;Example&lt;/h2&gt;
+&lt;p&gt;In the example, the C# class has a &lt;code&gt;DateTime&lt;/code&gt; property, however when saved in the database, this property will be stored as a &lt;code&gt;long&lt;/code&gt; (BIGINT in SQL) - a value representing the &lt;em&gt;DateTime as ticks&lt;/em&gt;.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id="scaffolding"&gt;Scaffolding&lt;/h3&gt;
+&lt;p&gt;The &lt;em&gt;Blog&lt;/em&gt; class looks as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;[Table("Blog")]
+public  class Blog
+{
+    public int Id { get; set; }
+
+    public string Title { get; set; }
+
+    public string Description { get; set; }
+
+    public DateTime DateCreated { get; set; }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As one can see, the &lt;em&gt;DateCreated&lt;/em&gt; is of type &lt;code&gt;DateTime&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;The &lt;em&gt;DBContext&lt;/em&gt; implementation is configured as per usual:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class DemoContext : DbContext
+{
+    public DbSet&amp;lt;Blog&amp;gt; Blogs { get; set; }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseSqlServer(
+            @"Server=.\SQLEXPRESS;Database=ValueConverter;Integrated Security=True;TrustServerCertificate=True");
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr&gt;
+&lt;h3 id="definition"&gt;Definition&lt;/h3&gt;
+&lt;p&gt;The first step is to define the &lt;code&gt;ValueConverter&lt;/code&gt; - this is done by inheriting from &lt;code&gt;ValueConverter&amp;lt;TModel, TProvider&amp;gt;&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;The converter defined below will:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Provide functionality to convert from &lt;em&gt;DateTime&lt;/em&gt; to &lt;em&gt;long&lt;/em&gt; when writing to the database&lt;/li&gt;
+&lt;li&gt;Provide functionality to convert from &lt;em&gt;long&lt;/em&gt; to &lt;em&gt;DateTime&lt;/em&gt; when reading from the database&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;internal class DateCreatedConverter : ValueConverter&amp;lt;DateTime, long&amp;gt;
+{
+    // constructor calls into the base constructor
+    // with the two methods to do the conversion
+    public DateCreatedConverter()
+    : base(modelValue =&amp;gt; ToTicks(modelValue), 
+        provValue =&amp;gt; ToDateTime(provValue)) { }
+
+    // convert a long to DateTime - for when reading
+    // from the database
+    private static DateTime ToDateTime(long ticks)
+    {
+        return new DateTime(ticks);
+    }
+
+    // convert a DateTime to long - for when writing
+    // do the database
+    private static long ToTicks(DateTime datetime)
+    {
+        return datetime.Ticks;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The base &lt;code&gt;ValueConverter&amp;lt;DateTime, long&amp;gt;&lt;/code&gt; constructor takes two parameters - two &lt;em&gt;Expressions&lt;/em&gt; for doing the conversion between the values. Our class defines two methods defining the logic for how the conversion is to the happen, and then passes these methods to the &lt;em&gt;base constructor&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;The same blueprint can be used to define more complex conversions between property values.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id="registration"&gt;Registration&lt;/h3&gt;
+&lt;p&gt;Now that we have the converter defined, the next step is to register it with the Entity Framework infrastructure. This is done either in an &lt;code&gt;IEntityTypeConfiguration&lt;/code&gt; implementation for the specific entity, or in this example, in the &lt;em&gt;OnModelCreating&lt;/em&gt; method of the DbContext:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class DemoContext : DbContext
+{
+    public DbSet&amp;lt;Blog&amp;gt; Blogs { get; set; }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseSqlServer(
+            @"Server=.\SQLEXPRESS;Database=ValueConverter;Integrated Security=True;TrustServerCertificate=True");
+    }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        // define that the specific property 
+        // on the specific entity has the converter
+        modelBuilder.Entity&amp;lt;Blog&amp;gt;()
+            .Property(b =&amp;gt; b.DateCreated)
+            .HasConversion&amp;lt;DateCreatedConverter&amp;gt;();
+
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Here, the specific &lt;em&gt;property&lt;/em&gt; on the specific &lt;em&gt;entity&lt;/em&gt; is specified to have the converter.&lt;/p&gt;
+&lt;p&gt;That's all there is to it! Entity Framework will now &lt;code&gt;automatically apply the conversion when reading to and writing from the database&lt;/code&gt;.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id="usage"&gt;Usage&lt;/h3&gt;
+&lt;p&gt;When interacting with the database using Entity Framework, the &lt;code&gt;ValueConverter&lt;/code&gt; is automatically used. This includes when creating the table based on the entity schema:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;Blog blog = new Blog
+{
+    Id = 1,
+    Title = "My first post",
+    Description = "My very first blog ever!",
+    DateCreated = DateTime.Now,
+};
+
+DemoContext context = new DemoContext();
+context.Database.EnsureCreated();
+await context.Blogs.AddAsync(blog);
+await context.SaveChangesAsync();
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If we look at the data in the database, the &lt;em&gt;DateCreated&lt;/em&gt; property is stored as a BIGINT (the SQL equivalent of a long):&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://alwaysdeveloping.net/database.png" alt="Conversion in the database"&gt;&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;A very useful feature when needing to convert data/value types between code and the database - some relatively simple configuration, and Entity Framework takes care of the rest.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://shadynagy.com/value-converters-efcore/"&gt;Value converters in Entity Framework Code (EF Core)&lt;/a&gt;&lt;/p&gt;
+&lt;!--?# DailyDrop ?--&gt;226: 03-01-2023&lt;!--?#/ DailyDrop ?--&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>.NET 8 Exception helpers</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2023/01/02-exception-helpers</link>
@@ -731,97 +858,6 @@ List&amp;lt;IGrouping&amp;lt;DateTime, Blog&amp;gt;&amp;gt;? query = context
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://twitter.com/okyrylchuk/status/1595887786535575554"&gt;Oleg Kyrylchuk Tweet&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;218: 08-12-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Unreachable code and UnreachableException</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/12/07-unreachable-exception</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/12/07-unreachable-exception</guid>
-			<pubDate>Wed, 07 Dec 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;UnreachableException&lt;/code&gt; was introduced in .NET 7, which is used in situations &lt;em&gt;when the application executes code thought to be unreachable&lt;/em&gt;. If this exception does occur, then there is an error in the flow or data of the application causing the, previous thought, unreachable code to be executed.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="unreachable-code-setup"&gt;Unreachable code setup&lt;/h2&gt;
-&lt;p&gt;Consider the follow example of example - we have an &lt;code&gt;enum&lt;/code&gt; of &lt;em&gt;OrderStatus&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public enum OrderStatus
-{
-    New = 0,
-    Processing = 1,
-    Fulfilled = 2,
-    OutOnDelivery = 3,
-    Delivered = 4
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;As well as a switch expression to convert the &lt;code&gt;enum&lt;/code&gt; value to a &lt;code&gt;string description&lt;/code&gt; :&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;string currentStatusText = currentStatus switch
-{
-    OrderStatus.New =&amp;gt; &amp;quot;Order Placed&amp;quot;,
-    OrderStatus.Processing =&amp;gt; &amp;quot;Processing Order&amp;quot;,
-    OrderStatus.Fulfilled =&amp;gt; &amp;quot;Processing Order&amp;quot;,
-    OrderStatus.OutOnDelivery =&amp;gt; &amp;quot;Order is out on delivery&amp;quot;,
-    OrderStatus.Delivered =&amp;gt; &amp;quot;Order is delivered&amp;quot;,
-    _ =&amp;gt; throw new UnreachableException($&amp;quot;OrderStatus enum &amp;quot; +
-        $&amp;quot;value {currentStatus} invalid&amp;quot;)
-};
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The &lt;code&gt;UnreachableException&lt;/code&gt; is used if the code tries to convert an &lt;code&gt;OrderStatus which does not exist&lt;/code&gt; to a string - in theory a situation which should never occur.&lt;/p&gt;
-&lt;p&gt;We also have a method to retrieve the order status, &lt;code&gt;stored as an int&lt;/code&gt;, from the database:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public OrderStatus GetOrderStatusFromDatabase()
-{
-    // simulate getting the value from the database
-    return (OrderStatus)2;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="executing-unreachable-code"&gt;Executing unreachable code&lt;/h2&gt;
-&lt;p&gt;If the database stores a valid &lt;em&gt;OrderStatus&lt;/em&gt; int value, everything will execute as expected.&lt;/p&gt;
-&lt;p&gt;In this example, the database &lt;code&gt;stores an OrderStatus value of 2&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// currentStatus is 2
-OrderStatus currentStatus = GetOrderStatusFromDatabase();
-
-var currentStatusText = currentStatus switch
-{
-    OrderStatus.New =&amp;gt; &amp;quot;Order Placed&amp;quot;,
-    OrderStatus.Processing =&amp;gt; &amp;quot;Processing Order&amp;quot;,
-    OrderStatus.Fulfilled =&amp;gt; &amp;quot;Processing Order&amp;quot;,
-    OrderStatus.OutOnDelivery =&amp;gt; &amp;quot;Order is out on delivery&amp;quot;,
-    OrderStatus.Delivered =&amp;gt; &amp;quot;Order is delivered&amp;quot;,
-    _ =&amp;gt; throw new UnreachableException()
-};
-
-Console.WriteLine($&amp;quot;Order status: {currentStatusText}&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output is:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Order: Processing Order
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;However, if the &lt;em&gt;OrderStatus&lt;/em&gt; was manually, incorrectly &lt;code&gt;updated to be 5&lt;/code&gt; in the database - this is a situation which &lt;em&gt;should never happen, but in reality it could&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// currentStatus is 5
-OrderStatus currentStatus = GetOrderStatusFromDatabase();
-
-string currentStatusText = currentStatus switch
-{
-    OrderStatus.New =&amp;gt; &amp;quot;Order Placed&amp;quot;,
-    OrderStatus.Processing =&amp;gt; &amp;quot;Processing Order&amp;quot;,
-    OrderStatus.Fulfilled =&amp;gt; &amp;quot;Processing Order&amp;quot;,
-    OrderStatus.OutOnDelivery =&amp;gt; &amp;quot;Order is out on delivery&amp;quot;,
-    OrderStatus.Delivered =&amp;gt; &amp;quot;Order is delivered&amp;quot;,
-    _ =&amp;gt; throw new UnreachableException($&amp;quot;OrderStatus enum &amp;quot; +
-        $&amp;quot;value {currentStatus} invalid&amp;quot;)
-};
-
-Console.WriteLine($&amp;quot;Order status: {currentStatusText}&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The C# code &lt;code&gt;allows the currentStatus variable to be set to a value of 5, an enum value which doesn't exist&lt;/code&gt; - and only when it comes time to convert to a string (in the  switch expression), will there be no match to any of the options and the &lt;code&gt;UnreachableException&lt;/code&gt; be thrown.&lt;/p&gt;
-&lt;p&gt;Monitoring tools or logs can now be checked for the presence of &lt;code&gt;UnreachableException&lt;/code&gt; and if such an exception occurs, something has gone wrong.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;A useful tool at a developers disposal to assist in tracking down completely unexpected issues which may arise - but a tool which should hopefully never actually be reached to be used!&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.youtube.com/watch?v=s_NrqRI7Gnc&amp;amp;t=308s"&gt;The new .NET Exception that should NEVER be thrown&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;218: 07-12-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
