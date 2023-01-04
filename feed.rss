@@ -5,8 +5,54 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2023</copyright>
-		<pubDate>Tue, 03 Jan 2023 03:38:04 GMT</pubDate>
-		<lastBuildDate>Tue, 03 Jan 2023 03:38:04 GMT</lastBuildDate>
+		<pubDate>Wed, 04 Jan 2023 03:38:08 GMT</pubDate>
+		<lastBuildDate>Wed, 04 Jan 2023 03:38:08 GMT</lastBuildDate>
+		<item>
+			<title>Combining multiple attributes</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2023/01/04-multi-attributes</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2023/01/04-multi-attributes</guid>
+			<pubDate>Wed, 04 Jan 2023 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;When multiple attributes are applied to a program entity, the attributes can either be &lt;code&gt;specified on separate lines, or on a single line&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="multiline"&gt;Multiline&lt;/h2&gt;
+&lt;p&gt;In this example, a &lt;em&gt;class&lt;/em&gt; is used to demonstrate an entity having multiple attributes, but the same applies to other relevent program entities:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;[Serializable]
+[Obsolete]
+[DebuggerDisplay(&amp;quot;Id={Id}, Name={Name}&amp;quot;)]
+public class MultiAttributeClass
+{
+    public int Id { get; set; }
+
+    public string Name { get; set; }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Three attributes added to the class - the actual attributes themselves are not important, it could be been any number of any attributes.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="single-line"&gt;Single line&lt;/h2&gt;
+&lt;p&gt;The multiple attributes can also be applied as follows though:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;[Serializable, Obsolete, DebuggerDisplay(&amp;quot;Id={Id}, Name={Name}&amp;quot;)]
+public class MultiAttributeClass
+{
+    public int Id { get; set; }
+
+    public string Name { get; set; }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Does this reduce the number of lines in code? Yes
+Does it make it more difficult to read? Potentially
+Is this recommended? Probably not. But you can if you want&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;A very small knowledge drop today, but something I was not aware was possible. As mentioned, as a general rule I would argue this make the code slightly less readable - however, some might find this code cleaner and more readable.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://www.reddit.com/r/csharp/comments/zk8oyj/did_you_know_you_could_combine_method_or_class/"&gt;Reddit Post&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;227: 04-01-2023&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Converting values with EF</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2023/01/03-ef-value-converter</link>
@@ -762,102 +808,6 @@ As mentioned, this technique is less &amp;quot;safe&amp;quot; than the usual &lt
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://www.youtube.com/watch?v=cwBrWn4m9y8"&gt;The weirdest way to loop in C# is also the fastest&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;219: 09-12-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>EF7 GroupBy support</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/12/08-ef-group-by</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/12/08-ef-group-by</guid>
-			<pubDate>Thu, 08 Dec 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;Prior to Entity Framework 7, having a LINQ &lt;code&gt;GroupBy&lt;/code&gt; as the final operator in a query would result in an exception being thrown - EF7 adds support for this scenario, allowing &lt;code&gt;GroupBy&lt;/code&gt; to be the final operator.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="scenario"&gt;Scenario&lt;/h2&gt;
-&lt;p&gt;In this scenario, we have a simple &lt;em&gt;Blog&lt;/em&gt; class, setup as a &lt;em&gt;DbSet&lt;/em&gt; in a &lt;em&gt;DbContext&lt;/em&gt;, configured to connect to SQL Server:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;[Table(&amp;quot;Blog&amp;quot;)]
-public  class Blog
-{
-    public int Id { get; set; }
-
-    public string Title { get; set; }
-
-    public string Description { get; set; }
-
-    public DateTime DateCreated { get; set; }
-
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Suppose we want to &lt;em&gt;select all Blogs&lt;/em&gt;, but &lt;code&gt;group them by the DateCreated&lt;/code&gt; - lets see how this can be done.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="before-ef7"&gt;Before EF7&lt;/h3&gt;
-&lt;p&gt;If we try perform the &lt;em&gt;GroupBy&lt;/em&gt; as the final operation &lt;code&gt;prior to EF7&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// get an instance of the DBContext
-DemoContext context = new DemoContext();
-
-// we're not querying the actual database
-// just getting the query which would be 
-// generated
-var query = context
-    .Blogs
-    .GroupBy(b =&amp;gt; b.DateCreated)
-    .ToQueryString();
-
-Console.WriteLine(query);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;An exception is thrown!&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;The LINQ expression 'DbSet&amp;lt;Blog&amp;gt;().GroupBy(b =&amp;gt; b.DateCreated)' could not be translated. 
-Either rewrite the query in a form that can be translated, or switch to client evaluation explicitly by inserting a call to 'AsEnumerable
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;To perform this, the &lt;em&gt;group by&lt;/em&gt; logic would need to be done in code:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var context = new DemoContext();
-
-// get all relevent blogs, ungrouped
-var List&amp;lt;Blog&amp;gt; = context.Blogs.ToList();
-
-// group the blogs by date in code
-List&amp;lt;IGrouping&amp;lt;DateTime, Blog&amp;gt;&amp;gt;? blogByDate = 
-    blogs
-    .GroupBy(b =&amp;gt; b.DateCreated)
-    .ToList();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;So the requirement to group by &lt;em&gt;DateCreated&lt;/em&gt; is definitely do-able, just maybe not as simple and intuitive to do as it should be.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="ef7"&gt;EF7&lt;/h3&gt;
-&lt;p&gt;EF7 makes implementing the same requirement a little bit easier. Upgrading to EF7, and executing the exact same code as before:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// get an instance of the DBContext
-DemoContext context = new DemoContext();
-
-// we not querying the actual database
-// just getting the query the following would
-// generate
-var query = context
-    .Blogs
-    .GroupBy(b =&amp;gt; b.DateCreated)
-    .ToQueryString();
-
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Now yields the following output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;SELECT [b].[DateCreated], [b].[Id], [b].[Description], [b].[Title]
-FROM [Blog] AS [b]
-ORDER BY [b].[DateCreated]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The &lt;em&gt;GroupBy&lt;/em&gt; is not perform on the database itself, but is again, performed in code - just this time it is done automatically by EF.&lt;/p&gt;
-&lt;p&gt;The output type is the same as when the operation is performed manually:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var context = new DemoContext();
-List&amp;lt;IGrouping&amp;lt;DateTime, Blog&amp;gt;&amp;gt;? query = context
-    .Blogs
-    .GroupBy(b =&amp;gt; b.DateCreated)
-    .ToList();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;A relatively small enhancement to EF, but one which makes building up queries in EF using LINQ more intuitive, and results in the developer having to do slightly less work overall.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://twitter.com/okyrylchuk/status/1595887786535575554"&gt;Oleg Kyrylchuk Tweet&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;218: 08-12-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
