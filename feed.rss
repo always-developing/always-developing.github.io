@@ -5,8 +5,69 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2023</copyright>
-		<pubDate>Wed, 04 Jan 2023 03:38:08 GMT</pubDate>
-		<lastBuildDate>Wed, 04 Jan 2023 03:38:08 GMT</lastBuildDate>
+		<pubDate>Thu, 05 Jan 2023 03:38:28 GMT</pubDate>
+		<lastBuildDate>Thu, 05 Jan 2023 03:38:28 GMT</lastBuildDate>
+		<item>
+			<title>Efficient Stopwatch usage</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2023/01/05-new-stopwatch</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2023/01/05-new-stopwatch</guid>
+			<pubDate>Thu, 05 Jan 2023 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;.NET 7 introduced new &lt;code&gt;StopWatch&lt;/code&gt; functionality, which not only makes using the class easier.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="typical-usage"&gt;Typical usage&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;StopWatch&lt;/code&gt; class is often used to perform simple benchmarks to determine how long a piece of code executes for. The &lt;em&gt;StopWatch&lt;/em&gt; is started, the code in question is executed, and then the &lt;em&gt;StopWatch&lt;/em&gt; is stopped and the ElapsedTime is captured.&lt;/p&gt;
+&lt;p&gt;Typically the &lt;code&gt;StopWatch&lt;/code&gt; class is used as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// new instance of Stopwatch
+Stopwatch sw = new Stopwatch();
+sw.Start();
+
+await Task.Delay(500);
+
+sw.Stop();
+Console.WriteLine($&amp;quot;Time Elapsed: {sw.Elapsed}&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="improved-usage"&gt;Improved usage&lt;/h2&gt;
+&lt;p&gt;The issue with the above is that memory is allocated for the &lt;em&gt;StopWatch&lt;/em&gt; instance declared. Instead, a more memory efficient approach is to do the following:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// get the start time (in ticks)
+long startTime = Stopwatch.GetTimestamp();
+
+await Task.Delay(500);
+
+// get the end time (in ticks)
+long endTime = Stopwatch.GetTimestamp();
+// calculate the difference
+TimeSpan elapsedTime = new TimeSpan(endTime - startTime);
+Console.WriteLine($&amp;quot;Time Elapsed: {elapsedTime}&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;No memory is allocated in this example, but it is slightly more complex to code than the previous example.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="net-7-improvements"&gt;.NET 7 improvements&lt;/h2&gt;
+&lt;p&gt;A new method, &lt;code&gt;Stopwatch.GetElapsedTime&lt;/code&gt;,  was introduced with .NET 7 which makes the above approach simpler:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// get the start time (in ticks)
+long startTime = Stopwatch.GetTimestamp();
+
+await Task.Delay(500);
+
+// get the elapsed time between the startTime and the currentTime
+TimeSpace elapsedTime = Stopwatch.GetElapsedTime(startTime);
+Console.WriteLine($&amp;quot;Time Elapsed: {elapsedTime}&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The &lt;code&gt;GetElapsedTime&lt;/code&gt; method will calculate the elapsed time between the &lt;em&gt;startTime&lt;/em&gt; and the &lt;em&gt;current time&lt;/em&gt; (it is also possible to explicitly supply an &lt;em&gt;endTime&lt;/em&gt; to the method as well).&lt;/p&gt;
+&lt;p&gt;Here we get the benefit of less memory allocations, and also not having to do additional calculations.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;A small, useful new method which makes using &lt;code&gt;StopWatch&lt;/code&gt; cleaner and more efficient overall - one doesn't want diagnostic tools to be detrimental to the performance and readability of the application code.
+Having said that, having a single StopWatch instance should really not impact application performance at all - however its always a good practice to be as efficient as possible, traded off with effort, and in this case, there is no additional effort required to be slightly more efficient.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://www.youtube.com/watch?v=NTz99yN2urc"&gt;Are you using the Stopwatch efficiently in .NET?&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;228: 05-01-2023&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Combining multiple attributes</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2023/01/04-multi-attributes</link>
@@ -738,76 +799,6 @@ Delivered
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://code-maze.com/enumerate-enum-csharp/"&gt;How to Enumerate an Enum in C#&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;220: 12-12-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Fast, potentially unsafe iteration</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/12/09-unsafe-add</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/12/09-unsafe-add</guid>
-			<pubDate>Fri, 09 Dec 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;&lt;code&gt;CollectionsMarshal&lt;/code&gt;, &lt;code&gt;MemoryMarshal&lt;/code&gt; and &lt;code&gt;Unsafe&lt;/code&gt; can be used in conjunction to create a &lt;em&gt;very fast&lt;/em&gt; &lt;code&gt;method of iteration&lt;/code&gt; (possibly the fastest method of performing for loops in C#)&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="iteration"&gt;Iteration&lt;/h2&gt;
-&lt;p&gt;The technique may look a bit complex and complicated at first glance (or at least more complex than a normal &lt;code&gt;for&lt;/code&gt; loop) - but going through it step-by-step it is actually relatively simple. This technique is also not as &lt;code&gt;safe&lt;/code&gt; as the traditional method, due to the way memory is being handled in a potentially &lt;code&gt;unsafe&lt;/code&gt; way.&lt;/p&gt;
-&lt;p&gt;The full code snippet is at the bottom of the section, but for now we'll have a look at it step-by-step.&lt;/p&gt;
-&lt;p&gt;Assume we have a list of 50 items we want to iterate through:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;List&amp;lt;int&amp;gt; loopItems = Enumerable.Range(1, 50).ToList();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h3 id="list-to-span"&gt;List to Span&lt;/h3&gt;
-&lt;p&gt;The first step is to convert the &lt;code&gt;List&lt;/code&gt; to a &lt;code&gt;Span&lt;/code&gt;, using the &lt;em&gt;System.Runtime.InteropServices.CollectionsMarshal.AsSpan&lt;/em&gt; method:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;Span&amp;lt;int&amp;gt; itemsAsSpan = CollectionsMarshal.AsSpan(loopItems);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Once the &lt;code&gt;Span&lt;/code&gt; is in use, (as per the documentation) &lt;em&gt;items should not be added or removed from List&lt;/em&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="span-reference"&gt;Span reference&lt;/h3&gt;
-&lt;p&gt;The next step is to get a reference to the &lt;em&gt;element of the span at index 0&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;ref int searchLocation = ref MemoryMarshal.GetReference(itemsAsSpan);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The variable &lt;em&gt;searchLocation&lt;/em&gt; is effectively now pointing to the first item in the &lt;em&gt;Span&lt;/em&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="iterate"&gt;Iterate&lt;/h3&gt;
-&lt;p&gt;Next, we can perform the actual iteration:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// for loop as per usual
-for (int i = 0; i &amp;lt; itemsAsSpan.Length; i++)
-{
-    // Instead of using itemsAsSpan[i], which is still fast
-    // we start with the first item (searchLocation)
-    // and offset it by i items
-    var item = Unsafe.Add(ref searchLocation, i);
-    Console.WriteLine(item);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The &lt;code&gt;for&lt;/code&gt; loop is defined as per normal, but instead of accessing the &lt;code&gt;Span&lt;/code&gt; item at position &lt;em&gt;i&lt;/em&gt; as one usually would (&lt;em&gt;itemsAsSpan[i]&lt;/em&gt;), the &lt;code&gt;Unsafe.Add&lt;/code&gt; method is used.&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;Unsafe.Add&lt;/code&gt; &lt;em&gt;adds an element offset to the given reference&lt;/em&gt; - in this case it will use &lt;em&gt;searchLocation&lt;/em&gt;, the first item in the Span as the given reference, and offset by &lt;em&gt;i items&lt;/em&gt; each time.
-Each iteration, the offset is larger (as i increases) and as the given reference, &lt;em&gt;searchLocation&lt;/em&gt;, stays the same the item being referenced each loop is different.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="code-snippet"&gt;Code snippet&lt;/h3&gt;
-&lt;p&gt;The full code snippet:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;List&amp;lt;int&amp;gt; loopItems = Enumerable.Range(1, 50).ToList();
-Span&amp;lt;int&amp;gt; itemsAsSpan = CollectionsMarshal.AsSpan(loopItems);
-
-for (var i = 0; i &amp;lt; itemsAsSpan.Length; i++)
-{
-    var item = Unsafe.Add(ref searchLocation, i);
-    Console.WriteLine(item);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="benchmarks"&gt;Benchmarks&lt;/h2&gt;
-&lt;p&gt;A full breakdown of the performance can be seen on Nick Chapsas's video, &lt;a href="https://www.youtube.com/watch?v=cwBrWn4m9y8&amp;amp;t=490s"&gt;right here&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;But in short, using &lt;code&gt;the above method is the fastest way to iterate&lt;/code&gt;, slightly beating out using the index on the span (&lt;em&gt;itemsAsSpan[i]&lt;/em&gt;), but significantly faster than all other methods (for loop, foreach loop etc)&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;This should probably not be the go-to iteration method for all applications in all use cases - however, when performance is critical and every fraction of a second is important, then this kind of optimization could make a difference.
-As mentioned, this technique is less &amp;quot;safe&amp;quot; than the usual &lt;em&gt;for&lt;/em&gt; or &lt;em&gt;foreach&lt;/em&gt; methods, so should be used with caution.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.youtube.com/watch?v=cwBrWn4m9y8"&gt;The weirdest way to loop in C# is also the fastest&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;219: 09-12-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
