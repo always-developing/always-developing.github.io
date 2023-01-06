@@ -5,8 +5,83 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2023</copyright>
-		<pubDate>Thu, 05 Jan 2023 03:38:28 GMT</pubDate>
-		<lastBuildDate>Thu, 05 Jan 2023 03:38:28 GMT</lastBuildDate>
+		<pubDate>Fri, 06 Jan 2023 03:38:27 GMT</pubDate>
+		<lastBuildDate>Fri, 06 Jan 2023 03:38:27 GMT</lastBuildDate>
+		<item>
+			<title>LINQ DistinctBy</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2023/01/06-linq-distinct</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2023/01/06-linq-distinct</guid>
+			<pubDate>Fri, 06 Jan 2023 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;The &lt;em&gt;Enumerable&lt;/em&gt; &lt;code&gt;DistinctBy&lt;/code&gt; method, introduced in .NET 6, can be used to return &lt;em&gt;distinct elements from a sequence according to the specified key selector&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;Prior to .NET 6, performing this operation was a bit complex, but the introduction of the &lt;code&gt;DistinctBy&lt;/code&gt; method simplifies the process.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="setup"&gt;Setup&lt;/h2&gt;
+&lt;p&gt;In this example, a collection of 3 &lt;em&gt;Songs&lt;/em&gt; will be used:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;List&amp;lt;Song&amp;gt; songs = new List&amp;lt;Song&amp;gt;
+{
+    new Song
+    {
+        Id = 1,
+        Name = &amp;quot;Everlong&amp;quot;,
+        Album = &amp;quot;The Colour and the Shape&amp;quot;
+    },
+    new Song
+    {
+        Id = 2,
+        Name = &amp;quot;Monkey Wrench&amp;quot;,
+        Album = &amp;quot;The Colour and the Shape&amp;quot;
+    }
+    ,
+    new Song
+    {
+        Id = 3,
+        Name = &amp;quot;Learn to Fly&amp;quot;,
+        Album = &amp;quot;There Is Nothing Left to Lose&amp;quot;
+    }
+};
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Let's look at how we can get a &lt;em&gt;distinct list of albums from the collection of songs&lt;/em&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="pre.net-6"&gt;Pre .NET 6&lt;/h2&gt;
+&lt;p&gt;The process for doing this (using LINQ) prior to .NET 6 was as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;IEnumerable&amp;lt;string&amp;gt; albums = songs
+    .GroupBy(s =&amp;gt; s.Album)
+    .Select(g =&amp;gt; g.First())
+    .Select(a =&amp;gt; a.Album);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The steps are as follows:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Use &lt;strong&gt;GroupBy&lt;/strong&gt; to get a collection of &lt;em&gt;Songs&lt;/em&gt;, with the &lt;em&gt;Album&lt;/em&gt; value as the key&lt;/li&gt;
+&lt;li&gt;Use &lt;strong&gt;Select&lt;/strong&gt; and &lt;strong&gt;First&lt;/strong&gt; to get the first record in each group&lt;/li&gt;
+&lt;li&gt;Use &lt;strong&gt;Select&lt;/strong&gt; to get the &lt;em&gt;Album&lt;/em&gt; of the first record&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;As the &lt;em&gt;Songs&lt;/em&gt; in each group will all contain the same &lt;em&gt;Album&lt;/em&gt; (as we are grouping by Album), selecting any record will yield the same Album.&lt;/p&gt;
+&lt;p&gt;This works, but is a fairly convoluted process.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="net-6-and-beyond"&gt;.NET 6 and beyond&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;DistinctBy&lt;/code&gt; method greatly simplifies this:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;IEnumerable&amp;lt;string&amp;gt; albums = songs
+    .DistinctBy(s =&amp;gt; s.Album)
+    .Select(a =&amp;gt; a.Album);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Here, the steps are as follows:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Use &lt;strong&gt;DistinctBy&lt;/strong&gt; to get a collection of &lt;em&gt;Songs&lt;/em&gt;, each one having a &lt;em&gt;unique Album value&lt;/em&gt;. In this example, after this is executed, the record with &lt;em&gt;id = 2&lt;/em&gt; is dropped from the collection as it has the same &lt;em&gt;Album&lt;/em&gt; value as thew previous record&lt;/li&gt;
+&lt;li&gt;Use &lt;strong&gt;Select&lt;/strong&gt; to get the &lt;em&gt;Album&lt;/em&gt; of each of the remaining records&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Easier to read and less convoluted!&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;The addition of the new &lt;code&gt;DistinctBy&lt;/code&gt; makes a big difference to the complexity, as well as the readability of the code - instead of trying to decider some &lt;em&gt;complex&lt;/em&gt; LINQ (as was the case prior to .NET 6), the code now better describes what it is actually doing.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://www.reddit.com/r/csharp/comments/zpjpst/do_you_know_about_the_distinctby_method/"&gt;Do you know about the DistinctBy method?&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;229: 06-01-2023&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Efficient Stopwatch usage</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2023/01/05-new-stopwatch</link>
@@ -740,65 +815,6 @@ FROM [Blog] AS [b] (NOLOCK)
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://twitter.com/DaveCallanIE/status/1599379983817879552"&gt;Dave Callan Tweet&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;221: 13-12-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Enum iteration</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/12/12-enum-iteration</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/12/12-enum-iteration</guid>
-			<pubDate>Mon, 12 Dec 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;The static &lt;code&gt;Enum.GetValues&lt;/code&gt; method value be used to get an array of the enum values, which can be output as a &lt;em&gt;string&lt;/em&gt; or corresponding compatible &lt;em&gt;underlying value&lt;/em&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="enum.getvalues"&gt;Enum.GetValues&lt;/h2&gt;
-&lt;p&gt;The function and usage of &lt;code&gt;Enum.GetValues&lt;/code&gt; is very simple - it &lt;em&gt;converts an enum into an array of the enum values&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;Consider the following enum:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public enum OrderStatus
-{
-    New = 0,
-    Processing = 1,
-    Fulfilled = 2,
-    OutOnDelivery = 3,
-    Delivered = 4
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This can be converted to an array as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;OrderStatus[] enumItems = Enum.GetValues&amp;lt;OrderStatus&amp;gt;();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This array can now be iterated over, and output either as a &lt;em&gt;string&lt;/em&gt; or &lt;em&gt;compatible underlying type&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;foreach (var item in Enum.GetValues&amp;lt;OrderStatus&amp;gt;())
-{
-    // output the string value
-    Console.WriteLine(item);
-
-    // output the underlying value
-    Console.WriteLine((int)item);
-    // this would also work
-    //Console.WriteLine((double)item);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output of the above is:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;New
-0
-Processing
-1
-Fulfilled
-2
-OutOnDelivery
-3
-Delivered
-4
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Simple, easy and very useful.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;A small but useful piece of knowledge for today.  This can be leveraged to automatically populate a UI dropdown with available options, for example, instead of having multiple places with a list of possible values.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://code-maze.com/enumerate-enum-csharp/"&gt;How to Enumerate an Enum in C#&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;220: 12-12-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
