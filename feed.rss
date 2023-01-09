@@ -5,8 +5,82 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2023</copyright>
-		<pubDate>Fri, 06 Jan 2023 03:38:27 GMT</pubDate>
-		<lastBuildDate>Fri, 06 Jan 2023 03:38:27 GMT</lastBuildDate>
+		<pubDate>Mon, 09 Jan 2023 03:39:09 GMT</pubDate>
+		<lastBuildDate>Mon, 09 Jan 2023 03:39:09 GMT</lastBuildDate>
+		<item>
+			<title>Database creation on startup</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2023/01/09-ef-startup</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2023/01/09-ef-startup</guid>
+			<pubDate>Mon, 09 Jan 2023 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;When configuring an Entity Framework &lt;code&gt;DbContext&lt;/code&gt; with the &lt;em&gt;dependency injection container&lt;/em&gt;, it is possible to make use of the container to create an instance of the context on startup, to either create the database or apply database migrations.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="configuration"&gt;Configuration&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;AddDbContext&lt;/code&gt; extension method is used to configure the &lt;em&gt;Entity Framework DbContext&lt;/em&gt; on startup, registering the context with the dependency injection container:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
+
+// configure the context and add to the DI Container
+builder.Services.AddDbContext&amp;lt;DemoContext&amp;gt;(options =&amp;gt;
+    options.UseSqlServer(&amp;#64;&amp;quot;Server=.\SQLEXPRESS;Database=EFStartup;
+        Integrated Security=True;TrustServerCertificate=True&amp;quot;));
+
+var app = builder.Build();
+
+app.MapGet(&amp;quot;/blogs&amp;quot;, (DemoContext context) =&amp;gt;
+{
+    return context.Blogs.ToList();
+});
+
+app.Run();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;When the &lt;code&gt;/blogs&lt;/code&gt; endpoint is called and a &lt;code&gt;DemoContext&lt;/code&gt; is instantiated, the above will work &lt;code&gt;provided that the database and relevent tables have already been created&lt;/code&gt; - if not, and exception will be thrown, as the database is not automatically created.&lt;/p&gt;
+&lt;p&gt;Next we'll have a look at how to ensure the database is created on startup, using the services registered with the dependency injection container.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="startup"&gt;Startup&lt;/h2&gt;
+&lt;p&gt;The process of ensuring the database is created, is relatively straightforward - Entity Framework does most of the heavy lifting for us:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext&amp;lt;DemoContext&amp;gt;(options =&amp;gt;
+    options.UseSqlServer(&amp;#64;&amp;quot;Server=.\SQLEXPRESS;Database=EFStartup;
+        Integrated Security=True;TrustServerCertificate=True&amp;quot;));
+
+var app = builder.Build();
+
+// this block ensures the database is created
+#if DEBUG
+using (var scope = app.Services.CreateScope())
+{
+    var startupContext = scope.ServiceProvider
+        .GetRequiredService&amp;lt;DemoContext&amp;gt;();
+    startupContext.Database.EnsureCreated();
+}
+#endif
+
+app.MapGet(&amp;quot;/blogs&amp;quot;, (DemoContext context) =&amp;gt;
+{
+    return context.Blogs.ToList();
+});
+
+app.Run();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Some notes on the above code:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;the &lt;code&gt;#if conditional&lt;/code&gt; is used to ensure the code is only executed when debugging. It is NOT recommended to automatically create the database or apply migrations in non-development environments. The recommended approach is to use a CI/CD pipeline.&lt;/li&gt;
+&lt;li&gt;a new dependency injection scope is created (as the application host is technically not running yet) and a &lt;code&gt;DbContext&lt;/code&gt; instance instantiated&lt;/li&gt;
+&lt;li&gt;the &lt;em&gt;EnsureCreated&lt;/em&gt; method is called to create the database with the configured schema. This &lt;strong&gt;bypasses&lt;/strong&gt; migrations - if the migrations are required to be run, then &lt;code&gt;startupContext.Database.Migrate()&lt;/code&gt; should be called instead of &lt;code&gt;startupContext.Database.EnsureCreated()&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;the &lt;em&gt;EnsureCreated&lt;/em&gt; is designed to be used when doing &lt;code&gt;testing or prototyping&lt;/code&gt; where the database is dropped and recreated with each execution&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;A useful and time-saving way to use the &lt;em&gt;already configured&lt;/em&gt; dependency injection container to instantiate the database context, and have EF do the heavy lifting to create the database with the correct schema.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://nodogmablog.bryanhogan.net/2022/09/dependency-injection-of-an-entity-framework-context-within-program-cs-using-top-level-statements/"&gt;Dependency Injection of an Entity Framework Context within Program.cs Using Top Level Statements&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;230: 09-01-2023&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>LINQ DistinctBy</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2023/01/06-linq-distinct</link>
@@ -714,107 +788,6 @@ app.MapMethods(&amp;quot;/query&amp;quot;, new[] { &amp;quot;QUERY&amp;quot; }, 
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://khalidabuhakmeh.com/adding-experimental-http-methods-to-aspnet-core"&gt;Adding Experimental HTTP Methods To ASP.NET Core&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;222: 14-12-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>EF tags and interceptors</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2022/12/13-ef-tags</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2022/12/13-ef-tags</guid>
-			<pubDate>Tue, 13 Dec 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;&lt;code&gt;Tags&lt;/code&gt;, in conjunction with an &lt;code&gt;IInterceptor&lt;/code&gt; implementation, can be used to intercept SQL commands before being executed on the database, and modify them to fix the tag requirements.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="setup"&gt;Setup&lt;/h2&gt;
-&lt;p&gt;In the examples below, we are using DbContext setup the standard way, with a &lt;code&gt;Blog&lt;/code&gt; DbSet.&lt;/p&gt;
-&lt;p&gt;As per normal, to get a list of all &lt;em&gt;Blogs&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var normalQuery = context.Blogs.ToList();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Next we'll look at how to &lt;em&gt;tag&lt;/em&gt; the queries with a &lt;code&gt;nolock&lt;/code&gt; tag, and then how to &lt;em&gt;intercept&lt;/em&gt; the query, look presence of the &lt;em&gt;tag&lt;/em&gt;, and modify the query to include &lt;code&gt;nolock&lt;/code&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="tagging-queries"&gt;Tagging queries&lt;/h3&gt;
-&lt;p&gt;The first step is to &lt;em&gt;tag&lt;/em&gt; the query with the &lt;code&gt;nolock&lt;/code&gt; tag - this is relatively straightforward:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var nolockQuery = context
-    .Blogs
-    .TagWith(&amp;quot;Nolock&amp;quot;)
-    .ToList();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;If the generated SQL is inspected, one will see the query is now tagged as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;-- Nolock
-
-SELECT [b].[Id], [b].[DateCreated], [b].[Description], [b].[Title]
-FROM [Blog] AS [b]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Step 1 completed!&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="interceptor"&gt;Interceptor&lt;/h3&gt;
-&lt;p&gt;The next step is to &lt;em&gt;intercept&lt;/em&gt; the query before it's executed on the database and modify it - luckily this is also fairly straightforward, as Entity Framework has a built in mechanism for this.&lt;/p&gt;
-&lt;p&gt;To create an &lt;em&gt;interceptor&lt;/em&gt; (in this example) all that is required is to inherit from &lt;code&gt;DbCommandInterceptor&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// inherit DbCommandInterceptor
-public class NoLockInterceptor : DbCommandInterceptor
-{
-    // overwrite the ReaderExecuting method
-    public override InterceptionResult&amp;lt;DbDataReader&amp;gt; ReaderExecuting(DbCommand command, 
-        CommandEventData eventData, 
-        InterceptionResult&amp;lt;DbDataReader&amp;gt; result)
-    {
-        // if the query generated by EF starts with &amp;quot;nolock&amp;quot;
-        if(command.CommandText.StartsWith(&amp;quot;-- Nolock&amp;quot;, StringComparison.Ordinal))
-        {
-            // append &amp;quot;nolock&amp;quot; to the end
-            command.CommandText += &amp;quot; (NOLOCK)&amp;quot;;
-        }
-
-        return result;
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The &lt;code&gt;ReaderExecuting&lt;/code&gt; method is executed before the query is about to be executed - in this method, the query is (crudely) checked to see if it has been &lt;em&gt;tagged&lt;/em&gt; for &lt;code&gt;nolock&lt;/code&gt;, and if so, the &lt;code&gt;NOLOCK&lt;/code&gt; keyword is added to the end of the query.&lt;/p&gt;
-&lt;p&gt;This is very crude and only for demo purposes - it is not production ready. Ror example, this does not take into account any &lt;em&gt;WHERE&lt;/em&gt; statements in the SQL.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="dbcontext"&gt;DbContext&lt;/h3&gt;
-&lt;p&gt;Now that we have the &lt;em&gt;interceptor&lt;/em&gt; defined, the next step is to register it with EF.&lt;/p&gt;
-&lt;p&gt;In this demo, this is done in the &lt;em&gt;OnConfiguring&lt;/em&gt; method of the &lt;code&gt;DbContext&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-{
-    optionsBuilder.UseSqlServer(
-        &amp;#64;&amp;quot;Server=.\SQLEXPRESS;Database=EFTagging;Integrated Security=True;TrustServerCertificate=True&amp;quot;);
-
-    // add the interceptor
-    optionsBuilder.AddInterceptors(new NoLockInterceptor());
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Configuration is now completed!&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="generated-sql"&gt;Generated SQL&lt;/h3&gt;
-&lt;p&gt;When querying (without an predicate in this sample) and tagging the query, the &lt;code&gt;nolock&lt;/code&gt; keyword is automatically added:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var context = new DemoContext();
-
-// query without tagging
-var normalQuery = context.Blogs.ToList();
-
-//query with the tag
-var nolockQuery = context.Blogs.TagWith(&amp;quot;Nolock&amp;quot;).ToList();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The SQL generated by the two queries.&lt;/p&gt;
-&lt;p&gt;Without the tag:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT [b].[Id], [b].[DateCreated], [b].[Description], [b].[Title]
-FROM [Blog] AS [b]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;With the tag:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;-- Nolock
-
-SELECT [b].[Id], [b].[DateCreated], [b].[Description], [b].[Title]
-FROM [Blog] AS [b] (NOLOCK)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;A useful and interesting way to combine two EF features - the &lt;em&gt;tagging&lt;/em&gt; and &lt;em&gt;interception&lt;/em&gt; features. Manually modifying SQL generated by EF can be dangerous as there are a lot of options and variations to the SQL generated - so do it with caution and test extensively.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://twitter.com/DaveCallanIE/status/1599379983817879552"&gt;Dave Callan Tweet&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;221: 13-12-2022&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
