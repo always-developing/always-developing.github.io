@@ -4,8 +4,160 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2023</rights>
-	<updated>2023-01-09T03:39:09Z</updated>
+	<updated>2023-01-10T03:38:31Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2023/01/11-is-disinct-from</id>
+		<title>SQL: IS DISTINCT FROM</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2023/01/11-is-disinct-from" />
+		<updated>2023-01-10T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;SQL Server 2022 introduced a new predicate &lt;code&gt;IS [NOT] DISTINCT FROM&lt;/code&gt;, which allows for two expressions to be compared, but takes &lt;code&gt;NULL&lt;/code&gt; values into account.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="data-setup"&gt;Data setup&lt;/h2&gt;
+&lt;p&gt;Consider a &lt;em&gt;Blog&lt;/em&gt; table, with a &lt;code&gt;nullable DateCreated column&lt;/code&gt; - this column &lt;em&gt;could&lt;/em&gt; have a valid &lt;em&gt;DateTime value&lt;/em&gt;, but could also contain NULL values.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="pre-sql-2022"&gt;Pre SQL 2022&lt;/h3&gt;
+&lt;p&gt;Prior to SQL 2022, when comparing two values, &lt;code&gt;NULL&lt;/code&gt; values were, by default, not taken into account.&lt;/p&gt;
+&lt;p&gt;Assume the &lt;em&gt;Blog&lt;/em&gt; table &lt;code&gt;DOES&lt;/code&gt; contain rows which have &lt;em&gt;NULL&lt;/em&gt; DateCreated values:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;DECLARE &amp;#64;createdDate datetime
+
+SELECT &amp;#64;createdDate = NULL
+
+SELECT *
+FROM Blog
+WHERE DateCreated = &amp;#64;createdDate
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;strong&gt;0 rows returned&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Even though &lt;code&gt;&amp;#64;createdDate&lt;/code&gt; is &lt;em&gt;NULL&lt;/em&gt;, and there are rows in the table with &lt;em&gt;NULL&lt;/em&gt;, &lt;code&gt;no rows are returned&lt;/code&gt; - &lt;em&gt;NULL&lt;/em&gt; values are not taken into account.&lt;/p&gt;
+&lt;p&gt;To successfully return rows which do contain &lt;em&gt;NULL&lt;/em&gt; values, both expressions need to be converted to the same default value in case of a &lt;em&gt;NULL&lt;/em&gt; value:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;DECLARE &amp;#64;createdDate datetime
+
+SELECT &amp;#64;createdDate = NULL
+
+SELECT *
+FROM Blog
+WHERE ISNULL(DateCreated, '1900-01-01') = 
+	ISNULL(&amp;#64;createdDate, '1900-01-01')
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;strong&gt;10 rows returned&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;With this technique, &lt;em&gt;NULL&lt;/em&gt; values on either expression is converted to &lt;code&gt;'1900-01-01'&lt;/code&gt;, which is then successfully compared.&lt;/p&gt;
+&lt;p&gt;With SQL Server 2022, performing this comparison becomes much easier.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="sql-2022"&gt;SQL 2022&lt;/h3&gt;
+&lt;p&gt;SQL Server 2022 introduces the new &lt;code&gt;IS [NOT] DISTINCT FROM&lt;/code&gt; predicate - this allows the comparison of values while taking &lt;em&gt;NULL&lt;/em&gt; values into account.&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;DECLARE &amp;#64;createdDate datetime
+
+SELECT &amp;#64;createdDate = NULL
+
+SELECT * 
+FROM Blog
+WHERE DateCreated IS NOT DISTINCT FROM &amp;#64;createdDate
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;strong&gt;10 rows returned&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;IS [NOT] DISTINCT FROM&lt;/code&gt; predicate &lt;em&gt;compares the equality of two expressions and guarantees a true or false result, even if one or both operands are NULL&lt;/em&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;A relatively minor update, but for a developer which writes a good amount SQL this small update definitely does make things simpler and easier.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://www.sqlservercentral.com/blogs/cool-stuff-in-sql-server-2022-is-distinct-from"&gt;Cool Stuff in SQL Server 2022 – IS DISTINCT FROM&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;240: 11-01-2023&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2023/01/10-mvc-cache</id>
+		<title>Caching MVC responses</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2023/01/10-mvc-cache" />
+		<updated>2023-01-10T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;ASP.NET Core has out of the box &lt;code&gt;configurable response caching&lt;/code&gt; functionality which can be leveraged to improve the performance of a service using &lt;code&gt;controllers&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;The functionality described in this post is only for caching responses from &lt;em&gt;an MVC controller&lt;/em&gt; - to cache responses from a &lt;em&gt;minimal API&lt;/em&gt;, have a look at &lt;a href="https://alwaysdeveloping.net/2022/09/07-output-cache"&gt;this post which details output caching on minimal APIs&lt;/a&gt;.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="code"&gt;Code&lt;/h2&gt;
+&lt;h3 id="setup"&gt;Setup&lt;/h3&gt;
+&lt;p&gt;The default template &lt;em&gt;Weather API&lt;/em&gt; project is used for the below example, with the &lt;code&gt;Use Controllers&lt;/code&gt; options checked.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id="startup"&gt;Startup&lt;/h3&gt;
+&lt;p&gt;First step, &lt;code&gt;enabling the caching functionality&lt;/code&gt; in the service - this is done in the &lt;em&gt;program.cs&lt;/em&gt;, and involves adding two lines of code:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllers();
+// setup caching with the DI container
+builder.Services.AddResponseCaching();
+
+var app = builder.Build();
+
+// setup caching in the pipeline
+app.UseResponseCaching();
+app.UseAuthorization();
+app.MapControllers();
+
+app.Run();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This follows a fairly standard pattern when it comes to adding functionality to an ASP.NET Core application:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The &lt;code&gt;AddResponseCaching&lt;/code&gt; method is called to register the required services with the dependency injection container&lt;/li&gt;
+&lt;li&gt;The &lt;code&gt;UseResponseCaching&lt;/code&gt; method is called to insert the caching logic into the middleware pipeline&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Next step, enabling caching on a controller.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id="controller"&gt;Controller&lt;/h3&gt;
+&lt;p&gt;Now that we have the base caching functionality configured in the service, the next step is to actual enable caching for a specific endpoint/controller. This is done by &lt;code&gt;adding an attribute to the relevent controller method&lt;/code&gt;. In the &lt;em&gt;WeatherForecastController.cs&lt;/em&gt; class:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;[HttpGet]
+[ResponseCache(Duration = 30, Location = ResponseCacheLocation.Any)]
+public IEnumerable&amp;lt;WeatherForecast&amp;gt; Get()
+{
+    Console.WriteLine($"{nameof(Get)} method in {nameof(WeatherForecastController)} called");
+
+    return Enumerable.Range(1, 5).Select(index =&amp;gt; new WeatherForecast
+    {
+        Date = DateTime.Now.AddDays(index),
+        TemperatureC = Random.Shared.Next(-20, 55),
+        Summary = Summaries[Random.Shared.Next(Summaries.Length)]
+    })
+    .ToArray();
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The &lt;code&gt;ResponseCache&lt;/code&gt; attribute is added to the &lt;em&gt;Get&lt;/em&gt; method (the method called when the endpoint is called). In this example, the cache is set to expire every 30 seconds.&lt;/p&gt;
+&lt;p&gt;And thats it! We now have basic caching functionality working on the service.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id="output"&gt;Output&lt;/h3&gt;
+&lt;p&gt;If we run the service and browse to the &lt;code&gt;/weatherforecast&lt;/code&gt; endpoint, the weather payload will be returned, and logging at the console, the following will be output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Get method in WeatherForecastController called
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Refreshing the endpoint within 30 seconds (the duration of the cache), will yield the same payload, and cause no output to the console - the &lt;code&gt;results are returned from the cache, and the controller is never called.&lt;/code&gt;&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id="vary"&gt;Vary&lt;/h3&gt;
+&lt;p&gt;Not explicitly show in the above example, but it is also possible to &lt;code&gt;vary the cache response&lt;/code&gt; by a specific key.&lt;/p&gt;
+&lt;p&gt;If the attribute parameters were changed to include the &lt;code&gt;VaryByHeader&lt;/code&gt; parameter:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;[HttpGet]
+[ResponseCache(Duration = 30, Location = ResponseCacheLocation.Any, VaryByHeader = "User-Agent")]
+public IEnumerable&amp;lt;WeatherForecast&amp;gt; Get()
+{
+    Console.WriteLine($"{nameof(Get)} method in {nameof(WeatherForecastController)} called");
+
+    return Enumerable.Range(1, 5).Select(index =&amp;gt; new WeatherForecast
+    {
+        Date = DateTime.Now.AddDays(index),
+        TemperatureC = Random.Shared.Next(-20, 55),
+        Summary = Summaries[Random.Shared.Next(Summaries.Length)]
+    })
+    .ToArray();
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Then a different cache is created for each distinct &lt;code&gt;User-Agent&lt;/code&gt; header value sent on a request, each cache independent of one another. This way, the cache of one called will operate independently from the cache of a different caller. It is also possible to vary the cache by a specific &lt;code&gt;query string key&lt;/code&gt;.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;When simple caching is required, the built-in functionality is an easy to implement, low effort option to enhance the performance of a service.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://ryansouthgate.com/asp.net-core-response-caching/"&gt;ASP.NET Core Response Caching&lt;/a&gt;&lt;/p&gt;
+&lt;!--?# DailyDrop ?--&gt;239: 10-01-2023&lt;!--?#/ DailyDrop ?--&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2023/01/09-ef-startup</id>
 		<title>Database creation on startup</title>
@@ -596,187 +748,6 @@ public  class Blog
 		<updated>2022-12-16T01:00:00Z</updated>
 		<content>&lt;h2 id="until-next-year"&gt;Until next year&lt;/h2&gt;
 &lt;p&gt;Today will be the final Daily Drop post for 2022 - alwaysdeveloping.net is taking a break until the begining of January. The learning and growing will continue, just not the posts. Until next year!&lt;/p&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/12/15-frozen-collection</id>
-		<title>.NET8 Frozen collection</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/12/15-frozen-collection" />
-		<updated>2022-12-15T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;.NET8 &lt;em&gt;potentially&lt;/em&gt; introduces a new collection type called a &lt;code&gt;Frozen collection&lt;/code&gt; - this post will explore the new collection, and see how to compares to existing collection implementations.&lt;/p&gt;
-&lt;p&gt;As .NET8 is still currently in alpha, the &lt;code&gt;Frozen collection&lt;/code&gt; as well as any specific functionality it may offer could change before the final release.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="usage"&gt;Usage&lt;/h2&gt;
-&lt;p&gt;To see how the &lt;code&gt;Frozen collection&lt;/code&gt; operates, below it is used along with other common collection implementations:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// create a base list of 10 items
-List&amp;lt;int&amp;gt; baseList = Enumerable
-    .Range(1, 10).ToList();
-
-ReadOnlyCollection&amp;lt;int&amp;gt; readonlyList = 
-    baseList.AsReadOnly();
-FrozenSet&amp;lt;int&amp;gt; frozenSet = baseList.ToFrozenSet();
-ImmutableList&amp;lt;int&amp;gt; immutableList = 
-    baseList.ToImmutableList();
-
-// now add another item to the list
-baseList.Add(11);
-
-Console.WriteLine($&amp;quot;List count: {baseList.Count}&amp;quot;);
-Console.WriteLine($&amp;quot;ReadOnlyList count: {readonlyList.Count}&amp;quot;);
-Console.WriteLine($&amp;quot;FrozenSet count: {frozenSet.Count}&amp;quot;);
-Console.WriteLine($&amp;quot;ImmutableList count: {immutableList.Count}&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output from the above:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;List count: 11
-ReadOnlyList count: 11
-FrozenSet count: 10
-ImmutableList count: 10
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;From this we can see, that when &lt;em&gt;adding an item to the underlying list&lt;/em&gt;:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;The &lt;code&gt;ReadOnlyList&lt;/code&gt; count also increases, as it is a readonly view into the underlying list&lt;/li&gt;
-&lt;li&gt;The &lt;code&gt;FrozenSet&lt;/code&gt; and &lt;code&gt;ImmutableList&lt;/code&gt; count is &lt;em&gt;not increased&lt;/em&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;So what's the difference between the &lt;code&gt;FrozenSet&lt;/code&gt; and &lt;code&gt;ImmutableList&lt;/code&gt;?&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="set-vs-list"&gt;Set vs List&lt;/h2&gt;
-&lt;p&gt;As per their name, the &lt;code&gt;FrozenSet&lt;/code&gt; is a &lt;em&gt;set&lt;/em&gt;, while the &lt;code&gt;ImmutableList&lt;/code&gt; is a &lt;em&gt;list&lt;/em&gt; - &lt;code&gt;a set cannot contain duplicates and is unordered&lt;/code&gt;, unlike a list. Consider the following code, similar to the previous example, but now with duplicate items:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;
-List&amp;lt;int&amp;gt; baseList = Enumerable.Range(1, 10)
-    .ToList();
-// add duplicate items to the base list
-baseList.Add(1);
-baseList.Add(2);
-baseList.Add(3);
-
-ReadOnlyCollection&amp;lt;int&amp;gt; readonlyList = 
-    baseList.AsReadOnly();
-FrozenSet&amp;lt;int&amp;gt; frozenSet = baseList.ToFrozenSet();
-ImmutableList&amp;lt;int&amp;gt; immutableList = 
-    baseList.ToImmutableList();
-
-Console.WriteLine($&amp;quot;List count: {baseList.Count}&amp;quot;);
-Console.WriteLine($&amp;quot;ReadOnlyList count: {readonlyList.Count}&amp;quot;);
-Console.WriteLine($&amp;quot;FrozenSet count: {frozenSet.Count}&amp;quot;);
-Console.WriteLine($&amp;quot;ImmutableList count: {immutableList.Count}&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;List count: 13
-ReadOnlyList count: 13
-FrozenSet count: 10
-ImmutableList count: 13
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The 3 duplicate items are automatically removed when converting the base list to a set.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="another-collection-type"&gt;Another collection type&lt;/h2&gt;
-&lt;p&gt;So why the need for another specialized collection type - &lt;a href="https://steven-giesel.com/blogPost/34e0fd95-0b3f-40f2-ba2a-36d1d4eb5601"&gt;Steven Giesel&lt;/a&gt; benchmark's the performance of the &lt;code&gt;FrozenSet&lt;/code&gt; against other collection types:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;it is substantially &lt;em&gt;quicker&lt;/em&gt; vs the other types when &lt;em&gt;performing a lookup&lt;/em&gt;&lt;/li&gt;
-&lt;li&gt;it is however &lt;em&gt;slower&lt;/em&gt; when creating the set vs creating the other types&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;A new specialized collection type, which might not see every day use by the majority, but which, with the right use case, can improve the performance of the code.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://steven-giesel.com/blogPost/34e0fd95-0b3f-40f2-ba2a-36d1d4eb5601"&gt;Frozen collections in .NET 8&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;223: 15-12-2022&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/12/14-http-query</id>
-		<title>New HTTP methods</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/12/14-http-query" />
-		<updated>2022-12-14T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;Standards have been published for a new HTTP method, &lt;code&gt;QUERY&lt;/code&gt;, which aims to effectively be a merge between the GET and POST methods.&lt;/p&gt;
-&lt;p&gt;While this post will focus on handling the &lt;code&gt;QUERY&lt;/code&gt; HTTP method, the same configuration and logic could be applied to any custom HTTP method (although not advised)&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="the-need-for-query"&gt;The need for QUERY&lt;/h2&gt;
-&lt;p&gt;First, a quick word on the need for the QUERY method. When using the GET method, all information to be passed to the server is contained in the URL as a &lt;em&gt;GET method does not have a body&lt;/em&gt;. The problem is that URL's have a finite length and when this limit is reached, often developers will switch to using a POST method which allows for more complex and lengthy information to be &lt;em&gt;passed in the body&lt;/em&gt;.
-While this technique will work, the two different methods will generally have different caching mechanisms and a POST method may not offer the same performance as a GET method.&lt;/p&gt;
-&lt;p&gt;The QUERY method aims to address this, by effectively providing a method which operates like the &amp;quot;GET&amp;quot; method, but which allows for a body to be posted to the server.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="defining-the-endpoint"&gt;Defining the endpoint&lt;/h2&gt;
-&lt;p&gt;Defining an endpoint which uses a custom or new HTTP method is surprisingly easy - the &lt;code&gt;MapMethods&lt;/code&gt; method can be used, with a list of &lt;em&gt;httpMethods&lt;/em&gt; the endpoint supports:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// define an endpoint with QUERY http method
-app.MapMethods(&amp;quot;/query&amp;quot;, new[] { &amp;quot;QUERY&amp;quot; }, async (HttpContext context) =&amp;gt;
-{
-    string? text = null;
-    var request = context.Request;
-
-    // the body has to be read manually
-    if (!request.Body.CanSeek)
-    {
-        request.EnableBuffering();
-    }
-
-    if (request.Body.CanRead)
-    {
-        // read the body as a stream, and then set the
-        // reader position back to the start
-        request.Body.Position = 0;
-        var reader = new StreamReader(request.Body, Encoding.UTF8);
-        text = await reader.ReadToEndAsync();
-        request.Body.Position = 0;
-    }
-
-    // return the body
-    return Results.Ok($&amp;quot;Querying data using body: {text}&amp;quot;);
-
-})
-// give the endpoint a name, just making it easier to 
-// find later. Not required
-.WithName(&amp;quot;query&amp;quot;); 
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Here an endpoint &lt;code&gt;/query&lt;/code&gt; is defined, which uses the HTTP method &lt;code&gt;QUERY&lt;/code&gt;. The endpoint will read the contents of the body supplied with the HTTP request, and return it back to the caller.&lt;/p&gt;
-&lt;p&gt;The &lt;em&gt;WithName&lt;/em&gt; method is used to name the endpoint, which will be used in the next step to easily build up the URL to be invoked - this is not strictly required.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="calling-the-endpoint"&gt;Calling the endpoint&lt;/h2&gt;
-&lt;p&gt;Calling the endpoint is a &lt;em&gt;little&lt;/em&gt; tricker, as the typical tools one might use (e.g. Postman) will not support the new or custom HTTP method. In this example, the C# HttpClient will be used to call the &lt;code&gt;QUERY&lt;/code&gt; endpoint - we are going to &lt;em&gt;create a GET endpoint, which will call the QUERY endpoint&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/callquery&amp;quot;, async (HttpContext context, 
-    LinkGenerator generator) =&amp;gt;
-{
-    var client = new HttpClient();
-
-    // set the http method as QUERY
-    var request = new HttpRequestMessage(
-        new HttpMethod(&amp;quot;QUERY&amp;quot;),
-        // get the URL by the name specified
-        generator.GetUriByName(context, &amp;quot;query&amp;quot;, null)
-    );
-
-    // set the body of the QUERY call
-    request.Content = new StringContent(&amp;quot;This is a body of a QUERY call&amp;quot;, 
-        Encoding.UTF8, &amp;quot;text/plain&amp;quot;);
-
-    // call the QUERY endpoint
-    var response = client.Send(request);
-    var result = await response.Content.ReadAsStringAsync();
-
-    // the expected result should be the same 
-    // as the body specified
-    return result;
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Invoking the &lt;code&gt;/callquery&lt;/code&gt; endpoint yields the following result:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;&amp;quot;Querying data using body: This is a body of a QUERY call&amp;quot;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Success! We have successfully defined an endpoint which uses the &lt;code&gt;QUERY&lt;/code&gt; HTTP method, which was successfully invoked with a body supplied.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="simplifying-the-code"&gt;Simplifying the code&lt;/h2&gt;
-&lt;p&gt;The above is a very rough implementation of the &lt;code&gt;QUERY&lt;/code&gt; (or any custom HTTP method) implementation - in &lt;a href="https://khalidabuhakmeh.com/adding-experimental-http-methods-to-aspnet-core"&gt;Khalid Abuhakmeh's post&lt;/a&gt;, he has some good ways to simplify the code, and make it more generic. I suggest having a look at the techniques mentioned in his post on how to streamline the code for reuse.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;A useful &lt;em&gt;experiment&lt;/em&gt; to see how support for any HTTP method support can be added relatively easily. There are limitation of custom HTTP methods - including the above mention support from 3rd party applications (Postman) as well as libraries (Swashbuckle), as well as limited or no support from caching or load balancing mechanisms.&lt;/p&gt;
-&lt;p&gt;With reference to the &lt;code&gt;QUERY&lt;/code&gt; HTTP method - personally I like this, and will make sue of this, so I hope it does get adopted in the mainstream in future.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://khalidabuhakmeh.com/adding-experimental-http-methods-to-aspnet-core"&gt;Adding Experimental HTTP Methods To ASP.NET Core&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;222: 14-12-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
