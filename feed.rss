@@ -5,69 +5,8 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2023</copyright>
-		<pubDate>Tue, 10 Jan 2023 03:38:31 GMT</pubDate>
-		<lastBuildDate>Tue, 10 Jan 2023 03:38:31 GMT</lastBuildDate>
-		<item>
-			<title>SQL: IS DISTINCT FROM</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2023/01/11-is-disinct-from</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2023/01/11-is-disinct-from</guid>
-			<pubDate>Tue, 10 Jan 2023 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;SQL Server 2022 introduced a new predicate &lt;code&gt;IS [NOT] DISTINCT FROM&lt;/code&gt;, which allows for two expressions to be compared, but takes &lt;code&gt;NULL&lt;/code&gt; values into account.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="data-setup"&gt;Data setup&lt;/h2&gt;
-&lt;p&gt;Consider a &lt;em&gt;Blog&lt;/em&gt; table, with a &lt;code&gt;nullable DateCreated column&lt;/code&gt; - this column &lt;em&gt;could&lt;/em&gt; have a valid &lt;em&gt;DateTime value&lt;/em&gt;, but could also contain NULL values.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="pre-sql-2022"&gt;Pre SQL 2022&lt;/h3&gt;
-&lt;p&gt;Prior to SQL 2022, when comparing two values, &lt;code&gt;NULL&lt;/code&gt; values were, by default, not taken into account.&lt;/p&gt;
-&lt;p&gt;Assume the &lt;em&gt;Blog&lt;/em&gt; table &lt;code&gt;DOES&lt;/code&gt; contain rows which have &lt;em&gt;NULL&lt;/em&gt; DateCreated values:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;DECLARE &amp;#64;createdDate datetime
-
-SELECT &amp;#64;createdDate = NULL
-
-SELECT *
-FROM Blog
-WHERE DateCreated = &amp;#64;createdDate
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;strong&gt;0 rows returned&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;Even though &lt;code&gt;&amp;#64;createdDate&lt;/code&gt; is &lt;em&gt;NULL&lt;/em&gt;, and there are rows in the table with &lt;em&gt;NULL&lt;/em&gt;, &lt;code&gt;no rows are returned&lt;/code&gt; - &lt;em&gt;NULL&lt;/em&gt; values are not taken into account.&lt;/p&gt;
-&lt;p&gt;To successfully return rows which do contain &lt;em&gt;NULL&lt;/em&gt; values, both expressions need to be converted to the same default value in case of a &lt;em&gt;NULL&lt;/em&gt; value:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;DECLARE &amp;#64;createdDate datetime
-
-SELECT &amp;#64;createdDate = NULL
-
-SELECT *
-FROM Blog
-WHERE ISNULL(DateCreated, '1900-01-01') = 
-	ISNULL(&amp;#64;createdDate, '1900-01-01')
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;strong&gt;10 rows returned&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;With this technique, &lt;em&gt;NULL&lt;/em&gt; values on either expression is converted to &lt;code&gt;'1900-01-01'&lt;/code&gt;, which is then successfully compared.&lt;/p&gt;
-&lt;p&gt;With SQL Server 2022, performing this comparison becomes much easier.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="sql-2022"&gt;SQL 2022&lt;/h3&gt;
-&lt;p&gt;SQL Server 2022 introduces the new &lt;code&gt;IS [NOT] DISTINCT FROM&lt;/code&gt; predicate - this allows the comparison of values while taking &lt;em&gt;NULL&lt;/em&gt; values into account.&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;DECLARE &amp;#64;createdDate datetime
-
-SELECT &amp;#64;createdDate = NULL
-
-SELECT * 
-FROM Blog
-WHERE DateCreated IS NOT DISTINCT FROM &amp;#64;createdDate
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;strong&gt;10 rows returned&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;The &lt;code&gt;IS [NOT] DISTINCT FROM&lt;/code&gt; predicate &lt;em&gt;compares the equality of two expressions and guarantees a true or false result, even if one or both operands are NULL&lt;/em&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;A relatively minor update, but for a developer which writes a good amount SQL this small update definitely does make things simpler and easier.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.sqlservercentral.com/blogs/cool-stuff-in-sql-server-2022-is-distinct-from"&gt;Cool Stuff in SQL Server 2022 – IS DISTINCT FROM&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;240: 11-01-2023&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
+		<pubDate>Wed, 11 Jan 2023 03:39:33 GMT</pubDate>
+		<lastBuildDate>Wed, 11 Jan 2023 03:39:33 GMT</lastBuildDate>
 		<item>
 			<title>Caching MVC responses</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2023/01/10-mvc-cache</link>
@@ -157,7 +96,68 @@ public IEnumerable&amp;lt;WeatherForecast&amp;gt; Get()
 &lt;hr&gt;
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://ryansouthgate.com/asp.net-core-response-caching/"&gt;ASP.NET Core Response Caching&lt;/a&gt;&lt;/p&gt;
-&lt;!--?# DailyDrop ?--&gt;239: 10-01-2023&lt;!--?#/ DailyDrop ?--&gt;
+&lt;!--?# DailyDrop ?--&gt;231: 10-01-2023&lt;!--?#/ DailyDrop ?--&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
+		<item>
+			<title>SQL: IS DISTINCT FROM</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2023/01/11-is-disinct-from</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2023/01/11-is-disinct-from</guid>
+			<pubDate>Tue, 10 Jan 2023 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;SQL Server 2022 introduced a new predicate &lt;code&gt;IS [NOT] DISTINCT FROM&lt;/code&gt;, which allows for two expressions to be compared, but takes &lt;code&gt;NULL&lt;/code&gt; values into account.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="data-setup"&gt;Data setup&lt;/h2&gt;
+&lt;p&gt;Consider a &lt;em&gt;Blog&lt;/em&gt; table, with a &lt;code&gt;nullable DateCreated column&lt;/code&gt; - this column &lt;em&gt;could&lt;/em&gt; have a valid &lt;em&gt;DateTime value&lt;/em&gt;, but could also contain NULL values.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="pre-sql-2022"&gt;Pre SQL 2022&lt;/h3&gt;
+&lt;p&gt;Prior to SQL 2022, when comparing two values, &lt;code&gt;NULL&lt;/code&gt; values were, by default, not taken into account.&lt;/p&gt;
+&lt;p&gt;Assume the &lt;em&gt;Blog&lt;/em&gt; table &lt;code&gt;DOES&lt;/code&gt; contain rows which have &lt;em&gt;NULL&lt;/em&gt; DateCreated values:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;DECLARE &amp;#64;createdDate datetime
+
+SELECT &amp;#64;createdDate = NULL
+
+SELECT *
+FROM Blog
+WHERE DateCreated = &amp;#64;createdDate
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;strong&gt;0 rows returned&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Even though &lt;code&gt;&amp;#64;createdDate&lt;/code&gt; is &lt;em&gt;NULL&lt;/em&gt;, and there are rows in the table with &lt;em&gt;NULL&lt;/em&gt;, &lt;code&gt;no rows are returned&lt;/code&gt; - &lt;em&gt;NULL&lt;/em&gt; values are not taken into account.&lt;/p&gt;
+&lt;p&gt;To successfully return rows which do contain &lt;em&gt;NULL&lt;/em&gt; values, both expressions need to be converted to the same default value in case of a &lt;em&gt;NULL&lt;/em&gt; value:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;DECLARE &amp;#64;createdDate datetime
+
+SELECT &amp;#64;createdDate = NULL
+
+SELECT *
+FROM Blog
+WHERE ISNULL(DateCreated, '1900-01-01') = 
+	ISNULL(&amp;#64;createdDate, '1900-01-01')
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;strong&gt;10 rows returned&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;With this technique, &lt;em&gt;NULL&lt;/em&gt; values on either expression is converted to &lt;code&gt;'1900-01-01'&lt;/code&gt;, which is then successfully compared.&lt;/p&gt;
+&lt;p&gt;With SQL Server 2022, performing this comparison becomes much easier.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="sql-2022"&gt;SQL 2022&lt;/h3&gt;
+&lt;p&gt;SQL Server 2022 introduces the new &lt;code&gt;IS [NOT] DISTINCT FROM&lt;/code&gt; predicate - this allows the comparison of values while taking &lt;em&gt;NULL&lt;/em&gt; values into account.&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;DECLARE &amp;#64;createdDate datetime
+
+SELECT &amp;#64;createdDate = NULL
+
+SELECT * 
+FROM Blog
+WHERE DateCreated IS NOT DISTINCT FROM &amp;#64;createdDate
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;strong&gt;10 rows returned&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;IS [NOT] DISTINCT FROM&lt;/code&gt; predicate &lt;em&gt;compares the equality of two expressions and guarantees a true or false result, even if one or both operands are NULL&lt;/em&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;A relatively minor update, but for a developer which writes a good amount SQL this small update definitely does make things simpler and easier.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://www.sqlservercentral.com/blogs/cool-stuff-in-sql-server-2022-is-distinct-from"&gt;Cool Stuff in SQL Server 2022 – IS DISTINCT FROM&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;232: 11-01-2023&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
