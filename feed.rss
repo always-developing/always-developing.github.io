@@ -5,8 +5,165 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2023</copyright>
-		<pubDate>Wed, 11 Jan 2023 03:39:33 GMT</pubDate>
-		<lastBuildDate>Wed, 11 Jan 2023 03:39:33 GMT</lastBuildDate>
+		<pubDate>Thu, 12 Jan 2023 03:38:45 GMT</pubDate>
+		<lastBuildDate>Thu, 12 Jan 2023 03:38:45 GMT</lastBuildDate>
+		<item>
+			<title>Request binding with IParseable</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2023/01/12-endpoint-iparseable</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2023/01/12-endpoint-iparseable</guid>
+			<pubDate>Thu, 12 Jan 2023 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;In a &lt;a href="https://alwaysdeveloping.net/2022/12/05-iparseable"&gt;previous post&lt;/a&gt; we had a look at the &lt;code&gt;IParseable interface&lt;/code&gt; which allows for a &lt;code&gt;string to be parsed into a type&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;This functionality can be leveraged with minimal API's to &lt;em&gt;automatically parse a query string to a complex type&lt;/em&gt;.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="iparseable-request"&gt;IParseable request&lt;/h2&gt;
+&lt;p&gt;In this example, the &lt;em&gt;Song&lt;/em&gt; entity implements the &lt;em&gt;IParsable&amp;lt;Song&amp;gt;&lt;/em&gt; interface (more details in the &lt;a href="https://alwaysdeveloping.net/2022/12/05-iparseable"&gt;previous post about IParseable&lt;/a&gt;):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Song : IParsable&amp;lt;Song&amp;gt;
+{
+    public string Name { get; set; }
+    public string Artist { get; set; }
+    public int LengthInSeconds { get; set; }
+
+    private Song(string name, string artist, int lengthInSeconds)
+    {
+        Name = name;
+        Artist = artist;
+        LengthInSeconds = lengthInSeconds;
+    }
+
+    public static Song Parse(string s, IFormatProvider? provider)
+    {
+        string[] songPortions = s.Split(new[] { '|' });
+
+        if (songPortions.Length != 3) 
+        { 
+            throw new OverflowException("Expect format: Name|Artist|LengthInSeconds"); 
+        }
+
+        return new Song(songPortions[0], songPortions[1], Int32.Parse(songPortions[2]));
+    }
+
+    public static bool TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out Song result)
+    {
+        result = null;
+        if (s == null) 
+        { 
+            return false; 
+        }
+
+        try
+        {
+            result = Parse(s, provider);
+            return true;
+        }
+        catch { return false; }
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This interface implementation allows for a string value (in a specific format), to be converted to a &lt;code&gt;Song instance&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;Song song = "Everlong|Foo Fighters|326".Parse&amp;lt;Song&amp;gt;();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr&gt;
+&lt;h2 id="minimal-endpoint"&gt;Minimal endpoint&lt;/h2&gt;
+&lt;h3 id="manual-parsing"&gt;Manual parsing&lt;/h3&gt;
+&lt;p&gt;If we want an endpoint which accepts a &lt;em&gt;Song&lt;/em&gt; as a parameter, one option is to have the request entity &lt;code&gt;as a string&lt;/code&gt; and perform the conversion to &lt;em&gt;Song&lt;/em&gt; manually:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet("/song", ([FromQuery]string song) =&amp;gt;
+{
+    // perform the conversion from string
+    // to Song manually, using the IParsable
+    // interface
+    return details.Parse&amp;lt;Song&amp;gt;();
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Calling the endpoint with a &lt;em&gt;song query string&lt;/em&gt; &lt;code&gt;/song?song=Everlong|Foo Fighters|326&lt;/code&gt;, results in the following response:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-json"&gt;{"name":"Everlong","artist":"Foo Fighters","lengthInSeconds":326}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This is a valid approach, but because the &lt;em&gt;Song class&lt;/em&gt; implements &lt;em&gt;IParseable&lt;/em&gt;, the conversion can be done automatically!&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id="automatic-parsing"&gt;Automatic parsing&lt;/h3&gt;
+&lt;p&gt;A slightly easier approach that manually doing the conversions, is allowing it to happen automatically. Changing the parameter type from &lt;em&gt;string&lt;/em&gt; to &lt;em&gt;Song&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// parameter is Song instead of string
+app.MapGet("/song", ([FromQuery] Song song) =&amp;gt;
+{
+    return song;
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Calling the same endpoint with a &lt;em&gt;song query string&lt;/em&gt; &lt;code&gt;/song?song=Everlong|Foo Fighters|326&lt;/code&gt;, results in the same response:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-json"&gt;{"name":"Everlong","artist":"Foo Fighters","lengthInSeconds":326}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As &lt;code&gt;Song implement IParsable, the string parameter is automatically parsed to a Song instance&lt;/code&gt;.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;This is a small quality of life feature which makes working with the &lt;em&gt;IParsable&lt;/em&gt; interface and minimal endpoints easier and more streamline.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://andrewlock.net/5-new-mvc-features-in-dotnet-7/#1-iparseable-tryparse-for-primitive-binding"&gt;5 new MVC features in .NET 7&lt;/a&gt;&lt;/p&gt;
+&lt;!--?# DailyDrop ?--&gt;233: 12-01-2023&lt;!--?#/ DailyDrop ?--&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
+		<item>
+			<title>SQL: IS DISTINCT FROM</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2023/01/11-is-disinct-from</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2023/01/11-is-disinct-from</guid>
+			<pubDate>Wed, 11 Jan 2023 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;SQL Server 2022 introduced a new predicate &lt;code&gt;IS [NOT] DISTINCT FROM&lt;/code&gt;, which allows for two expressions to be compared, but takes &lt;code&gt;NULL&lt;/code&gt; values into account.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="data-setup"&gt;Data setup&lt;/h2&gt;
+&lt;p&gt;Consider a &lt;em&gt;Blog&lt;/em&gt; table, with a &lt;code&gt;nullable DateCreated column&lt;/code&gt; - this column &lt;em&gt;could&lt;/em&gt; have a valid &lt;em&gt;DateTime value&lt;/em&gt;, but could also contain NULL values.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="pre-sql-2022"&gt;Pre SQL 2022&lt;/h3&gt;
+&lt;p&gt;Prior to SQL 2022, when comparing two values, &lt;code&gt;NULL&lt;/code&gt; values were, by default, not taken into account.&lt;/p&gt;
+&lt;p&gt;Assume the &lt;em&gt;Blog&lt;/em&gt; table &lt;code&gt;DOES&lt;/code&gt; contain rows which have &lt;em&gt;NULL&lt;/em&gt; DateCreated values:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;DECLARE &amp;#64;createdDate datetime
+
+SELECT &amp;#64;createdDate = NULL
+
+SELECT *
+FROM Blog
+WHERE DateCreated = &amp;#64;createdDate
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;strong&gt;0 rows returned&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Even though &lt;code&gt;&amp;#64;createdDate&lt;/code&gt; is &lt;em&gt;NULL&lt;/em&gt;, and there are rows in the table with &lt;em&gt;NULL&lt;/em&gt;, &lt;code&gt;no rows are returned&lt;/code&gt; - &lt;em&gt;NULL&lt;/em&gt; values are not taken into account.&lt;/p&gt;
+&lt;p&gt;To successfully return rows which do contain &lt;em&gt;NULL&lt;/em&gt; values, both expressions need to be converted to the same default value in case of a &lt;em&gt;NULL&lt;/em&gt; value:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;DECLARE &amp;#64;createdDate datetime
+
+SELECT &amp;#64;createdDate = NULL
+
+SELECT *
+FROM Blog
+WHERE ISNULL(DateCreated, '1900-01-01') = 
+	ISNULL(&amp;#64;createdDate, '1900-01-01')
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;strong&gt;10 rows returned&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;With this technique, &lt;em&gt;NULL&lt;/em&gt; values on either expression is converted to &lt;code&gt;'1900-01-01'&lt;/code&gt;, which is then successfully compared.&lt;/p&gt;
+&lt;p&gt;With SQL Server 2022, performing this comparison becomes much easier.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="sql-2022"&gt;SQL 2022&lt;/h3&gt;
+&lt;p&gt;SQL Server 2022 introduces the new &lt;code&gt;IS [NOT] DISTINCT FROM&lt;/code&gt; predicate - this allows the comparison of values while taking &lt;em&gt;NULL&lt;/em&gt; values into account.&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;DECLARE &amp;#64;createdDate datetime
+
+SELECT &amp;#64;createdDate = NULL
+
+SELECT * 
+FROM Blog
+WHERE DateCreated IS NOT DISTINCT FROM &amp;#64;createdDate
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;strong&gt;10 rows returned&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;IS [NOT] DISTINCT FROM&lt;/code&gt; predicate &lt;em&gt;compares the equality of two expressions and guarantees a true or false result, even if one or both operands are NULL&lt;/em&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;A relatively minor update, but for a developer which writes a good amount SQL this small update definitely does make things simpler and easier.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://www.sqlservercentral.com/blogs/cool-stuff-in-sql-server-2022-is-distinct-from"&gt;Cool Stuff in SQL Server 2022 – IS DISTINCT FROM&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;232: 11-01-2023&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Caching MVC responses</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2023/01/10-mvc-cache</link>
@@ -97,67 +254,6 @@ public IEnumerable&amp;lt;WeatherForecast&amp;gt; Get()
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://ryansouthgate.com/asp.net-core-response-caching/"&gt;ASP.NET Core Response Caching&lt;/a&gt;&lt;/p&gt;
 &lt;!--?# DailyDrop ?--&gt;231: 10-01-2023&lt;!--?#/ DailyDrop ?--&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>SQL: IS DISTINCT FROM</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2023/01/11-is-disinct-from</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2023/01/11-is-disinct-from</guid>
-			<pubDate>Tue, 10 Jan 2023 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;SQL Server 2022 introduced a new predicate &lt;code&gt;IS [NOT] DISTINCT FROM&lt;/code&gt;, which allows for two expressions to be compared, but takes &lt;code&gt;NULL&lt;/code&gt; values into account.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="data-setup"&gt;Data setup&lt;/h2&gt;
-&lt;p&gt;Consider a &lt;em&gt;Blog&lt;/em&gt; table, with a &lt;code&gt;nullable DateCreated column&lt;/code&gt; - this column &lt;em&gt;could&lt;/em&gt; have a valid &lt;em&gt;DateTime value&lt;/em&gt;, but could also contain NULL values.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="pre-sql-2022"&gt;Pre SQL 2022&lt;/h3&gt;
-&lt;p&gt;Prior to SQL 2022, when comparing two values, &lt;code&gt;NULL&lt;/code&gt; values were, by default, not taken into account.&lt;/p&gt;
-&lt;p&gt;Assume the &lt;em&gt;Blog&lt;/em&gt; table &lt;code&gt;DOES&lt;/code&gt; contain rows which have &lt;em&gt;NULL&lt;/em&gt; DateCreated values:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;DECLARE &amp;#64;createdDate datetime
-
-SELECT &amp;#64;createdDate = NULL
-
-SELECT *
-FROM Blog
-WHERE DateCreated = &amp;#64;createdDate
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;strong&gt;0 rows returned&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;Even though &lt;code&gt;&amp;#64;createdDate&lt;/code&gt; is &lt;em&gt;NULL&lt;/em&gt;, and there are rows in the table with &lt;em&gt;NULL&lt;/em&gt;, &lt;code&gt;no rows are returned&lt;/code&gt; - &lt;em&gt;NULL&lt;/em&gt; values are not taken into account.&lt;/p&gt;
-&lt;p&gt;To successfully return rows which do contain &lt;em&gt;NULL&lt;/em&gt; values, both expressions need to be converted to the same default value in case of a &lt;em&gt;NULL&lt;/em&gt; value:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;DECLARE &amp;#64;createdDate datetime
-
-SELECT &amp;#64;createdDate = NULL
-
-SELECT *
-FROM Blog
-WHERE ISNULL(DateCreated, '1900-01-01') = 
-	ISNULL(&amp;#64;createdDate, '1900-01-01')
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;strong&gt;10 rows returned&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;With this technique, &lt;em&gt;NULL&lt;/em&gt; values on either expression is converted to &lt;code&gt;'1900-01-01'&lt;/code&gt;, which is then successfully compared.&lt;/p&gt;
-&lt;p&gt;With SQL Server 2022, performing this comparison becomes much easier.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="sql-2022"&gt;SQL 2022&lt;/h3&gt;
-&lt;p&gt;SQL Server 2022 introduces the new &lt;code&gt;IS [NOT] DISTINCT FROM&lt;/code&gt; predicate - this allows the comparison of values while taking &lt;em&gt;NULL&lt;/em&gt; values into account.&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;DECLARE &amp;#64;createdDate datetime
-
-SELECT &amp;#64;createdDate = NULL
-
-SELECT * 
-FROM Blog
-WHERE DateCreated IS NOT DISTINCT FROM &amp;#64;createdDate
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;strong&gt;10 rows returned&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;The &lt;code&gt;IS [NOT] DISTINCT FROM&lt;/code&gt; predicate &lt;em&gt;compares the equality of two expressions and guarantees a true or false result, even if one or both operands are NULL&lt;/em&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;A relatively minor update, but for a developer which writes a good amount SQL this small update definitely does make things simpler and easier.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.sqlservercentral.com/blogs/cool-stuff-in-sql-server-2022-is-distinct-from"&gt;Cool Stuff in SQL Server 2022 – IS DISTINCT FROM&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;232: 11-01-2023&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
@@ -748,17 +844,6 @@ public  class Blog
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://www.youtube.com/watch?v=6apfe1L1FhY&amp;amp;t=2041s"&gt;.NET Data Community Standup - EF7 Custom Model Conventions&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;224: 16-12-2022&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Holiday Break 2022</title>
-			<link>https://alwaysdeveloping.net/p/2022-12-holiday</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/p/2022-12-holiday</guid>
-			<pubDate>Fri, 16 Dec 2022 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="until-next-year"&gt;Until next year&lt;/h2&gt;
-&lt;p&gt;Today will be the final Daily Drop post for 2022 - alwaysdeveloping.net is taking a break until the begining of January. The learning and growing will continue, just not the posts. Until next year!&lt;/p&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
