@@ -4,8 +4,81 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2023</rights>
-	<updated>2023-01-12T03:38:45Z</updated>
+	<updated>2023-01-13T03:39:31Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2023/01/13-endpoint-withname</id>
+		<title>Naming minimal endpoints</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2023/01/13-endpoint-withname" />
+		<updated>2023-01-13T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;A minimal endpoint can be &lt;code&gt;given a name&lt;/code&gt;, which can then be leveraged to &lt;code&gt;automatically generate a link to the endpoint&lt;/code&gt; making it easier to be invoked.&lt;/p&gt;
+&lt;p&gt;The endpoint name metadata is also treated as the &lt;em&gt;operation Id&lt;/em&gt; in the OpenAPI specification, which is used by tools which use the swagger file to generate a client.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="named-endpoint"&gt;Named endpoint&lt;/h2&gt;
+&lt;p&gt;The first step is to give the endpoint a name - this is very simply and involves using the &lt;em&gt;WithName&lt;/em&gt; method:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// the default sample endpoint
+app.MapGet(&amp;quot;/weatherforecast&amp;quot;, () =&amp;gt;
+{
+    WeatherForecast[]? forecast = Enumerable.Range(1, 5).Select(index =&amp;gt;
+        new WeatherForecast
+        (
+            DateTime.Now.AddDays(index),
+            Random.Shared.Next(-20, 55),
+            summaries[Random.Shared.Next(summaries.Length)]
+        ))
+        .ToArray();
+    return forecast;
+})
+// give it a name
+.WithName(&amp;quot;GetWeatherForecast&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;After the body of the minimal API is defined, the &lt;em&gt;WithName&lt;/em&gt; method is called, with the endpoint name supplied. In this example the sample &lt;em&gt;/weatherforecast&lt;/em&gt; endpoint is given the name &lt;code&gt;GetWeatherForecast&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="link-generation"&gt;Link generation&lt;/h2&gt;
+&lt;p&gt;This &lt;em&gt;endpoint name&lt;/em&gt; can now be used to generate a URL to the endpoint - this is done using the &lt;code&gt;LinkGenerator&lt;/code&gt; class:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// inject LinkGenerator from DI
+app.MapGet(&amp;quot;/generateUrl&amp;quot;, (HttpContext context, LinkGenerator generator) =&amp;gt;
+{
+    // use the name to get a link to the GetWeatherForecast endpoint
+    return generator.GetUriByName(context, &amp;quot;GetWeatherForecast&amp;quot;, null);
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The above code defines an endpoint, which when invoked will return the URL of the &lt;code&gt;GetWeatherForecast&lt;/code&gt; endpoint. Browsing to the &lt;code&gt;/generateUrl&lt;/code&gt; endpoint returns the following:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;http://localhost:5276/weatherforecast
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The full URL (including port etc) is automatically calculated by the &lt;code&gt;LinkGenerator.GetUriByName&lt;/code&gt; method, based on the &lt;em&gt;HttpContext&lt;/em&gt; and the &lt;em&gt;endpoint name&lt;/em&gt;. &lt;em&gt;LinkGenerator&lt;/em&gt; is available through the dependency injection container and can just be injected into the relevent constructor/delegate.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="named-endpoint-invocation"&gt;Named endpoint invocation&lt;/h2&gt;
+&lt;p&gt;A practical use of this functionality is &lt;em&gt;when an endpoint is required to call another endpoint in the same application&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/weatherforecastproxy&amp;quot;, async (HttpContext context, LinkGenerator generator) =&amp;gt;
+{
+    HttpClient? client = new HttpClient();
+
+    // get the URL for the &amp;quot;GetWeatherForecast&amp;quot; endpoint
+    // and create an HttpRequestMessage for it
+    HttpRequestMessage? request = new HttpRequestMessage(
+        new HttpMethod(&amp;quot;GET&amp;quot;),
+        generator.GetUriByName(context, &amp;quot;GetWeatherForecast&amp;quot;, null)
+    );
+
+    // invoke it
+    HttpResponseMessage? response = client.Send(request);
+    return await response.Content.ReadAsStringAsync();
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In this example, calling &lt;code&gt;/weatherforecastproxy&lt;/code&gt; will proxy the call to the &lt;code&gt;GetWeatherForecast&lt;/code&gt; endpoint and returns the result - this proxy endpoint is not adding much value in this sample, but it could do more complicated logic, such as calling multiple endpoints and reconciling the results, for example.&lt;/p&gt;
+&lt;p&gt;Using &lt;code&gt;named endpoints&lt;/code&gt; and &lt;code&gt;LinkGenerator.GetUriByName&lt;/code&gt; is a safer approach to generating the URL, instead of manually trying to build up the URL based on the information extracted from the &lt;em&gt;HttpContext&lt;/em&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;A simple and easy way to name, and then generate a link using the name. If the code is required to call another endpoint in the same application, or will be used with a client generation tool - then all endpoints should be named, and &lt;em&gt;LinkGenerator&lt;/em&gt; used when generating the links.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://khalidabuhakmeh.com/adding-experimental-http-methods-to-aspnet-core"&gt;Adding Experimental HTTP Methods To ASP.NET Core&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;234: 12-01-2023&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2023/01/12-endpoint-iparseable</id>
 		<title>Request binding with IParseable</title>
@@ -693,146 +766,6 @@ await context.SaveChangesAsync();
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://steven-giesel.com/blogPost/f4bc6fcc-5691-4f72-b9bb-75aeeb59230a"&gt;New ArgumentException and ArgumentOutOfRangeException helpers in .NET 8&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;225: 02-01-2023&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2022/12/16-ef-conventions</id>
-		<title>Entity Framework conventions</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2022/12/16-ef-conventions" />
-		<updated>2022-12-16T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;Entity Framework comes out of the box with a number of default &lt;em&gt;conventions&lt;/em&gt; - however &lt;code&gt;new conventions can easily be added&lt;/code&gt; to an application specific EF configuration to customize how Entity Framework operates.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="scenario"&gt;Scenario&lt;/h2&gt;
-&lt;p&gt;By default, when a &lt;code&gt;string&lt;/code&gt; property on an entity is mapped to a SQL database column, it will be generated as &lt;code&gt;nvarchar(max)&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;Consider the following class:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;[Table(&amp;quot;Blog&amp;quot;)]
-public  class Blog
-{
-    public int Id { get; set; }
-
-    public string Title { get; set; }
-
-    public string Description { get; set; }
-
-    public DateTime DateCreated { get; set; }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;And the DbContext configuration, some additional logging for demo purposes:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class DemoContext : DbContext
-{
-    public DbSet&amp;lt;Blog&amp;gt; Blogs { get; set; }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        optionsBuilder.UseSqlServer(
-            &amp;#64;&amp;quot;Server=.\SQLEXPRESS;Database=ConfigConventions;Integrated Security=True;TrustServerCertificate=True&amp;quot;);
-
-        // enable additional logging for demo purposes
-        optionsBuilder.EnableSensitiveDataLogging(true);
-        optionsBuilder.LogTo((string query) =&amp;gt;
-        {
-            Console.WriteLine(query);
-        }, LogLevel.Information);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The &lt;em&gt;CREATE TABLE SQL&lt;/em&gt; generated is as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;CREATE TABLE [Blog] (
-    [Id] int NOT NULL IDENTITY,
-    [Title] nvarchar(max) NOT NULL,
-    [Description] nvarchar(max) NOT NULL,
-    [DateCreated] datetime2 NOT NULL,
-    CONSTRAINT [PK_Blog] PRIMARY KEY ([Id])
-);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;As one can see, the default for C# properties of type &lt;code&gt;string&lt;/code&gt; is &lt;code&gt;nvarchar(max)&lt;/code&gt; - next we'll go through the various steps to change the convention for &lt;em&gt;non-explicitly set string&lt;/em&gt; properties from &lt;code&gt;nvarchar(max)&lt;/code&gt; to &lt;code&gt;nvarchar(256)&lt;/code&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="convention-definition"&gt;Convention definition&lt;/h3&gt;
-&lt;p&gt;The first step is to define the &lt;em&gt;convention&lt;/em&gt; to change the default string length. This is achieved by implementing the &lt;code&gt;IModelFinalizingConvention&lt;/code&gt; interface (which inherits the &lt;code&gt;IConvention&lt;/code&gt; interface). The &lt;code&gt;IModelFinalizingConvention&lt;/code&gt; implementations, as the name suggests, are executed once the model has mostly been built (using the built-in and other custom conventions), and is being &lt;em&gt;finalized&lt;/em&gt;. This is the &amp;quot;safest&amp;quot; time to execute custom conventions.&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class MaxStringLengthConvention : IModelFinalizingConvention
-{
-    private readonly int _maxLength;
-
-    public MaxStringLengthConvention(int maxLength)
-	{
-        this._maxLength = maxLength;
-    }
-
-    // implement the only method on the interface
-    public void ProcessModelFinalizing(IConventionModelBuilder modelBuilder, 
-        IConventionContext&amp;lt;IConventionModelBuilder&amp;gt; context)
-    {
-        // iterate through each type defined in the EF model
-        // and through each property and check if a string
-        foreach (var property in modelBuilder.Metadata.GetEntityTypes()
-                     .SelectMany(entityType =&amp;gt; entityType.GetDeclaredProperties()
-                                    .Where( property =&amp;gt; property.ClrType == typeof(string))))
-        {
-            // set the max length based on the value passed in
-            property.Builder.HasMaxLength(_maxLength);
-        }
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The implementation for this convention effectively checks &lt;em&gt;each type&lt;/em&gt; and &lt;em&gt;each property&lt;/em&gt; on the type to see if it is of type &lt;em&gt;string&lt;/em&gt; - if so, the max length is set based on the max length specified on initialization.&lt;/p&gt;
-&lt;p&gt;Now to register the newly created convention!&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="convention-configuration"&gt;Convention configuration&lt;/h3&gt;
-&lt;p&gt;The convention is required to be registered with Entity Framework - so EF knows to apply the convention to the model (adn when to apply it)&lt;/p&gt;
-&lt;p&gt;The &lt;code&gt;ConfigureConventions&lt;/code&gt; method is &lt;em&gt;overridden&lt;/em&gt; on the &lt;em&gt;DbContext&lt;/em&gt;, and the convention(s) registered:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
-{
-    configurationBuilder.Conventions.Add(_ =&amp;gt; new MaxStringLengthConvention(256));
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h3 id="generated-sql"&gt;Generated SQL&lt;/h3&gt;
-&lt;p&gt;With the convention configured, the SQL generated now looks as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;CREATE TABLE [Blog] (
-    [Id] int NOT NULL IDENTITY,
-    [Title] nvarchar(256) NOT NULL,
-    [Description] nvarchar(256) NOT NULL,
-    [DateCreated] datetime2 NOT NULL,
-    CONSTRAINT [PK_Blog] PRIMARY KEY ([Id])
-);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;All string properties/columns are set to have a length of 256 by default.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="explicitly-set-properties"&gt;Explicitly set properties&lt;/h3&gt;
-&lt;p&gt;Entity Framework is smart enough to know that if the &lt;em&gt;max length&lt;/em&gt; has explicitly been set on a property/column, then the default length set by the convention will &lt;code&gt;not be applied&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;If the &lt;em&gt;Title&lt;/em&gt; property on the &lt;em&gt;Blog&lt;/em&gt; was set to have a max length of 500:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;[Table(&amp;quot;Blog&amp;quot;)]
-public  class Blog
-{
-    public int Id { get; set; }
-
-    [MaxLength(500)]
-    public string Title { get; set; }
-
-    public string Description { get; set; }
-
-    public DateTime DateCreated { get; set; }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The SQL generated is now as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;CREATE TABLE [Blog] (
-    [Id] int NOT NULL IDENTITY,
-    [Title] nvarchar(500) NOT NULL,
-    [Description] nvarchar(256) NOT NULL,
-    [DateCreated] datetime2 NOT NULL,
-    CONSTRAINT [PK_Blog] PRIMARY KEY ([Id])
-);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;An explicitly defined max length on a property, takes precedence over the max length specified by the convention.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;While all of the above could have been achieved by overwriting the &lt;code&gt;OnModelCreating&lt;/code&gt; method on the &lt;em&gt;DbContext&lt;/em&gt;, the conventions approach is more flexible and reusable. The conventions can be packaged and shared across teams in an enterprise to ensure consistent database standards.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.youtube.com/watch?v=6apfe1L1FhY&amp;amp;t=2041s"&gt;.NET Data Community Standup - EF7 Custom Model Conventions&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;224: 16-12-2022&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
