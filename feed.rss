@@ -5,8 +5,74 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2023</copyright>
-		<pubDate>Fri, 13 Jan 2023 03:39:31 GMT</pubDate>
-		<lastBuildDate>Fri, 13 Jan 2023 03:39:31 GMT</lastBuildDate>
+		<pubDate>Mon, 16 Jan 2023 03:42:06 GMT</pubDate>
+		<lastBuildDate>Mon, 16 Jan 2023 03:42:06 GMT</lastBuildDate>
+		<item>
+			<title>Cancelling a collection iteration</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2023/01/16-for-cancellation</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2023/01/16-for-cancellation</guid>
+			<pubDate>Mon, 16 Jan 2023 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;When iterating over a collection or items, the &lt;code&gt;TakeWhile&lt;/code&gt; method can be used in conjunction with a &lt;code&gt;CancellationToken&lt;/code&gt; to successfully stop iterating if the parent process is cancelled.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="no-cancellationtoken"&gt;No CancellationToken&lt;/h2&gt;
+&lt;p&gt;Generally, when iteration through a collection, a &lt;code&gt;foreach&lt;/code&gt; (or &lt;code&gt;for&lt;/code&gt;) loop is used:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;async Task ExecuteLoopNoCancel()
+{
+    // generate a collection of 100 items
+    var iterationItems = Enumerable.Range(0, 100);
+
+    // iterate through the 100 items
+    foreach (var item in iterationItems)
+    {
+        Console.WriteLine($&amp;quot;Processing item: {item}&amp;quot;);
+        await Task.Delay(500);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Calling the above &lt;code&gt;/ExecuteLoopNoCancel&lt;/code&gt; endpoint has the following output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Processing item: 0
+Processing item: 1
+Processing item: 2
+Processing item: 3
+.
+.
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The issue with the above, and &lt;em&gt;especially in an endpoint which can be cancelled at any time&lt;/em&gt;, is that if the parent process is cancelled, the &lt;code&gt;iteration of the collection will continue&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;If the endpoint is called (from Postman, for example), and the request is &lt;code&gt;cancelled&lt;/code&gt;, the &lt;em&gt;loop will continue to execute in the background&lt;/em&gt; (and output to the console), as it is being executed &lt;code&gt;asynchronously&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="with-cancellationtoken"&gt;With CancellationToken&lt;/h2&gt;
+&lt;p&gt;To correctly &lt;code&gt;cancel the iteration&lt;/code&gt; when the parent process is cancelled, a &lt;code&gt;CancellationToken&lt;/code&gt; should be passed from the top of the stack all the way down to the loop:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// pass in a CancellationToken
+async Task ExecuteLoop(CancellationToken cnlTkn)
+{
+    var iterationItems = Enumerable.Range(0, 100);
+
+    // only loop while the CancellationToken is not cancelled
+    foreach(var item in iterationItems
+        .TakeWhile(_ =&amp;gt; !cnlTkn.IsCancellationRequested))
+    {
+        Console.WriteLine($&amp;quot;Processing item: {item}&amp;quot;);
+        await Task.Delay(500);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;ul&gt;
+&lt;li&gt;A &lt;code&gt;CancellationToken&lt;/code&gt; token is passed into the endpoint - this is &lt;em&gt;linked&lt;/em&gt; to client, so if the request is &lt;em&gt;cancelled from the client side, the CancellationToken is &amp;quot;notified&amp;quot;&lt;/em&gt; of the cancellation&lt;/li&gt;
+&lt;li&gt;In the &lt;em&gt;foreach&lt;/em&gt; loop, the &lt;code&gt;TakeWhile&lt;/code&gt; method is called, with a &lt;code&gt;CancellationToken&lt;/code&gt; passed in as a parameter&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Now, when the endpoint is called (from Postman, for example), and the request is &lt;code&gt;cancelled&lt;/code&gt;, the &lt;em&gt;CancellationToken is marked as cancelled (IsCancellationRequested is set to true), and the iteration will stop&lt;/em&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;When performing iterations over a collection, where it makes sense (in situations when the calling process can be cancelled, such as in an endpoint), a &lt;code&gt;CancellationToken&lt;/code&gt; instance should always be used. This ensures any iterations being done asynchronously will be cancelled, ensuring resources are not being unessacary used.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/vekzdran/status/1610197203901091840"&gt;&amp;#64;vekzdran&amp;#64;hachyderm.io Tweet&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;235: 16-01-2023&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Naming minimal endpoints</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2023/01/13-endpoint-withname</link>
@@ -77,7 +143,7 @@ app.MapGet(&amp;quot;/generateUrl&amp;quot;, (HttpContext context, LinkGenerator
 &lt;hr /&gt;
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://khalidabuhakmeh.com/adding-experimental-http-methods-to-aspnet-core"&gt;Adding Experimental HTTP Methods To ASP.NET Core&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;234: 12-01-2023&lt;?#/ DailyDrop ?&gt;
+&lt;?# DailyDrop ?&gt;234: 13-01-2023&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
@@ -711,72 +777,6 @@ await context.SaveChangesAsync();
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://shadynagy.com/value-converters-efcore/"&gt;Value converters in Entity Framework Code (EF Core)&lt;/a&gt;&lt;/p&gt;
 &lt;!--?# DailyDrop ?--&gt;226: 03-01-2023&lt;!--?#/ DailyDrop ?--&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>.NET 8 Exception helpers</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2023/01/02-exception-helpers</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2023/01/02-exception-helpers</guid>
-			<pubDate>Mon, 02 Jan 2023 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;A number of &lt;em&gt;helper&lt;/em&gt; methods are being introduced with .NET 8, which make the process of &lt;code&gt;checking values and throwing exception&lt;/code&gt; a lot simpler.&lt;/p&gt;
-&lt;p&gt;Keep in mind .NET 8 is in pre-release, so the functionality could potentially change or be removed before the final .NET8 release.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="existing-helper"&gt;Existing helper&lt;/h2&gt;
-&lt;p&gt;An example of an existing (prior to .NET 8) exception helper method, is the &lt;code&gt;ArgumentException.ThrowIfNullOrEmpty&lt;/code&gt; method.&lt;/p&gt;
-&lt;p&gt;Instead of having to do this:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;void ManualThrowException(string strParam)
-{
-    if (string.IsNullOrEmpty(strParam))
-    {
-        throw new Exception($&amp;quot;{nameof(strParam)} is null or empty&amp;quot;);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The &lt;code&gt;ThrowIfNullOrEmpty&lt;/code&gt; method can be used, which checks the value of the parameter and throws the exception:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;void ThrowNullOrEmptyException(string strParam)
-{
-    ArgumentException.ThrowIfNullOrEmpty(strParam);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="new-helpers"&gt;New helpers&lt;/h2&gt;
-&lt;p&gt;There are a number of new static helper methods (on &lt;em&gt;ArgumentOutOfRangeException&lt;/em&gt;) being introduced, which include:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;ThrowIfZero&lt;/li&gt;
-&lt;li&gt;ThrowIfNegative&lt;/li&gt;
-&lt;li&gt;ThrowIfNegativeOrZero&lt;/li&gt;
-&lt;li&gt;ThrowIfGreaterThan&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;The usage and functionality of these are the same as &lt;code&gt;ThrowIfNullOrEmpty&lt;/code&gt; - the parameter is checked, and an exception is throw if the check fails.&lt;/p&gt;
-&lt;p&gt;To check if a int value is &lt;em&gt;zero or negative&lt;/em&gt;, instead of this:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;void ManualThrowZeroNegativeException(int intParam)
-{
-    if (intParam &amp;lt;= 0)
-    {
-        throw new Exception($&amp;quot;{nameof(intParam)} is less than or equal to zero&amp;quot;);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This can be done:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;void EnhancedThrowZeroNegativeException(int intParam)
-{
-    ArgumentOutOfRangeException.ThrowIfNegative(intParam);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;If thrown, the exception generated is also more informative than before, including the parameter name in the exception text:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;'intParam' must be a non-negative value.
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The result - more readable code, and quicker and easier for a developer to thrown an exception.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;A relatively small and simple helper method update - but one will facilitate cleaner, simpler and more readable code.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://steven-giesel.com/blogPost/f4bc6fcc-5691-4f72-b9bb-75aeeb59230a"&gt;New ArgumentException and ArgumentOutOfRangeException helpers in .NET 8&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;225: 02-01-2023&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
