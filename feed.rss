@@ -5,8 +5,47 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2023</copyright>
-		<pubDate>Tue, 17 Jan 2023 03:38:14 GMT</pubDate>
-		<lastBuildDate>Tue, 17 Jan 2023 03:38:14 GMT</lastBuildDate>
+		<pubDate>Wed, 18 Jan 2023 03:39:18 GMT</pubDate>
+		<lastBuildDate>Wed, 18 Jan 2023 03:39:18 GMT</lastBuildDate>
+		<item>
+			<title>Accurate string length</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2023/01/18-string-length</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2023/01/18-string-length</guid>
+			<pubDate>Wed, 18 Jan 2023 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;String.Length&lt;/code&gt; does &lt;em&gt;not always return a &amp;quot;true&amp;quot; accurate length&lt;/em&gt; of the string - instead, the &lt;code&gt;StringInfo.LengthInTextElements&lt;/code&gt; method should be used.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="string-length"&gt;String Length&lt;/h2&gt;
+&lt;p&gt;Generally, for most common string usage, the &lt;code&gt;String.Length&lt;/code&gt; will return the correct length of the string - the number of characters in the string object. However, the number of characters in the string object &lt;code&gt;does not always correspond to the number of characters which reflect on the screen&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;For example:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;Console.Write(&amp;quot;This string '👍' has the length of: &amp;quot;);
+Console.WriteLine(&amp;quot;👍&amp;quot;.Length);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output of the above is:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;This string '??' has the length of: 2
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The terminal window is unable to render the 👍 emoji, so it is reflected as '??' - but this also gives insight into its length (two question marks, and no one). Even though 👍 reflects as &lt;code&gt;one character when output, it actually consists of two characters in the string object&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="stringinfo-lengthintextelements"&gt;StringInfo LengthInTextElements&lt;/h2&gt;
+&lt;p&gt;To get a more accurate string length, the &lt;code&gt;StringInfo.LengthInTextElements&lt;/code&gt; property can be used:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;Console.Write(&amp;quot;This string '👍' has the true length of: &amp;quot;);
+Console.WriteLine(new StringInfo(&amp;quot;👍&amp;quot;).LengthInTextElements);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output of the above is:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;This string '??' has the length of: 1
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The &lt;em&gt;LengthInTextElements&lt;/em&gt; property will return the number of text elements displayed in the terminal.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;If the length of the string is required for display purposes, and the string could contain &amp;quot;non-traditional&amp;quot; characters, such as emoji's - then the &lt;em&gt;StringInfo.LengthInTextElements&lt;/em&gt; property should be used for more accurate results.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://linkdotnet.github.io/tips-and-tricks/strings/#getting-the-printable-length-of-a-string-or-character"&gt;Getting the printable length of a string or character&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;237: 18-01-2023&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Non-generic to generic method call</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2023/01/17-non-to-generic</link>
@@ -675,52 +714,6 @@ Having said that, having a single StopWatch instance should really not impact ap
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://www.youtube.com/watch?v=NTz99yN2urc"&gt;Are you using the Stopwatch efficiently in .NET?&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;228: 05-01-2023&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Combining multiple attributes</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2023/01/04-multi-attributes</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2023/01/04-multi-attributes</guid>
-			<pubDate>Wed, 04 Jan 2023 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;When multiple attributes are applied to a program entity, the attributes can either be &lt;code&gt;specified on separate lines, or on a single line&lt;/code&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="multiline"&gt;Multiline&lt;/h2&gt;
-&lt;p&gt;In this example, a &lt;em&gt;class&lt;/em&gt; is used to demonstrate an entity having multiple attributes, but the same applies to other relevent program entities:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;[Serializable]
-[Obsolete]
-[DebuggerDisplay(&amp;quot;Id={Id}, Name={Name}&amp;quot;)]
-public class MultiAttributeClass
-{
-    public int Id { get; set; }
-
-    public string Name { get; set; }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Three attributes added to the class - the actual attributes themselves are not important, it could be been any number of any attributes.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="single-line"&gt;Single line&lt;/h2&gt;
-&lt;p&gt;The multiple attributes can also be applied as follows though:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;[Serializable, Obsolete, DebuggerDisplay(&amp;quot;Id={Id}, Name={Name}&amp;quot;)]
-public class MultiAttributeClass
-{
-    public int Id { get; set; }
-
-    public string Name { get; set; }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Does this reduce the number of lines in code? Yes
-Does it make it more difficult to read? Potentially
-Is this recommended? Probably not. But you can if you want&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;A very small knowledge drop today, but something I was not aware was possible. As mentioned, as a general rule I would argue this make the code slightly less readable - however, some might find this code cleaner and more readable.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.reddit.com/r/csharp/comments/zk8oyj/did_you_know_you_could_combine_method_or_class/"&gt;Reddit Post&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;227: 04-01-2023&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
