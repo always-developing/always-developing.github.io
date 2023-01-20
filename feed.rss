@@ -5,8 +5,65 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2023</copyright>
-		<pubDate>Thu, 19 Jan 2023 03:39:55 GMT</pubDate>
-		<lastBuildDate>Thu, 19 Jan 2023 03:39:55 GMT</lastBuildDate>
+		<pubDate>Fri, 20 Jan 2023 03:41:09 GMT</pubDate>
+		<lastBuildDate>Fri, 20 Jan 2023 03:41:09 GMT</lastBuildDate>
+		<item>
+			<title>LINQ Any/All over Count</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2023/01/20-linq-count</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2023/01/20-linq-count</guid>
+			<pubDate>Fri, 20 Jan 2023 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;In most scenarios, the LINQ &lt;code&gt;All&lt;/code&gt; or &lt;code&gt;Any&lt;/code&gt; methods should be used instead of the &lt;code&gt;Count&lt;/code&gt; method.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;Count&lt;/code&gt; should be avoided, as it &lt;em&gt;enumerates through every single entry in the collection to get the count&lt;/em&gt;, where &lt;code&gt;Any/All&lt;/code&gt; will &lt;em&gt;return as soon as the predicate condition is not met anymore&lt;/em&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="examples"&gt;Examples&lt;/h2&gt;
+&lt;p&gt;All of the below examples, use the following collection:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var intList = Enumerable.Range(1, 10);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="no-predicate"&gt;No predicate&lt;/h3&gt;
+&lt;p&gt;When required to check if a list contains &lt;em&gt;any&lt;/em&gt; items, the &lt;code&gt;Any&lt;/code&gt; method should be used instead of &lt;code&gt;Count&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// Bad
+Console.WriteLine(intList.Count() &amp;gt; 0);
+// Good
+Console.WriteLine(intList.Any());
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In this example, when &lt;code&gt;Count&lt;/code&gt; is used, 10 items needs to be enumerated to get the full count, however &lt;code&gt;Any&lt;/code&gt; will return &lt;em&gt;true&lt;/em&gt; after one iteration, as soon as one item is found.&lt;br /&gt;
+With only 10 items, the difference is negligible, however as the number of items in the collection increased, the difference will become more noticeable.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="with-predicate"&gt;With predicate&lt;/h3&gt;
+&lt;p&gt;The same logic applies when a &lt;em&gt;predicate is supplied&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// Bad
+Console.WriteLine(intList.Count(i =&amp;gt; i &amp;gt; 5) &amp;gt; 0);
+// Good
+Console.WriteLine(intList.Any(i =&amp;gt; i &amp;gt; 5));
+
+// Bad
+Console.WriteLine(intList.Count(i =&amp;gt; i &amp;gt; 10) == 0);
+// Good
+Console.WriteLine(!intList.Any(i =&amp;gt; i &amp;gt; 10));
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The &lt;code&gt;Count&lt;/code&gt; method will need to enumerable over all items in the collection, while &lt;code&gt;Any&lt;/code&gt; will return &lt;em&gt;true&lt;/em&gt; as soon as the first item which satisfies the predicate is reached.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="all-items"&gt;All items&lt;/h3&gt;
+&lt;p&gt;Similar logic applies when &lt;code&gt;All&lt;/code&gt; items in the collection need to be checked:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// Bad
+Console.WriteLine(intList.Count() == intList.Count(i =&amp;gt; i  &amp;lt; 100));
+// Good
+Console.WriteLine(intList.All(i =&amp;gt; i &amp;lt; 100));
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Again, with &lt;code&gt;Count&lt;/code&gt;, all items in the collection are enumerated over, while the &lt;code&gt;All&lt;/code&gt; method will return &lt;em&gt;false&lt;/em&gt; as soon as one item is reached which does not satisfy the predicate.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;Generally, unless &lt;code&gt;Count&lt;/code&gt; specifically needs to be used, &lt;code&gt;Any&lt;/code&gt; or &lt;code&gt;All&lt;/code&gt; should be preferred, especially as the number of items in the collection increases.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://linkdotnet.github.io/tips-and-tricks/linq/#using-count-instead-of-all-or-any"&gt;Using Count() instead of All or Any&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;239: 20-01-2023&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Eliding await keyword</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2023/01/19-elide-await</link>
@@ -690,81 +747,6 @@ app.Run();
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://nodogmablog.bryanhogan.net/2022/09/dependency-injection-of-an-entity-framework-context-within-program-cs-using-top-level-statements/"&gt;Dependency Injection of an Entity Framework Context within Program.cs Using Top Level Statements&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;230: 09-01-2023&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>LINQ DistinctBy</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2023/01/06-linq-distinct</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2023/01/06-linq-distinct</guid>
-			<pubDate>Fri, 06 Jan 2023 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;The &lt;em&gt;Enumerable&lt;/em&gt; &lt;code&gt;DistinctBy&lt;/code&gt; method, introduced in .NET 6, can be used to return &lt;em&gt;distinct elements from a sequence according to the specified key selector&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;Prior to .NET 6, performing this operation was a bit complex, but the introduction of the &lt;code&gt;DistinctBy&lt;/code&gt; method simplifies the process.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="setup"&gt;Setup&lt;/h2&gt;
-&lt;p&gt;In this example, a collection of 3 &lt;em&gt;Songs&lt;/em&gt; will be used:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;List&amp;lt;Song&amp;gt; songs = new List&amp;lt;Song&amp;gt;
-{
-    new Song
-    {
-        Id = 1,
-        Name = &amp;quot;Everlong&amp;quot;,
-        Album = &amp;quot;The Colour and the Shape&amp;quot;
-    },
-    new Song
-    {
-        Id = 2,
-        Name = &amp;quot;Monkey Wrench&amp;quot;,
-        Album = &amp;quot;The Colour and the Shape&amp;quot;
-    }
-    ,
-    new Song
-    {
-        Id = 3,
-        Name = &amp;quot;Learn to Fly&amp;quot;,
-        Album = &amp;quot;There Is Nothing Left to Lose&amp;quot;
-    }
-};
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Let's look at how we can get a &lt;em&gt;distinct list of albums from the collection of songs&lt;/em&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="pre.net-6"&gt;Pre .NET 6&lt;/h2&gt;
-&lt;p&gt;The process for doing this (using LINQ) prior to .NET 6 was as follows:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;IEnumerable&amp;lt;string&amp;gt; albums = songs
-    .GroupBy(s =&amp;gt; s.Album)
-    .Select(g =&amp;gt; g.First())
-    .Select(a =&amp;gt; a.Album);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The steps are as follows:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Use &lt;strong&gt;GroupBy&lt;/strong&gt; to get a collection of &lt;em&gt;Songs&lt;/em&gt;, with the &lt;em&gt;Album&lt;/em&gt; value as the key&lt;/li&gt;
-&lt;li&gt;Use &lt;strong&gt;Select&lt;/strong&gt; and &lt;strong&gt;First&lt;/strong&gt; to get the first record in each group&lt;/li&gt;
-&lt;li&gt;Use &lt;strong&gt;Select&lt;/strong&gt; to get the &lt;em&gt;Album&lt;/em&gt; of the first record&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;As the &lt;em&gt;Songs&lt;/em&gt; in each group will all contain the same &lt;em&gt;Album&lt;/em&gt; (as we are grouping by Album), selecting any record will yield the same Album.&lt;/p&gt;
-&lt;p&gt;This works, but is a fairly convoluted process.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="net-6-and-beyond"&gt;.NET 6 and beyond&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;DistinctBy&lt;/code&gt; method greatly simplifies this:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;IEnumerable&amp;lt;string&amp;gt; albums = songs
-    .DistinctBy(s =&amp;gt; s.Album)
-    .Select(a =&amp;gt; a.Album);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Here, the steps are as follows:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Use &lt;strong&gt;DistinctBy&lt;/strong&gt; to get a collection of &lt;em&gt;Songs&lt;/em&gt;, each one having a &lt;em&gt;unique Album value&lt;/em&gt;. In this example, after this is executed, the record with &lt;em&gt;id = 2&lt;/em&gt; is dropped from the collection as it has the same &lt;em&gt;Album&lt;/em&gt; value as thew previous record&lt;/li&gt;
-&lt;li&gt;Use &lt;strong&gt;Select&lt;/strong&gt; to get the &lt;em&gt;Album&lt;/em&gt; of each of the remaining records&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Easier to read and less convoluted!&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;The addition of the new &lt;code&gt;DistinctBy&lt;/code&gt; makes a big difference to the complexity, as well as the readability of the code - instead of trying to decider some &lt;em&gt;complex&lt;/em&gt; LINQ (as was the case prior to .NET 6), the code now better describes what it is actually doing.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.reddit.com/r/csharp/comments/zpjpst/do_you_know_about_the_distinctby_method/"&gt;Do you know about the DistinctBy method?&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;229: 06-01-2023&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
