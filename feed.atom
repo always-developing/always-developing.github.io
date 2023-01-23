@@ -4,8 +4,53 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2023</rights>
-	<updated>2023-01-20T03:41:09Z</updated>
+	<updated>2023-01-23T03:38:37Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2023/01/23-task-delay</id>
+		<title>Task.Delay accuracy</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2023/01/23-task-delay" />
+		<updated>2023-01-23T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;Task.Delay&lt;/code&gt; relies on the underlying operating system's internal timer, which for most Windows environments, takes about 15ms to resolve. This means that the &lt;em&gt;minimum amount of time that can be accurately used with Task.Delay is approximately 15ms (on Windows)&lt;/em&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="sample"&gt;Sample&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;System.Diagnostics.StopWatch&lt;/code&gt; can be used to benchmark how long a &lt;code&gt;Task.Delay&lt;/code&gt; call actually takes:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;Stopwatch? watch = Stopwatch.StartNew();
+
+await Task.Delay(100);
+
+watch.Stop(); 
+
+Console.WriteLine($&amp;quot;Actual time delayed: {watch.ElapsedMilliseconds} milliseconds&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Executing the above, the result (which may vary each execution and per machine):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Actual time delayed: 110 milliseconds
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Even though the code is specifying a 100ms delay, and actual delay is close to 110ms.&lt;/p&gt;
+&lt;p&gt;The same &lt;em&gt;inaccurate&lt;/em&gt; delay is seen when trying to delay for a small precise time:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;Stopwatch? watch = Stopwatch.StartNew();
+
+await Task.Delay(5);
+
+watch.Stop(); 
+
+Console.WriteLine($&amp;quot;Actual time delayed: {watch.ElapsedMilliseconds} milliseconds&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;Actual time delayed: 19 milliseconds
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Results may vary, but (in my case) the true delay was never less than 17ms. As mentioned, this is due to the underlying operating system's internal timer.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;If requiring small precise waiting times, &lt;code&gt;Task.Delay&lt;/code&gt; is not the way to go. In fact there are no &amp;quot;easy&amp;quot; ways to wait for such small precise times - there are ways to do it (which will not be shown here), but they are involved and are often not very performant when it comes to resource usage.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://linkdotnet.github.io/tips-and-tricks/async_await/#dont-use-taskdelay-for-small-precise-waiting-times"&gt;Don’t use Task.Delay for small precise waiting times&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;240: 23-01-2023&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2023/01/20-linq-count</id>
 		<title>LINQ Any/All over Count</title>
@@ -663,79 +708,6 @@ public IEnumerable&amp;lt;WeatherForecast&amp;gt; Get()
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://ryansouthgate.com/asp.net-core-response-caching/"&gt;ASP.NET Core Response Caching&lt;/a&gt;&lt;/p&gt;
 &lt;!--?# DailyDrop ?--&gt;231: 10-01-2023&lt;!--?#/ DailyDrop ?--&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2023/01/09-ef-startup</id>
-		<title>Database creation on startup</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2023/01/09-ef-startup" />
-		<updated>2023-01-09T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;When configuring an Entity Framework &lt;code&gt;DbContext&lt;/code&gt; with the &lt;em&gt;dependency injection container&lt;/em&gt;, it is possible to make use of the container to create an instance of the context on startup, to either create the database or apply database migrations.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="configuration"&gt;Configuration&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;AddDbContext&lt;/code&gt; extension method is used to configure the &lt;em&gt;Entity Framework DbContext&lt;/em&gt; on startup, registering the context with the dependency injection container:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
-
-// configure the context and add to the DI Container
-builder.Services.AddDbContext&amp;lt;DemoContext&amp;gt;(options =&amp;gt;
-    options.UseSqlServer(&amp;#64;&amp;quot;Server=.\SQLEXPRESS;Database=EFStartup;
-        Integrated Security=True;TrustServerCertificate=True&amp;quot;));
-
-var app = builder.Build();
-
-app.MapGet(&amp;quot;/blogs&amp;quot;, (DemoContext context) =&amp;gt;
-{
-    return context.Blogs.ToList();
-});
-
-app.Run();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;When the &lt;code&gt;/blogs&lt;/code&gt; endpoint is called and a &lt;code&gt;DemoContext&lt;/code&gt; is instantiated, the above will work &lt;code&gt;provided that the database and relevent tables have already been created&lt;/code&gt; - if not, and exception will be thrown, as the database is not automatically created.&lt;/p&gt;
-&lt;p&gt;Next we'll have a look at how to ensure the database is created on startup, using the services registered with the dependency injection container.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="startup"&gt;Startup&lt;/h2&gt;
-&lt;p&gt;The process of ensuring the database is created, is relatively straightforward - Entity Framework does most of the heavy lifting for us:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddDbContext&amp;lt;DemoContext&amp;gt;(options =&amp;gt;
-    options.UseSqlServer(&amp;#64;&amp;quot;Server=.\SQLEXPRESS;Database=EFStartup;
-        Integrated Security=True;TrustServerCertificate=True&amp;quot;));
-
-var app = builder.Build();
-
-// this block ensures the database is created
-#if DEBUG
-using (var scope = app.Services.CreateScope())
-{
-    var startupContext = scope.ServiceProvider
-        .GetRequiredService&amp;lt;DemoContext&amp;gt;();
-    startupContext.Database.EnsureCreated();
-}
-#endif
-
-app.MapGet(&amp;quot;/blogs&amp;quot;, (DemoContext context) =&amp;gt;
-{
-    return context.Blogs.ToList();
-});
-
-app.Run();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Some notes on the above code:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;the &lt;code&gt;#if conditional&lt;/code&gt; is used to ensure the code is only executed when debugging. It is NOT recommended to automatically create the database or apply migrations in non-development environments. The recommended approach is to use a CI/CD pipeline.&lt;/li&gt;
-&lt;li&gt;a new dependency injection scope is created (as the application host is technically not running yet) and a &lt;code&gt;DbContext&lt;/code&gt; instance instantiated&lt;/li&gt;
-&lt;li&gt;the &lt;em&gt;EnsureCreated&lt;/em&gt; method is called to create the database with the configured schema. This &lt;strong&gt;bypasses&lt;/strong&gt; migrations - if the migrations are required to be run, then &lt;code&gt;startupContext.Database.Migrate()&lt;/code&gt; should be called instead of &lt;code&gt;startupContext.Database.EnsureCreated()&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;the &lt;em&gt;EnsureCreated&lt;/em&gt; is designed to be used when doing &lt;code&gt;testing or prototyping&lt;/code&gt; where the database is dropped and recreated with each execution&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;A useful and time-saving way to use the &lt;em&gt;already configured&lt;/em&gt; dependency injection container to instantiate the database context, and have EF do the heavy lifting to create the database with the correct schema.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://nodogmablog.bryanhogan.net/2022/09/dependency-injection-of-an-entity-framework-context-within-program-cs-using-top-level-statements/"&gt;Dependency Injection of an Entity Framework Context within Program.cs Using Top Level Statements&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;230: 09-01-2023&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
