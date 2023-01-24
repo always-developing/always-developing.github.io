@@ -5,8 +5,111 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2023</copyright>
-		<pubDate>Mon, 23 Jan 2023 03:38:37 GMT</pubDate>
-		<lastBuildDate>Mon, 23 Jan 2023 03:38:37 GMT</lastBuildDate>
+		<pubDate>Tue, 24 Jan 2023 03:39:17 GMT</pubDate>
+		<lastBuildDate>Tue, 24 Jan 2023 03:39:17 GMT</lastBuildDate>
+		<item>
+			<title>LINQ lambda vs method group</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2023/01/24-lambda-vs-method</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2023/01/24-lambda-vs-method</guid>
+			<pubDate>Tue, 24 Jan 2023 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;When using an &lt;em&gt;expression&lt;/em&gt; with LINQ, &lt;code&gt;a lambda should be preferred over a method group&lt;/code&gt; as the performance is slightly better. Lambda expressions can be cached by the runtime resulting in the increased performance.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="examples"&gt;Examples&lt;/h2&gt;
+&lt;p&gt;In the below example we'll be filtering a collection of integers, to return only the values which are &lt;em&gt;greater than 100&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;The &lt;em&gt;Where&lt;/em&gt; method on &lt;code&gt;IEnumerable&amp;lt;int&amp;gt;&lt;/code&gt; accepts a &lt;code&gt;Func&amp;lt;int, bool&amp;gt;&lt;/code&gt; - this can be defined as an actual method, or as a lambda method. We'll have a look at each technique, and then compare performance.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="method-group"&gt;Method group&lt;/h3&gt;
+&lt;p&gt;With a collection of integers, to filter using the &lt;em&gt;Where&lt;/em&gt; method with a &lt;code&gt;method group&lt;/code&gt;, a method need to be defined which &lt;em&gt;accepts an int and returns a bool&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// simple method which accepts an int
+// and returns true if the value is 
+// greater than 100
+static bool GreaterThan100(int value)
+{
+    return value &amp;gt; 100;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This method can then be used in a &lt;em&gt;Where&lt;/em&gt; method call:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// collection of 100 integers
+IEnumerable&amp;lt;int&amp;gt;? items = Enumerable.Range(50, 150);
+
+// filter using a method group
+IEnumerable&amp;lt;int&amp;gt;? filteredItems = items.Where(GreaterThan100);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="lambda"&gt;Lambda&lt;/h3&gt;
+&lt;p&gt;With the &lt;code&gt;lambda technique&lt;/code&gt; the separate defined method is invoked manually with the parameter specified:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;IEnumerable&amp;lt;int&amp;gt;? items = Enumerable.Range(50, 150);
+
+// &amp;quot;manually&amp;quot; call the method, sending the int value
+// &amp;quot;manually&amp;quot; to the method
+var filteredItems1 = items.Where(i =&amp;gt; GreaterThan100(i));
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Both techniques will yield the same results, and on the surface look (and are) very similar. However, next let's look at the performance of each technique to see the main difference.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="performance"&gt;Performance&lt;/h2&gt;
+&lt;p&gt;For the performance benchmarking, the following &lt;em&gt;lambda&lt;/em&gt; and &lt;em&gt;method group&lt;/em&gt; were tested:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public  class Benchmarks
+{
+    private IEnumerable&amp;lt;int&amp;gt; items = Enumerable.Range(1, 10000);
+
+    [Benchmark(Baseline = true)]
+    public List&amp;lt;int&amp;gt; MethodGroup() =&amp;gt; items.Where(IsDivisibleBy5).ToList();
+
+    [Benchmark]
+    public List&amp;lt;int&amp;gt; Lambda() =&amp;gt; items.Where(i =&amp;gt; IsDivisibleBy5(i)).ToList();
+
+    private static bool IsDivisibleBy5(int i) =&amp;gt; i % 5 == 0;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;ul&gt;
+&lt;li&gt;a collection of &lt;em&gt;10000 integers&lt;/em&gt; was used&lt;/li&gt;
+&lt;li&gt;each item was checked to determine if it was &lt;em&gt;division by 5 or not&lt;/em&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The results:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Method&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Mean&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Error&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;StdDev&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;Ratio&lt;/th&gt;
+&lt;th style="text-align: right;"&gt;RatioSD&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;MethodGroup&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;75.04 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.483 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2.079 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.00&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.00&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Lambda&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;66.44 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;1.306 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;2.146 us&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.89&lt;/td&gt;
+&lt;td style="text-align: right;"&gt;0.04&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;From the results, we can see that the &lt;code&gt;lambda technique is approx. 10% faster than the method group technique&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;The difference between the two methods is this example (10%) may seem fairly significant, but the timescale is in &lt;em&gt;nanoseconds&lt;/em&gt; - a 10% difference at this scale will not be noticeable. However, depending on the collection size and the complexity of the calculation, the difference could be more noticeable.&lt;br /&gt;
+In short - for most scenarios using either technique will be fine, however if performance is an issue, or there is a specific bottleneck, then consider explicitly using the lambda technique.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://linkdotnet.github.io/tips-and-tricks/advanced/lambda_methodgroup/"&gt;Lambda vs method group&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;241: 24-01-2023&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Task.Delay accuracy</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2023/01/23-task-delay</link>
@@ -626,99 +729,6 @@ WHERE DateCreated IS NOT DISTINCT FROM &amp;#64;createdDate
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://www.sqlservercentral.com/blogs/cool-stuff-in-sql-server-2022-is-distinct-from"&gt;Cool Stuff in SQL Server 2022 – IS DISTINCT FROM&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;232: 11-01-2023&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Caching MVC responses</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2023/01/10-mvc-cache</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2023/01/10-mvc-cache</guid>
-			<pubDate>Tue, 10 Jan 2023 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;ASP.NET Core has out of the box &lt;code&gt;configurable response caching&lt;/code&gt; functionality which can be leveraged to improve the performance of a service using &lt;code&gt;controllers&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;The functionality described in this post is only for caching responses from &lt;em&gt;an MVC controller&lt;/em&gt; - to cache responses from a &lt;em&gt;minimal API&lt;/em&gt;, have a look at &lt;a href="https://alwaysdeveloping.net/2022/09/07-output-cache"&gt;this post which details output caching on minimal APIs&lt;/a&gt;.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="code"&gt;Code&lt;/h2&gt;
-&lt;h3 id="setup"&gt;Setup&lt;/h3&gt;
-&lt;p&gt;The default template &lt;em&gt;Weather API&lt;/em&gt; project is used for the below example, with the &lt;code&gt;Use Controllers&lt;/code&gt; options checked.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h3 id="startup"&gt;Startup&lt;/h3&gt;
-&lt;p&gt;First step, &lt;code&gt;enabling the caching functionality&lt;/code&gt; in the service - this is done in the &lt;em&gt;program.cs&lt;/em&gt;, and involves adding two lines of code:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddControllers();
-// setup caching with the DI container
-builder.Services.AddResponseCaching();
-
-var app = builder.Build();
-
-// setup caching in the pipeline
-app.UseResponseCaching();
-app.UseAuthorization();
-app.MapControllers();
-
-app.Run();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This follows a fairly standard pattern when it comes to adding functionality to an ASP.NET Core application:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;The &lt;code&gt;AddResponseCaching&lt;/code&gt; method is called to register the required services with the dependency injection container&lt;/li&gt;
-&lt;li&gt;The &lt;code&gt;UseResponseCaching&lt;/code&gt; method is called to insert the caching logic into the middleware pipeline&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Next step, enabling caching on a controller.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h3 id="controller"&gt;Controller&lt;/h3&gt;
-&lt;p&gt;Now that we have the base caching functionality configured in the service, the next step is to actual enable caching for a specific endpoint/controller. This is done by &lt;code&gt;adding an attribute to the relevent controller method&lt;/code&gt;. In the &lt;em&gt;WeatherForecastController.cs&lt;/em&gt; class:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;[HttpGet]
-[ResponseCache(Duration = 30, Location = ResponseCacheLocation.Any)]
-public IEnumerable&amp;lt;WeatherForecast&amp;gt; Get()
-{
-    Console.WriteLine($"{nameof(Get)} method in {nameof(WeatherForecastController)} called");
-
-    return Enumerable.Range(1, 5).Select(index =&amp;gt; new WeatherForecast
-    {
-        Date = DateTime.Now.AddDays(index),
-        TemperatureC = Random.Shared.Next(-20, 55),
-        Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-    })
-    .ToArray();
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The &lt;code&gt;ResponseCache&lt;/code&gt; attribute is added to the &lt;em&gt;Get&lt;/em&gt; method (the method called when the endpoint is called). In this example, the cache is set to expire every 30 seconds.&lt;/p&gt;
-&lt;p&gt;And thats it! We now have basic caching functionality working on the service.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h3 id="output"&gt;Output&lt;/h3&gt;
-&lt;p&gt;If we run the service and browse to the &lt;code&gt;/weatherforecast&lt;/code&gt; endpoint, the weather payload will be returned, and logging at the console, the following will be output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Get method in WeatherForecastController called
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Refreshing the endpoint within 30 seconds (the duration of the cache), will yield the same payload, and cause no output to the console - the &lt;code&gt;results are returned from the cache, and the controller is never called.&lt;/code&gt;&lt;/p&gt;
-&lt;hr&gt;
-&lt;h3 id="vary"&gt;Vary&lt;/h3&gt;
-&lt;p&gt;Not explicitly show in the above example, but it is also possible to &lt;code&gt;vary the cache response&lt;/code&gt; by a specific key.&lt;/p&gt;
-&lt;p&gt;If the attribute parameters were changed to include the &lt;code&gt;VaryByHeader&lt;/code&gt; parameter:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;[HttpGet]
-[ResponseCache(Duration = 30, Location = ResponseCacheLocation.Any, VaryByHeader = "User-Agent")]
-public IEnumerable&amp;lt;WeatherForecast&amp;gt; Get()
-{
-    Console.WriteLine($"{nameof(Get)} method in {nameof(WeatherForecastController)} called");
-
-    return Enumerable.Range(1, 5).Select(index =&amp;gt; new WeatherForecast
-    {
-        Date = DateTime.Now.AddDays(index),
-        TemperatureC = Random.Shared.Next(-20, 55),
-        Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-    })
-    .ToArray();
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Then a different cache is created for each distinct &lt;code&gt;User-Agent&lt;/code&gt; header value sent on a request, each cache independent of one another. This way, the cache of one called will operate independently from the cache of a different caller. It is also possible to vary the cache by a specific &lt;code&gt;query string key&lt;/code&gt;.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;When simple caching is required, the built-in functionality is an easy to implement, low effort option to enhance the performance of a service.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://ryansouthgate.com/asp.net-core-response-caching/"&gt;ASP.NET Core Response Caching&lt;/a&gt;&lt;/p&gt;
-&lt;!--?# DailyDrop ?--&gt;231: 10-01-2023&lt;!--?#/ DailyDrop ?--&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
