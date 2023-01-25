@@ -4,8 +4,57 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2023</rights>
-	<updated>2023-01-24T03:39:17Z</updated>
+	<updated>2023-01-25T03:38:26Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2023/01/25-dictionary-comparer</id>
+		<title>Case-less Dictionary keys</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2023/01/25-dictionary-comparer" />
+		<updated>2023-01-25T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;Dictionary&lt;/code&gt; constructor can take a &lt;code&gt;StringComparer&lt;/code&gt; parameter allowing for retrieving of keys from the dictionary while ignoring the case of the key. This removes the need to perform &lt;em&gt;ToUpper&lt;/em&gt; and &lt;em&gt;ToLower&lt;/em&gt; on the calls involving the key.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="without-stringcomparer"&gt;Without StringComparer&lt;/h2&gt;
+&lt;p&gt;Without a &lt;code&gt;StringComparer&lt;/code&gt;, the case of the &lt;em&gt;key added to the dictionary, and the case of the key when performing a lookup, need to match&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;Dictionary&amp;lt;string, int&amp;gt;? artistAlbum = new Dictionary&amp;lt;string, int&amp;gt;();
+
+// Call made to .ToLower() to ensure all artist 
+// names are in the same standard format
+artistAlbum.Add(&amp;quot;Foo Fighters&amp;quot;.ToLower(), 10);
+artistAlbum.Add(&amp;quot;John Mayer&amp;quot;.ToLower(), 8);
+
+// check will only return true if using lower case values,
+// or specifically calling ToLower
+Console.WriteLine(artistAlbum.ContainsKey(&amp;quot;Foo Fighters&amp;quot;)); // false
+Console.WriteLine(artistAlbum.ContainsKey(&amp;quot;Foo Fighters&amp;quot;.ToLower())); // true
+Console.WriteLine(artistAlbum.ContainsKey(&amp;quot;foo fighters&amp;quot;)); // true
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In this example, &lt;code&gt;ToLower&lt;/code&gt; is called each time an item is added to the Dictionary. When performing a check to see if the Dictionary contains a key, a match will only be found if the supplied value is all lower case, or if &lt;code&gt;ToLower&lt;/code&gt; is specifically called again. This ensure that the keys are always stored, and then looked-up in a consistent format - lower case in this example.&lt;/p&gt;
+&lt;p&gt;However, all the &lt;code&gt;ToLower&lt;/code&gt; (or &lt;code&gt;ToUpper&lt;/code&gt;) calls do have a performance impact, and additionally they have to manually be added everywhere the Dictionary is used. A simpler and better approach is to use a &lt;code&gt;StringComparer&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="with-stringcomparer"&gt;With StringComparer&lt;/h2&gt;
+&lt;p&gt;Using the &lt;code&gt;StringComparer&lt;/code&gt; technique is as simple as passing a value into the &lt;code&gt;Dictionary&lt;/code&gt; constructor:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;Dictionary&amp;lt;string, int&amp;gt;? artistAlbum = 
+        new Dictionary&amp;lt;string, int&amp;gt;(StringComparer.OrdinalIgnoreCase);
+
+artistAlbum.Add(&amp;quot;Foo Fighters&amp;quot;, 10);
+artistAlbum.Add(&amp;quot;John Mayer&amp;quot;, 8);
+
+Console.WriteLine(artistAlbum.ContainsKey(&amp;quot;Foo Fighters&amp;quot;)); // true
+Console.WriteLine(artistAlbum.ContainsKey(&amp;quot;Foo fighters&amp;quot;)); // true
+Console.WriteLine(artistAlbum.ContainsKey(&amp;quot;foo fighters&amp;quot;)); // true
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;With &lt;code&gt;StringComparer.OrdinalIgnoreCase&lt;/code&gt; is supplied to constructor, &lt;code&gt;ToLower&lt;/code&gt; is no longer required when adding or checking the existence of a key. The case is now ignored when doing the comparison - this results in cleaner code, and better overall performance.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;If the &lt;code&gt;Dictionary&lt;/code&gt; could contain keys of various cases (maybe based on user input) then &lt;code&gt;StringComparer&lt;/code&gt; should be used over &lt;em&gt;ToLower&lt;/em&gt; or &lt;em&gt;ToUpper&lt;/em&gt;. There is no overhead to using this approach, and is actually cleaner and more performant.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://linkdotnet.github.io/tips-and-tricks/dictionary/#pass-in-stringcomparer-to-dictionary"&gt;Pass in StringComparer to Dictionary&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;242: 25-01-2023&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2023/01/24-lambda-vs-method</id>
 		<title>LINQ lambda vs method group</title>
@@ -658,66 +707,6 @@ app.MapGet("/song", ([FromQuery] Song song) =&amp;gt;
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://andrewlock.net/5-new-mvc-features-in-dotnet-7/#1-iparseable-tryparse-for-primitive-binding"&gt;5 new MVC features in .NET 7&lt;/a&gt;&lt;/p&gt;
 &lt;!--?# DailyDrop ?--&gt;233: 12-01-2023&lt;!--?#/ DailyDrop ?--&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2023/01/11-is-disinct-from</id>
-		<title>SQL: IS DISTINCT FROM</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2023/01/11-is-disinct-from" />
-		<updated>2023-01-11T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;SQL Server 2022 introduced a new predicate &lt;code&gt;IS [NOT] DISTINCT FROM&lt;/code&gt;, which allows for two expressions to be compared, but takes &lt;code&gt;NULL&lt;/code&gt; values into account.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="data-setup"&gt;Data setup&lt;/h2&gt;
-&lt;p&gt;Consider a &lt;em&gt;Blog&lt;/em&gt; table, with a &lt;code&gt;nullable DateCreated column&lt;/code&gt; - this column &lt;em&gt;could&lt;/em&gt; have a valid &lt;em&gt;DateTime value&lt;/em&gt;, but could also contain NULL values.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="pre-sql-2022"&gt;Pre SQL 2022&lt;/h3&gt;
-&lt;p&gt;Prior to SQL 2022, when comparing two values, &lt;code&gt;NULL&lt;/code&gt; values were, by default, not taken into account.&lt;/p&gt;
-&lt;p&gt;Assume the &lt;em&gt;Blog&lt;/em&gt; table &lt;code&gt;DOES&lt;/code&gt; contain rows which have &lt;em&gt;NULL&lt;/em&gt; DateCreated values:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;DECLARE &amp;#64;createdDate datetime
-
-SELECT &amp;#64;createdDate = NULL
-
-SELECT *
-FROM Blog
-WHERE DateCreated = &amp;#64;createdDate
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;strong&gt;0 rows returned&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;Even though &lt;code&gt;&amp;#64;createdDate&lt;/code&gt; is &lt;em&gt;NULL&lt;/em&gt;, and there are rows in the table with &lt;em&gt;NULL&lt;/em&gt;, &lt;code&gt;no rows are returned&lt;/code&gt; - &lt;em&gt;NULL&lt;/em&gt; values are not taken into account.&lt;/p&gt;
-&lt;p&gt;To successfully return rows which do contain &lt;em&gt;NULL&lt;/em&gt; values, both expressions need to be converted to the same default value in case of a &lt;em&gt;NULL&lt;/em&gt; value:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;DECLARE &amp;#64;createdDate datetime
-
-SELECT &amp;#64;createdDate = NULL
-
-SELECT *
-FROM Blog
-WHERE ISNULL(DateCreated, '1900-01-01') = 
-	ISNULL(&amp;#64;createdDate, '1900-01-01')
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;strong&gt;10 rows returned&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;With this technique, &lt;em&gt;NULL&lt;/em&gt; values on either expression is converted to &lt;code&gt;'1900-01-01'&lt;/code&gt;, which is then successfully compared.&lt;/p&gt;
-&lt;p&gt;With SQL Server 2022, performing this comparison becomes much easier.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="sql-2022"&gt;SQL 2022&lt;/h3&gt;
-&lt;p&gt;SQL Server 2022 introduces the new &lt;code&gt;IS [NOT] DISTINCT FROM&lt;/code&gt; predicate - this allows the comparison of values while taking &lt;em&gt;NULL&lt;/em&gt; values into account.&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-sql"&gt;DECLARE &amp;#64;createdDate datetime
-
-SELECT &amp;#64;createdDate = NULL
-
-SELECT * 
-FROM Blog
-WHERE DateCreated IS NOT DISTINCT FROM &amp;#64;createdDate
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;strong&gt;10 rows returned&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;The &lt;code&gt;IS [NOT] DISTINCT FROM&lt;/code&gt; predicate &lt;em&gt;compares the equality of two expressions and guarantees a true or false result, even if one or both operands are NULL&lt;/em&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;A relatively minor update, but for a developer which writes a good amount SQL this small update definitely does make things simpler and easier.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://www.sqlservercentral.com/blogs/cool-stuff-in-sql-server-2022-is-distinct-from"&gt;Cool Stuff in SQL Server 2022 – IS DISTINCT FROM&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;232: 11-01-2023&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
