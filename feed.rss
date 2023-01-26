@@ -5,8 +5,103 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2023</copyright>
-		<pubDate>Wed, 25 Jan 2023 03:38:26 GMT</pubDate>
-		<lastBuildDate>Wed, 25 Jan 2023 03:38:26 GMT</lastBuildDate>
+		<pubDate>Thu, 26 Jan 2023 03:38:22 GMT</pubDate>
+		<lastBuildDate>Thu, 26 Jan 2023 03:38:22 GMT</lastBuildDate>
+		<item>
+			<title>Calling an async method in a constructor</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2023/01/26-async-constructor</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2023/01/26-async-constructor</guid>
+			<pubDate>Thu, 26 Jan 2023 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;As it is &lt;em&gt;not possible to await an async method in a constructor&lt;/em&gt;, if an async method &lt;em&gt;has&lt;/em&gt; to be called, a valid technique is to &lt;code&gt;call the async method in the constructor, but defer the await until later&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="non-async"&gt;Non async&lt;/h2&gt;
+&lt;p&gt;Calling a &lt;code&gt;non async&lt;/code&gt; method in a constructor is straight forward:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class MyClass
+{
+	private readonly string _specialData;
+
+    public MyClass()
+    {
+    	// takes long, not ideal
+    	_specialData = ExternalService.GetData();
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Here, an external service is called to get data required for &lt;code&gt;MyClass&lt;/code&gt; to function correctly.&lt;/p&gt;
+&lt;p&gt;However, is the scenario when &lt;code&gt;ExternalService.GetData()&lt;/code&gt; is an async method &lt;code&gt;ExternalService.GetDataAsync()&lt;/code&gt; handled?&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="async"&gt;Async&lt;/h2&gt;
+&lt;h3 id="getresult"&gt;GetResult&lt;/h3&gt;
+&lt;p&gt;If the only option to get the require data is via a &lt;em&gt;async method&lt;/em&gt;, simply just calling it in the constructor will not work:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class MyClass
+{
+	private readonly string _specialData;
+
+
+    public MyClass()
+    {
+        // Won't work!
+        // Return type is Task&amp;lt;string&amp;gt; not string
+        // _specialData = ExternalService.GetDataAsync();
+
+        // Won't work!
+        // To use await, the method needs to be async
+        // but constructors cannot be async
+        //_specialData = await ExternalService.GetDataAsync();
+    }
+    	
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;One &lt;code&gt;not recommended&lt;/code&gt; option is to do the following:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class MyClass
+{
+    private readonly string _specialDataTask;
+
+    public MyClass()
+    {
+    	_specialData = ExternalService.GetDataAsync().GetAwaiter().GetResult();
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;code&gt;.GetAwaiter().GetResult()&lt;/code&gt; is used on the &lt;em&gt;Task&lt;/em&gt; returned from &lt;em&gt;GetDataAsync&lt;/em&gt; - generally not a good idea to use this approach.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="lazy"&gt;Lazy&lt;/h3&gt;
+&lt;p&gt;A better option is to use the &lt;code&gt;lazy initialization approach&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class MyClass
+{
+    private readonly Task&amp;lt;string&amp;gt; _specialDataTask;
+
+    public MyClass()
+    {
+       _specialDataTask = ExternalService.GetDataAsync();
+    }
+
+    public async Task DoWorkUsingSpecialDataAsync()
+    {
+       var _specialData = await _specialDataTask.ConfigureAwait(false);
+
+       // Do the work using _specialData
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;ul&gt;
+&lt;li&gt;The type of the &amp;quot;_specialData&amp;quot; variable was changed from &lt;code&gt;string to Task&amp;lt;string&amp;gt;&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;In the constructor, the &lt;code&gt;async method is called, but not awaited&lt;/code&gt; - this returns a &lt;em&gt;Task&amp;lt;string&amp;gt;&lt;/em&gt;&lt;/li&gt;
+&lt;li&gt;When/if the &amp;quot;_specialData&amp;quot; value is required, then the &lt;em&gt;Task&amp;lt;string&amp;gt;&lt;/em&gt; is awaited to get the actual value&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;With this method, when the constructor is called, the process of getting the special data is initiated, but is not blocking. When it comes time to use the value returned from the process, &lt;code&gt;await&lt;/code&gt; is used to get the value from the &lt;em&gt;Task&lt;/em&gt;. Either the processing is finished and the value will be available immediately, or the process is still ongoing and the value will be returned once the process is completed.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;Ideally, this scenario should probably be avoided all together - but if it is a requirement, the lazy-initialization technique is great way to solve the problem.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://endjin.com/blog/2023/01/dotnet-csharp-lazy-async-initialization"&gt;Lazy and once-only C# async initialization&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;243: 26-01-2023&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Case-less Dictionary keys</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2023/01/25-dictionary-comparer</link>
@@ -622,102 +717,6 @@ app.MapGet(&amp;quot;/generateUrl&amp;quot;, (HttpContext context, LinkGenerator
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://khalidabuhakmeh.com/adding-experimental-http-methods-to-aspnet-core"&gt;Adding Experimental HTTP Methods To ASP.NET Core&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;234: 13-01-2023&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Request binding with IParseable</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2023/01/12-endpoint-iparseable</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2023/01/12-endpoint-iparseable</guid>
-			<pubDate>Thu, 12 Jan 2023 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;In a &lt;a href="https://alwaysdeveloping.net/2022/12/05-iparseable"&gt;previous post&lt;/a&gt; we had a look at the &lt;code&gt;IParseable interface&lt;/code&gt; which allows for a &lt;code&gt;string to be parsed into a type&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;This functionality can be leveraged with minimal API's to &lt;em&gt;automatically parse a query string to a complex type&lt;/em&gt;.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="iparseable-request"&gt;IParseable request&lt;/h2&gt;
-&lt;p&gt;In this example, the &lt;em&gt;Song&lt;/em&gt; entity implements the &lt;em&gt;IParsable&amp;lt;Song&amp;gt;&lt;/em&gt; interface (more details in the &lt;a href="https://alwaysdeveloping.net/2022/12/05-iparseable"&gt;previous post about IParseable&lt;/a&gt;):&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Song : IParsable&amp;lt;Song&amp;gt;
-{
-    public string Name { get; set; }
-    public string Artist { get; set; }
-    public int LengthInSeconds { get; set; }
-
-    private Song(string name, string artist, int lengthInSeconds)
-    {
-        Name = name;
-        Artist = artist;
-        LengthInSeconds = lengthInSeconds;
-    }
-
-    public static Song Parse(string s, IFormatProvider? provider)
-    {
-        string[] songPortions = s.Split(new[] { '|' });
-
-        if (songPortions.Length != 3) 
-        { 
-            throw new OverflowException("Expect format: Name|Artist|LengthInSeconds"); 
-        }
-
-        return new Song(songPortions[0], songPortions[1], Int32.Parse(songPortions[2]));
-    }
-
-    public static bool TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out Song result)
-    {
-        result = null;
-        if (s == null) 
-        { 
-            return false; 
-        }
-
-        try
-        {
-            result = Parse(s, provider);
-            return true;
-        }
-        catch { return false; }
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This interface implementation allows for a string value (in a specific format), to be converted to a &lt;code&gt;Song instance&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;Song song = "Everlong|Foo Fighters|326".Parse&amp;lt;Song&amp;gt;();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr&gt;
-&lt;h2 id="minimal-endpoint"&gt;Minimal endpoint&lt;/h2&gt;
-&lt;h3 id="manual-parsing"&gt;Manual parsing&lt;/h3&gt;
-&lt;p&gt;If we want an endpoint which accepts a &lt;em&gt;Song&lt;/em&gt; as a parameter, one option is to have the request entity &lt;code&gt;as a string&lt;/code&gt; and perform the conversion to &lt;em&gt;Song&lt;/em&gt; manually:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet("/song", ([FromQuery]string song) =&amp;gt;
-{
-    // perform the conversion from string
-    // to Song manually, using the IParsable
-    // interface
-    return details.Parse&amp;lt;Song&amp;gt;();
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Calling the endpoint with a &lt;em&gt;song query string&lt;/em&gt; &lt;code&gt;/song?song=Everlong|Foo Fighters|326&lt;/code&gt;, results in the following response:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-json"&gt;{"name":"Everlong","artist":"Foo Fighters","lengthInSeconds":326}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This is a valid approach, but because the &lt;em&gt;Song class&lt;/em&gt; implements &lt;em&gt;IParseable&lt;/em&gt;, the conversion can be done automatically!&lt;/p&gt;
-&lt;hr&gt;
-&lt;h3 id="automatic-parsing"&gt;Automatic parsing&lt;/h3&gt;
-&lt;p&gt;A slightly easier approach that manually doing the conversions, is allowing it to happen automatically. Changing the parameter type from &lt;em&gt;string&lt;/em&gt; to &lt;em&gt;Song&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// parameter is Song instead of string
-app.MapGet("/song", ([FromQuery] Song song) =&amp;gt;
-{
-    return song;
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Calling the same endpoint with a &lt;em&gt;song query string&lt;/em&gt; &lt;code&gt;/song?song=Everlong|Foo Fighters|326&lt;/code&gt;, results in the same response:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-json"&gt;{"name":"Everlong","artist":"Foo Fighters","lengthInSeconds":326}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;As &lt;code&gt;Song implement IParsable, the string parameter is automatically parsed to a Song instance&lt;/code&gt;.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;This is a small quality of life feature which makes working with the &lt;em&gt;IParsable&lt;/em&gt; interface and minimal endpoints easier and more streamline.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://andrewlock.net/5-new-mvc-features-in-dotnet-7/#1-iparseable-tryparse-for-primitive-binding"&gt;5 new MVC features in .NET 7&lt;/a&gt;&lt;/p&gt;
-&lt;!--?# DailyDrop ?--&gt;233: 12-01-2023&lt;!--?#/ DailyDrop ?--&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
