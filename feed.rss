@@ -5,8 +5,79 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2023</copyright>
-		<pubDate>Thu, 26 Jan 2023 03:38:22 GMT</pubDate>
-		<lastBuildDate>Thu, 26 Jan 2023 03:38:22 GMT</lastBuildDate>
+		<pubDate>Fri, 27 Jan 2023 03:40:21 GMT</pubDate>
+		<lastBuildDate>Fri, 27 Jan 2023 03:40:21 GMT</lastBuildDate>
+		<item>
+			<title>Expression-body constructor</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2023/01/27-expression-body-constructor</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2023/01/27-expression-body-constructor</guid>
+			<pubDate>Fri, 27 Jan 2023 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;An &lt;code&gt;expression&lt;/code&gt; can be used as the body of a constructor, providing a more concise (but arguably, more complex) style.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="traditional-constructor"&gt;Traditional constructor&lt;/h2&gt;
+&lt;p&gt;Traditionally, the constructor for an entity would have a parameter for each property of the entity and set the property value to the parameter value (or to a default):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Song
+{
+    public string Artist { get; set; }
+
+    public string Name { get; set; }
+
+    public int LengthInSeconds { get; set; }
+
+    // set all property values based on parameters
+    public Song(string artist, string name, int lengthInSeconds)
+    {
+        Artist = artist;
+        Name = name;
+        LengthInSeconds = lengthInSeconds;
+    }
+
+    // set property values based on parameters and
+    // default values
+    public Song(string artist, string name)
+    {
+        Artist = artist;
+        Name = name;
+        LengthInSeconds = 0;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;While there is absolutely &lt;em&gt;nothing wrong with this approach&lt;/em&gt;, it is a fair number of lines of code just to set a few properties. A more concise approach, would be to use an &lt;code&gt;expression&lt;/code&gt; for the body of the constructor.&lt;/p&gt;
+&lt;p&gt;--&lt;/p&gt;
+&lt;h2 id="expression-bodied-constructor"&gt;Expression-bodied constructor&lt;/h2&gt;
+&lt;p&gt;The constructors can be rewritten as follows, using expressions for the body of the constructor:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Song
+{
+    public string Artist { get; set; }
+
+    public string Name { get; set; }
+
+    public int LengthInSeconds { get; set; }
+
+    // set all property values based on parameters
+    public Song(string artist, string name, int lengthInSeconds) =&amp;gt;
+        (Artist, Name, LengthInSeconds) = (artist, name, lengthInSeconds);
+
+    // set property values based on parameters and
+    // default values
+    public Song(string artist, string name) =&amp;gt;
+        (Artist, Name, LengthInSeconds) = (artist, name, 0);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Here, a powerful feature of &lt;code&gt;Tuples&lt;/code&gt; is leveraged. A &lt;em&gt;Tuple&lt;/em&gt; created from the values passed into the constructor (or default values), is assigned to a &lt;em&gt;Tuple&lt;/em&gt; created using the properties of the class. This will essentially &lt;code&gt;assign the parameter values to the property values&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Definitely a more concise approach, although if unfamiliar with the syntax and how &lt;em&gt;Tuples&lt;/em&gt; work, can definitely be a more confusing approach.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;If concise, lean and clean code is the goal, then &lt;code&gt;expression-body constructors&lt;/code&gt; is the way to go. As mentioned, the syntax can be more confusing when compared with the traditional approach - especially to those unfamiliar with &lt;em&gt;Tuples&lt;/em&gt; and their properties.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/mjovanovictech/status/1617071212504440832"&gt;Milan Jovanović Tweet&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;244: 27-01-2023&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Calling an async method in a constructor</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2023/01/26-async-constructor</link>
@@ -643,80 +714,6 @@ async Task ExecuteLoop(CancellationToken cnlTkn)
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://twitter.com/vekzdran/status/1610197203901091840"&gt;&amp;#64;vekzdran&amp;#64;hachyderm.io Tweet&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;235: 16-01-2023&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Naming minimal endpoints</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2023/01/13-endpoint-withname</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2023/01/13-endpoint-withname</guid>
-			<pubDate>Fri, 13 Jan 2023 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;A minimal endpoint can be &lt;code&gt;given a name&lt;/code&gt;, which can then be leveraged to &lt;code&gt;automatically generate a link to the endpoint&lt;/code&gt; making it easier to be invoked.&lt;/p&gt;
-&lt;p&gt;The endpoint name metadata is also treated as the &lt;em&gt;operation Id&lt;/em&gt; in the OpenAPI specification, which is used by tools which use the swagger file to generate a client.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="named-endpoint"&gt;Named endpoint&lt;/h2&gt;
-&lt;p&gt;The first step is to give the endpoint a name - this is very simply and involves using the &lt;em&gt;WithName&lt;/em&gt; method:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// the default sample endpoint
-app.MapGet(&amp;quot;/weatherforecast&amp;quot;, () =&amp;gt;
-{
-    WeatherForecast[]? forecast = Enumerable.Range(1, 5).Select(index =&amp;gt;
-        new WeatherForecast
-        (
-            DateTime.Now.AddDays(index),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-// give it a name
-.WithName(&amp;quot;GetWeatherForecast&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;After the body of the minimal API is defined, the &lt;em&gt;WithName&lt;/em&gt; method is called, with the endpoint name supplied. In this example the sample &lt;em&gt;/weatherforecast&lt;/em&gt; endpoint is given the name &lt;code&gt;GetWeatherForecast&lt;/code&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="link-generation"&gt;Link generation&lt;/h2&gt;
-&lt;p&gt;This &lt;em&gt;endpoint name&lt;/em&gt; can now be used to generate a URL to the endpoint - this is done using the &lt;code&gt;LinkGenerator&lt;/code&gt; class:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// inject LinkGenerator from DI
-app.MapGet(&amp;quot;/generateUrl&amp;quot;, (HttpContext context, LinkGenerator generator) =&amp;gt;
-{
-    // use the name to get a link to the GetWeatherForecast endpoint
-    return generator.GetUriByName(context, &amp;quot;GetWeatherForecast&amp;quot;, null);
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The above code defines an endpoint, which when invoked will return the URL of the &lt;code&gt;GetWeatherForecast&lt;/code&gt; endpoint. Browsing to the &lt;code&gt;/generateUrl&lt;/code&gt; endpoint returns the following:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;http://localhost:5276/weatherforecast
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The full URL (including port etc) is automatically calculated by the &lt;code&gt;LinkGenerator.GetUriByName&lt;/code&gt; method, based on the &lt;em&gt;HttpContext&lt;/em&gt; and the &lt;em&gt;endpoint name&lt;/em&gt;. &lt;em&gt;LinkGenerator&lt;/em&gt; is available through the dependency injection container and can just be injected into the relevent constructor/delegate.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="named-endpoint-invocation"&gt;Named endpoint invocation&lt;/h2&gt;
-&lt;p&gt;A practical use of this functionality is &lt;em&gt;when an endpoint is required to call another endpoint in the same application&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;app.MapGet(&amp;quot;/weatherforecastproxy&amp;quot;, async (HttpContext context, LinkGenerator generator) =&amp;gt;
-{
-    HttpClient? client = new HttpClient();
-
-    // get the URL for the &amp;quot;GetWeatherForecast&amp;quot; endpoint
-    // and create an HttpRequestMessage for it
-    HttpRequestMessage? request = new HttpRequestMessage(
-        new HttpMethod(&amp;quot;GET&amp;quot;),
-        generator.GetUriByName(context, &amp;quot;GetWeatherForecast&amp;quot;, null)
-    );
-
-    // invoke it
-    HttpResponseMessage? response = client.Send(request);
-    return await response.Content.ReadAsStringAsync();
-});
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;In this example, calling &lt;code&gt;/weatherforecastproxy&lt;/code&gt; will proxy the call to the &lt;code&gt;GetWeatherForecast&lt;/code&gt; endpoint and returns the result - this proxy endpoint is not adding much value in this sample, but it could do more complicated logic, such as calling multiple endpoints and reconciling the results, for example.&lt;/p&gt;
-&lt;p&gt;Using &lt;code&gt;named endpoints&lt;/code&gt; and &lt;code&gt;LinkGenerator.GetUriByName&lt;/code&gt; is a safer approach to generating the URL, instead of manually trying to build up the URL based on the information extracted from the &lt;em&gt;HttpContext&lt;/em&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;A simple and easy way to name, and then generate a link using the name. If the code is required to call another endpoint in the same application, or will be used with a client generation tool - then all endpoints should be named, and &lt;em&gt;LinkGenerator&lt;/em&gt; used when generating the links.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://khalidabuhakmeh.com/adding-experimental-http-methods-to-aspnet-core"&gt;Adding Experimental HTTP Methods To ASP.NET Core&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;234: 13-01-2023&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
