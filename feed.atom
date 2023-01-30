@@ -4,8 +4,76 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2023</rights>
-	<updated>2023-01-27T03:40:21Z</updated>
+	<updated>2023-01-30T03:38:55Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2023/01/30-araypool</id>
+		<title>ArrayPool for frequent array creation</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2023/01/30-araypool" />
+		<updated>2023-01-30T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;In situations where &lt;em&gt;arrays are created and destroyed frequently&lt;/em&gt;, using the &lt;code&gt;ArrayPool&amp;lt;T&amp;gt;&lt;/code&gt; class to &lt;em&gt;rent and return&lt;/em&gt; memory buffers, instead of initializing an array, can lead to improved performance and less pressure on the garbage collection process.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="array-initialization"&gt;Array initialization&lt;/h2&gt;
+&lt;p&gt;The &lt;em&gt;usual traditional&lt;/em&gt; way to instantiate an array, is to use the &lt;code&gt;new&lt;/code&gt; keyword:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;void UseInitArray(int arrayLength)
+{
+    ArrayItem[] array = new ArrayItem[arrayLength];
+
+    for (int i = 0; i &amp;lt; arrayLength; i++)
+    {
+        array[i] = new ArrayItem
+        {
+            Id = i,
+            Name = i.ToString()
+        };
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Here an array of &lt;em&gt;arrayLength&lt;/em&gt; is initialized with &lt;code&gt;ArrayItem[] array = new ArrayItem[arrayLength];&lt;/code&gt;. An &lt;em&gt;ArrayItem&lt;/em&gt; instance is then added to each element of the array.&lt;/p&gt;
+&lt;p&gt;When a large number of arrays and created and destroyed frequently, the garbage collector is (comparatively) under pressure, as there are large amounts of memory allocated to the various large arrays which need to be cleaned up.&lt;/p&gt;
+&lt;p&gt;This is where the &lt;code&gt;ArrayPool&amp;lt;T&amp;gt;&lt;/code&gt; class plays its part.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="arraypool"&gt;ArrayPool&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;ArrayPool&amp;lt;T&amp;gt;&lt;/code&gt; shines because it allows already allocated space to be &lt;code&gt;rented&lt;/code&gt;, before it is returned back to the pool. This eliminates the need for new memory to be allocated, and then cleaned up by the garbage collector:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;void UseArrayPool(int arrayLength)
+{
+
+    ArrayItem[] array = ArrayPool&amp;lt;ArrayItem&amp;gt;.Shared.Rent(arrayLength);
+
+    try
+    {
+        for (int i = 0; i &amp;lt; arrayLength; i++)
+        {
+            array[i] = new ArrayItem
+            {
+                Id = i,
+                Name = i.ToString()
+            };
+        }
+    }
+    finally
+    {
+        ArrayPool&amp;lt;ArrayItem&amp;gt;.Shared.Return(array);
+    }
+
+    // DO NOT DO THIS
+    // array[0] = null;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Instead of the &lt;code&gt;new&lt;/code&gt; keyword being used to instantiate the array, a block of memory (of the appropriate size for the array we required) is &lt;code&gt;rented&lt;/code&gt; from the &lt;em&gt;ArrayPool&lt;/em&gt;, using &lt;code&gt;ArrayItem[] array = ArrayPool&amp;lt;ArrayItem&amp;gt;.Shared.Rent(arrayLength);&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Once the array (and the memory allocated to it) is no longer required, the memory is &lt;code&gt;returned&lt;/code&gt; to the &lt;em&gt;ArrayPool&lt;/em&gt;, allowing it to be reused in future.&lt;/p&gt;
+&lt;p&gt;It is important to &lt;code&gt;not access the array&lt;/code&gt; once the memory has been returned to the pool, as this could cause instability in the application.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;If an application creates and destroys a large number of array's, then using the &lt;code&gt;ArrayPool&lt;/code&gt; is the way to go. It is not significantly more complicated that manually instantiating the array, and the application could gain an improvement in performance by leveraging the &lt;code&gt;ArrayPool&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://twitter.com/StasYakhnenko/status/1618293902670454786"&gt;Stas Yakhnenko Tweet&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;245: 30-01-2023&lt;?#/ DailyDrop ?&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2023/01/27-expression-body-constructor</id>
 		<title>Expression-body constructor</title>
@@ -638,71 +706,6 @@ T is of type: Int32
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://twitter.com/RogerAlsing/status/1609955500363333632"&gt;Roger Johansson Tweet&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;236: 17-01-2023&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2023/01/16-for-cancellation</id>
-		<title>Cancelling a collection iteration</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2023/01/16-for-cancellation" />
-		<updated>2023-01-16T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;When iterating over a collection or items, the &lt;code&gt;TakeWhile&lt;/code&gt; method can be used in conjunction with a &lt;code&gt;CancellationToken&lt;/code&gt; to successfully stop iterating if the parent process is cancelled.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="no-cancellationtoken"&gt;No CancellationToken&lt;/h2&gt;
-&lt;p&gt;Generally, when iteration through a collection, a &lt;code&gt;foreach&lt;/code&gt; (or &lt;code&gt;for&lt;/code&gt;) loop is used:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;async Task ExecuteLoopNoCancel()
-{
-    // generate a collection of 100 items
-    var iterationItems = Enumerable.Range(0, 100);
-
-    // iterate through the 100 items
-    foreach (var item in iterationItems)
-    {
-        Console.WriteLine($&amp;quot;Processing item: {item}&amp;quot;);
-        await Task.Delay(500);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Calling the above &lt;code&gt;/ExecuteLoopNoCancel&lt;/code&gt; endpoint has the following output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Processing item: 0
-Processing item: 1
-Processing item: 2
-Processing item: 3
-.
-.
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The issue with the above, and &lt;em&gt;especially in an endpoint which can be cancelled at any time&lt;/em&gt;, is that if the parent process is cancelled, the &lt;code&gt;iteration of the collection will continue&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;If the endpoint is called (from Postman, for example), and the request is &lt;code&gt;cancelled&lt;/code&gt;, the &lt;em&gt;loop will continue to execute in the background&lt;/em&gt; (and output to the console), as it is being executed &lt;code&gt;asynchronously&lt;/code&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="with-cancellationtoken"&gt;With CancellationToken&lt;/h2&gt;
-&lt;p&gt;To correctly &lt;code&gt;cancel the iteration&lt;/code&gt; when the parent process is cancelled, a &lt;code&gt;CancellationToken&lt;/code&gt; should be passed from the top of the stack all the way down to the loop:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// pass in a CancellationToken
-async Task ExecuteLoop(CancellationToken cnlTkn)
-{
-    var iterationItems = Enumerable.Range(0, 100);
-
-    // only loop while the CancellationToken is not cancelled
-    foreach(var item in iterationItems
-        .TakeWhile(_ =&amp;gt; !cnlTkn.IsCancellationRequested))
-    {
-        Console.WriteLine($&amp;quot;Processing item: {item}&amp;quot;);
-        await Task.Delay(500);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;ul&gt;
-&lt;li&gt;A &lt;code&gt;CancellationToken&lt;/code&gt; token is passed into the endpoint - this is &lt;em&gt;linked&lt;/em&gt; to client, so if the request is &lt;em&gt;cancelled from the client side, the CancellationToken is &amp;quot;notified&amp;quot;&lt;/em&gt; of the cancellation&lt;/li&gt;
-&lt;li&gt;In the &lt;em&gt;foreach&lt;/em&gt; loop, the &lt;code&gt;TakeWhile&lt;/code&gt; method is called, with a &lt;code&gt;CancellationToken&lt;/code&gt; passed in as a parameter&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Now, when the endpoint is called (from Postman, for example), and the request is &lt;code&gt;cancelled&lt;/code&gt;, the &lt;em&gt;CancellationToken is marked as cancelled (IsCancellationRequested is set to true), and the iteration will stop&lt;/em&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;When performing iterations over a collection, where it makes sense (in situations when the calling process can be cancelled, such as in an endpoint), a &lt;code&gt;CancellationToken&lt;/code&gt; instance should always be used. This ensures any iterations being done asynchronously will be cancelled, ensuring resources are not being unessacary used.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://twitter.com/vekzdran/status/1610197203901091840"&gt;&amp;#64;vekzdran&amp;#64;hachyderm.io Tweet&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;235: 16-01-2023&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
