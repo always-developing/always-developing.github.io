@@ -5,8 +5,120 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2023</copyright>
-		<pubDate>Mon, 30 Jan 2023 03:38:55 GMT</pubDate>
-		<lastBuildDate>Mon, 30 Jan 2023 03:38:55 GMT</lastBuildDate>
+		<pubDate>Tue, 31 Jan 2023 03:39:24 GMT</pubDate>
+		<lastBuildDate>Tue, 31 Jan 2023 03:39:24 GMT</lastBuildDate>
+		<item>
+			<title>EF queries on unmapped types</title>
+			<link>https://alwaysdeveloping.net/dailydrop/2023/01/31-ef-unmapped-types</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/dailydrop/2023/01/31-ef-unmapped-types</guid>
+			<pubDate>Tue, 31 Jan 2023 01:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;Entity Framework 8 is (&lt;em&gt;potentially&lt;/em&gt;) introducing new functionality allowing &lt;code&gt;raw queries to be executed on unmapped types&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;At the time of this post, the functionality is only available on the &lt;a href="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet8/nuget/v3/index.json"&gt;daily builds&lt;/a&gt;, and may change before the EF8 release.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="sqlquery-example"&gt;SqlQuery Example&lt;/h2&gt;
+&lt;p&gt;Making use of the new functionality is fairly straight-forward. To use the new functionality, we need a &lt;code&gt;type&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public  class Blog
+{
+    public int Id { get; set; }
+
+    [MaxLength(500)]
+    public string Title { get; set; }
+
+    public DateTime DateCreated { get; set; }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;A &lt;code&gt;DbContext&lt;/code&gt; is also required:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class DemoContext : DbContext
+{
+    public DemoContext() : base()
+    {
+    }
+
+    public DemoContext(DbContextOptions&amp;lt;DemoContext&amp;gt; options) : base(options)
+    {        
+    }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseSqlServer(
+            &amp;#64;&amp;quot;Server=.\SQLEXPRESS;Database=Demo;Integrated Security=True;TrustServerCertificate=True&amp;quot;);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The important thing to note here, is that the &lt;code&gt;Blog type is NOT mapped to a DBSet in the DBContext&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;With the new functionality, &lt;em&gt;raw SQL queries&lt;/em&gt; can now be executed against the &lt;code&gt;unmapped type&lt;/code&gt; (&lt;em&gt;Blog&lt;/em&gt; in this example):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;using var context = new DemoContext();
+
+// Blog type is not mapped
+var blogs = await context.Database.SqlQuery&amp;lt;Blog&amp;gt;(
+        &amp;#64;$&amp;quot;SELECT b.Id, b.Title, b.DateCreated
+            FROM Blog b&amp;quot;)
+    .ToListAsync();
+
+Console.WriteLine($&amp;quot;Blogs returned: {blogs.Count}&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The same functionality can be leveraged for &lt;em&gt;simple types&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;using var context = new DemoContext();
+
+var titles = await context.Database.SqlQuery&amp;lt;string&amp;gt;(
+        &amp;#64;$&amp;quot;SELECT b.Title
+            FROM Blog b&amp;quot;)
+    .ToListAsync();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This functionality can also be abstracted to a generic method to make calling it multiple times, for multiple entities easier:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;async Task&amp;lt;List&amp;lt;T&amp;gt;&amp;gt; ExecuteSqlQuery&amp;lt;T&amp;gt;(DbContext context, string query)
+{
+    return await context.Database.SqlQuery&amp;lt;T&amp;gt;(
+            FormattableStringFactory.Create(query)
+        ).ToListAsync();
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This method can now be called as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var results = await ExecuteSqlQuery&amp;lt;Blog&amp;gt;(context, 
+    &amp;quot;SELECT b.Id, b.Title, b.DateCreated FROM Blog b&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="dynamiccontext"&gt;DynamicContext&lt;/h2&gt;
+&lt;p&gt;I have previous written a &lt;a href="https://www.nuget.org/packages/AlwaysDeveloping.EntityFrameworkCore.DynamicContext"&gt;NuGet package called DynamicContext&lt;/a&gt; which effectively provides the same functionality. A detailed &lt;a href="https://www.alwaysdeveloping.net/p/11-2020-dynamic-context/"&gt;blog post is also available&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;So will this new EF functionality replace &lt;code&gt;DynamicContext&lt;/code&gt;? Yes, and no.&lt;/p&gt;
+&lt;p&gt;For the most part, yes it does replace &lt;code&gt;DynamicContext&lt;/code&gt;. However there is one bit of functionality available in &lt;code&gt;DynamicContext&lt;/code&gt; that is not available with the new functionality - the &lt;code&gt;ability to run queries against anonymous types&lt;/code&gt;. This is possible with &lt;code&gt;DynamicContext&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// Declare an example anonymous object with 
+// the relevant properties, using default values 
+var anon = new { BlogId = 0, Url = &amp;quot;&amp;quot; };
+
+// Invoke the method just using the 
+// example object, and not specifying T
+var blog = CallWithAnon(anon);
+
+static T CallWithAnon&amp;lt;T&amp;gt;(T example) where T: class
+{
+    // T is inferred from the example parameter (which is not used in the method, 
+    // it is only used for the inference) and can successfully 
+    // call into the dynamic runtime context
+    using var dynContext = new RuntimeContext&amp;lt;T&amp;gt;();
+    return dynContext.Set&amp;lt;T&amp;gt;().FromSqlRaw(&amp;quot;SELECT Id as BlogId, Url FROM Blog&amp;quot;)
+        .AsNoTracking().First();
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Trying the same technique with the new EF functionality results in the following error:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-terminal"&gt;No suitable constructor was found for entity type '&amp;lt;&amp;gt;f__AnonymousType0&amp;lt;int, string&amp;gt;'. 
+he following constructors had parameters that could not be bound to properties of the entity type: 
+    Cannot bind 'BlogId', 'Title' in '&amp;lt;&amp;gt;f__AnonymousType0&amp;lt;int, string&amp;gt;(int BlogId, string Title)'
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This is a fairly niche use case though, so for the majority of the time, the &lt;code&gt;new functionally can replace DynamicContext&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
+&lt;p&gt;If the ability to query unmapped entities is required - this new functionality is the way to go (vs custom libraries). I'm happy to see additional &lt;em&gt;required&lt;/em&gt; functionality such as this being introduced into the base EF libraries, removing the reliance on additional libraries.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="references"&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://steven-giesel.com/blogPost/d1f069fb-7f6d-4f80-a98f-734755474ae1"&gt;Entity Framework 8: Raw SQL queries on unmapped types&lt;/a&gt;&lt;br /&gt;
+&lt;a href="https://twitter.com/ajcvickers/status/1616203415637618688"&gt;Arthur Vickers Tweet&lt;/a&gt;&lt;/p&gt;
+&lt;?# DailyDrop ?&gt;246: 31-01-2023&lt;?#/ DailyDrop ?&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>ArrayPool for frequent array creation</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2023/01/30-araypool</link>
@@ -646,77 +758,6 @@ Console.WriteLine(new StringInfo(&amp;quot;👍&amp;quot;).LengthInTextElements)
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://linkdotnet.github.io/tips-and-tricks/strings/#getting-the-printable-length-of-a-string-or-character"&gt;Getting the printable length of a string or character&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;237: 18-01-2023&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Non-generic to generic method call</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2023/01/17-non-to-generic</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2023/01/17-non-to-generic</guid>
-			<pubDate>Tue, 17 Jan 2023 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;dynamic&lt;/code&gt; type can be used in the use case when required to call into a &lt;em&gt;generic method, from a non-generic method&lt;/em&gt;. This is a fairly niche use case, but when required, the &lt;code&gt;dynamic&lt;/code&gt; technique explained below can be of great benefit.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="generic-method"&gt;Generic method&lt;/h2&gt;
-&lt;p&gt;Assume we have the following simple generic method:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public static void GenericMethod&amp;lt;T&amp;gt;(T parameter)
-{
-    Console.WriteLine($&amp;quot;T is of type: {typeof(T).Name}&amp;quot;);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This method needs to be called from another non-generic method which contains an &lt;code&gt;object&lt;/code&gt; variable.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="object-technique"&gt;Object technique&lt;/h3&gt;
-&lt;p&gt;Calling into the generic method with an &lt;code&gt;object&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public static class Converter
-{
-    public static void ObjectMethod(object randomObj)
-    {
-        // call into the generic method with the
-        // object type
-        GenericMethod(randomObj);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;While this will compile and &amp;quot;work&amp;quot;, calling the &lt;code&gt;ObjectMethod&lt;/code&gt; method with various types, will result in the same output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;Converter.ObjectMethod(&amp;quot;string value&amp;quot;);
-Converter.ObjectMethod(1001);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;T is of type: Object
-T is of type: Object
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;As an &lt;code&gt;Object&lt;/code&gt; is being passed to the generic method (even though the underlying types are different), the values are &lt;em&gt;boxed&lt;/em&gt; into that type, and that is what is output.&lt;/p&gt;
-&lt;p&gt;If we would like to know the &lt;em&gt;actual&lt;/em&gt; type output, then the &lt;code&gt;dynamic technique&lt;/code&gt; can be used.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="dynamic-technique"&gt;Dynamic technique&lt;/h3&gt;
-&lt;p&gt;The &lt;code&gt;dynamic technique&lt;/code&gt; involves casting the &lt;code&gt;object to dynamic&lt;/code&gt; before calling the generic method:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;public static class Converter
-{
-    public static void ObjectMethod(object randomObj)
-    {
-        // cast the object to dynamic
-        dynamic dynObj = randomObj;
-        GenericMethod(dynObj);
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Now, calling the generic method with the same variables:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;Converter.ObjectMethod(&amp;quot;string value&amp;quot;);
-Converter.ObjectMethod(1001);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Will result in the following output:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;T is of type: String
-T is of type: Int32
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;A fairly niche use case, and a small difference in code but one which can make a big difference when the use case is encountered. There might be a performance impact with the &lt;em&gt;dynamic technique&lt;/em&gt; (as dynamic generally is less performant), but this might be out-weighed by the benefit the technique gives. As always, if performance is an issue, benchmark and and make an informed decision which technique to use.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://twitter.com/RogerAlsing/status/1609955500363333632"&gt;Roger Johansson Tweet&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;236: 17-01-2023&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
