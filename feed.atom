@@ -4,8 +4,41 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2023</rights>
-	<updated>2023-01-31T03:39:24Z</updated>
+	<updated>2023-02-01T03:45:57Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/dailydrop/2023/02/01-daily-drop-wrap</id>
+		<title>Daily Drop wrap-up</title>
+		<link href="https://alwaysdeveloping.net/dailydrop/2023/02/01-daily-drop-wrap" />
+		<updated>2023-02-01T01:00:00Z</updated>
+		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
+&lt;p&gt;At the start of 2022 I set myself the goal of &lt;code&gt;learning one new coding related piece of knowledge a day&lt;/code&gt;. It could be anything - some.NET / C# functionality I wasn't aware of, a design practice, a cool new coding technique, or just something I find interesting. It could be something I knew at one point but had forgotten, or something completely new, which I may or may never actually use.&lt;/p&gt;
+&lt;p&gt;The Daily Drop was &lt;code&gt;started in February 2022&lt;/code&gt; as a record of these pieces of knowledge - writing about and summarizing them helped re-enforce the information for myself, as well as potentially helps others learn something new as well.&lt;/p&gt;
+&lt;p&gt;One year, and 246 Daily Drops later (only week days, and 2 weeks off during December) the Daily Drop goal &lt;code&gt;is completed!&lt;/code&gt;. This post serves as a &lt;em&gt;wrap-up, as well as to highlight lessons learnt during the year&lt;/em&gt;.&lt;/p&gt;
+&lt;h2 id="observations"&gt;Observations&lt;/h2&gt;
+&lt;h3 id="forgotten-knowledge"&gt;Forgotten knowledge&lt;/h3&gt;
+&lt;p&gt;&lt;code&gt;Use the knowledge learnt - or forget it&lt;/code&gt;. There are obviously exceptions to this, but for most developers unless we actively use a technique, method, syntax often, it needs to be looked-up each time. I am no exception to this. A number of the pieces of knowledge learnt throughout the year, was knowledge I had previous learn (sometime in the past 20 years), but was not actively using, and had thus &amp;quot;forgotten&amp;quot;. Reading about it again as part of the Daily Drop exercise just refreshed them memory and reminded me that I had actually previous learnt it.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="source-of-knowledge"&gt;Source of knowledge&lt;/h3&gt;
+&lt;p&gt;Finding good sources of knowledge, which offer a mix between new C# features, and leveraging existing features is tough (but doable), but key. Two of my favorite sources (which are updated in the morning and afternoon CAT respectively) are &lt;a href="https://blog.cwa.me.uk/"&gt;The Morning Brew&lt;/a&gt; and the &lt;a href="https://www.alvinashcraft.com/"&gt;The Morning Dew&lt;/a&gt;. Both of these are aggregators for various Developer news.&lt;/p&gt;
+&lt;p&gt;Other sources include, but not limited to:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Twitter .NET Community&lt;/li&gt;
+&lt;li&gt;Youtube: &lt;a href="https://www.youtube.com/&amp;#64;nickchapsas"&gt;Nick Chapsas&lt;/a&gt;, &lt;a href="https://www.youtube.com/&amp;#64;RawCoding"&gt;Raw Coding&lt;/a&gt;, &lt;a href="https://www.youtube.com/&amp;#64;CodingTutorialsAreGo"&gt;Coding Tutorials&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Github repos&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr /&gt;
+&lt;h3 id="technical-writing-is-a-skill"&gt;Technical writing is a skill&lt;/h3&gt;
+&lt;p&gt;Technical writing is a skill and takes times. Writing working coding samples is relatively quick - translating that into readable, understandable but concise and interesting posts is tough, and is time consuming. I feel most of the time I got this mostly right, but not always. However, as with most skills, practice over time improved my ability to write technical specifications, and this has carried over into my professional job.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="going-forward"&gt;Going forward&lt;/h2&gt;
+&lt;p&gt;Do I feel like I gained skills and knowledge from Daily Drop? Yes!
+Did I, overall, enjoy doing the Daily Drop? Yes!
+Am I glad the year log goal has come to an end? Yes!&lt;/p&gt;
+&lt;p&gt;Writing a blog post daily is time consuming and at times was very draining. So, while the daily posts will stop, they will be replaced by less frequent but more comprehensive posts. The additional time not blogging, will be dedicated to new side projects and implementation of new ideas.&lt;/p&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/dailydrop/2023/01/31-ef-unmapped-types</id>
 		<title>EF queries on unmapped types</title>
@@ -709,44 +742,6 @@ System.Exception: Manual exception has been thrown
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://linkdotnet.github.io/tips-and-tricks/async_await/"&gt;Elide await keyword - Exceptions&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;238: 19-01-2023&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2023/01/18-string-length</id>
-		<title>Accurate string length</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2023/01/18-string-length" />
-		<updated>2023-01-18T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;&lt;code&gt;String.Length&lt;/code&gt; does &lt;em&gt;not always return a &amp;quot;true&amp;quot; accurate length&lt;/em&gt; of the string - instead, the &lt;code&gt;StringInfo.LengthInTextElements&lt;/code&gt; method should be used.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="string-length"&gt;String Length&lt;/h2&gt;
-&lt;p&gt;Generally, for most common string usage, the &lt;code&gt;String.Length&lt;/code&gt; will return the correct length of the string - the number of characters in the string object. However, the number of characters in the string object &lt;code&gt;does not always correspond to the number of characters which reflect on the screen&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;For example:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;Console.Write(&amp;quot;This string '👍' has the length of: &amp;quot;);
-Console.WriteLine(&amp;quot;👍&amp;quot;.Length);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output of the above is:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;This string '??' has the length of: 2
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The terminal window is unable to render the 👍 emoji, so it is reflected as '??' - but this also gives insight into its length (two question marks, and no one). Even though 👍 reflects as &lt;code&gt;one character when output, it actually consists of two characters in the string object&lt;/code&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="stringinfo-lengthintextelements"&gt;StringInfo LengthInTextElements&lt;/h2&gt;
-&lt;p&gt;To get a more accurate string length, the &lt;code&gt;StringInfo.LengthInTextElements&lt;/code&gt; property can be used:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;Console.Write(&amp;quot;This string '👍' has the true length of: &amp;quot;);
-Console.WriteLine(new StringInfo(&amp;quot;👍&amp;quot;).LengthInTextElements);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The output of the above is:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;This string '??' has the length of: 1
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The &lt;em&gt;LengthInTextElements&lt;/em&gt; property will return the number of text elements displayed in the terminal.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;If the length of the string is required for display purposes, and the string could contain &amp;quot;non-traditional&amp;quot; characters, such as emoji's - then the &lt;em&gt;StringInfo.LengthInTextElements&lt;/em&gt; property should be used for more accurate results.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://linkdotnet.github.io/tips-and-tricks/strings/#getting-the-printable-length-of-a-string-or-character"&gt;Getting the printable length of a string or character&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;237: 18-01-2023&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
