@@ -5,8 +5,166 @@
 		<link>https://alwaysdeveloping.net/</link>
 		<description>always learning | always growing</description>
 		<copyright>Copyright © 2023</copyright>
-		<pubDate>Thu, 25 May 2023 06:06:32 GMT</pubDate>
-		<lastBuildDate>Thu, 25 May 2023 06:06:32 GMT</lastBuildDate>
+		<pubDate>Fri, 26 May 2023 03:36:03 GMT</pubDate>
+		<lastBuildDate>Fri, 26 May 2023 03:36:03 GMT</lastBuildDate>
+		<item>
+			<title>Sharing a common method across classes</title>
+			<link>https://alwaysdeveloping.net/p/2023-05-interface-extension</link>
+			<description>always learning | always growing</description>
+			<guid>https://alwaysdeveloping.net/p/2023-05-interface-extension</guid>
+			<pubDate>Fri, 26 May 2023 03:00:00 GMT</pubDate>
+			<content:encoded>&lt;h2 id="introduction"&gt;Introduction&lt;/h2&gt;
+&lt;p&gt;Have you needed to add the same method to multiple classes? To have a single method in the code applied to multiple classes, instead of duplicating the code in multiple places?&lt;/p&gt;
+&lt;p&gt;This article will detail a technique (which I have personally been using extensively) which &lt;code&gt;allows for a single extension method to easily be added to any class&lt;/code&gt;.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="inheritance"&gt;Inheritance&lt;/h2&gt;
+&lt;p&gt;Before getting to the extension method technique, we are going to have a quick look at using inherence to solve the problem. A common method in a base class can be used to add the functionality to child classes:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// BaseClass which has common functionality
+public class BaseClass
+{
+    public BaseClass ExecuteBaseFunctionality()
+    {
+        Console.WriteLine(&amp;quot;Executing Common functionality&amp;quot;);
+        return this;
+    }
+}
+
+// Class1 which can execute Class1 specific functionality
+// as well as the common functionality
+public class Class1 : BaseClass
+{
+    public Class1 ExecuteClass1Functionality()
+    {
+        Console.WriteLine(&amp;quot;Executing Class1 functionality&amp;quot;);
+        return this;
+    }
+}
+
+// Class2 which can execute Class2 specific functionality
+// as well as the common functionality
+public class Class2 : BaseClass
+{
+    public Class2 ExecuteClass2Functionality()
+    {
+        Console.WriteLine(&amp;quot;Executing Class2 functionality&amp;quot;);
+        return this;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The reason for returning the &lt;strong&gt;class type&lt;/strong&gt; from the methods, is to allow for &lt;strong&gt;method chaining&lt;/strong&gt; to take place:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;Class1 c1 = new Class1();
+
+c1.ExecuteClass1Functionality()
+    .ExecuteBaseFunctionality();
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;However, if the common functionality (a call to the base class method) is required to be executed first, then a cast is required:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;Class1 c1 = new Class1();
+
+((Class1)c1.ExecuteBaseFunctionality())
+            .ExecuteBaseFunctionality();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Not ideal, but also not a big issue.&lt;/p&gt;
+&lt;p&gt;One big limitation of the inheritance approach is that if the class (&lt;code&gt;Class1&lt;/code&gt; or &lt;code&gt;Class2&lt;/code&gt; in this example) already inherits from another class, then the inheritance method simple will not work as C# does not allow for multiple inheritance:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// Already inherits, cannot inherit from &amp;quot;BaseClass&amp;quot;
+public class Class1 : AnotherBaseClass
+{
+    public Class1 ExecuteClass1Functionality()
+    {
+        Console.WriteLine(&amp;quot;Executing Class1 functionality&amp;quot;);
+        return this;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;code&gt;Interfaces combined with extension methods&lt;/code&gt; to the rescue!&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="interfaces-extension-methods"&gt;Interfaces + Extension Methods&lt;/h2&gt;
+&lt;p&gt;This technique may seem a bit complicated initially, and once the foundations have been setup it is incredibly easy and quick to add the common method to any class.&lt;/p&gt;
+&lt;h3 id="defining-the-interface"&gt;Defining the interface&lt;/h3&gt;
+&lt;p&gt;The first step is to define a &lt;code&gt;marker interface&lt;/code&gt; which will be used as the base for the extension method:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public interface IHasCommonFunctionality&amp;lt;TParent&amp;gt; 
+    where TParent : class
+{    
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The interface uses a &lt;em&gt;generic parameter&lt;/em&gt; to indicate the parent type - this is so the specific type can be returned from the extension methods to &lt;em&gt;enable method chaining&lt;/em&gt; (shown further down in the post). If method chaining is not required, the generic parameter can be removed:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public interface IHasCommonFunctionality
+{
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3 id="defining-the-extension-method"&gt;Defining the extension method&lt;/h3&gt;
+&lt;p&gt;The next step, is to define an extension method, which &lt;code&gt;extends the functionality of the interface&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public static class BaseFunctionalityExtensions
+{
+    // Extension method on IHasCommonFunctionality with a specific generic type parameter
+    public static TParent ExecuteBaseFunctionality&amp;lt;TParent&amp;gt;(this IHasCommonFunctionality&amp;lt;TParent&amp;gt; parent)
+        where TParent : class
+    {
+        Console.WriteLine(&amp;quot;Executing Common functionality&amp;quot;);
+
+        // returns the parent, cast to the actual parent type
+        return (TParent)parent;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;At first glace, there is a lot going on - but broken down:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;This is an extension method on the &lt;code&gt;IHasCommonFunctionality&amp;lt;&amp;gt;&lt;/code&gt; interface. Any class which implements this interface, will have the &lt;code&gt;ExecuteBaseFunctionality&lt;/code&gt; method available&lt;/li&gt;
+&lt;li&gt;The method uses the generic parameter &lt;code&gt;TParent&lt;/code&gt; - this is the same parameter used when implementing the interface on a class, &lt;code&gt;IHasCommonFunctionality&amp;lt;TParent&amp;gt;&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;The method returns the generic parameter type (allowing for &lt;em&gt;method chaining&lt;/em&gt;). As the returned &lt;em&gt;parent&lt;/em&gt; variable is of type &lt;code&gt;IHasCommonFunctionality&amp;lt;TParent&amp;gt;&lt;/code&gt;, and we want to return &lt;code&gt;TParent&lt;/code&gt;, &lt;em&gt;parent&lt;/em&gt; is cast to &lt;code&gt;TParent&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;The above cast will &lt;em&gt;always be valid&lt;/em&gt; as the type represented by &lt;code&gt;TParent&lt;/code&gt;, will always implement &lt;code&gt;IHasCommonFunctionality&amp;lt;TParent&amp;gt;&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;A practical example might make it easier to see how the pieces fit together.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3 id="interface-implementation"&gt;Interface implementation&lt;/h3&gt;
+&lt;p&gt;The interface can now me implemented on one or many classes:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;public class Class1 : IHasCommonFunctionality&amp;lt;Class1&amp;gt;
+{
+    public Class1 ExecuteClass1Functionality()
+    {
+        Console.WriteLine(&amp;quot;Executing Class1 functionality&amp;quot;);
+        return this;
+    }
+}
+
+public class Class2 : IHasCommonFunctionality&amp;lt;Class2&amp;gt;
+{
+    public Class2 ExecuteClass2Functionality()
+    {
+        Console.WriteLine(&amp;quot;Executing Class2 functionality&amp;quot;);
+        return this;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As you can see, the generic parameter for &lt;code&gt;IHasCommonFunctionality&amp;lt;&amp;gt;&lt;/code&gt; is the &lt;em&gt;class the interface is being implemented on&lt;/em&gt;. This gives the extension method visibility of the type that is leveraging the interface.&lt;/p&gt;
+&lt;p&gt;The extension method can now be leveraged from multiple classes::&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;Class1 c1 = new Class1();
+
+// ExecuteBaseFunctionality called on Class1, and the 
+// Class1 instance is returned allowing 
+// ExecuteClass1Functionality to be called
+c1.ExecuteBaseFunctionality()
+    .ExecuteClass1Functionality();
+
+//-----------
+
+Class2 c2 = new Class2();
+
+// ExecuteBaseFunctionality called on Class2, and the 
+// Class2 instance is returned allowing 
+// ExecuteClass2Functionality to be called
+c2.ExecuteBaseFunctionality()
+    .ExecuteClass2Functionality();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In the two example above, calling &lt;code&gt;ExecuteBaseFunctionality&lt;/code&gt; on an instance of &lt;code&gt;Class1&lt;/code&gt; returns the &lt;em&gt;Class1 instance&lt;/em&gt; will calling the method on &lt;code&gt;Class2&lt;/code&gt; returns the &lt;em&gt;Class2 instance&lt;/em&gt;, allowing method chaining to still be possible.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="conclusion"&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;When it's not possible to use inheritance to share a common method across multiple classes, the &lt;code&gt;interface + extension method&lt;/code&gt; technique can prove to be very valuable. Once the ground work has been done, introducing the method to a class is as simple as having the class implement the required interface. In addition, as multiple interface implementations are allowed its possible add different extension methods to different classes independently (not possible with the inheritance technique)&lt;/p&gt;
+&lt;p&gt;I'm interested to know if this same problem has been solved in any other ways - please comment below with any additional techniques to leverage to solve the problem.&lt;/p&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Daily Drop wrap-up</title>
 			<link>https://alwaysdeveloping.net/dailydrop/2023/02/01-daily-drop-wrap</link>
@@ -641,118 +799,6 @@ Console.WriteLine(intList.All(i =&amp;gt; i &amp;lt; 100));
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://linkdotnet.github.io/tips-and-tricks/linq/#using-count-instead-of-all-or-any"&gt;Using Count() instead of All or Any&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;239: 20-01-2023&lt;?#/ DailyDrop ?&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Eliding await keyword</title>
-			<link>https://alwaysdeveloping.net/dailydrop/2023/01/19-elide-await</link>
-			<description>always learning | always growing</description>
-			<guid>https://alwaysdeveloping.net/dailydrop/2023/01/19-elide-await</guid>
-			<pubDate>Thu, 19 Jan 2023 01:00:00 GMT</pubDate>
-			<content:encoded>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;When multiple &lt;em&gt;async method&lt;/em&gt; are called in a sequence, the &lt;code&gt;async methods should be elided&lt;/code&gt; and the &lt;em&gt;Tasks&lt;/em&gt; should be &lt;em&gt;awaited&lt;/em&gt; and not passed up the call stack.&lt;/p&gt;
-&lt;p&gt;If a &lt;em&gt;Task&lt;/em&gt; is passed up the stack, and an exception occurs - the Task which is not &lt;em&gt;awaited&lt;/em&gt; will not be part of the error stack trace.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="no-await-exception"&gt;No await exception&lt;/h2&gt;
-&lt;p&gt;In the below code snippet, we have a call stack where a &lt;em&gt;Task&lt;/em&gt; is &lt;code&gt;not awaited immediately&lt;/code&gt;, but passed up the call stack to be awaited:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;await CallStackStart();
-
-static async Task CallStackStart()
-{
-    try
-    {
-        // call a method which returns a task
-        await NoAwaitMethod();
-    }
-    catch (Exception e)
-    {
-        Console.WriteLine(&amp;quot;Stacktrace for the exception:&amp;quot;);
-        Console.WriteLine(e);
-    }
-}
-
-// return a Task
-static Task NoAwaitMethod()
-{
-    // call a method which returns a Task but 
-    // do NOT await
-    return ThrowExceptionAsync();
-}
-
-static async Task ThrowExceptionAsync()
-{
-    await Task.Delay(1);
-    throw new Exception(&amp;quot;Manual exception has been thrown&amp;quot;);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Starting from the bottom of the call stack:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;ThrowExceptionAsync&lt;/code&gt; is an &lt;em&gt;async&lt;/em&gt; method in which an exception could (will in this example) be thrown.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;NoAwaitMethod&lt;/code&gt; calls into &lt;em&gt;ThrowExceptionAsync&lt;/em&gt;, but &lt;strong&gt;does not await the call&lt;/strong&gt;. The method returns the &lt;em&gt;Task&lt;/em&gt; returned from &lt;em&gt;ThrowExceptionAsync&lt;/em&gt;&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;CallStackStart&lt;/code&gt; calls into &lt;em&gt;NoAwaitMethod&lt;/em&gt; and &lt;em&gt;awaits&lt;/em&gt; the &lt;em&gt;Task&lt;/em&gt; the method returns - which is the &lt;em&gt;Task&lt;/em&gt; returned from &lt;em&gt;ThrowExceptionAsync&lt;/em&gt;.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Running the above code, the call stack generated from the exception is:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Stacktrace for the exception:
-System.Exception: Manual exception has been thrown
-   at Program.&amp;lt;&amp;lt;Main&amp;gt;$&amp;gt;g__ThrowExceptionAsync|0_2() in C:\Development\Blog\ElideAwait\Program.cs:line 28
-   at Program.&amp;lt;Main&amp;gt;$(String[] args) in C:\Development\Blog\ElideAwait\Program.cs:line 5
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The stack trace has &lt;code&gt;no mention that the call stack went through the NoAwaitMethod method!&lt;/code&gt;. This is due to the fact that the method is basically just a &lt;em&gt;pass through method&lt;/em&gt; for the &lt;em&gt;Task&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;To get a more accurate stack trace, the &lt;em&gt;async method needs to be awaited&lt;/em&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="await-exception"&gt;await exception&lt;/h2&gt;
-&lt;p&gt;As mentioned above, instead of a method like &lt;em&gt;NoAwaitMethod&lt;/em&gt;, which serves as a pass through for the &lt;em&gt;Task&lt;/em&gt;, the &lt;code&gt;Task should be awaited&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;wait CallStackStart();
-
-static async Task CallStackStart()
-{
-    try
-    {
-        // call a method which returns a task
-        await AwaitMethod();
-    }
-    catch (Exception e)
-    {
-        Console.WriteLine(&amp;quot;Stacktrace for the exception:&amp;quot;);
-        Console.WriteLine(e);
-    }
-}
-
-static async Task AwaitMethod()
-{
-    // await the task returned instead
-    // of just returning the Task
-    await ThrowExceptionAsync();
-}
-
-static async Task ThrowExceptionAsync()
-{
-    await Task.Delay(1);
-    throw new Exception(&amp;quot;Manual exception has been thrown&amp;quot;);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Again, starting from the bottom of the call stack:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;ThrowExceptionAsync&lt;/code&gt; is an &lt;em&gt;async&lt;/em&gt; method in which an exception could (will in this example) be thrown.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;AwaitMethod&lt;/code&gt; calls into &lt;em&gt;ThrowExceptionAsync&lt;/em&gt;, and &lt;strong&gt;awaits the call&lt;/strong&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;CallStackStart&lt;/code&gt; calls into &lt;em&gt;NoAwaitMethod&lt;/em&gt; and &lt;em&gt;awaits&lt;/em&gt; the &lt;em&gt;Task&lt;/em&gt; the method returns.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Now running the above code, the full complete stack trace is part of the exception:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-terminal"&gt;Stacktrace for the exception:
-System.Exception: Manual exception has been thrown
-   at Program.&amp;lt;&amp;lt;Main&amp;gt;$&amp;gt;g__ThrowExceptionAsync|0_2() in C:\Development\Blog\ElideAwait\Program.cs:line 28
-   at Program.&amp;lt;&amp;lt;Main&amp;gt;$&amp;gt;g__AwaitMethod|0_1() in C:\Development\Blog\ElideAwait\Program.cs:line 21
-   at Program.&amp;lt;Main&amp;gt;$(String[] args) in C:\Development\Blog\ElideAwait\Program.cs:line 6 
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This time we have a &lt;code&gt;full, complete stack trace!&lt;/code&gt;&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;When &lt;em&gt;await async&lt;/em&gt; is used in conjunction with any &lt;em&gt;exceptions&lt;/em&gt;, the Tasks in question should be elided and &lt;em&gt;awaited&lt;/em&gt; and not passed up the stack trace as it can cause certain methods to be omitted from exception stack traces.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://linkdotnet.github.io/tips-and-tricks/async_await/"&gt;Elide await keyword - Exceptions&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;238: 19-01-2023&lt;?#/ DailyDrop ?&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
