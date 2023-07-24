@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="always learning | always growing">
+
+    <title>Always Developing - Introducing the Source Generator Toolkit</title>
+
+    <link rel="canonical" href="https://alwaysdeveloping.net/p/2023-07-source-gen-toolkit">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss" />
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom" />
+
+    <meta name="application-name" content="Always Developing" />
+    <meta name="msapplication-tooltip" content="Always Developing" />
+    <meta name="msapplication-starturl" content="/" />
+
+    <meta property="og:title" content="Always Developing - Introducing the Source Generator Toolkit" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://alwaysdeveloping.net/p/2023-07-source-gen-toolkit" />
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Bootstrap core CSS -->
+    <link href="/vendor/bootstrap/scss/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom fonts for this template -->
+    <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="/vendor/fontawesome-free/css/brands.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css' data-no-mirror>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css' data-no-mirror>
+
+    <!-- Custom styles for this template -->
+    <link href="/scss/always-developing-blog.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/plugins/autoloader/prism-autoloader.min.js" data-no-mirror></script>
+    <script src="https://cdn.jsdelivr.net/npm/quicklink@2.0.0/dist/quicklink.umd.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.19.0/themes/prism.css">
+
+    <!-- Lunr search -->
+        <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/pako@2.0.3/dist/pako_inflate.min.js"></script>
+        <script src="/search.js"></script>
+
+    
+
+
+    
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand"  href="/">
+            <img src="/images/ad_logo.png" alt="" width="25" height="25" class="d-inline-block align-text-top">
+            Always Developing
+        </a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            Menu
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/software">Software</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/tags">Tags</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/posts">Posts</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/about">About</a>
+            </li>
+</ul>
+                <form class="form-inline my-2 my-lg-0" action="/search" method="GET">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="query">
+                    <input type="submit" hidden />
+                </form>
+        </div>
+    </div>
+</nav>
+
+    <!-- Page Header -->
+    <header class="masthead">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 align-middle">
+                <div class="post-header-image">
+                    <a href="/">
+                        <img src="/images/ad_logo.png" class="header-image">
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="post-heading">
+                    <h1>
+                        Introducing the Source Generator Toolkit
+                    </h1>
+                            <h2 class="subheading">Source Generators made easier!</h2>
+                        <p class="post-meta">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-week" viewBox="0 0 16 16">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z" />
+                                <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
+                            </svg> Published on Monday, 24 July 2023
+                        </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <!-- Main Content -->
+    <div class="container">
+            <div class="row ">
+                    <div id="content" class="col-md-9 post-with-toc post-block">
+                        
+<div class="post-header-category">
+    <a class="btn btn-primary btn-sm btn-default btn-home" href="\" role="button"><i class="fas fa-angle-double-left"></i> Home</a>
+            <a class="btn btn-primary btn-sm category-btn" href="/categories/blog" role="button">Blog</a>
+</div>
+
+                        <h2 id="introduction">Introduction</h2>
+<p>Ever wanted to try leverage <em>Roslyn Source Generators</em>, but the process seemed too complex? The <a href="https://www.nuget.org/packages/SourceGeneratorToolkit"><code>Source Generator Toolkit</code></a> aims to make this process easier, but providing two pieces of core functionality:</p>
+<ul>
+<li><code>Code Generation</code>: this can be leveraged in conjunction with the Roslyn Source Generator process, or standalone and allows for the easy generation of C# source code using a <em>fluent builder pattern</em>.</li>
+<li><code>Code Qualification</code>: this is leverage as part of the Roslyn Source Generator process, and make the process of <em>determining if a syntax node qualifies for source generation</em> easier and more stream-lined.</li>
+</ul>
+<hr />
+<h2 id="reason-for-the-library">Reason for the library</h2>
+<p>The main aim of the code generation functionality of the library is to <code>remove as much of the hard-coded C# strings required when creating a source generator as possible</code>. Some hard-coded <em>strings of code</em> will still be required for specific logic, however the main scaffolding of the classes, methods etc can be done through the library using a <em>fluent builder pattern</em>. This pattern makes it easy to build up the source code logically, with each component building on the previous one.</p>
+<p>While the initial idea was for the <code>Source Generator Toolkit</code> to be used with <em>Roslyn Source Generators</em>, the code generation functionality can be leveraged outside of this process to just generate a string representation of C# code.</p>
+<p>When creating a <em>Roslyn Source Generators</em> in most cases, before source code is generated, <em>qualification checks</em> need to be performed to determine <em>if</em> the source code should be generated, and to determine the values to be used in the generated code. Here the aim of the <code>Source Generator Toolkit</code> was to make working the the syntax nodes and syntax tree as easy as possible, by <code>providing a variety of extension methods for qualification checks performed on syntax nodes</code>. The qualification check functionality is done, again, through a <em>fluent builder</em> which allows for the qualification check to logically be built up - easily to maintain and easier to understand.</p>
+<hr />
+<h2 id="generating-code-outside-of-the-roslyn-source-generator-process">Generating Code - outside of the Roslyn Source Generator process</h2>
+<p>First we'll look at how to generate c# source code, outside of the Roslyn Source Generator process.</p>
+<p>The static <code>SourceGenerator</code> class is the starting point for building up the source code. No actual <em>true c# code</em> is generated here - just a <strong>formatted string representation of c# code</strong>:</p>
+<pre><code class="language-csharp">var strCode = SourceGenerator.GenerateSource(gen =&gt;
+{
+    gen.WithFile(&quot;file1&quot;, file =&gt;
+    {
+        file.WithNamespace(&quot;SampleNamespace&quot;, ns =&gt;
+        {
+            ns.WithClass(&quot;SampleClass&quot;, cls =&gt; { });
+        });
+    });
+});
+</code></pre>
+<p>The string output of the above being (the value of <code>strCode</code>):</p>
+<pre><code class="language-csharp">namespace SampleNamespace
+{
+    [System.CodeDom.Compiler.GeneratedCode(&quot;SourceGeneratorToolkit&quot;, &quot;0.0.0.1&quot;)]
+    class SampleClass
+    {
+    }
+}
+</code></pre>
+<p>As you can see from this simple example, defining the code is easy:</p>
+<ul>
+<li>start with a &quot;file&quot; (in this case, it is an &quot;in-memory&quot; file which will hold the defined c# code)</li>
+<li>the file contains a single <code>namespace</code>, <em>SampleNamespace</em></li>
+<li>the namespace contains a single <code>class</code>, <em>SampleClass</em></li>
+</ul>
+<p>Each component is defined with its required properties (such as name in the above examples), and then an optional builder Action to define its child components.</p>
+<hr />
+<h2 id="generating-code-roslyn-source-generator-process-without-isyntaxreceiver">Generating Code - Roslyn Source Generator process (without ISyntaxReceiver)</h2>
+<p>Next, we look at leveraging the <code>Source Generator Toolkit</code> as <em>part of the Roslyn Source Generator process</em> - but when the <code>ISyntaxReceiver</code> is not used. This use case is for the scenarios when the generated source code must always be output and is not reliant on a <em>qualification check</em> being done.</p>
+<p>When used in conjunction with a Source Generator, the <code>GenerateSource</code> extension method on the <code>GeneratorExecutionContext</code> class can be leveraged.</p>
+<p>The below example shows how to generate source code <code>without any information from a SyntaxReceiver</code> - see further down on how the <code>Source Generator Toolkit</code> can be used to generate code in conjunction with a <code>ISyntaxReceiver</code> implementation.</p>
+<pre><code class="language-csharp">// a ISourceGenerator implementation
+public class SampleGenerator : ISourceGenerator
+{
+    public void Execute(GeneratorExecutionContext context)
+    {
+        context.GenerateSource(&quot;file1&quot;, fileBuilder =&gt;
+        {
+            fileBuilder.WithNamespace(&quot;SampleNamespace&quot;, nsBuilder =&gt;
+            {
+                ns.WithClass(&quot;SampleClass&quot;, cls =&gt; { });
+            });
+        });
+    }
+
+    public void Initialize(GeneratorInitializationContext context)
+    {
+        // no ISyntaxReceiver implementation registered here
+    }
+}
+</code></pre>
+<p>In the case of a Source Generator, an actual file named <code>file1.cs</code> will be output as part of the generation process.</p>
+<p>The output content of the file will be the same as in the previous example:</p>
+<pre><code class="language-csharp">namespace SampleNamespace
+{
+    [System.CodeDom.Compiler.GeneratedCode(&quot;SourceGeneratorToolkit&quot;, &quot;0.0.0.1&quot;)]
+    class SampleClass
+    {
+    }
+}
+
+</code></pre>
+<p>The <em>fluent builder pattern</em> is leveraged to build up the source code in exactly the same manner as in the previous example above.</p>
+<hr />
+<h2 id="generating-code-configuration">Generating Code - Configuration</h2>
+<p>There is optional configuration which can be specified when generating the code using either of the above two methods (when calling the <code>GenerateSource</code> method). If no configuration is specified, the default configuration is used.</p>
+<table>
+<thead>
+<tr>
+<th>Configuration Name</th>
+<th>Description</th>
+<th>Default Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OutputGeneratedCodeAttribute</td>
+<td>Flag to indicate if the <code>System.CodeDom.Compiler.GeneratedCode</code> attribute should be output with generated code. This attribute is used as an indicator to various tools that the code was auto generated</td>
+<td>true</td>
+</tr>
+<tr>
+<td>OutputDebuggerStepThroughAttribute</td>
+<td>Flag to indicate if the <code>System.Diagnostics.DebuggerStepThrough</code> attribute should be output with generated code. When set to true, this attribute allows stepping into the generated code when debugging</td>
+<td>false</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="code-qualification-roslyn-source-generator-process-with-isyntaxreceiver-implementation">Code Qualification - Roslyn Source Generator process (with ISyntaxReceiver implementation)</h2>
+<p>When using the .NET Roslyn Source Generator process, the actual <em>generation</em> of the source is only one step of the process - the other step is determining <em>if the source should be generated in the first place</em>. This <em>qualification check</em> is done in the <code>OnVisitSyntaxNode</code> method of the <code>ISyntaxReceiver</code> implementation.</p>
+<p>The <code>OnVisitSyntaxNode</code> method takes a <code>SyntaxNode</code> as an argument (this is part of the normal Roslyn Source Generator process) - the <code>Source Generator Toolkit</code> provides an extension method (<code>NodeQualifiesWhen</code>) which accepts a <em>qualification builder</em> which is used to determine if the SyntaxNode qualifies to have source code generated.</p>
+<p>The <em>fluent builder</em> pattern is again used to build up the qualification check for for the syntax:</p>
+<pre><code class="language-csharp">class SampleClassSyntaxReceiver : ISyntaxReceiver
+{
+    public List&lt;SyntaxReceiverResult&gt; Results { get; set; } = new List&lt;SyntaxReceiverResult&gt;();
+
+    public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
+    {
+        syntaxNode.NodeQualifiesWhen(Results, node =&gt;
+        {
+            node.IsClass(c =&gt; c
+                .WithName(&quot;SampleClass&quot;)
+                .IsNotStatic()
+                .IsPublic()
+                .Implements(&quot;ISerializable&quot;)
+            );
+        });
+    }
+}
+</code></pre>
+<p>In the above example, if the qualification checks determines the node is:</p>
+<ul>
+<li>a class named <code>SampleClass</code></li>
+<li>which is public</li>
+<li>and not static</li>
+<li>and also implements <code>ISerializable</code></li>
+</ul>
+<p>then the specific <code>SyntaxNode</code> qualifies, and the <em>Results</em> list will be populated and passed to the <em>Execute</em> method of the generator.</p>
+<p>A most complex, but <em>less practical</em> example:</p>
+<pre><code class="language-csharp">syntaxNode.NodeQualifiesWhen(Results, node =&gt;
+{
+    node.IsClass(c =&gt; c
+        .WithName(&quot;SampleClass&quot;)
+        .IsNotStatic()
+        .IsNotPrivateProtected()
+        .IsPublic()
+        .Implements(&quot;ISerializable&quot;)
+        // the class must have the Obsolete attribute 
+        .WithAttribute(a =&gt;
+        {
+            a.WithName(&quot;Obsolete&quot;);
+        })
+        .WithMethod(m =&gt;
+        {
+            // the class must have a method called &quot;SampleMethod&quot;
+            m.WithName(&quot;SampleMethod&quot;)
+            // which is async
+            .IsAsync()
+            // with the Obsolete attribute with a parameter in position 1 supplied
+            .WithAttribute(a =&gt;
+            {
+                a.WithName(&quot;Obsolete&quot;)
+                .WithArgument(arg =&gt;
+                {
+                    arg.WithPosition(1);
+                });
+            })
+            // method must have a return type of Task
+            .WithReturnType(typeof(Task));
+        })
+    );
+});
+</code></pre>
+<hr />
+<h2 id="code-generation-roslyn-source-generator-process-with-isyntaxreceiver-implementation">Code Generation - Roslyn Source Generator process (with ISyntaxReceiver implementation)</h2>
+<p>When generating code based on the output of the <em>qualification process</em> (<code>OnVisitSyntaxNode</code> method in the <code>ISyntaxReceiver</code> implementation, shown above), the <code>Results</code> list is populated with the qualifying <code>SyntaxNode(s)</code>, and passed to the <code>Execute</code> method of the <code>ISourceGenerator</code> implementation.</p>
+<p>Using the same <code>ISyntaxReceiver</code> implementation as above:</p>
+<pre><code class="language-csharp">class SampleClassSyntaxReceiver : ISyntaxReceiver
+{
+    public List&lt;SyntaxReceiverResult&gt; Results { get; set; } = new List&lt;SyntaxReceiverResult&gt;();
+
+    public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
+    {
+        syntaxNode.NodeQualifiesWhen(Results, node =&gt;
+        {
+            node.IsClass(c =&gt; c
+                .WithName(&quot;SampleClass&quot;)
+                .IsNotStatic()
+                .IsPublic()
+                .Implements(&quot;ISerializable&quot;)
+            );
+        });
+    }
+}
+</code></pre>
+<p>For each qualifying node, the <code>Results</code> property is populated with the qualifying <code>SyntaxNode</code> in question.</p>
+<p>Below is a sample of a <code>ISourceGenerator</code> which used the <em>Results</em> output from the <code>OnVisitSyntaxNode</code> method to generate source code:</p>
+<pre><code class="language-csharp">[Generator]
+public class PartialMethodGenerator : ISourceGenerator
+{
+    public void Initialize(GeneratorInitializationContext context)
+    {
+        // Register our custom syntax receiver
+        context.RegisterForSyntaxNotifications(() =&gt; new PartialClassSyntaxReceiver());
+    }
+
+    public void Execute(GeneratorExecutionContext context)
+    {
+        if (context.SyntaxReceiver == null)
+        {
+            return;
+        }
+
+        PartialClassSyntaxReceiver syntaxReceiver = (PartialClassSyntaxReceiver)context.SyntaxReceiver;
+
+        if (syntaxReceiver != null &amp;&amp; syntaxReceiver.Results != null &amp;&amp; syntaxReceiver.Results.Any())
+        {
+            foreach (SyntaxReceiverResult result in syntaxReceiver.Results)
+            {
+                // based on the qualification process
+                // we know the qualifying node will be a class
+                ClassDeclarationSyntax cls = result.Node.AsClass();
+
+                context.GenerateSource($&quot;{cls.GetNamespace()}_file&quot;, fileBuilder =&gt;
+                {
+                    fileBuilder.WithNamespace($&quot;{cls.GetNamespace()}&quot;, nsBuilder =&gt;
+                    {
+                        nsBuilder.WithClass($&quot;{cls.GetName()}_generated&quot;, clsBuilder =&gt;
+                        {
+                            clsBuilder.AsPublic();
+
+                            clsBuilder.WithMethod(&quot;Hello&quot;, &quot;void&quot;, mthBuilder =&gt;
+                            {
+                                mthBuilder.AsPublic()
+                                .WithBody(&#64;&quot;Console.WriteLine($&quot;&quot;Generator says: Hello&quot;&quot;);&quot;);
+                            });
+                        });
+                    });
+                });
+            }
+        }
+    }
+}
+</code></pre>
+<ul>
+<li>The <code>Initialize</code> method is used to register the custom <code>ISyntaxReceiver</code> implementation containing the qualification rules - this is part of the normal Roslyn source generation processes (not specific to the <code>Source Generator Toolkit</code>)</li>
+<li>The <code>GeneratorExecutionContext</code> parameter passed to the <code>Execute</code> method contains a <em>ISyntaxReceiver</em> implementation property - <code>PartialClassSyntaxReceiver</code> in this example, which contains the <em>Results</em> property with the qualifying SyntaxNode(s). A number of checks are performed to ensure the <em>SyntaxReceiver</em> is not null, and that the <em>Results</em> property on it is not null.</li>
+<li>The code then iterates over each <code>SyntaxReceiverResult</code> in the <em>Results</em> property. In other words, <em>iterating through each qualifying node</em></li>
+<li>The <code>AsClass</code> extension method (part of the <code>Source Generator Toolkit</code>) will convert the generic SyntaxNode to the specific syntax type ('ClassDeclarationSyntax' in this example)</li>
+<li>The <code>GenerateSource</code> extension method (again, part of the <code>Source Generator Toolkit</code>) then allows for the building up of the required source code as described above. However, now, instead of explicitly supplying the values for the code (the <em>file name</em>,  <em>namespace</em> and <em>class name</em> in this example), the provided extension methods are used to extract the values from the qualifying syntax node.</li>
+<li>In this example, the <code>GetNamespace</code> and <code>GetName</code> extension methods on <code>ClassDeclarationSyntax</code> are used to get the relevent details from the syntax to populate the generated source code</li>
+</ul>
+<hr />
+<h2 id="custom-syntax-qualifiers">Custom syntax qualifiers</h2>
+<p>The <code>Source Generator Toolkit</code> allows for custom qualification checks using the <code>WithQualifyingCheck</code> method:</p>
+<pre><code class="language-csharp">syntaxNode.NodeQualifiesWhen(Results, node =&gt;
+{
+    node.WithQualifyingCheck(customNode =&gt;
+    {
+        // completely un-useful check
+        return customNode.ChildNodes().Count() == 10;
+    });
+});
+</code></pre>
+<p>Here instead of checking if the node is a <em>class or attribute</em> for example, the qualification check is to see if the node contains 10 child nodes (a not very useful check)</p>
+<h2 id="future-enhancements">Future enhancements</h2>
+<p>The library is a work in progress, with common source generator functionality added initially, but with more to come over time.  Some future enhancements include (but not limited to):</p>
+<ul class="contains-task-list">
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> SyntaxNode <code>AsAttribute</code> extension method</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> Additional extension methods to be used on <em>ClassDeclarationSyntax</em> and <em>AttributeDeclarationSyntax</em> to be leverage when doing code generation in a source generator</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> Ability to determine qualification with generics and generic types</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> Ability to determine qualification based on a code comment</li>
+</ul>
+<p>Feel free to log a request or bug if you have a specific requirement and I'll try to implement asap.</p>
+<hr />
+<h2 id="useful-links">Useful links</h2>
+<p><a href="https://www.nuget.org/packages/SourceGeneratorToolkit">Source Generator Toolkit</a><br />
+<a href="https://github.com/JoanComasFdz/dotnet-how-to-debug-source-generator-vs2022">Debugging a source generator</a></p>
+
+                        
+<div>
+            <a role="button" href="/tags/c" class="badge badge-light"> c#</a>
+            <a role="button" href="/tags/net" class="badge badge-light"> .net</a>
+            <a role="button" href="/tags/sourcegenerator" class="badge badge-light"> sourcegenerator</a>
+            <a role="button" href="/tags/roslyn" class="badge badge-light"> roslyn</a>
+            <a role="button" href="/tags/toolkit" class="badge badge-light"> toolkit</a>
+            <a role="button" href="/tags/sourcegeneratortoolkit" class="badge badge-light"> sourcegeneratortoolkit</a>
+</div>
+                    </div>
+                    <div id="content" class="col-md-3 post-with-toc d-none d-lg-block">
+                        
+
+        <div class="box sticky-top toc-block">
+            <h3 class="no-anchor">On This Page</h3>
+            <ul>
+        <li><a href="#introduction">Introduction</a></li>
+        <li><a href="#reason-for-the-library">Reason for the library</a></li>
+        <li><a href="#generating-code-outside-of-the-roslyn-source-generator-process">Generating Code - outside of the Roslyn Source Generator process</a></li>
+        <li><a href="#generating-code-roslyn-source-generator-process-without-isyntaxreceiver">Generating Code - Roslyn Source Generator process (without ISyntaxReceiver)</a></li>
+        <li><a href="#generating-code-configuration">Generating Code - Configuration</a></li>
+        <li><a href="#code-qualification-roslyn-source-generator-process-with-isyntaxreceiver-implementation">Code Qualification - Roslyn Source Generator process (with ISyntaxReceiver implementation)</a></li>
+        <li><a href="#code-generation-roslyn-source-generator-process-with-isyntaxreceiver-implementation">Code Generation - Roslyn Source Generator process (with ISyntaxReceiver implementation)</a></li>
+        <li><a href="#custom-syntax-qualifiers">Custom syntax qualifiers</a></li>
+        <li><a href="#future-enhancements">Future enhancements</a></li>
+        <li><a href="#useful-links">Useful links</a></li>
+            </ul>
+        </div>
+
+                    </div>
+            </div>
+            <div class="row ">
+                    <div id="content" class="col-md-9">
+                        <div>
+    <script src="https://giscus.app/client.js"
+            data-repo="always-developing/always-developing.github.io"
+            data-repo-id="R_kgDOGQJLBQ"
+            data-category="Comments"
+            data-category-id="DIC_kwDOGQJLBc4B_pUA"
+            data-mapping="pathname"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="bottom"
+            data-theme="transparent_dark"
+            data-lang="en"
+            crossorigin="anonymous"
+            async>
+    </script>
+</div>
+                    </div>
+            </div>
+    </div>
+
+    <hr class="horizontal-rule" />
+
+    <!-- Footer -->
+    <footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <ul class="list-inline text-center">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://www.linkedin.com/in/jean-pierre-seini">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-linkedin fa-stack-1x fa-inverse footer-icon"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                <div>
+                    <p class="copyright text-footer">
+                        Copyright © 2023 Always Developing</a>.
+                    </p>
+                </div>
+                <ul class="list-inline text-center small text-feeds">
+                        <li class="list-inline-item">
+                            <a href="/feed.rss"><i class="fa fa-rss"></i> RSS Feed</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="/feed.atom"><i class="fa fa-rss"></i> Atom Feed</a>
+                        </li>
+                </ul>
+                <ul class="list-inline text-center small">
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing/alwaysdeveloping-website-src"><i class="fab fa-github"></i> This site on GitHub</a>                    
+                    </li>
+                    <li class="list-inline-item">
+                        |
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://github.com/always-developing/alwaysdeveloping-website-src/tree/main/theme"><i class="fa fa-code"></i> Custom Always-Developing theme</a>
+                    </li>
+                    <li class="list-inline-item">
+                        |
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="https://github.com/statiqdev/CleanBlog"><i class="fa fa-blog"></i> Adapted from Clean Blog theme</a>
+                    </li>
+                </ul>
+                <div class="small text-footer">
+                    <a href="https://statiq.dev"><i class="fa fa-cogs"></i> Generated by Statiq</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="/vendor/jquery/jquery.min.js"></script>
+    <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CXPLFS7K38"></script>
+
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){window.dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-CXPLFS7K38');
+</script>
+
+    
+
+    <!-- Custom scripts for this template -->
+    <script src="/js/always-developing-blog.js"></script>
+
+</body>
+
+</html>

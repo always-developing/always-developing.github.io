@@ -4,8 +4,290 @@
 	<title />
 	<link rel="self" href="https://alwaysdeveloping.net/" />
 	<rights>Copyright © 2023</rights>
-	<updated>2023-07-21T03:35:51Z</updated>
+	<updated>2023-07-24T03:33:32Z</updated>
 	<subtitle>always learning | always growing</subtitle>
+	<entry>
+		<id>https://alwaysdeveloping.net/p/2023-07-source-gen-toolkit</id>
+		<title>Introducing the Source Generator Toolkit</title>
+		<link href="https://alwaysdeveloping.net/p/2023-07-source-gen-toolkit" />
+		<updated>2023-07-24T03:00:00Z</updated>
+		<content>&lt;h2 id="introduction"&gt;Introduction&lt;/h2&gt;
+&lt;p&gt;Ever wanted to try leverage &lt;em&gt;Roslyn Source Generators&lt;/em&gt;, but the process seemed too complex? The &lt;a href="https://www.nuget.org/packages/SourceGeneratorToolkit"&gt;&lt;code&gt;Source Generator Toolkit&lt;/code&gt;&lt;/a&gt; aims to make this process easier, but providing two pieces of core functionality:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;Code Generation&lt;/code&gt;: this can be leveraged in conjunction with the Roslyn Source Generator process, or standalone and allows for the easy generation of C# source code using a &lt;em&gt;fluent builder pattern&lt;/em&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Code Qualification&lt;/code&gt;: this is leverage as part of the Roslyn Source Generator process, and make the process of &lt;em&gt;determining if a syntax node qualifies for source generation&lt;/em&gt; easier and more stream-lined.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr /&gt;
+&lt;h2 id="reason-for-the-library"&gt;Reason for the library&lt;/h2&gt;
+&lt;p&gt;The main aim of the code generation functionality of the library is to &lt;code&gt;remove as much of the hard-coded C# strings required when creating a source generator as possible&lt;/code&gt;. Some hard-coded &lt;em&gt;strings of code&lt;/em&gt; will still be required for specific logic, however the main scaffolding of the classes, methods etc can be done through the library using a &lt;em&gt;fluent builder pattern&lt;/em&gt;. This pattern makes it easy to build up the source code logically, with each component building on the previous one.&lt;/p&gt;
+&lt;p&gt;While the initial idea was for the &lt;code&gt;Source Generator Toolkit&lt;/code&gt; to be used with &lt;em&gt;Roslyn Source Generators&lt;/em&gt;, the code generation functionality can be leveraged outside of this process to just generate a string representation of C# code.&lt;/p&gt;
+&lt;p&gt;When creating a &lt;em&gt;Roslyn Source Generators&lt;/em&gt; in most cases, before source code is generated, &lt;em&gt;qualification checks&lt;/em&gt; need to be performed to determine &lt;em&gt;if&lt;/em&gt; the source code should be generated, and to determine the values to be used in the generated code. Here the aim of the &lt;code&gt;Source Generator Toolkit&lt;/code&gt; was to make working the the syntax nodes and syntax tree as easy as possible, by &lt;code&gt;providing a variety of extension methods for qualification checks performed on syntax nodes&lt;/code&gt;. The qualification check functionality is done, again, through a &lt;em&gt;fluent builder&lt;/em&gt; which allows for the qualification check to logically be built up - easily to maintain and easier to understand.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="generating-code-outside-of-the-roslyn-source-generator-process"&gt;Generating Code - outside of the Roslyn Source Generator process&lt;/h2&gt;
+&lt;p&gt;First we'll look at how to generate c# source code, outside of the Roslyn Source Generator process.&lt;/p&gt;
+&lt;p&gt;The static &lt;code&gt;SourceGenerator&lt;/code&gt; class is the starting point for building up the source code. No actual &lt;em&gt;true c# code&lt;/em&gt; is generated here - just a &lt;strong&gt;formatted string representation of c# code&lt;/strong&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;var strCode = SourceGenerator.GenerateSource(gen =&amp;gt;
+{
+    gen.WithFile(&amp;quot;file1&amp;quot;, file =&amp;gt;
+    {
+        file.WithNamespace(&amp;quot;SampleNamespace&amp;quot;, ns =&amp;gt;
+        {
+            ns.WithClass(&amp;quot;SampleClass&amp;quot;, cls =&amp;gt; { });
+        });
+    });
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The string output of the above being (the value of &lt;code&gt;strCode&lt;/code&gt;):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;namespace SampleNamespace
+{
+    [System.CodeDom.Compiler.GeneratedCode(&amp;quot;SourceGeneratorToolkit&amp;quot;, &amp;quot;0.0.0.1&amp;quot;)]
+    class SampleClass
+    {
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As you can see from this simple example, defining the code is easy:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;start with a &amp;quot;file&amp;quot; (in this case, it is an &amp;quot;in-memory&amp;quot; file which will hold the defined c# code)&lt;/li&gt;
+&lt;li&gt;the file contains a single &lt;code&gt;namespace&lt;/code&gt;, &lt;em&gt;SampleNamespace&lt;/em&gt;&lt;/li&gt;
+&lt;li&gt;the namespace contains a single &lt;code&gt;class&lt;/code&gt;, &lt;em&gt;SampleClass&lt;/em&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Each component is defined with its required properties (such as name in the above examples), and then an optional builder Action to define its child components.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="generating-code-roslyn-source-generator-process-without-isyntaxreceiver"&gt;Generating Code - Roslyn Source Generator process (without ISyntaxReceiver)&lt;/h2&gt;
+&lt;p&gt;Next, we look at leveraging the &lt;code&gt;Source Generator Toolkit&lt;/code&gt; as &lt;em&gt;part of the Roslyn Source Generator process&lt;/em&gt; - but when the &lt;code&gt;ISyntaxReceiver&lt;/code&gt; is not used. This use case is for the scenarios when the generated source code must always be output and is not reliant on a &lt;em&gt;qualification check&lt;/em&gt; being done.&lt;/p&gt;
+&lt;p&gt;When used in conjunction with a Source Generator, the &lt;code&gt;GenerateSource&lt;/code&gt; extension method on the &lt;code&gt;GeneratorExecutionContext&lt;/code&gt; class can be leveraged.&lt;/p&gt;
+&lt;p&gt;The below example shows how to generate source code &lt;code&gt;without any information from a SyntaxReceiver&lt;/code&gt; - see further down on how the &lt;code&gt;Source Generator Toolkit&lt;/code&gt; can be used to generate code in conjunction with a &lt;code&gt;ISyntaxReceiver&lt;/code&gt; implementation.&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;// a ISourceGenerator implementation
+public class SampleGenerator : ISourceGenerator
+{
+    public void Execute(GeneratorExecutionContext context)
+    {
+        context.GenerateSource(&amp;quot;file1&amp;quot;, fileBuilder =&amp;gt;
+        {
+            fileBuilder.WithNamespace(&amp;quot;SampleNamespace&amp;quot;, nsBuilder =&amp;gt;
+            {
+                ns.WithClass(&amp;quot;SampleClass&amp;quot;, cls =&amp;gt; { });
+            });
+        });
+    }
+
+    public void Initialize(GeneratorInitializationContext context)
+    {
+        // no ISyntaxReceiver implementation registered here
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In the case of a Source Generator, an actual file named &lt;code&gt;file1.cs&lt;/code&gt; will be output as part of the generation process.&lt;/p&gt;
+&lt;p&gt;The output content of the file will be the same as in the previous example:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;namespace SampleNamespace
+{
+    [System.CodeDom.Compiler.GeneratedCode(&amp;quot;SourceGeneratorToolkit&amp;quot;, &amp;quot;0.0.0.1&amp;quot;)]
+    class SampleClass
+    {
+    }
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The &lt;em&gt;fluent builder pattern&lt;/em&gt; is leveraged to build up the source code in exactly the same manner as in the previous example above.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="generating-code-configuration"&gt;Generating Code - Configuration&lt;/h2&gt;
+&lt;p&gt;There is optional configuration which can be specified when generating the code using either of the above two methods (when calling the &lt;code&gt;GenerateSource&lt;/code&gt; method). If no configuration is specified, the default configuration is used.&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Configuration Name&lt;/th&gt;
+&lt;th&gt;Description&lt;/th&gt;
+&lt;th&gt;Default Value&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;OutputGeneratedCodeAttribute&lt;/td&gt;
+&lt;td&gt;Flag to indicate if the &lt;code&gt;System.CodeDom.Compiler.GeneratedCode&lt;/code&gt; attribute should be output with generated code. This attribute is used as an indicator to various tools that the code was auto generated&lt;/td&gt;
+&lt;td&gt;true&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;OutputDebuggerStepThroughAttribute&lt;/td&gt;
+&lt;td&gt;Flag to indicate if the &lt;code&gt;System.Diagnostics.DebuggerStepThrough&lt;/code&gt; attribute should be output with generated code. When set to true, this attribute allows stepping into the generated code when debugging&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;hr /&gt;
+&lt;h2 id="code-qualification-roslyn-source-generator-process-with-isyntaxreceiver-implementation"&gt;Code Qualification - Roslyn Source Generator process (with ISyntaxReceiver implementation)&lt;/h2&gt;
+&lt;p&gt;When using the .NET Roslyn Source Generator process, the actual &lt;em&gt;generation&lt;/em&gt; of the source is only one step of the process - the other step is determining &lt;em&gt;if the source should be generated in the first place&lt;/em&gt;. This &lt;em&gt;qualification check&lt;/em&gt; is done in the &lt;code&gt;OnVisitSyntaxNode&lt;/code&gt; method of the &lt;code&gt;ISyntaxReceiver&lt;/code&gt; implementation.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;OnVisitSyntaxNode&lt;/code&gt; method takes a &lt;code&gt;SyntaxNode&lt;/code&gt; as an argument (this is part of the normal Roslyn Source Generator process) - the &lt;code&gt;Source Generator Toolkit&lt;/code&gt; provides an extension method (&lt;code&gt;NodeQualifiesWhen&lt;/code&gt;) which accepts a &lt;em&gt;qualification builder&lt;/em&gt; which is used to determine if the SyntaxNode qualifies to have source code generated.&lt;/p&gt;
+&lt;p&gt;The &lt;em&gt;fluent builder&lt;/em&gt; pattern is again used to build up the qualification check for for the syntax:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;class SampleClassSyntaxReceiver : ISyntaxReceiver
+{
+    public List&amp;lt;SyntaxReceiverResult&amp;gt; Results { get; set; } = new List&amp;lt;SyntaxReceiverResult&amp;gt;();
+
+    public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
+    {
+        syntaxNode.NodeQualifiesWhen(Results, node =&amp;gt;
+        {
+            node.IsClass(c =&amp;gt; c
+                .WithName(&amp;quot;SampleClass&amp;quot;)
+                .IsNotStatic()
+                .IsPublic()
+                .Implements(&amp;quot;ISerializable&amp;quot;)
+            );
+        });
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In the above example, if the qualification checks determines the node is:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;a class named &lt;code&gt;SampleClass&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;which is public&lt;/li&gt;
+&lt;li&gt;and not static&lt;/li&gt;
+&lt;li&gt;and also implements &lt;code&gt;ISerializable&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;then the specific &lt;code&gt;SyntaxNode&lt;/code&gt; qualifies, and the &lt;em&gt;Results&lt;/em&gt; list will be populated and passed to the &lt;em&gt;Execute&lt;/em&gt; method of the generator.&lt;/p&gt;
+&lt;p&gt;A most complex, but &lt;em&gt;less practical&lt;/em&gt; example:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;syntaxNode.NodeQualifiesWhen(Results, node =&amp;gt;
+{
+    node.IsClass(c =&amp;gt; c
+        .WithName(&amp;quot;SampleClass&amp;quot;)
+        .IsNotStatic()
+        .IsNotPrivateProtected()
+        .IsPublic()
+        .Implements(&amp;quot;ISerializable&amp;quot;)
+        // the class must have the Obsolete attribute 
+        .WithAttribute(a =&amp;gt;
+        {
+            a.WithName(&amp;quot;Obsolete&amp;quot;);
+        })
+        .WithMethod(m =&amp;gt;
+        {
+            // the class must have a method called &amp;quot;SampleMethod&amp;quot;
+            m.WithName(&amp;quot;SampleMethod&amp;quot;)
+            // which is async
+            .IsAsync()
+            // with the Obsolete attribute with a parameter in position 1 supplied
+            .WithAttribute(a =&amp;gt;
+            {
+                a.WithName(&amp;quot;Obsolete&amp;quot;)
+                .WithArgument(arg =&amp;gt;
+                {
+                    arg.WithPosition(1);
+                });
+            })
+            // method must have a return type of Task
+            .WithReturnType(typeof(Task));
+        })
+    );
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h2 id="code-generation-roslyn-source-generator-process-with-isyntaxreceiver-implementation"&gt;Code Generation - Roslyn Source Generator process (with ISyntaxReceiver implementation)&lt;/h2&gt;
+&lt;p&gt;When generating code based on the output of the &lt;em&gt;qualification process&lt;/em&gt; (&lt;code&gt;OnVisitSyntaxNode&lt;/code&gt; method in the &lt;code&gt;ISyntaxReceiver&lt;/code&gt; implementation, shown above), the &lt;code&gt;Results&lt;/code&gt; list is populated with the qualifying &lt;code&gt;SyntaxNode(s)&lt;/code&gt;, and passed to the &lt;code&gt;Execute&lt;/code&gt; method of the &lt;code&gt;ISourceGenerator&lt;/code&gt; implementation.&lt;/p&gt;
+&lt;p&gt;Using the same &lt;code&gt;ISyntaxReceiver&lt;/code&gt; implementation as above:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;class SampleClassSyntaxReceiver : ISyntaxReceiver
+{
+    public List&amp;lt;SyntaxReceiverResult&amp;gt; Results { get; set; } = new List&amp;lt;SyntaxReceiverResult&amp;gt;();
+
+    public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
+    {
+        syntaxNode.NodeQualifiesWhen(Results, node =&amp;gt;
+        {
+            node.IsClass(c =&amp;gt; c
+                .WithName(&amp;quot;SampleClass&amp;quot;)
+                .IsNotStatic()
+                .IsPublic()
+                .Implements(&amp;quot;ISerializable&amp;quot;)
+            );
+        });
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;For each qualifying node, the &lt;code&gt;Results&lt;/code&gt; property is populated with the qualifying &lt;code&gt;SyntaxNode&lt;/code&gt; in question.&lt;/p&gt;
+&lt;p&gt;Below is a sample of a &lt;code&gt;ISourceGenerator&lt;/code&gt; which used the &lt;em&gt;Results&lt;/em&gt; output from the &lt;code&gt;OnVisitSyntaxNode&lt;/code&gt; method to generate source code:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;[Generator]
+public class PartialMethodGenerator : ISourceGenerator
+{
+    public void Initialize(GeneratorInitializationContext context)
+    {
+        // Register our custom syntax receiver
+        context.RegisterForSyntaxNotifications(() =&amp;gt; new PartialClassSyntaxReceiver());
+    }
+
+    public void Execute(GeneratorExecutionContext context)
+    {
+        if (context.SyntaxReceiver == null)
+        {
+            return;
+        }
+
+        PartialClassSyntaxReceiver syntaxReceiver = (PartialClassSyntaxReceiver)context.SyntaxReceiver;
+
+        if (syntaxReceiver != null &amp;amp;&amp;amp; syntaxReceiver.Results != null &amp;amp;&amp;amp; syntaxReceiver.Results.Any())
+        {
+            foreach (SyntaxReceiverResult result in syntaxReceiver.Results)
+            {
+                // based on the qualification process
+                // we know the qualifying node will be a class
+                ClassDeclarationSyntax cls = result.Node.AsClass();
+
+                context.GenerateSource($&amp;quot;{cls.GetNamespace()}_file&amp;quot;, fileBuilder =&amp;gt;
+                {
+                    fileBuilder.WithNamespace($&amp;quot;{cls.GetNamespace()}&amp;quot;, nsBuilder =&amp;gt;
+                    {
+                        nsBuilder.WithClass($&amp;quot;{cls.GetName()}_generated&amp;quot;, clsBuilder =&amp;gt;
+                        {
+                            clsBuilder.AsPublic();
+
+                            clsBuilder.WithMethod(&amp;quot;Hello&amp;quot;, &amp;quot;void&amp;quot;, mthBuilder =&amp;gt;
+                            {
+                                mthBuilder.AsPublic()
+                                .WithBody(&amp;#64;&amp;quot;Console.WriteLine($&amp;quot;&amp;quot;Generator says: Hello&amp;quot;&amp;quot;);&amp;quot;);
+                            });
+                        });
+                    });
+                });
+            }
+        }
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;ul&gt;
+&lt;li&gt;The &lt;code&gt;Initialize&lt;/code&gt; method is used to register the custom &lt;code&gt;ISyntaxReceiver&lt;/code&gt; implementation containing the qualification rules - this is part of the normal Roslyn source generation processes (not specific to the &lt;code&gt;Source Generator Toolkit&lt;/code&gt;)&lt;/li&gt;
+&lt;li&gt;The &lt;code&gt;GeneratorExecutionContext&lt;/code&gt; parameter passed to the &lt;code&gt;Execute&lt;/code&gt; method contains a &lt;em&gt;ISyntaxReceiver&lt;/em&gt; implementation property - &lt;code&gt;PartialClassSyntaxReceiver&lt;/code&gt; in this example, which contains the &lt;em&gt;Results&lt;/em&gt; property with the qualifying SyntaxNode(s). A number of checks are performed to ensure the &lt;em&gt;SyntaxReceiver&lt;/em&gt; is not null, and that the &lt;em&gt;Results&lt;/em&gt; property on it is not null.&lt;/li&gt;
+&lt;li&gt;The code then iterates over each &lt;code&gt;SyntaxReceiverResult&lt;/code&gt; in the &lt;em&gt;Results&lt;/em&gt; property. In other words, &lt;em&gt;iterating through each qualifying node&lt;/em&gt;&lt;/li&gt;
+&lt;li&gt;The &lt;code&gt;AsClass&lt;/code&gt; extension method (part of the &lt;code&gt;Source Generator Toolkit&lt;/code&gt;) will convert the generic SyntaxNode to the specific syntax type ('ClassDeclarationSyntax' in this example)&lt;/li&gt;
+&lt;li&gt;The &lt;code&gt;GenerateSource&lt;/code&gt; extension method (again, part of the &lt;code&gt;Source Generator Toolkit&lt;/code&gt;) then allows for the building up of the required source code as described above. However, now, instead of explicitly supplying the values for the code (the &lt;em&gt;file name&lt;/em&gt;,  &lt;em&gt;namespace&lt;/em&gt; and &lt;em&gt;class name&lt;/em&gt; in this example), the provided extension methods are used to extract the values from the qualifying syntax node.&lt;/li&gt;
+&lt;li&gt;In this example, the &lt;code&gt;GetNamespace&lt;/code&gt; and &lt;code&gt;GetName&lt;/code&gt; extension methods on &lt;code&gt;ClassDeclarationSyntax&lt;/code&gt; are used to get the relevent details from the syntax to populate the generated source code&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr /&gt;
+&lt;h2 id="custom-syntax-qualifiers"&gt;Custom syntax qualifiers&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;Source Generator Toolkit&lt;/code&gt; allows for custom qualification checks using the &lt;code&gt;WithQualifyingCheck&lt;/code&gt; method:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-csharp"&gt;syntaxNode.NodeQualifiesWhen(Results, node =&amp;gt;
+{
+    node.WithQualifyingCheck(customNode =&amp;gt;
+    {
+        // completely un-useful check
+        return customNode.ChildNodes().Count() == 10;
+    });
+});
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Here instead of checking if the node is a &lt;em&gt;class or attribute&lt;/em&gt; for example, the qualification check is to see if the node contains 10 child nodes (a not very useful check)&lt;/p&gt;
+&lt;h2 id="future-enhancements"&gt;Future enhancements&lt;/h2&gt;
+&lt;p&gt;The library is a work in progress, with common source generator functionality added initially, but with more to come over time.  Some future enhancements include (but not limited to):&lt;/p&gt;
+&lt;ul class="contains-task-list"&gt;
+&lt;li class="task-list-item"&gt;&lt;input disabled="disabled" type="checkbox" /&gt; SyntaxNode &lt;code&gt;AsAttribute&lt;/code&gt; extension method&lt;/li&gt;
+&lt;li class="task-list-item"&gt;&lt;input disabled="disabled" type="checkbox" /&gt; Additional extension methods to be used on &lt;em&gt;ClassDeclarationSyntax&lt;/em&gt; and &lt;em&gt;AttributeDeclarationSyntax&lt;/em&gt; to be leverage when doing code generation in a source generator&lt;/li&gt;
+&lt;li class="task-list-item"&gt;&lt;input disabled="disabled" type="checkbox" /&gt; Ability to determine qualification with generics and generic types&lt;/li&gt;
+&lt;li class="task-list-item"&gt;&lt;input disabled="disabled" type="checkbox" /&gt; Ability to determine qualification based on a code comment&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Feel free to log a request or bug if you have a specific requirement and I'll try to implement asap.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2 id="useful-links"&gt;Useful links&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://www.nuget.org/packages/SourceGeneratorToolkit"&gt;Source Generator Toolkit&lt;/a&gt;&lt;br /&gt;
+&lt;a href="https://github.com/JoanComasFdz/dotnet-how-to-debug-source-generator-vs2022"&gt;Debugging a source generator&lt;/a&gt;&lt;/p&gt;
+</content>
+		<summary>always learning | always growing</summary>
+	</entry>
 	<entry>
 		<id>https://alwaysdeveloping.net/p/2023-05-interface-extension</id>
 		<title>Sharing a common method across classes</title>
@@ -732,62 +1014,6 @@ Console.WriteLine($&amp;quot;Actual time delayed: {watch.ElapsedMilliseconds} mi
 &lt;h2 id="references"&gt;References&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://linkdotnet.github.io/tips-and-tricks/async_await/#dont-use-taskdelay-for-small-precise-waiting-times"&gt;Don’t use Task.Delay for small precise waiting times&lt;/a&gt;&lt;/p&gt;
 &lt;?# DailyDrop ?&gt;240: 23-01-2023&lt;?#/ DailyDrop ?&gt;
-</content>
-		<summary>always learning | always growing</summary>
-	</entry>
-	<entry>
-		<id>https://alwaysdeveloping.net/dailydrop/2023/01/20-linq-count</id>
-		<title>LINQ Any/All over Count</title>
-		<link href="https://alwaysdeveloping.net/dailydrop/2023/01/20-linq-count" />
-		<updated>2023-01-20T01:00:00Z</updated>
-		<content>&lt;h2 id="daily-knowledge-drop"&gt;Daily Knowledge Drop&lt;/h2&gt;
-&lt;p&gt;In most scenarios, the LINQ &lt;code&gt;All&lt;/code&gt; or &lt;code&gt;Any&lt;/code&gt; methods should be used instead of the &lt;code&gt;Count&lt;/code&gt; method.&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;Count&lt;/code&gt; should be avoided, as it &lt;em&gt;enumerates through every single entry in the collection to get the count&lt;/em&gt;, where &lt;code&gt;Any/All&lt;/code&gt; will &lt;em&gt;return as soon as the predicate condition is not met anymore&lt;/em&gt;.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="examples"&gt;Examples&lt;/h2&gt;
-&lt;p&gt;All of the below examples, use the following collection:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;var intList = Enumerable.Range(1, 10);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;hr /&gt;
-&lt;h3 id="no-predicate"&gt;No predicate&lt;/h3&gt;
-&lt;p&gt;When required to check if a list contains &lt;em&gt;any&lt;/em&gt; items, the &lt;code&gt;Any&lt;/code&gt; method should be used instead of &lt;code&gt;Count&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// Bad
-Console.WriteLine(intList.Count() &amp;gt; 0);
-// Good
-Console.WriteLine(intList.Any());
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;In this example, when &lt;code&gt;Count&lt;/code&gt; is used, 10 items needs to be enumerated to get the full count, however &lt;code&gt;Any&lt;/code&gt; will return &lt;em&gt;true&lt;/em&gt; after one iteration, as soon as one item is found.&lt;br /&gt;
-With only 10 items, the difference is negligible, however as the number of items in the collection increased, the difference will become more noticeable.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="with-predicate"&gt;With predicate&lt;/h3&gt;
-&lt;p&gt;The same logic applies when a &lt;em&gt;predicate is supplied&lt;/em&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// Bad
-Console.WriteLine(intList.Count(i =&amp;gt; i &amp;gt; 5) &amp;gt; 0);
-// Good
-Console.WriteLine(intList.Any(i =&amp;gt; i &amp;gt; 5));
-
-// Bad
-Console.WriteLine(intList.Count(i =&amp;gt; i &amp;gt; 10) == 0);
-// Good
-Console.WriteLine(!intList.Any(i =&amp;gt; i &amp;gt; 10));
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The &lt;code&gt;Count&lt;/code&gt; method will need to enumerable over all items in the collection, while &lt;code&gt;Any&lt;/code&gt; will return &lt;em&gt;true&lt;/em&gt; as soon as the first item which satisfies the predicate is reached.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h3 id="all-items"&gt;All items&lt;/h3&gt;
-&lt;p&gt;Similar logic applies when &lt;code&gt;All&lt;/code&gt; items in the collection need to be checked:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="language-csharp"&gt;// Bad
-Console.WriteLine(intList.Count() == intList.Count(i =&amp;gt; i  &amp;lt; 100));
-// Good
-Console.WriteLine(intList.All(i =&amp;gt; i &amp;lt; 100));
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Again, with &lt;code&gt;Count&lt;/code&gt;, all items in the collection are enumerated over, while the &lt;code&gt;All&lt;/code&gt; method will return &lt;em&gt;false&lt;/em&gt; as soon as one item is reached which does not satisfy the predicate.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="notes"&gt;Notes&lt;/h2&gt;
-&lt;p&gt;Generally, unless &lt;code&gt;Count&lt;/code&gt; specifically needs to be used, &lt;code&gt;Any&lt;/code&gt; or &lt;code&gt;All&lt;/code&gt; should be preferred, especially as the number of items in the collection increases.&lt;/p&gt;
-&lt;hr /&gt;
-&lt;h2 id="references"&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://linkdotnet.github.io/tips-and-tricks/linq/#using-count-instead-of-all-or-any"&gt;Using Count() instead of All or Any&lt;/a&gt;&lt;/p&gt;
-&lt;?# DailyDrop ?&gt;239: 20-01-2023&lt;?#/ DailyDrop ?&gt;
 </content>
 		<summary>always learning | always growing</summary>
 	</entry>
